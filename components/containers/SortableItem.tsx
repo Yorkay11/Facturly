@@ -1,14 +1,11 @@
 "use client"
 
 import { CSS } from "@dnd-kit/utilities"
-import {
-  useSortable,
-  type UniqueIdentifier,
-} from "@dnd-kit/sortable"
+import { useSortable } from "@dnd-kit/sortable"
 import { ReactNode } from "react"
 
 interface SortableItemProps {
-  id: UniqueIdentifier
+  id: string
   children: ReactNode
 }
 

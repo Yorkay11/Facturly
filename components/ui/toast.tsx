@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
-import { cva } from "class-variance-authority"
+import { cva, type VariantProps } from "class-variance-authority"
 import { CheckCircle2, Info, TriangleAlert, XCircle, X } from "lucide-react";
 
 import { cn } from "@/lib/utils"
@@ -43,16 +43,24 @@ export const toastVariants = cva(
   }
 )
 
-export const Toast = React.forwardRef<HTMLLIElement, ToastProps>(
-  ({ className, variant, ...props }, ref) => {
-    const icons = {
-      default: null,
-      destructive: <XCircle className="h-5 w-5" />,
-      success: <CheckCircle2 className="h-5 w-5" />, 
-      info: <Info className="h-5 w-5" />, 
-      warning: <TriangleAlert className="h-5 w-5" />,
-    } as const;
+type ToastVariant = NonNullable<VariantProps<typeof toastVariants>["variant"]>;
 
+const icons: Record<ToastVariant, React.ReactNode> = {
+  default: null,
+  destructive: <XCircle className="h-5 w-5" />,
+  success: <CheckCircle2 className="h-5 w-5" />,
+  info: <Info className="h-5 w-5" />,
+  warning: <TriangleAlert className="h-5 w-5" />,
+};
+
+type ToastProps = React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> & {
+  variant?: ToastVariant;
+};
+
+type ToastActionElement = React.ReactElement<typeof ToastAction>;
+
+const ToastComponent = React.forwardRef<HTMLLIElement, ToastProps>(
+  ({ className, variant = "default", ...props }, ref) => {
     return (
       <ToastPrimitives.Root
         ref={ref}
@@ -60,7 +68,7 @@ export const Toast = React.forwardRef<HTMLLIElement, ToastProps>(
         {...props}
       >
         <div className="flex w-full items-start gap-3">
-          {variant && variant !== "default" ? (
+          {variant !== "default" ? (
             <div className="mt-0.5 flex-shrink-0 text-inherit">
               {icons[variant]}
             </div>
@@ -72,7 +80,7 @@ export const Toast = React.forwardRef<HTMLLIElement, ToastProps>(
     )
   }
 )
-Toast.displayName = ToastPrimitives.Root.displayName
+ToastComponent.displayName = ToastPrimitives.Root.displayName
 
 const ToastAction = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Action>,
@@ -131,18 +139,14 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-interface ToastProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> {}
-
-type ToastActionElement = React.ReactElement<typeof ToastAction>
-
 export {
-  type ToastProps,
-  type ToastActionElement,
   ToastProvider,
   ToastViewport,
-  Toast,
+  ToastComponent as Toast,
   ToastTitle,
   ToastDescription,
   ToastClose,
   ToastAction,
+  type ToastProps,
+  type ToastActionElement,
 }

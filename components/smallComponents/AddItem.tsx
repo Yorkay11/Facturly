@@ -1,31 +1,41 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AddItemModalProps } from '@/types/items';
+import { ItemModalProps } from '@/types/items';
 
-export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) {
+export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'create' }: ItemModalProps) {
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unitPrice, setUnitPrice] = useState('');
   const [vatRate, setVatRate] = useState('20');
 
+  useEffect(() => {
+    if (initialItem && mode === 'edit') {
+      setDescription(initialItem.description);
+      setQuantity(initialItem.quantity.toString());
+      setUnitPrice(initialItem.unitPrice.toString());
+      setVatRate(initialItem.vatRate.toString());
+    } else {
+      setDescription('');
+      setQuantity('1');
+      setUnitPrice('');
+      setVatRate('20');
+    }
+  }, [initialItem, mode, isOpen]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddItem({
+    onSubmit({
       description,
-      quantity: parseInt(quantity),
-      unitPrice: parseFloat(unitPrice),
-      vatRate: parseInt(vatRate),
-    });
-    setDescription('');
-    setQuantity('1');
-    setUnitPrice('');
-    setVatRate('20');
+      quantity: parseInt(quantity, 10) || 0,
+      unitPrice: parseFloat(unitPrice) || 0,
+      vatRate: parseFloat(vatRate) || 0,
+    }, initialItem?.id);
     onClose();
   };
 
@@ -33,7 +43,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Ajouter un article à la facture</DialogTitle>
+          <DialogTitle>{mode === 'edit' ? 'Modifier la ligne' : 'Ajouter un article à la facture'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
@@ -46,6 +56,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -59,6 +70,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -73,6 +85,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -93,7 +106,7 @@ export function AddItemModal({ isOpen, onClose, onAddItem }: AddItemModalProps) 
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Ajouter l'article</Button>
+            <Button type="submit">{mode === 'edit' ? 'Mettre à jour' : "Ajouter l'article"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

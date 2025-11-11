@@ -171,6 +171,18 @@ function toast({ ...props }: Toast) {
   }
 }
 
+toast.success = (props: Toast) =>
+  toast({ variant: "success", ...props });
+
+toast.warning = (props: Toast) =>
+  toast({ variant: "warning", ...props });
+
+toast.info = (props: Toast) =>
+  toast({ variant: "info", ...props });
+
+toast.error = (props: Toast) =>
+  toast({ variant: "destructive", ...props });
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 

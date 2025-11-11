@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
-import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+import { cva } from "class-variance-authority"
+import { CheckCircle2, Info, TriangleAlert, XCircle, X } from "lucide-react";
 
 import { cn } from "@/lib/utils"
 
@@ -24,14 +24,17 @@ const ToastViewport = React.forwardRef<
 ))
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
-const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+export const toastVariants = cva(
+  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-6 shadow-lg transition-all",
   {
     variants: {
       variant: {
-        default: "border bg-background text-foreground",
+        default: "border border-primary/30 bg-white text-foreground",
         destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
+          "destructive group border border-accent/50 bg-accent text-accent-foreground",
+        success: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+        info: "border border-primary/40 bg-primary/10 text-primary",
+        warning: "border border-amber-200 bg-amber-50 text-amber-700",
       },
     },
     defaultVariants: {
@@ -40,19 +43,35 @@ const toastVariants = cva(
   }
 )
 
-const Toast = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-    VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
-  return (
-    <ToastPrimitives.Root
-      ref={ref}
-      className={cn(toastVariants({ variant }), className)}
-      {...props}
-    />
-  )
-})
+export const Toast = React.forwardRef<HTMLLIElement, ToastProps>(
+  ({ className, variant, ...props }, ref) => {
+    const icons = {
+      default: null,
+      destructive: <XCircle className="h-5 w-5" />,
+      success: <CheckCircle2 className="h-5 w-5" />, 
+      info: <Info className="h-5 w-5" />, 
+      warning: <TriangleAlert className="h-5 w-5" />,
+    } as const;
+
+    return (
+      <ToastPrimitives.Root
+        ref={ref}
+        className={cn(toastVariants({ variant }), className)}
+        {...props}
+      >
+        <div className="flex w-full items-start gap-3">
+          {variant && variant !== "default" ? (
+            <div className="mt-0.5 flex-shrink-0 text-inherit">
+              {icons[variant]}
+            </div>
+          ) : null}
+          <div className="flex-1 space-y-1 text-left">{props.children}</div>
+        </div>
+        <ToastClose className="absolute right-2 top-2 rounded-full bg-transparent p-1 text-foreground/60 transition hover:bg-foreground/10" />
+      </ToastPrimitives.Root>
+    )
+  }
+)
 Toast.displayName = ToastPrimitives.Root.displayName
 
 const ToastAction = React.forwardRef<
@@ -112,7 +131,7 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+interface ToastProps extends React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> {}
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 

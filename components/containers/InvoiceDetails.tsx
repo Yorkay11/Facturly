@@ -2,11 +2,22 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Check, ChevronsUpDown, Edit, TicketPlus, Trash2 } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus, Trash2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import dragula from 'dragula';
-import 'dragula/dist/dragula.css';
+import {
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core"
+import {
+    SortableContext,
+    arrayMove,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -16,14 +27,12 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -34,7 +43,6 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { toast } from "@/hooks/use-toast"
 import { Input } from "../ui/input"
 import {
     Command,
@@ -44,383 +52,380 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { Separator } from "../ui/separator"
 import { Card } from "../ui/card"
 import { Checkbox } from "../ui/checkbox"
 import { devises } from "@/data/datas"
-import { AddItemModal } from "../smallComponents/AddItem"
 import { useItemsStore } from "@/hooks/useItemStore"
+import { SortableItem } from "./SortableItem"
+import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
+import { useItemModalControls } from "@/contexts/ItemModalContext"
 
 const FormSchema = z.object({
-    dob: z.date({
-        required_error: "A date of birth is required.",
+    receiver: z.string().min(1, "Le destinataire est requis"),
+    subject: z.string().min(1, "L&apos;objet est requis"),
+    issueDate: z.date({
+        required_error: "La date d&apos;émission est requise",
     }),
+    dueDate: z.date({
+        required_error: "La date d&apos;échéance est requise",
+    }),
+    currency: z.string().min(1, "La devise est obligatoire"),
+    notes: z.string().optional(),
 })
 
 const InvoiceDetails = () => {
     const [open, setOpen] = React.useState(false);
-    const [value, setValue] = React.useState("");
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const { items, setItems, addItem, removeItem } = useItemsStore();
+    const { items, setItems, removeItem } = useItemsStore();
+    const { setMetadata, currency: storedCurrency, ...metadata } = useInvoiceMetadata();
+    const [value, setValue] = useState(storedCurrency ?? "");
+    const { openCreate, openEdit } = useItemModalControls();
 
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (containerRef.current) {
-            const drake = dragula([containerRef.current]);
-
-            drake.on("drop", () => {
-                const reorderedItems = Array.from(containerRef.current?.children || []).map(
-                    (child) => {
-                        const originalIndex = parseInt(child.getAttribute('data-id') || '0', 10);
-                        return items[originalIndex];
-                    }
-                );
-
-                const reorderedItemsForDragula = Array.from(containerRef.current?.children || []).map(
-                    (child) => {
-                        const originalIndex2 = Array.from(containerRef.current?.children || []).indexOf(child);
-                        return items[originalIndex2];
-                    }
-                );
-
-                // Mettre à jour le store avec reorderedItems
-                setItems(reorderedItems);
-                console.log(reorderedItemsForDragula);
-
-
-            });
-
-            return () => {
-                drake.destroy();
-            };
-        }
-    }, [items, setItems]);
-
+    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
+        defaultValues: {
+            receiver: metadata.receiver,
+            subject: metadata.subject,
+            currency: storedCurrency,
+            notes: metadata.notes,
+            issueDate: metadata.issueDate,
+            dueDate: metadata.dueDate,
+        },
     })
 
-    function onSubmit(data: z.infer<typeof FormSchema>) {
-        toast({
-            title: "You submitted the following values:",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-                </pre>
-            ),
+    const onSubmit = (data: z.infer<typeof FormSchema>) => {
+        console.log({ ...data, items })
+    }
+
+    useEffect(() => {
+        const subscription = form.watch((values) => {
+            setMetadata({
+                receiver: values.receiver ?? "",
+                subject: values.subject ?? "",
+                issueDate: values.issueDate,
+                dueDate: values.dueDate,
+                currency: values.currency ?? "",
+                notes: values.notes ?? "",
+            })
         })
+
+        return () => subscription.unsubscribe()
+    }, [form, setMetadata])
+
+    useEffect(() => {
+        if (storedCurrency && storedCurrency !== value) {
+            setValue(storedCurrency)
+            form.setValue("currency", storedCurrency)
+        }
+    }, [storedCurrency, value, form])
+
+    const itemIds = useMemo(() => items.map((item) => item.id), [items])
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event
+        if (!over || active.id === over.id) return
+
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+        setItems(arrayMove(items, oldIndex, newIndex))
     }
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-[45%]">
-                <p className='text-2xl font-bold'>Invoice Details</p>
-                <FormField
-                    control={form.control}
-                    name="dob"
-                    render={() => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Receiver</FormLabel>
-                            <Input id="destinataire" placeholder="Receiver" className="w-[50%]" />
-                            <FormDescription className="text-xs">
-                                The name of the receiver to whom the invoice is addressed.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Title</FormLabel>
-                            <Input id="subject" placeholder="Object" className="w-[50%]" />
-                            <FormDescription className="text-xs">
-                                Title of the invoice.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Date of Issue</FormLabel>
-                            <Popover>
-                                <PopoverTrigger asChild>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-6">
+                <section className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div>
+                        <p className="text-lg font-semibold text-slate-900">Informations facture</p>
+                        <p className="text-sm text-slate-500">Destinataire, objet, date d&apos;émission et échéance.</p>
+                    </div>
+                    <div className="grid gap-5 md:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="receiver"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Destinataire</FormLabel>
                                     <FormControl>
-                                        <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                                "w-[50%] pl-3 text-left font-normal",
-                                                !field.value && "text-muted-foreground"
-                                            )}
-                                        >
-                                            {field.value ? (
-                                                format(field.value, "PPP")
-                                            ) : (
-                                                <span>Select the date</span>
-                                            )}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
+                                        <Input placeholder="Nom du client" className="w-full" {...field} />
                                     </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={field.onChange}
-                                        disabled={(date) =>
-                                            date > new Date() || date < new Date("1900-01-01")
-                                        }
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            <FormDescription className="text-xs">
-                                The date the invoice was issued.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Currency</FormLabel>
-                            <Popover open={open} onOpenChange={setOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={open}
-                                        className="w-[50%] justify-between"
-                                    >
-                                        {value
-                                            ? devises.find((devise) => devise.value === value)?.label
-                                            : "Select the currency..."}
-                                        <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[500px] p-0">
-                                    <Command>
-                                        <CommandInput placeholder="Select the currency..." className="h-9" />
-                                        <CommandList>
-                                            <CommandEmpty>No devise found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {devises.map((devise) => (
-                                                    <CommandItem
-                                                        key={devise.value}
-                                                        value={devise.value}
-                                                        onSelect={(currentValue) => {
-                                                            setValue(currentValue === value ? "" : currentValue)
-                                                            setOpen(false)
-                                                        }}
-                                                    >
-                                                        {devise.label}
-                                                        <Check
-                                                            className={cn(
-                                                                "ml-auto",
-                                                                value === devise.value ? "opacity-100" : "opacity-0"
-                                                            )}
-                                                        />
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            <FormDescription className="text-xs">
-                                The currency in which the invoice is written.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="subject"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Objet</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Projet web, acompte..." className="w-full" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="issueDate"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Date d&apos;émission</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full justify-between",
+                                                        !field.value && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, "dd/MM/yyyy")
+                                                    ) : (
+                                                        <span>Choisir la date</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) => date > new Date("2100-01-01")}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="dueDate"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Date d&apos;échéance</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={"outline"}
+                                                    className={cn(
+                                                        "w-full justify-between",
+                                                        !field.value && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, "dd/MM/yyyy")
+                                                    ) : (
+                                                        <span>Choisir la date</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                disabled={(date) => date < form.getValues("issueDate")}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="currency"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Devise</FormLabel>
+                                    <Popover open={open} onOpenChange={setOpen}>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={open}
+                                                    className="w-full justify-between"
+                                                >
+                                                    {value
+                                                        ? devises.find((devise) => devise.value === value)?.label
+                                                        : "Sélectionnez la devise"}
+                                                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[320px] p-0">
+                                            <Command>
+                                                <CommandInput placeholder="Rechercher..." className="h-9" />
+                                                <CommandList>
+                                                    <CommandEmpty>Aucune devise trouvée</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {devises.map((devise) => (
+                                                            <CommandItem
+                                                                key={devise.value}
+                                                                value={devise.value}
+                                                                onSelect={(currentValue) => {
+                                                                    const nextValue = currentValue === value ? "" : currentValue
+                                                                    setValue(nextValue)
+                                                                    field.onChange(nextValue)
+                                                                    setOpen(false)
+                                                                }}
+                                                            >
+                                                                {devise.label}
+                                                                <Check
+                                                                    className={cn(
+                                                                        "ml-auto",
+                                                                        value === devise.value ? "opacity-100" : "opacity-0"
+                                                                    )}
+                                                                />
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="notes"
+                            render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                    <FormLabel>Notes internes</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Mention interne ou conditions de paiement" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </section>
 
-                <Separator />
+                <section className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-lg font-semibold text-slate-900">Lignes de facture</p>
+                            <p className="text-sm text-slate-500">Ajoutez vos prestations, quantités et tarifs.</p>
+                        </div>
+                        <Button type="button" size="sm" className="gap-2" onClick={openCreate}>
+                            <Plus className="h-4 w-4" />
+                            Ajouter une ligne
+                        </Button>
+                    </div>
 
-                <p className='text-2xl font-bold'>Items</p>
+                    <Separator />
 
-                {items.length ? <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel className="text-xs font-semibold flex justify-between px-4">
-                                <p>Object</p>
-                                <div className="flex flex-row gap-4">
-                                    <p>Quantité</p>
-                                    <p>Prix Unitaire</p>
-                                    <div className="min-w-20 flex justify-center">
-                                        <p>Actions</p>
-                                    </div>
-                                </div>
-                            </FormLabel>
-                            <div
-                                className="flex flex-col gap-2"
-                                ref={containerRef}
-                            >
-                                {
-                                    items.map((item, i) => {
-                                        return (
-                                            <Card
-                                                className="p-2 rounded-sm shadow-sm flex-row flex justify-between cursor-grab"
-                                                key={i}
-                                                data-id={i}
-                                            >
-                                                <div className="gap-2 flex flex-col">
-                                                    <p className="text-sm font-semibold">
-                                                        {item.description}
-                                                    </p>
-                                                    <p className="text-xs">
-                                                        {item.unitPrice}
-                                                    </p>
+                    {items.length ? (
+                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                            <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+                                <div className="flex flex-col gap-3">
+                                    {items.map((item) => (
+                                        <SortableItem key={item.id} id={item.id}>
+                                            <Card className="flex flex-col gap-4 rounded-lg border border-slate-200 p-4 shadow-sm">
+                                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                                    <div>
+                                                        <p className="text-sm font-semibold text-slate-900">{item.description}</p>
+                                                        <p className="text-xs text-slate-500">{item.quantity} × {item.unitPrice} {form.getValues("currency") || ""}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button variant="ghost" size="icon" onClick={() => openEdit(item)} aria-label={`Modifier la ligne ${item.description}`}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)} aria-label={`Supprimer la ligne ${item.description}`}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
-
-                                                <div className="flex flex-row gap-1">
-                                                    <div className="w-auto min-w-20 rounded-sm shadow-sm px-4 flex items-center justify-end">
-                                                        <p className="text-xs">{item.quantity}</p>
+                                                <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 md:grid-cols-4">
+                                                    <div>
+                                                        <p className="font-medium text-slate-700">Prix unitaire</p>
+                                                        <p>{item.unitPrice}</p>
                                                     </div>
-                                                    <div className="w-auto min-w-24 rounded-sm shadow-sm px-4 flex items-center">
-                                                        <p className="text-xs">29019</p>
+                                                    <div>
+                                                        <p className="font-medium text-slate-700">Quantité</p>
+                                                        <p>{item.quantity}</p>
                                                     </div>
-                                                    <Button variant={"ghost"} size={"icon"}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant={"destructive"} size={"icon"} onClick={() => removeItem(item.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    <div>
+                                                        <p className="font-medium text-slate-700">TVA</p>
+                                                        <p>{item.vatRate}%</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-slate-700">Total ligne</p>
+                                                        <p>{(item.unitPrice * item.quantity).toFixed(2)}</p>
+                                                    </div>
                                                 </div>
                                             </Card>
-                                        )
-                                    })
-                                }
-                            </div>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                /> : <div className="flex flex-col w-full items-center gap-4">
-                    <p className="text-xl font-bold">Empty !</p>
-                    <Button
-                        className="text-blue-600 py-0 "
-                        variant={"outline"} size={"sm"}
-                        onClick={() => setIsModalOpen(true)}
-                    >
-                        <TicketPlus className="" />
-                        <p>Add new item</p>
-                    </Button>
-                    <AddItemModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        onAddItem={addItem}
-                    />
-                </div>}
-
-                {items.length ? <><Button onClick={() => setIsModalOpen(true)} className="text-blue-600 py-0 " variant={"ghost"} size={"sm"}>
-                    <TicketPlus className="" />
-                    <p>Add new item</p>
-                </Button>
-                    <AddItemModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        onAddItem={addItem}
-                    />
-                </> : <></>}
-
-                <Separator />
-
-                <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <div className="flex flex-row justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <Checkbox id="discount" />
-                                    <label
-                                        htmlFor="discount"
-                                        className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        Add discount
-                                    </label>
+                                        </SortableItem>
+                                    ))}
                                 </div>
-                                <Select>
-                                    <SelectTrigger className="w-[250px]">
-                                        <SelectValue placeholder="Select your discount" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectLabel>Discount</SelectLabel>
-                                            <SelectItem value="10">10% discount</SelectItem>
-                                            <SelectItem value="30">30% discount</SelectItem>
-                                            <SelectItem value="50">50% discount</SelectItem>
-                                            <SelectItem value="70">70% discount</SelectItem>
-                                            <SelectItem value="100">100% discount</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <FormMessage />
-                        </FormItem>
+                            </SortableContext>
+                        </DndContext>
+                    ) : (
+                        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-12 text-center">
+                            <p className="text-lg font-semibold text-slate-600">Aucune ligne pour le moment</p>
+                            <p className="text-sm text-slate-500">Ajoutez votre première prestation en cliquant sur le bouton ci-dessus.</p>
+                            <Button variant="outline" size="sm" className="gap-2" onClick={openCreate}>
+                                <Plus className="h-4 w-4" />
+                                Ajouter une ligne
+                            </Button>
+                        </div>
                     )}
-                />
-                <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Date d'émission</FormLabel>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <FormControl>
-                                        <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                                "w-[50%] pl-3 text-left font-normal",
-                                                !field.value && "text-muted-foreground"
-                                            )}
-                                        >
-                                            {field.value ? (
-                                                format(field.value, "PPP")
-                                            ) : (
-                                                <span>Choisir la date</span>
-                                            )}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                    </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={field.onChange}
-                                        disabled={(date) =>
-                                            date > new Date() || date < new Date("1900-01-01")
-                                        }
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            <FormDescription className="text-xs">
-                                La date de l'émission de la facture.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                </section>
 
-                <Separator />
-                <Button type="submit">Submit</Button>
+                <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-center gap-2">
+                            <Checkbox id="discount" />
+                            <label
+                                htmlFor="discount"
+                                className="text-sm font-medium leading-none"
+                            >
+                                Ajouter une remise
+                            </label>
+                        </div>
+                        <Select disabled>
+                            <SelectTrigger className="w-[200px]">
+                                <SelectValue placeholder="À venir" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="10">10%</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <Separator />
+                    <div className="flex flex-col gap-2 text-sm text-slate-500">
+                        <p>Les remises avancées et calculs TVA seront intégrés dans une prochaine version.</p>
+                    </div>
+                </section>
+
+                <div className="flex items-center justify-end gap-3">
+                    <Button type="button" variant="outline" className="w-full sm:w-auto">
+                        Enregistrer le brouillon
+                    </Button>
+                    <Button type="submit" className="w-full sm:w-auto">
+                        Préparer l&apos;envoi
+                    </Button>
+                </div>
             </form>
         </Form>
     )

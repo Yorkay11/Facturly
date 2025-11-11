@@ -1,182 +1,157 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
-import { MdAttachEmail } from "react-icons/md";
-import { Separator } from "../ui/separator";
-import { RiExchange2Line } from "react-icons/ri";
-import { FaSave, FaShareAlt } from "react-icons/fa";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Plus } from "lucide-react";
 import { useItemsStore } from "@/hooks/useItemStore";
+import { Card } from "../ui/card";
+import { cn } from "@/lib/utils";
+import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
+import { format } from "date-fns";
+import { invoiceTemplates } from "@/types/invoiceTemplate";
+import { TemplateClassic, TemplateBold, type InvoiceTemplateProps } from "@/templates/invoices";
+import Skeleton from "@/components/ui/skeleton";
+import { useItemModalControls } from "@/contexts/ItemModalContext";
 
-const DetailsSection = ({ title, details }: { title: string; details: string[] }) => (
-  <div className="flex flex-col gap-2">
-    <p className="text-xs font-bold text-blue-600">{title}</p>
-    <Separator />
-    {details.map((detail, index) => (
-      <p key={index} className="text-xs font-thin">
-        {detail}
-      </p>
-    ))}
-  </div>
-);
+const templateRegistry: Record<string, React.ComponentType<InvoiceTemplateProps>> = {
+  classic: TemplateClassic,
+  bold: TemplateBold,
+};
+
+const TemplateSelector = ({
+  activeTemplate,
+  onChange,
+}: {
+  activeTemplate: string;
+  onChange: (templateId: string) => void;
+}) => {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {invoiceTemplates.map((template) => (
+        <Button
+          key={template.id}
+          variant={template.id === activeTemplate ? "default" : "outline"}
+          size="sm"
+          className={cn(
+            "border-primary/40",
+            template.id === activeTemplate && "bg-primary text-primary-foreground"
+          )}
+          onClick={() => onChange(template.id)}
+        >
+          {template.name}
+        </Button>
+      ))}
+    </div>
+  );
+};
 
 const Preview = () => {
   const [loading, setLoading] = useState(false);
   const { items } = useItemsStore();
+  const metadataStore = useInvoiceMetadata();
+  const [activeTemplate, setActiveTemplate] = useState(invoiceTemplates[0].id);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  const currentTemplate = invoiceTemplates.find((tpl) => tpl.id === activeTemplate) ?? invoiceTemplates[0];
+  const metadata = {
+    receiver: metadataStore.receiver,
+    subject: metadataStore.subject,
+    issueDate: metadataStore.issueDate,
+    dueDate: metadataStore.dueDate,
+    notes: metadataStore.notes,
+  };
+  const TemplateComponent = templateRegistry[currentTemplate.id] ?? TemplateClassic;
+  const { openCreate } = useItemModalControls();
 
   const onLoading = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-    }, 3000);    
+    }, 1200);
   };
 
   useEffect(() => {
     onLoading();
-  }, [items])
+    const timer = setTimeout(() => setIsHydrated(true), 400);
+    return () => clearTimeout(timer);
+  }, [items, activeTemplate])
   
-
-  const totalAmount = items.reduce(
-    (total, item) => total + item.unitPrice * item.quantity,
-    0
+  const subtotal = useMemo(
+    () => items.reduce((total, item) => total + item.unitPrice * item.quantity, 0),
+    [items]
+  );
+  const vatAmount = useMemo(
+    () => items.reduce((total, item) => total + (item.unitPrice * item.quantity * item.vatRate) / 100, 0),
+    [items]
+  );
+  const totalAmount = subtotal + vatAmount;
+  const currencyCode = metadataStore.currency ? metadataStore.currency.toUpperCase() : "EUR";
+  const amountFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: currencyCode,
+        maximumFractionDigits: 2,
+      }),
+    [currencyCode]
   );
 
+  const formatDate = (date?: Date) => (date ? format(date, "dd/MM/yyyy") : "--/--/----");
+
   return (
-    <div className="flex-1 w-[45%] bg-gray-100 right-0 rounded-xl p-12 space-y-6 relative">
-      <Button
-        className={`absolute top-12 z-10 left-[-32px] p-8 rounded-full h-16 w-16 ${
-          loading ? "animate-spin" : ""
-        }`}
-        variant="outline"
-        disabled={loading}
-        onClick={onLoading}
-      >
-        <RiExchange2Line className="h-8 w-8" />
-      </Button>
-
-      <div className="flex flex-row items-center justify-between">
-        <p className="text-3xl font-bold">Preview</p>
-        <div className="flex flex-row gap-2">
-          <Button variant="outline">
-            <FaShareAlt className="h-4 w-4" />
-            <p className="text-xs font-thin">Share</p>
-          </Button>
-          <Button variant="ghost" className="bg-green-300">
-            <FaSave className="h-4 w-4" />
-            <p className="text-xs font-thin">Save</p>
+    <Card className="w-full flex-1 space-y-6 border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <p className="text-lg font-semibold text-slate-900">Aperçu</p>
+          <p className="text-xs text-slate-500">Synchronisé avec les informations saisies.</p>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full gap-2 sm:w-auto"
+            onClick={openCreate}
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter une ligne
           </Button>
         </div>
       </div>
 
-      <Separator />
-
-      <div className="h-[100vh] w-full bg-white rounded-md shadow-lg px-12 py-16 space-y-12 relative">
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex flex-col space-y-12">
-            <DetailsSection
-              title="DEVONE CONSULTING"
-              details={[
-                "Totsi, LOME-TOGO",
-                "www.devoneconsulting.com",
-                "BP: 99345",
-              ]}
-            />
-            <DetailsSection
-              title="ADRESSEE A"
-              details={[
-                "John Smith",
-                "Totsi, LOME-TOGO",
-                "johnsmith@gmail.com",
-              ]}
-            />
-          </div>
-          <div className="flex flex-col gap-2 items-center">
-            <img src="/test.png" className="h-[150px] w-[150px]" alt="Logo" />
-            <div className="flex flex-col gap-2">
-              <p className="text-xs font-bold">No Facture:</p>
-              <p className="text-xs font-thin">#INVO1982</p>
-              <p className="text-xs font-bold">Date Facture:</p>
-              <p className="text-xs font-thin">05/24/2024</p>
-              <p className="text-xs font-bold">Date Fin Validité:</p>
-              <p className="text-xs font-thin">15/24/2024</p>
-            </div>
-          </div>
+      {isHydrated ? (
+        <TemplateComponent
+          metadata={metadata}
+          items={items}
+          subtotal={subtotal}
+          vatAmount={vatAmount}
+          totalAmount={totalAmount}
+          formatAmount={(value) => amountFormatter.format(value)}
+          formatDate={formatDate}
+          template={currentTemplate}
+        />
+      ) : (
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-[280px] rounded-xl" />
         </div>
+      )}
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px] text-right font-bold">Numéro</TableHead>
-              <TableHead className="text-right font-bold">Produit</TableHead>
-              <TableHead className="text-right font-bold">P.U.</TableHead>
-              <TableHead className="text-right font-bold">Quantité</TableHead>
-              <TableHead className="text-right font-bold">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((invoice) => (
-              <TableRow key={invoice.id}>
-                <TableCell className="font-medium text-right text-xs">
-                  {invoice.id}
-                </TableCell>
-                <TableCell className="font-medium text-right text-xs">
-                  {invoice.description}
-                </TableCell>
-                <TableCell className="text-right text-xs">
-                  {invoice.unitPrice}
-                </TableCell>
-                <TableCell className="text-right text-xs">
-                  {invoice.quantity}
-                </TableCell>
-                <TableCell className="text-right text-xs">
-                  {invoice.unitPrice * invoice.quantity}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={4} className="text-right font-bold text-lg">
-                TOTAL
-              </TableCell>
-              <TableCell className="text-right font-semibold text-lg">
-                {totalAmount.toFixed(2)}
-              </TableCell>
-            </TableRow>
-          </TableFooter>
-        </Table>
-
-        {/* Signature */}
-        <div className="flex w-auto flex-col items-end mt-8 pr-12 gap-4">
-          <img src="/signature.png" className="h-[100px] w-[100px]" alt="Signature" />
-          <p className="text-xs font-bold">York Wona</p>
-        </div>
-
-        {/* Footer */}
-        <div className="bottom-12 flex absolute w-full h-auto flex flex-row py-2 gap-4">
-          <div className="border border-gray-300 rounded-lg p-2 flex items-center justify-center">
-            <img src="/qrcode.png" className="h-[50px] w-[50px]" alt="QR Code" />
-          </div>
-          <div className="max-w-[50%]">
-            <p className="text-xs font-bold">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            </p>
-            <p className="text-xs font-thin">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis cum officiis autem numquam, soluta incidunt et id recusandae rem?
-            </p>
-          </div>
-        </div>
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn("w-full sm:w-auto border-primary/40", { "animate-pulse": loading })}
+          onClick={onLoading}
+        >
+          Regénérer
+        </Button>
+        <Button variant="default" size="sm" className="w-full sm:w-auto" disabled>
+          Envoi rapide (bientôt)
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 };
 

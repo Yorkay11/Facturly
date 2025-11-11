@@ -6,9 +6,11 @@ export interface Item {
     vatRate: number;
 }
 
-export interface AddItemModalProps {
+export interface ItemModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddItem: (item: Omit<Item, 'id'>) => void;
+    onSubmit: (data: Omit<Item, 'id'>, existingId?: string) => void;
+    initialItem?: Item;
+    mode?: 'create' | 'edit';
 }
 

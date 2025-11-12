@@ -1,5 +1,6 @@
 import { Item } from "@/types/items";
 import { InvoiceTemplateMeta } from "@/types/invoiceTemplate";
+import { Company, Client } from "@/services/facturlyApi";
 
 export interface InvoiceTemplateProps {
   metadata: {
@@ -9,6 +10,8 @@ export interface InvoiceTemplateProps {
     dueDate?: Date;
     notes?: string;
   };
+  company?: Company;
+  client?: Client;
   items: Item[];
   subtotal: number;
   vatAmount: number;

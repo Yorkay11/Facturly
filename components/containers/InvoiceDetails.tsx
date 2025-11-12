@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus, Trash2 } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import {
@@ -53,6 +53,7 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import React, { useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Separator } from "../ui/separator"
 import { Card } from "../ui/card"
 import { Checkbox } from "../ui/checkbox"
@@ -61,6 +62,12 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, type Invoice } from "@/services/facturlyApi"
+import ClientModal from "@/components/modals/ClientModal"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { useLoading } from "@/contexts/LoadingContext"
+import { Loader } from "@/components/ui/loader"
 
 const FormSchema = z.object({
     receiver: z.string().min(1, "Le destinataire est requis"),
@@ -75,35 +82,350 @@ const FormSchema = z.object({
     notes: z.string().optional(),
 })
 
-const InvoiceDetails = () => {
+interface InvoiceDetailsProps {
+    invoiceId?: string;
+    onSaveDraftReady?: (saveFunction: (skipRedirect?: boolean) => Promise<void>) => void;
+    onHasUnsavedChanges?: (hasChanges: boolean) => void;
+}
+
+const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: InvoiceDetailsProps = {}) => {
+    const searchParams = useSearchParams();
+    const clientIdFromUrl = searchParams ? searchParams.get("clientId") || undefined : undefined;
+    const router = useRouter();
+    
     const [open, setOpen] = React.useState(false);
-    const { items, setItems, removeItem } = useItemsStore();
-    const { setMetadata, currency: storedCurrency, ...metadata } = useInvoiceMetadata();
+    const [clientOpen, setClientOpen] = React.useState(false);
+    const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
+    const { items, setItems, removeItem, clearItems } = useItemsStore();
+    const metadataStore = useInvoiceMetadata();
+    const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes } = metadataStore;
     const [value, setValue] = useState(storedCurrency ?? "");
     const { openCreate, openEdit } = useItemModalControls();
+    const { data: clientsResponse, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsQuery({ page: 1, limit: 100 });
+    const { data: clientFromUrl, isLoading: isLoadingClientFromUrl } = useGetClientByIdQuery(clientIdFromUrl || "", {
+        skip: !clientIdFromUrl,
+    });
+    const clients = clientsResponse?.data ?? [];
+    const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
+    const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
+    
+    // Charger les données de la facture si on est en mode édition
+    const { data: existingInvoice, isLoading: isLoadingInvoice } = useGetInvoiceByIdQuery(
+        invoiceId || "",
+        { skip: !invoiceId }
+    );
+
+    const isEditMode = !!invoiceId;
+    const isSaving = isCreatingInvoice || isUpdatingInvoice;
+    
+    // Utiliser le contexte de loading global pour griser la page
+    const { setLoading } = useLoading();
+    
+    // Mettre à jour le loader global lors des mutations
+    useEffect(() => {
+        if (isCreatingInvoice || isUpdatingInvoice) {
+            setLoading(true, isEditMode ? "Mise à jour de la facture..." : "Création de la facture...");
+        } else {
+            setLoading(false);
+        }
+    }, [isCreatingInvoice, isUpdatingInvoice, isEditMode, setLoading]);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            receiver: metadata.receiver,
-            subject: metadata.subject,
-            currency: storedCurrency,
-            notes: metadata.notes,
-            issueDate: metadata.issueDate,
-            dueDate: metadata.dueDate,
+            receiver: storedReceiver || "",
+            subject: subject || "",
+            currency: storedCurrency || "",
+            notes: notes || "",
+            issueDate: issueDate,
+            dueDate: dueDate,
         },
     })
+    
+    // Gérer la création d'un nouveau client
+    const handleClientCreated = (newClient: { id: string; name: string }) => {
+        // Rafraîchir la liste des clients
+        refetchClients().then(() => {
+            // Sélectionner automatiquement le nouveau client après le rafraîchissement
+            form.setValue("receiver", newClient.name);
+            setMetadata({
+                receiver: newClient.name,
+                clientId: newClient.id,
+            });
+            // Afficher un toast de confirmation
+            toast.success("Client créé et sélectionné", {
+                description: `${newClient.name} a été créé et sélectionné comme destinataire.`,
+            });
+        });
+        // Fermer le modal
+        setIsClientModalOpen(false);
+    };
+    
+    // Pré-remplir le client si clientId est dans l'URL
+    useEffect(() => {
+        if (clientFromUrl && !isLoadingClientFromUrl) {
+            const currentReceiver = form.getValues("receiver");
+            if (!currentReceiver || currentReceiver !== clientFromUrl.name) {
+                form.setValue("receiver", clientFromUrl.name);
+                setMetadata({
+                    receiver: clientFromUrl.name,
+                    clientId: clientFromUrl.id,
+                });
+            }
+        }
+    }, [clientFromUrl, isLoadingClientFromUrl, form, setMetadata]);
+    
+    // Si un client est déjà sélectionné dans le store, le pré-remplir
+    useEffect(() => {
+        if (storedClientId && !clientIdFromUrl && clients.length > 0 && !isLoadingClients) {
+            const storedClient = clients.find((c) => c.id === storedClientId);
+            if (storedClient) {
+                const currentReceiver = form.getValues("receiver");
+                if (!currentReceiver || currentReceiver !== storedClient.name) {
+                    form.setValue("receiver", storedClient.name);
+                    setMetadata({
+                        receiver: storedClient.name,
+                        clientId: storedClient.id,
+                    });
+                }
+            }
+        }
+    }, [storedClientId, clients, isLoadingClients, form, setMetadata, clientIdFromUrl]);
+    
+    // Charger les données de la facture existante dans le formulaire si on est en mode édition
+    useEffect(() => {
+        if (existingInvoice && isEditMode && !isLoadingInvoice) {
+            // Pré-remplir le formulaire avec les données de la facture
+            form.setValue("receiver", existingInvoice.client.name);
+            form.setValue("subject", existingInvoice.invoiceNumber);
+            form.setValue("issueDate", new Date(existingInvoice.issueDate));
+            form.setValue("dueDate", new Date(existingInvoice.dueDate));
+            form.setValue("currency", existingInvoice.currency);
+            form.setValue("notes", existingInvoice.notes || "");
+            
+            // Mettre à jour le store de métadonnées
+            setMetadata({
+                receiver: existingInvoice.client.name,
+                clientId: existingInvoice.client.id,
+                subject: existingInvoice.invoiceNumber,
+                issueDate: new Date(existingInvoice.issueDate),
+                dueDate: new Date(existingInvoice.dueDate),
+                currency: existingInvoice.currency,
+                notes: existingInvoice.notes || "",
+            });
+            
+            // Charger les items dans le store
+            if (existingInvoice.items && existingInvoice.items.length > 0) {
+                const invoiceItems = existingInvoice.items.map((item) => ({
+                    id: item.id,
+                    description: item.description,
+                    quantity: parseFloat(item.quantity) || 0,
+                    unitPrice: parseFloat(item.unitPrice) || 0,
+                    vatRate: 0, // Le taux de TVA n'est pas dans l'item de l'API
+                }));
+                setItems(invoiceItems);
+            } else {
+                setItems([]);
+            }
+        }
+    }, [existingInvoice, isEditMode, isLoadingInvoice, form, setMetadata, setItems]);
 
     const onSubmit = (data: z.infer<typeof FormSchema>) => {
         console.log({ ...data, items })
     }
+    
+    // Fonction pour sauvegarder le brouillon (création ou mise à jour)
+    const handleSaveDraft = async (skipRedirect: boolean = false) => {
+        try {
+            // Valider que le client est sélectionné
+            const clientId = storedClientId || clientIdFromUrl;
+            if (!clientId) {
+                toast.error("Client manquant", {
+                    description: "Veuillez sélectionner un client avant de sauvegarder le brouillon.",
+                });
+                return;
+            }
+            
+            // Valider que les dates sont définies
+            if (!issueDate || !dueDate) {
+                toast.error("Dates manquantes", {
+                    description: "Veuillez définir les dates d'émission et d'échéance avant de sauvegarder le brouillon.",
+                });
+                return;
+            }
+            
+            // Valider qu'il y a au moins un article
+            if (!items || items.length === 0) {
+                toast.error("Aucun article", {
+                    description: "Veuillez ajouter au moins un article à la facture avant de sauvegarder le brouillon.",
+                });
+                return;
+            }
+            
+            // Valider que la devise est définie
+            if (!storedCurrency) {
+                toast.error("Devise manquante", {
+                    description: "Veuillez sélectionner une devise avant de sauvegarder le brouillon.",
+                });
+                return;
+            }
+            
+            if (isEditMode && invoiceId) {
+                // Mode édition: mettre à jour la facture existante
+                try {
+                    const response = await updateInvoice({
+                        id: invoiceId,
+                        payload: {
+                            clientId: clientId,
+                            issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+                            dueDate: dueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+                            currency: storedCurrency,
+                            notes: notes || undefined,
+                            status: "draft", // Maintenir le statut brouillon
+                        },
+                    }).unwrap();
+                    
+                    // Note: La mise à jour des items se fait via les endpoints spécifiques (createInvoiceItem, updateInvoiceItem, deleteInvoiceItem)
+                    // Pour l'instant, on met uniquement à jour les métadonnées de la facture
+                    // TODO: Gérer la synchronisation des items (création, mise à jour, suppression)
+                    
+                    console.log("✅ Invoice updated successfully:", response);
+                    
+                    // Afficher un toast de succès
+                    toast.success("Brouillon mis à jour", {
+                        description: `La facture ${response?.invoiceNumber || invoiceId} a été mise à jour avec succès.`,
+                    });
+                    
+                    // Rediriger vers la page de détails de la facture seulement si skipRedirect est false
+                    if (!skipRedirect) {
+                        router.replace(`/invoices/${invoiceId}`);
+                    }
+                } catch (updateError: any) {
+                    // Si l'erreur vient de la mise à jour, elle sera gérée par le catch principal
+                    throw updateError;
+                }
+            } else {
+                // Mode création: créer une nouvelle facture
+                // Transformer les items en format API
+                const invoiceItems = items.map((item) => ({
+                    description: item.description,
+                    quantity: item.quantity.toString(),
+                    unitPrice: item.unitPrice.toFixed(2),
+                    // productId sera undefined si l'item n'est pas lié à un produit
+                }));
+                
+                try {
+                    const response = await createInvoice({
+                        clientId: clientId,
+                        issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+                        dueDate: dueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+                        currency: storedCurrency,
+                        items: invoiceItems,
+                        notes: notes || undefined,
+                    }).unwrap();
+                    
+                    // RTK Query retourne directement les données de l'API
+                    // La réponse devrait être de type Invoice avec un id
+                    const invoiceData = response as Invoice;
+                    
+                    // Debug: afficher la réponse complète pour comprendre la structure
+                    console.log("Invoice creation response:", invoiceData);
+                    console.log("Invoice ID:", invoiceData?.id);
+                    console.log("Invoice Number:", invoiceData?.invoiceNumber);
+                    console.log("Response keys:", invoiceData ? Object.keys(invoiceData) : "response is null");
+                    
+                    // Extraire l'ID de la facture
+                    const newInvoiceId = invoiceData?.id;
+                    
+                    // Valider que l'ID existe et est valide
+                    if (!newInvoiceId || typeof newInvoiceId !== 'string' || newInvoiceId === 'undefined' || newInvoiceId.trim() === '') {
+                        console.error("❌ Invoice ID is missing or invalid:", {
+                            newInvoiceId,
+                            invoiceData,
+                            responseType: typeof invoiceData,
+                            hasId: 'id' in (invoiceData || {}),
+                            allKeys: invoiceData ? Object.keys(invoiceData) : [],
+                        });
+                        
+                        toast.warning("Brouillon enregistré", {
+                            description: "La facture a été sauvegardée mais l'ID n'a pas été retourné. Redirection vers la liste des factures.",
+                        });
+                        
+                        // Rediriger vers la liste des factures au lieu de la page de détails
+                        setTimeout(() => {
+                            router.push('/invoices');
+                        }, 1000);
+                        return;
+                    }
+                    
+                    console.log("✅ Invoice created successfully with ID:", newInvoiceId);
+                    
+                    // Afficher un toast de succès
+                    toast.success("Brouillon enregistré", {
+                        description: `La facture ${invoiceData?.invoiceNumber || newInvoiceId} a été sauvegardée avec succès.`,
+                    });
+                    
+                    // Réinitialiser les stores après la création réussie seulement si skipRedirect est false
+                    // Si skipRedirect est true, on laisse le parent gérer la navigation et la réinitialisation
+                    if (!skipRedirect) {
+                        resetMetadata();
+                        clearItems();
+                        
+                        // Rediriger vers la page de détails de la facture
+                        // Utiliser router.replace pour éviter de pouvoir revenir en arrière vers la page de création
+                        console.log("Redirecting to:", `/invoices/${newInvoiceId}`);
+                        router.replace(`/invoices/${newInvoiceId}`);
+                    }
+                } catch (createError: any) {
+                    // Si l'erreur vient de la création, elle sera gérée par le catch principal
+                    throw createError;
+                }
+            }
+        } catch (error: any) {
+            // Afficher un toast d'erreur
+            const errorMessage = error?.data?.message || error?.message || "Une erreur est survenue lors de la sauvegarde du brouillon.";
+            toast.error("Erreur", {
+                description: errorMessage,
+            });
+        }
+    }
+
+    // Exposer la fonction de sauvegarde au parent (après sa définition)
+    useEffect(() => {
+        if (onSaveDraftReady && !isEditMode) {
+            onSaveDraftReady(handleSaveDraft);
+        }
+    }, [onSaveDraftReady, isEditMode]); // Note: handleSaveDraft n'est pas dans les dépendances pour éviter les re-renders infinis
+
+    // Détecter les modifications non sauvegardées
+    useEffect(() => {
+        if (!onHasUnsavedChanges || isEditMode) return;
+
+        // Vérifier si des données ont été saisies
+        const hasChanges = Boolean(
+            (storedClientId || storedReceiver) || 
+            items.length > 0 || 
+            storedCurrency || 
+            issueDate || 
+            dueDate || 
+            subject || 
+            notes
+        );
+
+        onHasUnsavedChanges(hasChanges);
+    }, [storedClientId, storedReceiver, items.length, storedCurrency, issueDate, dueDate, subject, notes, onHasUnsavedChanges, isEditMode]);
 
     useEffect(() => {
         const subscription = form.watch((values) => {
+            // Trouver le client correspondant au receiver
+            const matchingClient = clients.find((c) => c.name === values.receiver);
+            const clientId = matchingClient?.id || storedClientId || undefined;
+            
             setMetadata({
                 receiver: values.receiver ?? "",
+                clientId: clientId,
                 subject: values.subject ?? "",
                 issueDate: values.issueDate,
                 dueDate: values.dueDate,
@@ -113,7 +435,7 @@ const InvoiceDetails = () => {
         })
 
         return () => subscription.unsubscribe()
-    }, [form, setMetadata])
+    }, [form, setMetadata, clients, storedClientId])
 
     useEffect(() => {
         if (storedCurrency && storedCurrency !== value) {
@@ -146,11 +468,103 @@ const InvoiceDetails = () => {
                             control={form.control}
                             name="receiver"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="flex flex-col justify-end">
                                     <FormLabel>Destinataire</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Nom du client" className="w-full" {...field} />
-                                    </FormControl>
+                                    <Popover open={clientOpen} onOpenChange={setClientOpen}>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={clientOpen}
+                                                    className={cn(
+                                                        "w-full justify-between",
+                                                        !field.value && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {field.value
+                                                        ? (clients.find((client) => client.name === field.value)?.name || 
+                                                           clientFromUrl?.name || 
+                                                           field.value)
+                                                        : "Sélectionnez un client"}
+                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                                            <Command shouldFilter={true}>
+                                                <CommandInput placeholder="Rechercher un client..." className="h-9" />
+                                                <CommandList>
+                                                    {isLoadingClients ? (
+                                                        <div className="py-6 text-center text-sm text-muted-foreground">
+                                                            Chargement des clients...
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <CommandEmpty>Aucun client trouvé.</CommandEmpty>
+                                                            <CommandGroup>
+                                                                {clients.length === 0 ? (
+                                                                    <div className="py-6 text-center text-sm text-muted-foreground">
+                                                                        Aucun client disponible. Créez un client depuis la page Clients.
+                                                                    </div>
+                                                                ) : (
+                                                                    clients.map((client) => (
+                                                                        <CommandItem
+                                                                            key={client.id}
+                                                                            value={`${client.name} ${client.email || ""} ${client.phone || ""} ${client.city || ""}`}
+                                                                            onSelect={() => {
+                                                                                field.onChange(client.name);
+                                                                                setMetadata({
+                                                                                    receiver: client.name,
+                                                                                    clientId: client.id,
+                                                                                });
+                                                                                setClientOpen(false);
+                                                                            }}
+                                                                            className="cursor-pointer"
+                                                                        >
+                                                                            <div className="flex flex-1 flex-col gap-0.5">
+                                                                                <span className="font-medium">{client.name}</span>
+                                                                                {(client.email || client.phone || client.city) && (
+                                                                                    <span className="text-xs text-muted-foreground">
+                                                                                        {[client.email, client.phone, client.city].filter(Boolean).join(" • ")}
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                            <Check
+                                                                                className={cn(
+                                                                                    "ml-2 h-4 w-4 shrink-0",
+                                                                                    field.value === client.name ? "opacity-100" : "opacity-0"
+                                                                                )}
+                                                                            />
+                                                                        </CommandItem>
+                                                                    ))
+                                                                )}
+                                                            </CommandGroup>
+                                                            <CommandGroup>
+                                                                <div className="border-t border-border p-1">
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="w-full justify-start gap-2 text-primary hover:bg-primary/10"
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            setClientOpen(false);
+                                                                            setIsClientModalOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <PlusIcon className="h-4 w-4" />
+                                                                        Créer un nouveau client
+                                                                    </Button>
+                                                                </div>
+                                                            </CommandGroup>
+                                                        </>
+                                                    )}
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -326,7 +740,7 @@ const InvoiceDetails = () => {
                             <p className="text-sm text-slate-500">Ajoutez vos prestations, quantités et tarifs.</p>
                         </div>
                         <Button type="button" size="sm" className="gap-2" onClick={openCreate}>
-                            <Plus className="h-4 w-4" />
+                            <PlusIcon className="h-4 w-4" />
                             Ajouter une ligne
                         </Button>
                     </div>
@@ -383,7 +797,7 @@ const InvoiceDetails = () => {
                             <p className="text-lg font-semibold text-slate-600">Aucune ligne pour le moment</p>
                             <p className="text-sm text-slate-500">Ajoutez votre première prestation en cliquant sur le bouton ci-dessus.</p>
                             <Button variant="outline" size="sm" className="gap-2" onClick={openCreate}>
-                                <Plus className="h-4 w-4" />
+                                <PlusIcon className="h-4 w-4" />
                                 Ajouter une ligne
                             </Button>
                         </div>
@@ -419,14 +833,25 @@ const InvoiceDetails = () => {
                 </section>
 
                 <div className="flex items-center justify-end gap-3">
-                    <Button type="button" variant="outline" className="w-full sm:w-auto">
-                        Enregistrer le brouillon
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="w-full sm:w-auto"
+                        onClick={() => handleSaveDraft(false)}
+                        disabled={isSaving || isLoadingInvoice}
+                    >
+                        {isSaving ? (isEditMode ? "Mise à jour..." : "Enregistrement...") : (isEditMode ? "Mettre à jour le brouillon" : "Enregistrer le brouillon")}
                     </Button>
                     <Button type="submit" className="w-full sm:w-auto">
                         Préparer l&apos;envoi
                     </Button>
                 </div>
             </form>
+            <ClientModal
+                open={isClientModalOpen}
+                onClose={() => setIsClientModalOpen(false)}
+                onSuccess={handleClientCreated}
+            />
         </Form>
     )
 }

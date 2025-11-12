@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* Style pour les éléments CommandItem au survol - rendre le texte blanc */
+  /* Utilise un sélecteur descendant pour cibler les éléments dans le contexte Command */
+  [cmdk-root] [data-selected="true"],
+  [cmdk-list] [data-selected="true"],
+  [cmdk-group] [data-selected="true"] {
+    color: white !important;
+  }
+  
+  /* Cible tous les enfants (texte, icônes, badges) des éléments sélectionnés */
+  [cmdk-root] [data-selected="true"] *,
+  [cmdk-list] [data-selected="true"] *,
+  [cmdk-group] [data-selected="true"] * {
+    color: white !important;
+  }
+  
+  /* Exceptions pour les éléments avec opacité réduite */
+  [cmdk-root] [data-selected="true"] .text-muted-foreground,
+  [cmdk-list] [data-selected="true"] .text-muted-foreground,
+  [cmdk-group] [data-selected="true"] .text-muted-foreground {
+    color: rgb(255 255 255 / 0.9) !important;
+  }
+  
+  [cmdk-root] [data-selected="true"] .text-primary,
+  [cmdk-list] [data-selected="true"] .text-primary,
+  [cmdk-group] [data-selected="true"] .text-primary {
+    color: white !important;
+  }
+  
+  /* Badge avec fond transparent au survol */
+  [cmdk-root] [data-selected="true"] [class*="badge"],
+  [cmdk-list] [data-selected="true"] [class*="badge"],
+  [cmdk-group] [data-selected="true"] [class*="badge"] {
+    background-color: rgb(255 255 255 / 0.2) !important;
+    color: white !important;
+    border-color: rgb(255 255 255 / 0.3) !important;
+  }
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -74,5 +113,59 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Styles personnalisés pour Sonner */
+@layer components {
+  /* Toast Success - Vert */
+  [data-sonner-toast][data-type="success"] {
+    background-color: rgb(240 253 244) !important;
+    border-color: rgb(34 197 94) !important;
+    color: rgb(22 101 52) !important;
+  }
+  
+  [data-sonner-toast][data-type="success"] [data-icon] {
+    color: rgb(34 197 94) !important;
+  }
+
+  /* Toast Error - Rouge */
+  [data-sonner-toast][data-type="error"] {
+    background-color: rgb(254 242 242) !important;
+    border-color: rgb(239 68 68) !important;
+    color: rgb(153 27 27) !important;
+  }
+  
+  [data-sonner-toast][data-type="error"] [data-icon] {
+    color: rgb(239 68 68) !important;
+  }
+
+  /* Toast Info - Bleu */
+  [data-sonner-toast][data-type="info"] {
+    background-color: rgb(239 246 255) !important;
+    border-color: rgb(59 130 246) !important;
+    color: rgb(30 64 175) !important;
+  }
+  
+  [data-sonner-toast][data-type="info"] [data-icon] {
+    color: rgb(59 130 246) !important;
+  }
+
+  /* Toast Warning - Jaune/Orange */
+  [data-sonner-toast][data-type="warning"] {
+    background-color: rgb(255 251 235) !important;
+    border-color: rgb(245 158 11) !important;
+    color: rgb(146 64 14) !important;
+  }
+  
+  [data-sonner-toast][data-type="warning"] [data-icon] {
+    color: rgb(245 158 11) !important;
+  }
+
+  /* Toast par défaut */
+  [data-sonner-toast]:not([data-type]) {
+    background-color: rgb(255 255 255) !important;
+    border-color: rgb(229 231 235) !important;
+    color: rgb(17 24 39) !important;
   }
 }

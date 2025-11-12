@@ -1,41 +1,87 @@
 "use client";
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, FileEdit, History, Plus } from "lucide-react";
+import { ArrowLeft, FileEdit, History, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { products } from "@/data/datas";
-import { mockInvoices } from "@/data/mockInvoices";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import Breadcrumb from "@/components/ui/breadcrumb";
+import Skeleton from "@/components/ui/skeleton";
+import { useGetProductsQuery, useGetInvoicesQuery, useDeleteProductMutation } from "@/services/facturlyApi";
+import { toast } from "sonner";
 
-interface ProductPageProps {
-  params: { id: string };
-}
+export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const { data: productsResponse, isLoading, isError } = useGetProductsQuery({ page: 1, limit: 100 });
+  const { data: invoicesResponse } = useGetInvoicesQuery({ page: 1, limit: 10 });
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const product = productsResponse?.data?.find((item) => item.id === params.id);
 
-const getProduct = (id: string) => products.find((product) => product.id === id);
+  const handleDelete = async () => {
+    if (!product) return;
 
-export default function ProductDetailPage({ params }: ProductPageProps) {
-  const { id } = params;
-  const product = getProduct(id);
+    try {
+      await deleteProduct(product.id).unwrap();
+      toast.success("Produit supprimé", {
+        description: `Le produit ${product.name} a été supprimé avec succès.`,
+      });
+      router.push("/items");
+    } catch (error) {
+      let errorMessage = "Une erreur est survenue lors de la suppression.";
+      if (error && typeof error === "object" && error !== null && "data" in error) {
+        errorMessage = (error.data as { message?: string })?.message ?? errorMessage;
+      }
+      toast.error("Erreur", {
+        description: errorMessage,
+      });
+    }
+  };
 
-  if (!product) {
-    notFound();
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
-  const relatedInvoices = mockInvoices.slice(0, 4);
+  if (isError || !product) {
+    return (
+      <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        Produit introuvable ou erreur API.
+      </div>
+    );
+  }
+
+  const relatedInvoices = invoicesResponse?.data?.slice(0, 4) ?? [];
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        items={[
+          { label: "Tableau de bord", href: "/dashboard" },
+          { label: "Produits", href: "/items" },
+          { label: product.name },
+        ]}
+        className="text-xs"
+      />
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
-          <Button variant="ghost" size="sm" asChild className="w-fit gap-2 px-0 text-primary">
-            <Link href="/items">
-              <ArrowLeft className="h-4 w-4" />
-              Retour au catalogue
-            </Link>
-          </Button>
           <h1 className="text-3xl font-semibold tracking-tight">{product?.name}</h1>
           <p className="text-sm text-foreground/60">
             Fiche détaillée mockée. Les données proviennent du catalogue statique en attendant l’API Nest.
@@ -50,19 +96,30 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             <Plus className="h-4 w-4" />
             Dupliquer (mock)
           </Button>
+          <Button
+            variant="destructive"
+            className="gap-2"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="h-4 w-4" />
+            Supprimer
+          </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Résumé</CardTitle>
-          <CardDescription>Données illustratives pour le produit #{product?.id.padStart(3, "0")}.</CardDescription>
+          <CardDescription>Données illustratives pour le produit #{product?.id.slice(0, 8)}.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <p className="text-xs uppercase text-foreground/50">Tarif HT estimé</p>
-            <p className="text-2xl font-semibold text-primary">115,00 €</p>
-            <p className="text-xs text-foreground/50">TVA par défaut : 20%</p>
+            <p className="text-2xl font-semibold text-primary">
+              {parseFloat(product.price ?? "0").toFixed(2)} {product.currency ?? "€"}
+            </p>
+            <p className="text-xs text-foreground/50">TVA par défaut : {product.taxRate ?? "0"}%</p>
           </div>
           <div className="space-y-2">
             <p className="text-xs uppercase text-foreground/50">Dernière utilisation</p>
@@ -103,23 +160,48 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             <History className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            {relatedInvoices.map((invoice) => (
-              <div
-                key={invoice.id}
-                className="rounded-lg border border-border/60 bg-secondary/60 p-3 text-foreground/70"
-              >
-                <p className="font-semibold text-foreground">{invoice.number}</p>
-                <p className="text-xs">Client : {invoice.client}</p>
-                <p className="text-xs">Montant : {invoice.amount} {invoice.currency}</p>
-                <p className="text-xs">Statut : {invoice.status}</p>
-              </div>
-            ))}
+            {relatedInvoices.length > 0 ? (
+              relatedInvoices.map((invoice) => (
+                <div
+                  key={invoice.id}
+                  className="rounded-lg border border-border/60 bg-secondary/60 p-3 text-foreground/70"
+                >
+                  <p className="font-semibold text-foreground">{invoice.invoiceNumber}</p>
+                  <p className="text-xs">Client : {invoice.client.name}</p>
+                  <p className="text-xs">Montant : {invoice.totalAmount} {invoice.currency}</p>
+                  <p className="text-xs">Statut : {invoice.status}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-xs text-foreground/60">Aucune facture associée</p>
+            )}
             <Button variant="ghost" className="w-full justify-center text-primary">
               Voir plus (mock)
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le produit ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer le produit {product?.name} ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Traitement..." : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

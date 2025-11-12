@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Nunito } from 'next/font/google'
+import Providers from "./providers";
+import { Toaster } from "sonner";
 
 
 const inter = Nunito({ subsets: ['latin'] })
@@ -21,7 +23,13 @@ export default function RootLayout({
       <body
         className={`${inter.className} `}
       >
-        {children}
+        <Providers>
+          {children}
+          <Toaster 
+            position="top-right"
+            closeButton
+          />
+        </Providers>
       </body>
     </html>
   );

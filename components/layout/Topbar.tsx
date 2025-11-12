@@ -28,6 +28,8 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
+import { useGetMeQuery, useGetCompanyQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
 
 const navItems: Array<{
   label: string;
@@ -83,6 +85,42 @@ export const Topbar = () => {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [isProfileOpen, setProfileOpen] = useState(false);
+  const { handleNavigation } = useNavigationBlock();
+  
+  // Fetch user data from API
+  const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
+  const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
+  const { data: subscription, isLoading: isLoadingSubscription } = useGetSubscriptionQuery();
+  
+  // Generate avatar initials from user name
+  const getInitials = (firstName?: string, lastName?: string) => {
+    if (!firstName && !lastName) return "U";
+    const first = firstName?.charAt(0).toUpperCase() || "";
+    const last = lastName?.charAt(0).toUpperCase() || "";
+    return `${first}${last}` || "U";
+  };
+  
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (!user) return "Utilisateur";
+    const parts = [user.firstName, user.lastName].filter(Boolean);
+    return parts.length > 0 ? parts.join(" ") : user.email;
+  };
+  
+  // Get subscription plan name
+  const getSubscriptionPlanName = () => {
+    if (!subscription) return "Aucun plan";
+    return subscription.plan.name;
+  };
+  
+  // Get company location string
+  const getCompanyLocation = () => {
+    if (!company) return "";
+    const parts = [company.name];
+    if (company.city) parts.push(company.city);
+    if (company.country) parts.push(company.country);
+    return parts.filter(Boolean).join(" • ");
+  };
 
   const isActive = (href: string, children?: Array<{ href: string }>) => {
      if (pathname === href || pathname?.startsWith(`${href}/`)) return true;
@@ -121,6 +159,10 @@ export const Topbar = () => {
                       <SheetClose asChild>
                         <Link
                           href={item.href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleNavigation(item.href);
+                          }}
                           className={cn(
                             "block rounded-lg px-3 py-2 font-medium",
                             active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-foreground/80"
@@ -137,6 +179,10 @@ export const Topbar = () => {
                               <SheetClose asChild key={child.href}>
                                 <Link
                                   href={child.href}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleNavigation(child.href);
+                                  }}
                                   className={cn(
                                     "block rounded-md px-3 py-2 text-xs",
                                     childActive ? "bg-primary/20 text-primary" : "text-foreground/70 hover:bg-primary/10"
@@ -197,6 +243,10 @@ export const Topbar = () => {
                                 <NavigationMenuLink asChild key={child.href}>
                                   <Link
                                     href={child.href}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleNavigation(child.href);
+                                    }}
                                     className={cn(
                                       "rounded-lg border border-transparent p-3 text-sm transition-colors",
                                       childActive
@@ -219,6 +269,10 @@ export const Topbar = () => {
                       <NavigationMenuLink asChild>
                         <Link
                           href={item.href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleNavigation(item.href);
+                          }}
                           className={cn(
                             navigationMenuTriggerStyle,
                             "rounded-none border-b-2",
@@ -244,11 +298,17 @@ export const Topbar = () => {
             <span>Support</span>
           </div>
           <Separator orientation="vertical" className="hidden h-6 md:block" />
-          <Button variant="outline" size="sm" className="gap-2 border-primary/40 text-primary hover:bg-primary/10" asChild>
-            <Link href="/invoices/new">
-              <Plus className="h-4 w-4" />
-              Nouvelle facture
-            </Link>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavigation("/invoices/new");
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Nouvelle facture
           </Button>
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
@@ -262,7 +322,7 @@ export const Topbar = () => {
           >
             <Avatar className="h-7 w-7">
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                FY
+                {isLoadingUser ? "..." : getInitials(user?.firstName, user?.lastName)}
               </AvatarFallback>
             </Avatar>
           </button>
@@ -272,46 +332,78 @@ export const Topbar = () => {
         <SheetContent side="right" className="w-full max-w-sm space-y-6">
           <SheetHeader>
             <SheetTitle>Profil utilisateur</SheetTitle>
-            <SheetDescription>Informations mockées – à connecter à l’auth backend.</SheetDescription>
+            <SheetDescription>
+              {isLoadingUser || isLoadingCompany ? "Chargement..." : "Informations de votre compte"}
+            </SheetDescription>
           </SheetHeader>
-          <div className="flex flex-col items-center gap-3 pt-2">
-            <Avatar className="h-16 w-16">
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">FY</AvatarFallback>
-            </Avatar>
-            <div className="text-center">
-              <p className="text-base font-semibold text-foreground">Fabrice Y.</p>
-              <p className="text-sm text-foreground/60">fabrice@facturly.app</p>
+          {isLoadingUser || isLoadingCompany ? (
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <div className="h-16 w-16 rounded-full bg-muted animate-pulse" />
+              <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+              <div className="h-3 w-24 bg-muted rounded animate-pulse" />
             </div>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              Plan Pro (mock)
-            </span>
-          </div>
-          <div className="space-y-3 text-sm text-foreground/70">
-            <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <User className="h-4 w-4 text-primary" />
-              <div>
-                <p className="font-medium text-foreground">Entreprise</p>
-                <p className="text-xs">DevOne Consulting • Lomé, Togo</p>
+          ) : (
+            <>
+              <div className="flex flex-col items-center gap-3 pt-2">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                    {getInitials(user?.firstName, user?.lastName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-center">
+                  <p className="text-base font-semibold text-foreground">
+                    {getUserDisplayName()}
+                  </p>
+                  <p className="text-sm text-foreground/60">{user?.email}</p>
+                </div>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  {isLoadingSubscription ? "Chargement..." : getSubscriptionPlanName()}
+                </span>
               </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <Settings className="h-4 w-4 text-primary" />
-              <div>
-                <p className="font-medium text-foreground">Préférences</p>
-                <p className="text-xs">Notifications, mentions légales, branding</p>
+              <div className="space-y-3 text-sm text-foreground/70">
+                {company && (
+                  <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                    <User className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="font-medium text-foreground">Entreprise</p>
+                      <p className="text-xs">
+                        {getCompanyLocation() || company.name}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <Settings className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="font-medium text-foreground">Préférences</p>
+                    <p className="text-xs">Notifications, mentions légales, branding</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
           <SheetFooter className="flex flex-col sm:flex-col gap-2">
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/settings">Gérer mon compte</Link>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation("/settings");
+              }}
+            >
+              Gérer mon compte
             </Button>
  
-            <Button variant="destructive" className="w-full" asChild>
-              <Link href="/logout">
-                <LogOut className="h-4 w-4" />
-                Déconnexion (mock)
-              </Link>
+            <Button 
+              variant="destructive" 
+              className="w-full"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation("/logout");
+              }}
+            >
+              <LogOut className="h-4 w-4" />
+              Déconnexion
             </Button>
           </SheetFooter>
         </SheetContent>

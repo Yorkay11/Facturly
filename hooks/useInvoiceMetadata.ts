@@ -4,6 +4,7 @@ import { create } from "zustand";
 
 export interface InvoiceMetadataState {
   receiver: string;
+  clientId?: string;
   subject: string;
   issueDate?: Date;
   dueDate?: Date;
@@ -18,6 +19,7 @@ interface InvoiceMetadataStore extends InvoiceMetadataState {
 
 const initialState: InvoiceMetadataState = {
   receiver: "",
+  clientId: undefined,
   subject: "",
   issueDate: undefined,
   dueDate: undefined,

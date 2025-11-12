@@ -3,6 +3,8 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateBold = ({
   metadata,
+  company,
+  client,
   items,
   subtotal,
   vatAmount,
@@ -11,6 +13,15 @@ const TemplateBold = ({
   formatDate,
   template,
 }: InvoiceTemplateProps) => {
+  // Construire l'adresse de l'entreprise
+  const companyAddress = company
+    ? [company.city, company.country].filter(Boolean).join(", ")
+    : "";
+
+  // Construire l'adresse du client
+  const clientAddress = client
+    ? [client.addressLine1, client.city, client.country].filter(Boolean).join(", ")
+    : "Adresse à compléter";
   return (
     <div className="grid overflow-hidden rounded-xl border border-slate-200 shadow-sm md:grid-cols-[220px_1fr]">
       <div
@@ -26,13 +37,13 @@ const TemplateBold = ({
         <div className="space-y-3 text-xs">
           <div>
             <p className="font-semibold uppercase">Entreprise</p>
-            <p>DevOne Consulting</p>
-            <p className="opacity-80">Totsi, Lomé - Togo</p>
+            <p>{company?.name || "Nom de l'entreprise"}</p>
+            <p className="opacity-80">{companyAddress || "Adresse de l'entreprise"}</p>
           </div>
           <div>
             <p className="font-semibold uppercase">Destinataire</p>
-            <p>{metadata.receiver || "Nom client"}</p>
-            <p className="opacity-80">Adresse à compléter</p>
+            <p>{metadata.receiver || client?.name || "Nom client"}</p>
+            <p className="opacity-80">{clientAddress}</p>
           </div>
           <div>
             <p className="font-semibold uppercase">Objet</p>
@@ -53,13 +64,16 @@ const TemplateBold = ({
               <span>Échéance : {formatDate(metadata.dueDate)}</span>
             </div>
           </div>
-          <div className="rounded-lg border border-slate-200 p-3 text-xs">
-            <p className="font-semibold" style={{ color: template.accentColor }}>
-              Coordonnées bancaires (mock)
-            </p>
-            <p>IBAN : TG123 456 789</p>
-            <p>BIC : TG987654</p>
-          </div>
+          {company && (
+            <div className="rounded-lg border border-slate-200 p-3 text-xs">
+              <p className="font-semibold" style={{ color: template.accentColor }}>
+                Informations entreprise
+              </p>
+              {company.legalName && <p>Raison sociale : {company.legalName}</p>}
+              {company.taxId && <p>SIRET : {company.taxId}</p>}
+              {company.vatNumber && <p>TVA : {company.vatNumber}</p>}
+            </div>
+          )}
         </div>
 
         <Table>
@@ -128,7 +142,7 @@ const TemplateBold = ({
             <p className="font-semibold" style={{ color: template.accentColor }}>
               Signature
             </p>
-            <p>York Wona (mock)</p>
+            <p>{company?.name || "Entreprise"}</p>
           </div>
         </div>
       </div>

@@ -4,6 +4,8 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateClassic = ({
   metadata,
+  company,
+  client,
   items,
   subtotal,
   vatAmount,
@@ -12,6 +14,15 @@ const TemplateClassic = ({
   formatDate,
   template,
 }: InvoiceTemplateProps) => {
+  // Construire l'adresse de l'entreprise
+  const companyAddress = company
+    ? [company.city, company.country].filter(Boolean).join(", ")
+    : "";
+
+  // Construire l'adresse du client
+  const clientAddress = client
+    ? [client.addressLine1, client.city, client.country].filter(Boolean).join(", ")
+    : "Adresse client (à définir)";
   return (
     <div
       className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
@@ -26,15 +37,15 @@ const TemplateClassic = ({
             <p className="text-xs font-semibold" style={{ color: template.accentColor }}>
               Facturly — Template {template.name}
             </p>
-            <p className="text-sm">DevOne Consulting</p>
-            <p className="text-xs opacity-70">Totsi, Lomé - Togo</p>
+            <p className="text-sm">{company?.name || "Nom de l'entreprise"}</p>
+            <p className="text-xs opacity-70">{companyAddress || "Adresse de l'entreprise"}</p>
           </div>
           <div>
             <p className="text-xs font-semibold" style={{ color: template.accentColor }}>
               Destinataire
             </p>
-            <p className="text-sm">{metadata.receiver || "Nom client"}</p>
-            <p className="text-xs opacity-70">Adresse client (à définir)</p>
+            <p className="text-sm">{metadata.receiver || client?.name || "Nom client"}</p>
+            <p className="text-xs opacity-70">{clientAddress}</p>
           </div>
         </div>
         <div className="flex flex-col items-end gap-3 text-right">
@@ -108,13 +119,12 @@ const TemplateClassic = ({
           <p>Virement bancaire sous 15 jours. Merci de préciser le numéro de facture.</p>
           {metadata.notes ? <p className="mt-2">Note interne : {metadata.notes}</p> : null}
         </div>
-        <div className="text-right sm:text-left">
-          <p className="font-semibold" style={{ color: template.accentColor }}>
-            Signature
-          </p>
-          <p>York Wona (mock)
-          </p>
-        </div>
+          <div className="text-right sm:text-left">
+            <p className="font-semibold" style={{ color: template.accentColor }}>
+              Signature
+            </p>
+            <p>{company?.name || "Entreprise"}</p>
+          </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import Skeleton from "@/components/ui/skeleton";
 import { useState } from "react";
 
@@ -15,15 +15,66 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { products } from "@/data/datas";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import ProductModal from "@/components/modals/ProductModal";
+import { useGetProductsQuery, Product, useDeleteProductMutation } from "@/services/facturlyApi";
+import { toast } from "sonner";
 
-const mockPricing = (index: number) => 45 + index * 15;
+const getPrice = (product: Product): number => {
+  // Product.price est toujours une string selon l'API
+  if (product.price) {
+    const parsed = parseFloat(product.price);
+    // Vérifier que le résultat est un nombre valide et fini
+    if (!isNaN(parsed) && isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  // Valeur par défaut si price est invalide ou manquant
+  return 0;
+};
 
 export default function ItemsPage() {
-  const loading = false;
+  const { data: productsResponse, isLoading, isError } = useGetProductsQuery({ page: 1, limit: 100 });
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const products = productsResponse?.data ?? [];
+  const totalProducts = productsResponse?.meta?.total ?? 0;
+
+  const handleDeleteClick = (product: { id: string; name: string }) => {
+    setProductToDelete({ id: product.id, name: product.name });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+
+    try {
+      await deleteProduct(productToDelete.id).unwrap();
+      toast.success("Produit supprimé", {
+        description: `Le produit ${productToDelete.name} a été supprimé avec succès.`,
+      });
+      setProductToDelete(null);
+    } catch (error) {
+      let errorMessage = "Une erreur est survenue lors de la suppression.";
+      if (error && typeof error === "object" && error !== null && "data" in error) {
+        errorMessage = (error.data as { message?: string })?.message ?? errorMessage;
+      }
+      toast.error("Erreur", {
+        description: errorMessage,
+      });
+    }
+  };
   return (
     <div className="space-y-8">
       <Breadcrumb
@@ -52,8 +103,8 @@ export default function ItemsPage() {
               <CardTitle className="text-sm font-medium text-primary/80">Prestations disponibles</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">{products.length}</p>
-              <p className="text-xs text-foreground/60">Catalogue mocké</p>
+              <p className="text-2xl font-semibold text-primary">{totalProducts}</p>
+              <p className="text-xs text-foreground/60">Synchronisation API</p>
             </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5">
@@ -61,7 +112,9 @@ export default function ItemsPage() {
               <CardTitle className="text-sm font-medium text-primary/80">Panier moyen estimé</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">{(products.length * 35).toFixed(0)} €</p>
+              <p className="text-2xl font-semibold text-primary">
+                {products && products.length > 0 ? `${(products.length * 35).toFixed(0)} €` : "—"}
+              </p>
               <p className="text-xs text-foreground/60">Estimation fictive</p>
             </CardContent>
           </Card>
@@ -77,12 +130,16 @@ export default function ItemsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-48 w-full" />
         </div>
-      ) : products.length ? (
+      ) : isError ? (
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+          Erreur lors du chargement des produits. Vérifiez l&apos;API.
+        </div>
+      ) : products && products.length ? (
         <Card className="border-primary/20">
           <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -101,19 +158,43 @@ export default function ItemsPage() {
                   <TableHead>Nom</TableHead>
                   <TableHead className="text-right">Tarif HT (mock)</TableHead>
                   <TableHead className="text-right">TVA par défaut</TableHead>
+                  <TableHead className="w-[100px] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product, index) => (
-                  <TableRow key={product.id} className="hover:bg-primary/5">
-                    <TableCell className="font-medium text-foreground">#{product.id.padStart(3, "0")}</TableCell>
-                    <TableCell className="text-sm text-foreground/70">{product.name}</TableCell>
-                    <TableCell className="text-right text-sm font-semibold text-primary">
-                      {mockPricing(index).toFixed(2)} €
-                    </TableCell>
-                    <TableCell className="text-right text-sm text-foreground/60">20%</TableCell>
-                  </TableRow>
-                ))}
+                {products.map((product) => {
+                  const price = getPrice(product);
+                  const currency = product.currency || "EUR";
+                  const formattedPrice = new Intl.NumberFormat("fr-FR", {
+                    style: "currency",
+                    currency: currency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(price);
+                  
+                  return (
+                    <TableRow key={product.id} className="hover:bg-primary/5">
+                      <TableCell className="font-medium text-foreground">#{product.id.slice(0, 8)}</TableCell>
+                      <TableCell className="text-sm text-foreground/70">{product.name}</TableCell>
+                      <TableCell className="text-right text-sm font-semibold text-primary">
+                        {formattedPrice}
+                      </TableCell>
+                      <TableCell className="text-right text-sm text-foreground/60">{product.taxRate ?? "0"}%</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteClick(product)}
+                          disabled={isDeleting}
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </CardContent>
@@ -131,6 +212,27 @@ export default function ItemsPage() {
         </div>
       )}
       <ProductModal open={isModalOpen} onClose={() => setModalOpen(false)} />
+
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le produit ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer le produit {productToDelete?.name} ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Traitement..." : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

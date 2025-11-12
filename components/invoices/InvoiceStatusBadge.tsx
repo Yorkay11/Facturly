@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const statusMap: Record<
-  "draft" | "sent" | "paid" | "overdue",
+  "draft" | "sent" | "paid" | "overdue" | "cancelled",
   { label: string; className: string }
 > = {
   draft: {
@@ -20,14 +20,26 @@ const statusMap: Record<
     label: "En retard",
     className: "bg-accent text-accent-foreground border border-accent/50",
   },
+  cancelled: {
+    label: "Annulée",
+    className: "bg-gray-100 text-gray-700 border border-gray-200",
+  },
 };
 
 interface InvoiceStatusBadgeProps {
-  status: "draft" | "sent" | "paid" | "overdue";
+  status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
 }
 
 export const InvoiceStatusBadge = ({ status }: InvoiceStatusBadgeProps) => {
   const config = statusMap[status];
+
+  if (!config) {
+    return (
+      <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+        {status}
+      </span>
+    );
+  }
 
   return (
     <span

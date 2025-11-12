@@ -1,12 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useState, useMemo } from "react";
 import StatCard from "@/components/dashboard/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus, RefreshCcw, Users, PieChart, Wallet, TrendingUp, TrendingDown } from "lucide-react";
+import { FilePlus, RefreshCcw, Users, PieChart, Wallet, TrendingUp, TrendingDown, HelpCircle, BookOpen, Mail, Sparkles, ExternalLink, ArrowRight, BarChart3 } from "lucide-react";
 import QuickActionCard from "@/components/dashboard/QuickActionCard";
 import SimpleChart from "@/components/dashboard/SimpleChart";
+import RevenueChart from "@/components/dashboard/RevenueChart";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import AtRiskCard from "@/components/dashboard/AtRiskCard";
+import ClientModal from "@/components/modals/ClientModal";
+import { useGetInvoicesQuery } from "@/services/facturlyApi";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const statPlaceholders = [
   {
@@ -68,6 +74,78 @@ const mockAtRisk = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [isClientModalOpen, setClientModalOpen] = useState(false);
+  
+  // Récupérer les factures pour calculer les tendances
+  const { data: invoicesData, isLoading: isLoadingInvoices } = useGetInvoicesQuery({ 
+    page: 1, 
+    limit: 100 
+  });
+  
+  const invoices = invoicesData?.data || [];
+  
+  // Calculer les revenus par mois (4 derniers mois)
+  const monthlyRevenue = useMemo(() => {
+    const now = new Date();
+    const months = [];
+    
+    for (let i = 3; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthName = monthDate.toLocaleDateString("fr-FR", { month: "short" });
+      
+      const monthInvoices = invoices.filter((inv) => {
+        if (!inv.issueDate) return false;
+        const invDate = new Date(inv.issueDate);
+        return (
+          invDate.getMonth() === monthDate.getMonth() &&
+          invDate.getFullYear() === monthDate.getFullYear() &&
+          (inv.status === "paid" || inv.status === "sent")
+        );
+      });
+      
+      const revenue = monthInvoices.reduce((sum, inv) => {
+        const total = parseFloat(inv.totalAmount || "0");
+        return sum + total;
+      }, 0);
+      
+      months.push({
+        label: monthName,
+        value: revenue,
+      });
+    }
+    
+    return months;
+  }, [invoices]);
+  
+  // Calculer les statistiques
+  const stats = useMemo(() => {
+    const paidInvoices = invoices.filter((inv) => inv.status === "paid");
+    const sentInvoices = invoices.filter((inv) => inv.status === "sent");
+    const draftInvoices = invoices.filter((inv) => inv.status === "draft");
+    const overdueInvoices = invoices.filter((inv) => {
+      if (!inv.dueDate || inv.status === "paid") return false;
+      return new Date(inv.dueDate) < new Date();
+    });
+    
+    const totalRevenue = paidInvoices.reduce((sum, inv) => {
+      return sum + parseFloat(inv.totalAmount || "0");
+    }, 0);
+    
+    const pendingAmount = sentInvoices.reduce((sum, inv) => {
+      return sum + parseFloat(inv.totalAmount || "0");
+    }, 0);
+    
+    return {
+      totalRevenue,
+      pendingAmount,
+      paidCount: paidInvoices.length,
+      sentCount: sentInvoices.length,
+      draftCount: draftInvoices.length,
+      overdueCount: overdueInvoices.length,
+    };
+  }, [invoices]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -81,7 +159,7 @@ export default function DashboardPage() {
           <div>
             <CardTitle className="text-base text-primary">Actions rapides</CardTitle>
             <p className="text-xs text-primary/70">
-              Trois raccourcis clés pour accélérer votre routine (mock).
+              Trois raccourcis clés pour accélérer votre routine.
             </p>
           </div>
         </CardHeader>
@@ -90,19 +168,19 @@ export default function DashboardPage() {
             icon={<FilePlus className="h-5 w-5" />}
             title="Créer une facture"
             description="Brouillon en 5 étapes, preview et envoi."
-            onClick={() => console.log("open invoice builder")}
+            onClick={() => router.push("/invoices/new")}
           />
           <QuickActionCard
             icon={<RefreshCcw className="h-5 w-5" />}
             title="Relancer un paiement"
             description="Choisissez un client et envoyez un rappel."
-            onClick={() => console.log("open reminders")}
+            onClick={() => router.push("/reminders")}
           />
           <QuickActionCard
             icon={<Users className="h-5 w-5" />}
             title="Ajouter un client"
             description="Ajoutez un contact depuis votre carnet (modal)."
-            onClick={() => console.log("open client modal")}
+            onClick={() => setClientModalOpen(true)}
           />
         </CardContent>
       </Card>
@@ -123,32 +201,119 @@ export default function DashboardPage() {
         <Card className="border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
-              <PieChart className="h-5 w-5" />
-              Tendances mockées
+              <BarChart3 className="h-5 w-5" />
+              Tendances des revenus
             </CardTitle>
-            <p className="text-xs text-foreground/60">Répartition des revenus (mock).</p>
+            <p className="text-xs text-foreground/60">
+              Évolution sur les 4 derniers mois
+            </p>
           </CardHeader>
           <CardContent>
-            <SimpleChart data={[15, 25, 35, 20]} labels={["S1", "S2", "S3", "S4"]} />
+            {isLoadingInvoices ? (
+              <div className="space-y-2">
+                <Skeleton className="h-32 w-full" />
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-4 flex-1" />
+                  ))}
+                </div>
+              </div>
+            ) : invoices.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <BarChart3 className="h-12 w-12 text-foreground/30 mb-3" />
+                <p className="text-sm font-medium text-foreground/70 mb-1">
+                  Aucune donnée disponible
+                </p>
+                <p className="text-xs text-foreground/50">
+                  Créez vos premières factures pour voir les tendances
+                </p>
+              </div>
+            ) : (
+              <>
+                <RevenueChart data={monthlyRevenue} />
+                <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-primary/10 bg-primary/5 p-3 text-xs">
+                  <div>
+                    <p className="text-foreground/60">Revenus totaux</p>
+                    <p className="mt-1 text-base font-semibold text-primary">
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 0,
+                      }).format(stats.totalRevenue)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-foreground/60">En attente</p>
+                    <p className="mt-1 text-base font-semibold text-foreground/80">
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: "EUR",
+                        minimumFractionDigits: 0,
+                      }).format(stats.pendingAmount)}
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle className="text-primary">Support & nouveautés</CardTitle>
-            <p className="text-xs text-foreground/60">Aide, guides et roadmap.</p>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <HelpCircle className="h-5 w-5" />
+              Support & nouveautés
+            </CardTitle>
+            <p className="text-xs text-foreground/60">Ressources, guides et assistance.</p>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-foreground/70">
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <p className="font-semibold text-primary">Centre d&apos;aide mock</p>
-              <p className="text-xs">Tutoriels, modèles et astuces pour démarrer.</p>
+          <CardContent className="space-y-3">
+            <a
+              href="https://docs.facturly.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 transition-all hover:border-primary/40 hover:bg-primary/10"
+            >
+              <BookOpen className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-primary">Documentation</p>
+                  <ExternalLink className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </div>
+                <p className="text-xs text-foreground/70">Guides complets, tutoriels vidéo et FAQ pour maîtriser Facturly.</p>
+              </div>
+            </a>
+            <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-3">
+              <div className="flex items-start gap-3">
+                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-primary">Nouvelle fonctionnalité</p>
+                    <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">Nouveau</span>
+                  </div>
+                  <p className="text-xs text-foreground/70">Gestion des relances automatisées maintenant disponible. Configurez vos rappels depuis les paramètres.</p>
+                </div>
+              </div>
             </div>
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <p className="font-semibold text-primary">Roadmap</p>
-              <p className="text-xs">Templates PDF avancés, API Nest en cours d&apos;intégration.</p>
-            </div>
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <p className="font-semibold text-primary">Support personnalisé</p>
-              <p className="text-xs">Contactez Facturly pour un onboarding assisté.</p>
+            <a
+              href="mailto:support@facturly.app?subject=Demande d'assistance"
+              className="group flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 transition-all hover:border-primary/40 hover:bg-primary/10"
+            >
+              <Mail className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-primary">Support par email</p>
+                  <ArrowRight className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-1" />
+                </div>
+                <p className="text-xs text-foreground/70">Une question ? Contactez notre équipe à support@facturly.app</p>
+              </div>
+            </a>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-start gap-3">
+                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm font-semibold text-slate-800">À venir</p>
+                  <p className="text-xs text-slate-600">Templates PDF personnalisables, intégrations comptables et API publique en développement.</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -169,6 +334,7 @@ export default function DashboardPage() {
           items={mockAtRisk}
         />
       </div>
+      <ClientModal open={isClientModalOpen} onClose={() => setClientModalOpen(false)} />
     </div>
   );
 }

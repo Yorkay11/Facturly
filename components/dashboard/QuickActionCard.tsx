@@ -22,9 +22,21 @@ export const QuickActionCard = ({
   variant = "default",
 }: QuickActionCardProps) => {
   return (
-    <div className={cn("rounded-xl border border-primary/20 bg-white p-4 shadow-sm transition hover:shadow-md", disabled && "opacity-70")}
-      role="group"
+    <div
+      className={cn(
+        "cursor-pointer rounded-xl border border-primary/20 bg-white p-4 shadow-sm transition hover:border-primary/40 hover:shadow-md",
+        disabled && "cursor-not-allowed opacity-70"
+      )}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
+      onClick={disabled ? undefined : onClick}
+      onKeyDown={(e) => {
+        if (!disabled && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -40,7 +52,10 @@ export const QuickActionCard = ({
           variant={variant === "outline" ? "outline" : "secondary"}
           size="sm"
           disabled={disabled}
-          onClick={onClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick?.();
+          }}
         >
           {variant === "outline" ? "Ouvrir" : "Lancer"}
         </Button>

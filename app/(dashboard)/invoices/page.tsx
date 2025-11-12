@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -18,16 +22,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockInvoices } from "@/data/mockInvoices";
-import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Skeleton from "@/components/ui/skeleton";
+import { useGetInvoicesQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation } from "@/services/facturlyApi";
+import { toast } from "sonner";
 
-const formatCurrency = (value: number, currency: string) =>
-  new Intl.NumberFormat("fr-FR", {
+import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
+
+const formatCurrency = (value: string | number, currency: string) => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(numValue);
+};
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", {
@@ -37,6 +56,47 @@ const formatDate = (value: string) =>
   });
 
 export default function InvoicesPage() {
+  const router = useRouter();
+  const { data: invoicesResponse, isLoading, isError } = useGetInvoicesQuery({ page: 1, limit: 100 });
+  const [deleteInvoice, { isLoading: isDeleting }] = useDeleteInvoiceMutation();
+  const [cancelInvoice, { isLoading: isCancelling }] = useCancelInvoiceMutation();
+  const [invoiceToDelete, setInvoiceToDelete] = useState<{ id: string; number: string; status: string } | null>(null);
+  
+  const invoices = invoicesResponse?.data ?? [];
+  const totalInvoices = invoicesResponse?.meta?.total ?? 0;
+
+  const handleDeleteClick = (invoice: { id: string; invoiceNumber: string; status: string }) => {
+    setInvoiceToDelete({ id: invoice.id, number: invoice.invoiceNumber, status: invoice.status });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!invoiceToDelete) return;
+
+    try {
+      // Pour les brouillons, on supprime. Pour les autres, on annule.
+      if (invoiceToDelete.status === "draft") {
+        await deleteInvoice(invoiceToDelete.id).unwrap();
+        toast.success("Facture supprimée", {
+          description: `La facture ${invoiceToDelete.number} a été supprimée avec succès.`,
+        });
+      } else {
+        await cancelInvoice(invoiceToDelete.id).unwrap();
+        toast.success("Facture annulée", {
+          description: `La facture ${invoiceToDelete.number} a été annulée avec succès.`,
+        });
+      }
+      setInvoiceToDelete(null);
+    } catch (error) {
+      let errorMessage = "Une erreur est survenue lors de la suppression.";
+      if (error && typeof error === "object" && error !== null && "data" in error) {
+        errorMessage = (error.data as { message?: string })?.message ?? errorMessage;
+      }
+      toast.error("Erreur", {
+        description: errorMessage,
+      });
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <Breadcrumb
@@ -87,66 +147,119 @@ export default function InvoicesPage() {
             </Select>
           </div>
           <div className="text-xs text-foreground/60">
-            {mockInvoices.length} facture(s) affichées — données mockées
+            {invoices ? `${invoices.length} facture(s) affichées` : "Chargement..."}
           </div>
         </div>
+
+        {isLoading && (
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        )}
+
+        {isError && (
+          <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+            Erreur lors du chargement des factures. Vérifiez l&apos;API.
+          </div>
+        )}
+
+        {!isLoading && !isError && invoices && invoices.length > 0 && (
+          <div className="overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm">
+            <Table>
+              <TableHeader className="bg-primary/5">
+                <TableRow>
+                  <TableHead className="w-[140px]">Numéro</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Date émission</TableHead>
+                  <TableHead>Date échéance</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="text-right">Montant</TableHead>
+                  <TableHead className="w-[100px] text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invoices.map((invoice) => (
+                  <TableRow key={invoice.id} className="hover:bg-primary/5">
+                    <TableCell className="font-medium text-primary">
+                      <Link href={`/invoices/${invoice.id}`} className="hover:underline">
+                        {invoice.invoiceNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground/70">
+                      {invoice.client.name}
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground/60">
+                      {formatDate(invoice.issueDate)}
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground/60">
+                      {formatDate(invoice.dueDate)}
+                    </TableCell>
+                    <TableCell>
+                      <InvoiceStatusBadge status={invoice.status as "draft" | "sent" | "paid" | "overdue" | "cancelled"} />
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-primary">
+                      {formatCurrency(invoice.totalAmount, invoice.currency)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteClick(invoice)}
+                        disabled={isDeleting || isCancelling || invoice.status === "cancelled"}
+                        title={invoice.status === "draft" ? "Supprimer" : "Annuler"}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+
+        {!isLoading && !isError && (!invoices || invoices.length === 0) && (
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
+            <p className="text-xl font-semibold text-primary">Aucune facture pour le moment</p>
+            <p className="max-w-md text-center text-sm text-foreground/60">
+              Créez votre première facture pour expédier des documents professionnels et suivre vos paiements.
+            </p>
+            <Button className="gap-2" asChild>
+              <Link href="/invoices/new">
+                <Plus className="h-4 w-4" />
+                Créer une facture
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
-      {mockInvoices.length ? (
-        <div className="overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm">
-          <Table>
-            <TableHeader className="bg-primary/5">
-              <TableRow>
-                <TableHead className="w-[140px]">Numéro</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Date émission</TableHead>
-                <TableHead>Date échéance</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Montant</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockInvoices.map((invoice) => (
-                <TableRow key={invoice.id} className="hover:bg-primary/5">
-                  <TableCell className="font-medium text-primary">
-                    <Link href={`/invoices/${invoice.id}`} className="hover:underline">
-                      {invoice.number}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground/70">
-                    {invoice.client}
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground/60">
-                    {formatDate(invoice.issueDate)}
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground/60">
-                    {formatDate(invoice.dueDate)}
-                  </TableCell>
-                  <TableCell>
-                    <InvoiceStatusBadge status={invoice.status} />
-                  </TableCell>
-                  <TableCell className="text-right font-semibold text-primary">
-                    {formatCurrency(invoice.amount, invoice.currency)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
-          <p className="text-xl font-semibold text-primary">Aucune facture pour le moment</p>
-          <p className="max-w-md text-center text-sm text-foreground/60">
-            Créez votre première facture pour expédier des documents professionnels et suivre vos paiements.
-          </p>
-          <Button className="gap-2" asChild>
-            <Link href="/invoices/new">
-              <Plus className="h-4 w-4" />
-              Créer une facture
-            </Link>
-          </Button>
-        </div>
-      )}
+      <AlertDialog open={!!invoiceToDelete} onOpenChange={(open) => !open && setInvoiceToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {invoiceToDelete?.status === "draft" ? "Supprimer la facture ?" : "Annuler la facture ?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {invoiceToDelete?.status === "draft" 
+                ? `Êtes-vous sûr de vouloir supprimer la facture ${invoiceToDelete?.number} ? Cette action est irréversible.`
+                : `Êtes-vous sûr de vouloir annuler la facture ${invoiceToDelete?.number} ? Cette action changera le statut de la facture.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting || isCancelling}
+            >
+              {isDeleting || isCancelling ? "Traitement..." : invoiceToDelete?.status === "draft" ? "Supprimer" : "Annuler"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { mockReminders } from "@/data/mockReminders";
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,8 @@ import {
 import { BadgeAlert, BellRing, Filter, Mail } from "lucide-react";
 import Link from "next/link";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Skeleton from "@/components/ui/skeleton";
+import { useGetInvoicesQuery } from "@/services/facturlyApi";
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", {
@@ -21,33 +24,65 @@ const formatDate = (value: string) =>
     year: "numeric",
   });
 
-const formatCurrency = (value: number, currency: string) =>
-  new Intl.NumberFormat("fr-FR", {
+const formatCurrency = (value: string | number, currency: string) => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
-  }).format(value);
-
-const statusConfig: Record<"pending" | "in_progress" | "resolved", { label: string; className: string }> = {
-  pending: {
-    label: "En attente",
-    className: "bg-accent text-accent-foreground border border-accent/50",
-  },
-  in_progress: {
-    label: "En cours",
-    className: "bg-primary/10 text-primary border border-primary/30",
-  },
-  resolved: {
-    label: "Résolue",
-    className: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  },
+  }).format(numValue);
 };
 
 export default function RemindersPage() {
-  const totalPending = mockReminders.filter((reminder) => reminder.status !== "resolved").length;
-  const totalAmount = mockReminders
-    .filter((reminder) => reminder.status !== "resolved")
-    .reduce((sum, reminder) => sum + reminder.amount, 0);
+  // Récupérer les factures en retard (overdue) et sent (potentiellement en retard)
+  const { 
+    data: overdueInvoices, 
+    isLoading: isLoadingOverdue, 
+    isError: isErrorOverdue 
+  } = useGetInvoicesQuery({ 
+    page: 1, 
+    limit: 100, 
+    status: "overdue" 
+  });
+  const { 
+    data: sentInvoices, 
+    isLoading: isLoadingSent,
+    isError: isErrorSent 
+  } = useGetInvoicesQuery({ 
+    page: 1, 
+    limit: 100, 
+    status: "sent" 
+  });
+
+  const isLoading = isLoadingOverdue || isLoadingSent;
+  const isError = isErrorOverdue || isErrorSent;
+
+  // Filtrer les factures sent dont la date d'échéance est dépassée
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const overdueFromSent = sentInvoices?.data?.filter((invoice) => {
+    const dueDate = new Date(invoice.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate < today;
+  }) ?? [];
+
+  // Combiner les factures en retard
+  const reminders = [
+    ...(overdueInvoices?.data ?? []),
+    ...overdueFromSent,
+  ];
+
+  const totalPending = reminders.length;
+  
+  // Calculer le montant total en EUR (simplification - en production, convertir les devises)
+  const totalAmount = reminders.reduce((sum, invoice) => {
+    const amount = typeof invoice.totalAmount === "string" 
+      ? parseFloat(invoice.totalAmount) 
+      : invoice.totalAmount;
+    // TODO: Convertir les devises en EUR si nécessaire
+    return sum + (amount || 0);
+  }, 0);
 
   return (
     <div className="space-y-8">
@@ -93,10 +128,12 @@ export default function RemindersPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-primary/80">Montant en retard</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">{formatCurrency(totalAmount, "EUR")}</p>
-              <p className="text-xs text-foreground/60">Basé sur les données mockées</p>
-            </CardContent>
+              <CardContent className="pt-0">
+                <p className="text-2xl font-semibold text-primary">
+                  {totalAmount > 0 ? formatCurrency(totalAmount, "EUR") : "—"}
+                </p>
+                <p className="text-xs text-foreground/60">Synchronisation API</p>
+              </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5">
             <CardHeader className="pb-2">
@@ -121,47 +158,61 @@ export default function RemindersPage() {
           <Input placeholder="Rechercher un client ou une facture" className="max-w-sm" />
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-primary/5">
-              <TableRow>
-                <TableHead>Facture</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Date échéance</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead>Dernière action</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockReminders.map((reminder) => (
-                <TableRow key={reminder.id} className="hover:bg-primary/5">
-                  <TableCell className="text-sm font-semibold text-primary">
-                    <Link href={`/invoices/${reminder.id.replace("r", "")}`} className="hover:underline">
-                      {reminder.invoiceNumber}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground/70">{reminder.client}</TableCell>
-                  <TableCell className="text-sm text-foreground/60">{formatDate(reminder.dueDate)}</TableCell>
-                  <TableCell className="text-sm font-semibold text-primary">
-                    {formatCurrency(reminder.amount, reminder.currency)}
-                  </TableCell>
-                  <TableCell className="text-sm text-foreground/60">{reminder.lastAction}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${statusConfig[reminder.status].className}`}>
-                      {statusConfig[reminder.status].label}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" className="gap-2 text-primary">
-                      <Mail className="h-4 w-4" />
-                      Relancer
-                    </Button>
-                  </TableCell>
+          {isLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : isError ? (
+            <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
+              Erreur lors du chargement des relances.
+            </div>
+          ) : reminders && reminders.length > 0 ? (
+            <Table>
+              <TableHeader className="bg-primary/5">
+                <TableRow>
+                  <TableHead>Facture</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Date échéance</TableHead>
+                  <TableHead className="text-right">Montant</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {reminders.map((invoice) => (
+                  <TableRow key={invoice.id} className="hover:bg-primary/5">
+                    <TableCell className="text-sm font-semibold text-primary">
+                      <Link href={`/invoices/${invoice.id}`} className="hover:underline">
+                        {invoice.invoiceNumber}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-sm text-foreground/70">{invoice.client.name}</TableCell>
+                    <TableCell className="text-sm text-foreground/60">{formatDate(invoice.dueDate)}</TableCell>
+                    <TableCell className="text-right text-sm font-semibold text-primary">
+                      {formatCurrency(invoice.totalAmount, invoice.currency)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-rose-100 text-rose-700 border border-rose-200">
+                        En retard
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" className="gap-2 text-primary">
+                        <Mail className="h-4 w-4" />
+                        Relancer
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="rounded-xl border border-dashed border-primary/30 bg-white py-16 text-center text-sm text-foreground/60">
+              Aucune relance à afficher.
+            </div>
+          )}
         </CardContent>
       </Card>
 

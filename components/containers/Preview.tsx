@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
 import { useItemsStore } from "@/hooks/useItemStore";
 import { Card } from "../ui/card";
 import { cn } from "@/lib/utils";
@@ -10,8 +9,22 @@ import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { format } from "date-fns";
 import { invoiceTemplates } from "@/types/invoiceTemplate";
 import { TemplateClassic, TemplateBold, type InvoiceTemplateProps } from "@/templates/invoices";
+import { useGetCompanyQuery, useGetClientByIdQuery } from "@/services/facturlyApi";
 import Skeleton from "@/components/ui/skeleton";
-import { useItemModalControls } from "@/contexts/ItemModalContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Maximize2 } from "lucide-react";
 
 const templateRegistry: Record<string, React.ComponentType<InvoiceTemplateProps>> = {
   classic: TemplateClassic,
@@ -26,31 +39,33 @@ const TemplateSelector = ({
   onChange: (templateId: string) => void;
 }) => {
   return (
-    <div className="flex flex-wrap gap-2">
-      {invoiceTemplates.map((template) => (
-        <Button
-          key={template.id}
-          variant={template.id === activeTemplate ? "default" : "outline"}
-          size="sm"
-          className={cn(
-            "border-primary/40",
-            template.id === activeTemplate && "bg-primary text-primary-foreground"
-          )}
-          onClick={() => onChange(template.id)}
-        >
-          {template.name}
-        </Button>
-      ))}
-    </div>
+    <Select value={activeTemplate} onValueChange={onChange}>
+      <SelectTrigger className="w-full sm:w-[200px] border-primary/40">
+        <SelectValue placeholder="Sélectionner un template" />
+      </SelectTrigger>
+      <SelectContent>
+        {invoiceTemplates.map((template) => (
+          <SelectItem key={template.id} value={template.id}>
+            {template.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 
 const Preview = () => {
-  const [loading, setLoading] = useState(false);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const { items } = useItemsStore();
   const metadataStore = useInvoiceMetadata();
   const [activeTemplate, setActiveTemplate] = useState(invoiceTemplates[0].id);
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // Récupérer les données de l'entreprise et du client
+  const { data: company } = useGetCompanyQuery();
+  const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
+    skip: !metadataStore.clientId,
+  });
 
   const currentTemplate = invoiceTemplates.find((tpl) => tpl.id === activeTemplate) ?? invoiceTemplates[0];
   const metadata = {
@@ -61,17 +76,8 @@ const Preview = () => {
     notes: metadataStore.notes,
   };
   const TemplateComponent = templateRegistry[currentTemplate.id] ?? TemplateClassic;
-  const { openCreate } = useItemModalControls();
-
-  const onLoading = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1200);
-  };
 
   useEffect(() => {
-    onLoading();
     const timer = setTimeout(() => setIsHydrated(true), 400);
     return () => clearTimeout(timer);
   }, [items, activeTemplate])
@@ -108,13 +114,13 @@ const Preview = () => {
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
           <Button
-            variant="secondary"
+            variant="outline"
             size="sm"
-            className="w-full gap-2 sm:w-auto"
-            onClick={openCreate}
+            className="w-full gap-2 sm:w-auto border-primary/40 text-primary hover:bg-primary/10"
+            onClick={() => setIsFullscreenOpen(true)}
           >
-            <Plus className="h-4 w-4" />
-            Ajouter une ligne
+            <Maximize2 className="h-4 w-4" />
+            Aperçu grand écran
           </Button>
         </div>
       </div>
@@ -122,6 +128,8 @@ const Preview = () => {
       {isHydrated ? (
         <TemplateComponent
           metadata={metadata}
+          company={company}
+          client={client}
           items={items}
           subtotal={subtotal}
           vatAmount={vatAmount}
@@ -138,19 +146,46 @@ const Preview = () => {
         </div>
       )}
 
-      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn("w-full sm:w-auto border-primary/40", { "animate-pulse": loading })}
-          onClick={onLoading}
-        >
-          Regénérer
-        </Button>
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <Button variant="default" size="sm" className="w-full sm:w-auto" disabled>
           Envoi rapide (bientôt)
         </Button>
       </div>
+
+      <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-6 overflow-y-auto translate-x-[-50%] translate-y-[-50%] left-[50%] top-[50%]">
+          <DialogHeader>
+            <DialogTitle>Aperçu de la facture</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <div className="flex flex-col gap-4 mb-6">
+              <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
+            </div>
+            {isHydrated ? (
+              <div className="bg-white p-8 rounded-lg shadow-sm">
+                <TemplateComponent
+                  metadata={metadata}
+                  company={company}
+                  client={client}
+                  items={items}
+                  subtotal={subtotal}
+                  vatAmount={vatAmount}
+                  totalAmount={totalAmount}
+                  formatAmount={(value) => amountFormatter.format(value)}
+                  formatDate={formatDate}
+                  template={currentTemplate}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-[280px] rounded-xl" />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

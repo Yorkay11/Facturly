@@ -11,11 +11,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BadgeAlert, BellRing, Filter, Mail } from "lucide-react";
+import { BellRing, Mail } from "lucide-react";
 import Link from "next/link";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
 import { useGetInvoicesQuery } from "@/services/facturlyApi";
+import ReminderModal from "@/components/modals/ReminderModal";
+import { useState } from "react";
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", {
@@ -34,6 +36,9 @@ const formatCurrency = (value: string | number, currency: string) => {
 };
 
 export default function RemindersPage() {
+  const [isReminderModalOpen, setReminderModalOpen] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | undefined>();
+  
   // Récupérer les factures en retard (overdue) et sent (potentiellement en retard)
   const { 
     data: overdueInvoices, 
@@ -102,19 +107,19 @@ export default function RemindersPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2 border-primary/40 text-primary hover:bg-primary/10">
-              <Filter className="h-4 w-4" />
-              Filtres (mock)
-            </Button>
-            <Button className="gap-2" asChild>
-              <Link href="/invoices/new">
-                <BellRing className="h-4 w-4" />
-                Créer une relance
-              </Link>
+            <Button 
+              className="gap-2" 
+              onClick={() => {
+                setSelectedInvoiceId(undefined);
+                setReminderModalOpen(true);
+              }}
+            >
+              <BellRing className="h-4 w-4" />
+              Créer une relance
             </Button>
           </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <Card className="border-primary/30 bg-primary/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-primary/80">Relances actives</CardTitle>
@@ -135,15 +140,6 @@ export default function RemindersPage() {
                 <p className="text-xs text-foreground/60">Synchronisation API</p>
               </CardContent>
           </Card>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">Dernière action</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">18/01/2025</p>
-              <p className="text-xs text-foreground/60">Relance email Agence Horizon</p>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
@@ -152,7 +148,7 @@ export default function RemindersPage() {
           <div>
             <CardTitle className="text-primary">Relances en cours</CardTitle>
             <CardDescription>
-              Liste des factures à relancer. Les actions sont fictives, prêtes à connecter à l&apos;API Nest.
+              Liste des factures à relancer.
             </CardDescription>
           </div>
           <Input placeholder="Rechercher un client ou une facture" className="max-w-sm" />
@@ -199,7 +195,15 @@ export default function RemindersPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="gap-2 text-primary">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-2 text-primary"
+                        onClick={() => {
+                          setSelectedInvoiceId(invoice.id);
+                          setReminderModalOpen(true);
+                        }}
+                      >
                         <Mail className="h-4 w-4" />
                         Relancer
                       </Button>
@@ -216,28 +220,15 @@ export default function RemindersPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary">
-            <BadgeAlert className="h-4 w-4" />
-            Conseils de suivi (mock)
-          </CardTitle>
-          <CardDescription>
-            Suggestions basées sur vos relances. À connecter avec un moteur de recommandations.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-foreground/70">
-          <p>
-            • Relancer les clients à J+3, J+7 et J+15 avec un mix email / téléphone.
-          </p>
-          <p>
-            • Activer des relances automatiques via SMS pour les retards supérieurs à 7 jours.
-          </p>
-          <p>
-            • Prévoir un reporting mensuel pour identifier les clients à risque.
-          </p>
-        </CardContent>
-      </Card>
+      
+      <ReminderModal 
+        open={isReminderModalOpen} 
+        onClose={() => {
+          setReminderModalOpen(false);
+          setSelectedInvoiceId(undefined);
+        }}
+        preselectedInvoiceId={selectedInvoiceId}
+      />
     </div>
   );
 }

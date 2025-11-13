@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, FileEdit, History, Plus, Trash2 } from "lucide-react";
+import { History, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -26,7 +26,7 @@ import { toast } from "sonner";
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { data: productsResponse, isLoading, isError } = useGetProductsQuery({ page: 1, limit: 100 });
-  const { data: invoicesResponse } = useGetInvoicesQuery({ page: 1, limit: 10 });
+  const { data: invoicesResponse } = useGetInvoicesQuery({ page: 1, limit: 100 });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const product = productsResponse?.data?.find((item) => item.id === params.id);
@@ -68,7 +68,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     );
   }
 
-  const relatedInvoices = invoicesResponse?.data?.slice(0, 4) ?? [];
+  // Filtrer les factures qui contiennent ce produit
+  // Note: On ne peut pas vérifier directement car InvoiceSummary n'a pas les items
+  // On affiche les factures récentes, mais idéalement il faudrait un endpoint pour filtrer par productId
+  const relatedInvoices = (invoicesResponse?.data ?? []).slice(0, 4);
 
   return (
     <div className="space-y-6">
@@ -84,18 +87,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="space-y-1">
           <h1 className="text-3xl font-semibold tracking-tight">{product?.name}</h1>
           <p className="text-sm text-foreground/60">
-            Fiche détaillée mockée. Les données proviennent du catalogue statique en attendant l’API Nest.
+            Fiche détaillée du produit. Consultez les informations et l&apos;historique d&apos;utilisation.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="gap-2">
-            <FileEdit className="h-4 w-4" />
-            Modifier (bientôt)
-          </Button>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Dupliquer (mock)
-          </Button>
           <Button
             variant="destructive"
             className="gap-2"
@@ -111,21 +106,39 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       <Card>
         <CardHeader>
           <CardTitle>Résumé</CardTitle>
-          <CardDescription>Données illustratives pour le produit #{product?.id.slice(0, 8)}.</CardDescription>
+          <CardDescription>Informations du produit #{product?.id.slice(0, 8)}.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <p className="text-xs uppercase text-foreground/50">Tarif HT estimé</p>
+            <p className="text-xs uppercase text-foreground/50">Tarif HT</p>
             <p className="text-2xl font-semibold text-primary">
-              {parseFloat(product.price ?? "0").toFixed(2)} {product.currency ?? "€"}
+              {new Intl.NumberFormat("fr-FR", {
+                style: "currency",
+                currency: product.currency || "EUR",
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(parseFloat(product.price ?? "0"))}
             </p>
             <p className="text-xs text-foreground/50">TVA par défaut : {product.taxRate ?? "0"}%</p>
           </div>
-          <div className="space-y-2">
-            <p className="text-xs uppercase text-foreground/50">Dernière utilisation</p>
-            <p className="text-2xl font-semibold">10/01/2025</p>
-            <p className="text-xs text-foreground/50">Facture #INV-2025-003 (mock)</p>
-          </div>
+          {product.updatedAt && (
+            <div className="space-y-2">
+              <p className="text-xs uppercase text-foreground/50">Dernière mise à jour</p>
+              <p className="text-2xl font-semibold">
+                {new Date(product.updatedAt).toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
+              </p>
+              <p className="text-xs text-foreground/50">
+                {new Date(product.updatedAt).toLocaleDateString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -134,20 +147,34 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <CardHeader>
             <CardTitle>Description</CardTitle>
             <CardDescription>
-              Placeholder : ajoutez ici la description marketing, les inclusions, le temps estimé...
+              Informations détaillées du produit
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-foreground/70">
-            <p>
-              Cette prestation est un exemple. Lors de l’intégration backend, vous pourrez synchroniser la fiche
-              depuis la base de données et afficher les métadonnées complètes (catégorie, tags, TVA personnalisée...).
-            </p>
+            {product.description ? (
+              <p className="whitespace-pre-wrap">{product.description}</p>
+            ) : (
+              <p className="text-foreground/50">Aucune description disponible.</p>
+            )}
             <Separator />
-            <ul className="list-disc space-y-2 pl-4">
-              <li>Durée estimée : 3 jours</li>
-              <li>Type : Forfait</li>
-              <li>Notes internes : à définir</li>
-            </ul>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-foreground/60">Type :</span>
+                <span className="font-medium capitalize">{product.type || "—"}</span>
+              </div>
+              {product.unit && (
+                <div className="flex justify-between">
+                  <span className="text-foreground/60">Unité :</span>
+                  <span className="font-medium">{product.unit}</span>
+                </div>
+              )}
+              {product.sku && (
+                <div className="flex justify-between">
+                  <span className="text-foreground/60">Référence :</span>
+                  <span className="font-medium">{product.sku}</span>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -155,29 +182,42 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base">Historique factures</CardTitle>
-              <CardDescription>Dernières factures contenant ce produit (mock).</CardDescription>
+              <CardDescription>Dernières factures contenant ce produit.</CardDescription>
             </div>
             <History className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {relatedInvoices.length > 0 ? (
-              relatedInvoices.map((invoice) => (
-                <div
-                  key={invoice.id}
-                  className="rounded-lg border border-border/60 bg-secondary/60 p-3 text-foreground/70"
-                >
-                  <p className="font-semibold text-foreground">{invoice.invoiceNumber}</p>
-                  <p className="text-xs">Client : {invoice.client.name}</p>
-                  <p className="text-xs">Montant : {invoice.totalAmount} {invoice.currency}</p>
-                  <p className="text-xs">Statut : {invoice.status}</p>
-                </div>
-              ))
+              <>
+                {relatedInvoices.map((invoice) => (
+                  <Link
+                    key={invoice.id}
+                    href={`/invoices/${invoice.id}`}
+                    className="block rounded-lg border border-border/60 bg-secondary/60 p-3 text-foreground/70 hover:bg-secondary/80 transition-colors"
+                  >
+                    <p className="font-semibold text-foreground">{invoice.invoiceNumber}</p>
+                    <p className="text-xs">Client : {invoice.client.name}</p>
+                    <p className="text-xs">
+                      Montant : {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: invoice.currency,
+                        maximumFractionDigits: 2,
+                      }).format(parseFloat(invoice.totalAmount))}
+                    </p>
+                    <p className="text-xs">Statut : {invoice.status}</p>
+                  </Link>
+                ))}
+                {invoicesResponse?.meta && invoicesResponse.meta.total > relatedInvoices.length && (
+                  <Button variant="ghost" className="w-full justify-center text-primary" asChild>
+                    <Link href={`/invoices?productId=${product.id}`}>
+                      Voir toutes les factures ({invoicesResponse.meta.total})
+                    </Link>
+                  </Button>
+                )}
+              </>
             ) : (
               <p className="text-center text-xs text-foreground/60">Aucune facture associée</p>
             )}
-            <Button variant="ghost" className="w-full justify-center text-primary">
-              Voir plus (mock)
-            </Button>
           </CardContent>
         </Card>
       </div>

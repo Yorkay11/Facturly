@@ -11,73 +11,26 @@ import RevenueChart from "@/components/dashboard/RevenueChart";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import AtRiskCard from "@/components/dashboard/AtRiskCard";
 import ClientModal from "@/components/modals/ClientModal";
-import { useGetInvoicesQuery } from "@/services/facturlyApi";
+import {
+  useGetInvoicesQuery,
+  useGetDashboardStatsQuery,
+  useGetDashboardActivitiesQuery,
+  useGetDashboardAlertsQuery,
+} from "@/services/facturlyApi";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const statPlaceholders = [
-  {
-    title: "Revenus du mois",
-    value: "--",
-    helper: "Synchronisation à venir",
-    icon: <Wallet className="h-5 w-5" />,
-    trend: { label: "+12% vs. dernier mois", positive: true },
-  },
-  {
-    title: "Factures envoyées",
-    value: "--",
-    helper: "Données mockées",
-    icon: <PieChart className="h-5 w-5" />,
-  },
-  {
-    title: "Total payé",
-    value: "--",
-    icon: <TrendingUp className="h-5 w-5" />,
-    trend: { label: "+4 factures", positive: true },
-  },
-  {
-    title: "Impayés",
-    value: "--",
-    icon: <TrendingDown className="h-5 w-5" />,
-    trend: { label: "-1 relance", positive: false },
-    variant: "accent" as const,
-  },
-];
-
-const mockActivities = [
-  {
-    id: "1",
-    title: "Facture INV-2025-004 envoyée",
-    description: "Envoyée à Agence Horizon",
-    time: "Il y a 3 heures",
-    status: "info" as const,
-  },
-  {
-    id: "2",
-    title: "Paiement reçu",
-    description: "Kossi Tech - INV-2025-003",
-    time: "Hier",
-    status: "success" as const,
-  },
-  {
-    id: "3",
-    title: "Relance programmée",
-    description: "FoodConnect - Echéance dépassée",
-    time: "Il y a 2 jours",
-    status: "warning" as const,
-  },
-];
-
-const mockAtRisk = [
-  { id: "1", value: "3 factures", label: "En retard > 7 jours", helper: "Total 2 180 €" },
-  { id: "2", value: "FoodConnect", label: "Client à relancer", helper: "Dernier contact : 30/12" },
-  { id: "3", value: "35%", label: "Tx d&apos;impayés", helper: "Objectif < 10%" },
-];
+import { formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isClientModalOpen, setClientModalOpen] = useState(false);
   
-  // Récupérer les factures pour calculer les tendances
+  // Récupérer les données du dashboard depuis l'API
+  const { data: dashboardStats, isLoading: isLoadingStats } = useGetDashboardStatsQuery();
+  const { data: activitiesData, isLoading: isLoadingActivities } = useGetDashboardActivitiesQuery({ limit: 5 });
+  const { data: alertsData, isLoading: isLoadingAlerts } = useGetDashboardAlertsQuery();
+  
+  // Récupérer les factures pour le graphique (fallback si stats non disponibles)
   const { data: invoicesData, isLoading: isLoadingInvoices } = useGetInvoicesQuery({ 
     page: 1, 
     limit: 100 
@@ -85,8 +38,20 @@ export default function DashboardPage() {
   
   const invoices = invoicesData?.data || [];
   
-  // Calculer les revenus par mois (4 derniers mois)
+  // Transformer les données de revenus mensuels depuis l'API
   const monthlyRevenue = useMemo(() => {
+    if (dashboardStats?.monthlyRevenues && dashboardStats.monthlyRevenues.length > 0) {
+      return dashboardStats.monthlyRevenues.map((item) => {
+        const date = new Date(item.year, item.month - 1, 1);
+        const monthName = date.toLocaleDateString("fr-FR", { month: "short" });
+        return {
+          label: monthName,
+          value: parseFloat(item.revenue || "0"),
+        };
+      });
+    }
+    
+    // Fallback: calculer depuis les factures si l'API n'a pas de données
     const now = new Date();
     const months = [];
     
@@ -116,17 +81,107 @@ export default function DashboardPage() {
     }
     
     return months;
-  }, [invoices]);
+  }, [dashboardStats, invoices]);
   
-  // Calculer les statistiques
+  // Transformer les activités depuis l'API
+  const activities = useMemo(() => {
+    if (!activitiesData?.data) return [];
+    
+    return activitiesData.data.map((activity) => {
+      const date = new Date(activity.date);
+      const timeAgo = formatDistanceToNow(date, { addSuffix: true, locale: fr });
+      
+      // Déterminer le statut basé sur le type d'activité
+      let status: "info" | "success" | "warning" | undefined = "info";
+      if (activity.type === "payment_received" || activity.status === "completed") {
+        status = "success";
+      } else if (activity.type.includes("overdue") || activity.status === "overdue") {
+        status = "warning";
+      }
+      
+      return {
+        id: activity.entityId,
+        title: activity.title,
+        description: activity.description || "",
+        time: timeAgo,
+        status,
+      };
+    });
+  }, [activitiesData]);
+  
+  // Transformer les alertes depuis l'API
+  const atRiskItems = useMemo(() => {
+    if (!alertsData) return [];
+    
+    const items = [];
+    
+    // Factures en retard
+    if (alertsData.overdueInvoices && alertsData.overdueInvoices.length > 0) {
+      const overdueCount = alertsData.overdueInvoices.length;
+      const totalOverdue = alertsData.overdueInvoices.reduce((sum, inv) => {
+        return sum + parseFloat(inv.totalAmount || "0");
+      }, 0);
+      
+      items.push({
+        id: "overdue",
+        value: `${overdueCount} facture${overdueCount > 1 ? "s" : ""}`,
+        label: "En retard > 7 jours",
+        helper: `Total ${new Intl.NumberFormat("fr-FR", {
+          style: "currency",
+          currency: alertsData.overdueInvoices[0]?.currency || "EUR",
+          minimumFractionDigits: 0,
+        }).format(totalOverdue)}`,
+      });
+    }
+    
+    // Clients avec factures impayées
+    if (alertsData.clientsWithUnpaidInvoices && alertsData.clientsWithUnpaidInvoices.length > 0) {
+      const firstClient = alertsData.clientsWithUnpaidInvoices[0];
+      items.push({
+        id: "client-unpaid",
+        value: firstClient.clientName,
+        label: "Client à relancer",
+        helper: `${firstClient.unpaidCount} facture${firstClient.unpaidCount > 1 ? "s" : ""} impayée${firstClient.unpaidCount > 1 ? "s" : ""}`,
+      });
+    }
+    
+    // Taux d'impayés
+    if (alertsData.totalUnpaid) {
+      const totalUnpaid = parseFloat(alertsData.totalUnpaid);
+      // Calculer le taux si on a les stats du dashboard
+      if (dashboardStats?.totalPaid) {
+        const totalPaid = parseFloat(dashboardStats.totalPaid);
+        const total = totalPaid + totalUnpaid;
+        if (total > 0) {
+          const rate = (totalUnpaid / total) * 100;
+          items.push({
+            id: "unpaid-rate",
+            value: `${rate.toFixed(0)}%`,
+            label: "Tx d'impayés",
+            helper: "Objectif < 10%",
+          });
+        }
+      }
+    }
+    
+    return items;
+  }, [alertsData, dashboardStats]);
+  
+  // Statistiques pour les cartes
   const stats = useMemo(() => {
+    if (dashboardStats) {
+      const monthlyRev = dashboardStats.monthlyRevenue?.[0];
+      return {
+        monthlyRevenue: monthlyRev ? parseFloat(monthlyRev.amount || "0") : 0,
+        invoicesSent: dashboardStats.invoicesSent || 0,
+        totalPaid: parseFloat(dashboardStats.totalPaid || "0"),
+        totalUnpaid: parseFloat(dashboardStats.totalUnpaid || "0"),
+      };
+    }
+    
+    // Fallback: calculer depuis les factures
     const paidInvoices = invoices.filter((inv) => inv.status === "paid");
     const sentInvoices = invoices.filter((inv) => inv.status === "sent");
-    const draftInvoices = invoices.filter((inv) => inv.status === "draft");
-    const overdueInvoices = invoices.filter((inv) => {
-      if (!inv.dueDate || inv.status === "paid") return false;
-      return new Date(inv.dueDate) < new Date();
-    });
     
     const totalRevenue = paidInvoices.reduce((sum, inv) => {
       return sum + parseFloat(inv.totalAmount || "0");
@@ -137,14 +192,14 @@ export default function DashboardPage() {
     }, 0);
     
     return {
-      totalRevenue,
-      pendingAmount,
-      paidCount: paidInvoices.length,
-      sentCount: sentInvoices.length,
-      draftCount: draftInvoices.length,
-      overdueCount: overdueInvoices.length,
+      monthlyRevenue: totalRevenue,
+      invoicesSent: sentInvoices.length,
+      totalPaid: totalRevenue,
+      totalUnpaid: pendingAmount,
     };
-  }, [invoices]);
+  }, [dashboardStats, invoices]);
+  
+  const isLoading = isLoadingStats || isLoadingInvoices;
 
   return (
     <div className="space-y-6">
@@ -169,33 +224,74 @@ export default function DashboardPage() {
             title="Créer une facture"
             description="Brouillon en 5 étapes, preview et envoi."
             onClick={() => router.push("/invoices/new")}
+            color="blue"
           />
           <QuickActionCard
             icon={<RefreshCcw className="h-5 w-5" />}
             title="Relancer un paiement"
             description="Choisissez un client et envoyez un rappel."
             onClick={() => router.push("/reminders")}
+            color="orange"
           />
           <QuickActionCard
             icon={<Users className="h-5 w-5" />}
             title="Ajouter un client"
             description="Ajoutez un contact depuis votre carnet (modal)."
             onClick={() => setClientModalOpen(true)}
+            color="green"
           />
         </CardContent>
       </Card>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {statPlaceholders.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            helper={stat.helper}
-            icon={stat.icon}
-            trend={stat.trend}
-            variant={stat.variant}
-          />
-        ))}
+        <StatCard
+          title="Revenus du mois"
+          value={
+            isLoading
+              ? "--"
+              : new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
+                  minimumFractionDigits: 0,
+                }).format(stats.monthlyRevenue)
+          }
+          helper={isLoading ? "Chargement..." : undefined}
+          icon={<Wallet className="h-5 w-5" />}
+        />
+        <StatCard
+          title="Factures envoyées"
+          value={isLoading ? "--" : stats.invoicesSent.toString()}
+          helper={isLoading ? "Chargement..." : undefined}
+          icon={<PieChart className="h-5 w-5" />}
+        />
+        <StatCard
+          title="Total payé"
+          value={
+            isLoading
+              ? "--"
+              : new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
+                  minimumFractionDigits: 0,
+                }).format(stats.totalPaid)
+          }
+          helper={isLoading ? "Chargement..." : undefined}
+          icon={<TrendingUp className="h-5 w-5" />}
+        />
+        <StatCard
+          title="Impayés"
+          value={
+            isLoading
+              ? "--"
+              : new Intl.NumberFormat("fr-FR", {
+                  style: "currency",
+                  currency: dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
+                  minimumFractionDigits: 0,
+                }).format(stats.totalUnpaid)
+          }
+          helper={isLoading ? "Chargement..." : undefined}
+          icon={<TrendingDown className="h-5 w-5" />}
+          variant="accent"
+        />
       </div>
       <div className="grid gap-6 xl:grid-cols-[2fr_1.2fr]">
         <Card className="border-primary/20">
@@ -209,7 +305,7 @@ export default function DashboardPage() {
             </p>
           </CardHeader>
           <CardContent>
-            {isLoadingInvoices ? (
+            {isLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-32 w-full" />
                 <div className="flex gap-2">
@@ -218,7 +314,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-            ) : invoices.length === 0 ? (
+            ) : monthlyRevenue.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <BarChart3 className="h-12 w-12 text-foreground/30 mb-3" />
                 <p className="text-sm font-medium text-foreground/70 mb-1">
@@ -233,13 +329,13 @@ export default function DashboardPage() {
                 <RevenueChart data={monthlyRevenue} />
                 <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-primary/10 bg-primary/5 p-3 text-xs">
                   <div>
-                    <p className="text-foreground/60">Revenus totaux</p>
+                    <p className="text-foreground/60">Total payé</p>
                     <p className="mt-1 text-base font-semibold text-primary">
                       {new Intl.NumberFormat("fr-FR", {
                         style: "currency",
-                        currency: "EUR",
+                        currency: dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
                         minimumFractionDigits: 0,
-                      }).format(stats.totalRevenue)}
+                      }).format(stats.totalPaid)}
                     </p>
                   </div>
                   <div>
@@ -247,9 +343,9 @@ export default function DashboardPage() {
                     <p className="mt-1 text-base font-semibold text-foreground/80">
                       {new Intl.NumberFormat("fr-FR", {
                         style: "currency",
-                        currency: "EUR",
+                        currency: dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
                         minimumFractionDigits: 0,
-                      }).format(stats.pendingAmount)}
+                      }).format(stats.totalUnpaid)}
                     </p>
                   </div>
                 </div>
@@ -322,17 +418,40 @@ export default function DashboardPage() {
         <Card className="border-primary/20">
           <CardHeader>
             <CardTitle className="text-primary">Activité récente</CardTitle>
-            <p className="text-xs text-foreground/60">Mises à jour mock des dernières actions.</p>
+            <p className="text-xs text-foreground/60">Dernières actions sur votre compte.</p>
           </CardHeader>
           <CardContent>
-            <RecentActivity items={mockActivities} />
+            {isLoadingActivities ? (
+              <div className="space-y-3">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ) : activities.length > 0 ? (
+              <RecentActivity items={activities} />
+            ) : (
+              <div className="rounded-lg border border-dashed border-primary/30 bg-white py-8 text-center">
+                <p className="text-sm text-foreground/60">Aucune activité récente</p>
+              </div>
+            )}
           </CardContent>
         </Card>
-        <AtRiskCard
-          title="À surveiller"
-          description="Factures en retard, clients sensibles, objectif impayés."
-          items={mockAtRisk}
-        />
+        {isLoadingAlerts ? (
+          <Card className="border-primary/20">
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <AtRiskCard
+            title="À surveiller"
+            description="Factures en retard, clients sensibles, objectif impayés."
+            items={atRiskItems.length > 0 ? atRiskItems : [{ id: "none", value: "Aucune alerte", label: "Tout est en ordre" }]}
+          />
+        )}
       </div>
       <ClientModal open={isClientModalOpen} onClose={() => setClientModalOpen(false)} />
     </div>

@@ -62,7 +62,7 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, type Invoice } from "@/services/facturlyApi"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -108,6 +108,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const clients = clientsResponse?.data ?? [];
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
+    const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
     
     // Charger les données de la facture si on est en mode édition
     const { data: existingInvoice, isLoading: isLoadingInvoice } = useGetInvoiceByIdQuery(
@@ -116,19 +117,23 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     );
 
     const isEditMode = !!invoiceId;
-    const isSaving = isCreatingInvoice || isUpdatingInvoice;
+    const isSaving = isCreatingInvoice || isUpdatingInvoice || isSendingInvoice;
     
     // Utiliser le contexte de loading global pour griser la page
     const { setLoading } = useLoading();
     
     // Mettre à jour le loader global lors des mutations
     useEffect(() => {
-        if (isCreatingInvoice || isUpdatingInvoice) {
-            setLoading(true, isEditMode ? "Mise à jour de la facture..." : "Création de la facture...");
+        if (isCreatingInvoice || isUpdatingInvoice || isSendingInvoice) {
+            if (isSendingInvoice) {
+                setLoading(true, "Envoi de la facture...");
+            } else {
+                setLoading(true, isEditMode ? "Mise à jour de la facture..." : "Création de la facture...");
+            }
         } else {
             setLoading(false);
         }
-    }, [isCreatingInvoice, isUpdatingInvoice, isEditMode, setLoading]);
+    }, [isCreatingInvoice, isUpdatingInvoice, isSendingInvoice, isEditMode, setLoading]);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -232,8 +237,139 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         }
     }, [existingInvoice, isEditMode, isLoadingInvoice, form, setMetadata, setItems]);
 
-    const onSubmit = (data: z.infer<typeof FormSchema>) => {
-        console.log({ ...data, items })
+    const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+        try {
+            // Valider que le client est sélectionné
+            const clientId = storedClientId || clientIdFromUrl;
+            if (!clientId) {
+                toast.error("Client manquant", {
+                    description: "Veuillez sélectionner un client avant d'envoyer la facture.",
+                });
+                return;
+            }
+            
+            // Valider que les dates sont définies
+            if (!issueDate || !dueDate) {
+                toast.error("Dates manquantes", {
+                    description: "Veuillez définir les dates d'émission et d'échéance avant d'envoyer la facture.",
+                });
+                return;
+            }
+            
+            // Valider qu'il y a au moins un article
+            if (!items || items.length === 0) {
+                toast.error("Aucun article", {
+                    description: "Veuillez ajouter au moins un article à la facture avant de l'envoyer.",
+                });
+                return;
+            }
+            
+            // Valider que la devise est définie
+            if (!storedCurrency) {
+                toast.error("Devise manquante", {
+                    description: "Veuillez sélectionner une devise avant d'envoyer la facture.",
+                });
+                return;
+            }
+
+            let invoiceIdToSend: string;
+
+            if (isEditMode && invoiceId) {
+                // Mode édition: mettre à jour la facture existante puis l'envoyer
+                try {
+                    const response = await updateInvoice({
+                        id: invoiceId,
+                        payload: {
+                            clientId: clientId,
+                            issueDate: issueDate.toISOString().split('T')[0],
+                            dueDate: dueDate.toISOString().split('T')[0],
+                            currency: storedCurrency,
+                            notes: notes || undefined,
+                            status: "draft", // On garde draft pour l'instant, sendInvoice changera le statut
+                        },
+                    }).unwrap();
+                    
+                    invoiceIdToSend = invoiceId;
+                } catch (updateError: any) {
+                    const errorMessage = updateError?.data?.message || updateError?.message || "Une erreur est survenue lors de la mise à jour de la facture.";
+                    toast.error("Erreur", {
+                        description: errorMessage,
+                    });
+                    return;
+                }
+            } else {
+                // Mode création: créer une nouvelle facture puis l'envoyer
+                const invoiceItems = items.map((item) => ({
+                    description: item.description,
+                    quantity: item.quantity.toString(),
+                    unitPrice: item.unitPrice.toFixed(2),
+                }));
+                
+                try {
+                    const response = await createInvoice({
+                        clientId: clientId,
+                        issueDate: issueDate.toISOString().split('T')[0],
+                        dueDate: dueDate.toISOString().split('T')[0],
+                        currency: storedCurrency,
+                        items: invoiceItems,
+                        notes: notes || undefined,
+                    }).unwrap();
+                    
+                    const invoiceData = response as Invoice;
+                    const newInvoiceId = invoiceData?.id;
+                    
+                    if (!newInvoiceId || typeof newInvoiceId !== 'string' || newInvoiceId === 'undefined' || newInvoiceId.trim() === '') {
+                        toast.error("Erreur", {
+                            description: "La facture a été créée mais l'ID n'a pas été retourné.",
+                        });
+                        return;
+                    }
+                    
+                    invoiceIdToSend = newInvoiceId;
+                } catch (createError: any) {
+                    const errorMessage = createError?.data?.message || createError?.message || "Une erreur est survenue lors de la création de la facture.";
+                    toast.error("Erreur", {
+                        description: errorMessage,
+                    });
+                    return;
+                }
+            }
+
+            // Trouver le client pour obtenir son email
+            const selectedClient = clients.find((c) => c.id === clientId) || clientFromUrl;
+
+            // Envoyer la facture
+            try {
+                const sentInvoice = await sendInvoice({
+                    id: invoiceIdToSend,
+                    payload: {
+                        sendEmail: true,
+                        emailTo: selectedClient?.email || undefined,
+                    },
+                }).unwrap();
+
+                toast.success("Facture envoyée", {
+                    description: `La facture ${sentInvoice.invoiceNumber || invoiceIdToSend} a été envoyée avec succès.`,
+                });
+
+                // Réinitialiser les stores
+                resetMetadata();
+                clearItems();
+
+                // Rediriger vers la page de détails de la facture
+                router.replace(`/invoices/${invoiceIdToSend}`);
+            } catch (sendError: any) {
+                const errorMessage = sendError?.data?.message || sendError?.message || "Une erreur est survenue lors de l'envoi de la facture.";
+                toast.error("Erreur", {
+                    description: errorMessage,
+                });
+            }
+        } catch (error: any) {
+            const errorMessage = error?.data?.message || error?.message || "Une erreur est survenue lors de la préparation de l'envoi.";
+            toast.error("Erreur", {
+                description: errorMessage,
+            });
+        }
     }
     
     // Fonction pour sauvegarder le brouillon (création ou mise à jour)
@@ -842,8 +978,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     >
                         {isSaving ? (isEditMode ? "Mise à jour..." : "Enregistrement...") : (isEditMode ? "Mettre à jour le brouillon" : "Enregistrer le brouillon")}
                     </Button>
-                    <Button type="submit" className="w-full sm:w-auto">
-                        Préparer l&apos;envoi
+                    <Button type="submit" className="w-full sm:w-auto" disabled={isSaving}>
+                        {isSaving && isSendingInvoice ? "Envoi en cours..." : "Envoyer la facture"}
                     </Button>
                 </div>
             </form>

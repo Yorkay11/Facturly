@@ -9,8 +9,8 @@ const inter = Nunito({ subsets: ['latin'] })
 
 
 export const metadata: Metadata = {
-  title: "Billing",
-  description: "Billing app",
+  title: "Facturly",
+  description: "Facturation simple & intelligente",
 };
 
 export default function RootLayout({

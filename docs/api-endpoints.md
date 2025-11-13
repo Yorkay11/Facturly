@@ -297,6 +297,45 @@ Ce document décrit les endpoints prévus pour le MVP du backend NestJS. Les rou
 }
 ```
 
+### GET `/clients/:id/revenue?months=6`
+
+**Query Parameters:**
+- `months` (number, default: 6) - Nombre de mois à retourner
+
+**Response (200 OK):**
+```json
+{
+  "clientId": "uuid",
+  "clientName": "Acme Corp",
+  "monthlyRevenues": [
+    {
+      "month": 6,
+      "year": 2025,
+      "revenue": [
+        {
+          "currency": "EUR",
+          "amount": "5000.00"
+        }
+      ],
+      "invoicesSent": 5,
+      "invoicesPaid": 4
+    },
+    {
+      "month": 7,
+      "year": 2025,
+      "revenue": [
+        {
+          "currency": "EUR",
+          "amount": "7500.00"
+        }
+      ],
+      "invoicesSent": 8,
+      "invoicesPaid": 7
+    }
+  ]
+}
+```
+
 ## Produits & Services
 
 | Méthode | Endpoint            | Description                                         |
@@ -486,7 +525,8 @@ Ce document décrit les endpoints prévus pour le MVP du backend NestJS. Les rou
       "unitPrice": "200.00"
     }
   ],
-  "notes": "Payment terms: 30 days"
+  "notes": "Payment terms: 30 days",
+  "recipientEmail": "client@example.com"
 }
 ```
 
@@ -623,11 +663,21 @@ Ce document décrit les endpoints prévus pour le MVP du backend NestJS. Les rou
 ```json
 {
   "id": "uuid",
+  "invoiceNumber": "FAC-001",
   "status": "sent",
   "sentAt": "2025-11-11T17:00:00Z",
+  "recipientEmail": "client@example.com",
+  "paymentLinkToken": "abc123...",
+  "paymentLinkExpiresAt": "2025-12-11T17:00:00Z",
+  "paymentLink": "http://localhost:3000/pay/abc123...",
   "updatedAt": "2025-11-11T17:00:00Z"
 }
 ```
+
+**Notes:**
+- Génère automatiquement un token de paiement unique et un lien de paiement valide 30 jours
+- Si le `recipientEmail` (ou `emailTo`) correspond à un utilisateur du système, une `ReceivedInvoice` est créée automatiquement
+- Le lien de paiement peut être utilisé par n'importe qui (public) pour payer la facture
 
 ### POST `/invoices/:id/mark-paid`
 
@@ -1026,13 +1076,442 @@ Ce document décrit les endpoints prévus pour le MVP du backend NestJS. Les rou
 }
 ```
 
+## Bills (Factures Reçues)
+
+| Méthode | Endpoint                    | Description                                    |
+| ------- | --------------------------- | ---------------------------------------------- |
+| GET     | `/bills`                    | Liste des factures reçues                     |
+| GET     | `/bills/:id`                | Détails d'une facture reçue                   |
+| POST    | `/bills/:id/pay`            | Payer une facture reçue                        |
+| GET     | `/public/invoice/:token`    | Voir une facture via lien de paiement (public) |
+| POST    | `/public/pay/:token`        | Payer une facture via lien de paiement (public) |
+
+### GET `/bills?page=1&limit=10&status=sent`
+
+**Query Parameters:**
+- `page` (number, default: 1) - Numéro de page
+- `limit` (number, default: 10) - Nombre d'éléments par page
+- `status` (string, optional) - Filtrer par statut (`draft`, `sent`, `paid`, `overdue`, `cancelled`)
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "invoice": {
+        "id": "uuid",
+        "invoiceNumber": "FAC-001",
+        "issueDate": "2025-11-11",
+        "dueDate": "2025-12-11",
+        "totalAmount": "3000.00",
+        "amountPaid": "0.00",
+        "currency": "EUR",
+        "status": "sent",
+        "notes": "Payment terms: 30 days",
+        "issuer": {
+          "id": "uuid",
+          "name": "Acme Corp",
+          "legalName": "Acme Corporation Ltd",
+          "addressLine1": "123 Business St",
+          "city": "Paris",
+          "country": "FR"
+        }
+      },
+      "status": "sent",
+      "viewedAt": null,
+      "paidAt": null,
+      "createdAt": "2025-11-11T12:00:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "totalPages": 3
+  }
+}
+```
+
+### GET `/bills/:id`
+
+**Response (200 OK):**
+```json
+{
+  "id": "uuid",
+  "invoice": {
+    "id": "uuid",
+    "invoiceNumber": "FAC-001",
+    "issueDate": "2025-11-11",
+    "dueDate": "2025-12-11",
+    "totalAmount": "3000.00",
+    "amountPaid": "0.00",
+    "currency": "EUR",
+    "status": "sent",
+    "notes": "Payment terms: 30 days",
+    "items": [
+      {
+        "id": "uuid",
+        "description": "Consulting Services",
+        "quantity": "10",
+        "unitPrice": "150.00",
+        "totalAmount": "1500.00",
+        "product": {
+          "id": "uuid",
+          "name": "Consulting Services"
+        }
+      }
+    ],
+    "issuer": {
+      "id": "uuid",
+      "name": "Acme Corp",
+      "legalName": "Acme Corporation Ltd",
+      "taxId": "123456789",
+      "vatNumber": "FR12345678901",
+      "addressLine1": "123 Business St",
+      "addressLine2": "Suite 100",
+      "postalCode": "75001",
+      "city": "Paris",
+      "country": "FR"
+    }
+  },
+  "status": "sent",
+  "viewedAt": "2025-11-11T12:30:00Z",
+  "paidAt": null,
+  "createdAt": "2025-11-11T12:00:00Z"
+}
+```
+
+**Notes:**
+- Marque automatiquement la facture comme vue (`viewedAt`) lors de la première consultation
+
+### POST `/bills/:id/pay`
+
+**Request Body:**
+```json
+{
+  "method": "bank_transfer",
+  "notes": "Payment received via bank transfer"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "uuid",
+  "status": "paid",
+  "paidAt": "2025-11-15T10:00:00Z",
+  "payment": {
+    "id": "uuid",
+    "amount": "3000.00",
+    "currency": "EUR",
+    "method": "bank_transfer",
+    "paidAt": "2025-11-15T10:00:00Z"
+  }
+}
+```
+
+### GET `/public/invoice/:token`
+
+**Description:** Endpoint public (sans authentification) pour voir une facture via son lien de paiement
+
+**Response (200 OK):**
+```json
+{
+  "invoice": {
+    "id": "uuid",
+    "invoiceNumber": "FAC-001",
+    "issueDate": "2025-11-11",
+    "dueDate": "2025-12-11",
+    "totalAmount": "3000.00",
+    "amountPaid": "0.00",
+    "currency": "EUR",
+    "status": "sent",
+    "notes": "Payment terms: 30 days",
+    "items": [
+      {
+        "id": "uuid",
+        "description": "Consulting Services",
+        "quantity": "10",
+        "unitPrice": "150.00",
+        "totalAmount": "1500.00"
+      }
+    ],
+    "issuer": {
+      "name": "Acme Corp",
+      "legalName": "Acme Corporation Ltd",
+      "addressLine1": "123 Business St",
+      "city": "Paris",
+      "country": "FR"
+    },
+    "recipient": {
+      "name": "Client Corp",
+      "email": "client@example.com"
+    }
+  },
+  "canPay": true,
+  "remainingAmount": "3000.00"
+}
+```
+
+**Errors:**
+- `404 Not Found` - Token invalide ou facture introuvable
+- `400 Bad Request` - Lien de paiement expiré
+
+### POST `/public/pay/:token`
+
+**Description:** Endpoint public (sans authentification) pour payer une facture via son lien de paiement
+
+**Request Body:**
+```json
+{
+  "method": "online_payment",
+  "notes": "Paid via credit card",
+  "email": "payer@example.com"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "payment": {
+    "id": "uuid",
+    "amount": "3000.00",
+    "currency": "EUR",
+    "paidAt": "2025-11-15T10:00:00Z"
+  },
+  "invoice": {
+    "id": "uuid",
+    "invoiceNumber": "FAC-001",
+    "status": "paid"
+  }
+}
+```
+
+**Errors:**
+- `404 Not Found` - Token invalide ou facture introuvable
+- `400 Bad Request` - Lien expiré, facture déjà payée, ou montant invalide
+
+**Notes:**
+- Si le récepteur est un utilisateur du système, la `ReceivedInvoice` correspondante est automatiquement mise à jour
+
+## Dashboard & Analytics
+
+| Méthode | Endpoint                | Description                                                           |
+| ------- | ----------------------- | --------------------------------------------------------------------- |
+| GET     | `/dashboard/activities` | Activités récentes de l'utilisateur (30 derniers jours)               |
+| GET     | `/dashboard/alerts`     | Alertes à surveiller (factures en retard, clients sensibles)          |
+| GET     | `/dashboard/stats`      | Statistiques générales (revenus, factures, paiements)                 |
+
+### GET `/dashboard/activities?limit=5`
+
+**Query Parameters:**
+- `limit` (number, default: 5) - Nombre d'activités à retourner
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "type": "invoice_created",
+      "date": "2025-11-11T17:00:00Z",
+      "title": "Facture FAC-001 créée",
+      "description": "Client: Acme Corp",
+      "amount": "3000.00",
+      "currency": "EUR",
+      "status": "draft",
+      "entityId": "uuid",
+      "entityType": "invoice"
+    },
+    {
+      "type": "payment_received",
+      "date": "2025-11-10T14:30:00Z",
+      "title": "Paiement reçu pour FAC-002",
+      "description": "Client: Tech Solutions",
+      "amount": "1500.00",
+      "currency": "EUR",
+      "status": "completed",
+      "entityId": "uuid",
+      "entityType": "payment"
+    },
+    {
+      "type": "client_created",
+      "date": "2025-11-09T10:00:00Z",
+      "title": "Client NewCorp créé",
+      "description": "contact@newcorp.com",
+      "entityId": "uuid",
+      "entityType": "client"
+    }
+  ]
+}
+```
+
+### GET `/dashboard/alerts`
+
+**Response (200 OK):**
+```json
+{
+  "overdueInvoices": [
+    {
+      "id": "uuid",
+      "invoiceNumber": "FAC-001",
+      "clientName": "Acme Corp",
+      "dueDate": "2025-11-01",
+      "totalAmount": "3000.00",
+      "amountPaid": "0.00",
+      "currency": "EUR",
+      "daysOverdue": 10
+    }
+  ],
+  "clientsWithUnpaidInvoices": [
+    {
+      "clientId": "uuid",
+      "clientName": "Acme Corp",
+      "clientEmail": "contact@acme.com",
+      "unpaidCount": 3,
+      "totalUnpaid": "7500.00"
+    }
+  ],
+  "totalUnpaid": "12000.00"
+}
+```
+
+### GET `/dashboard/stats?month=11&year=2025`
+
+**Query Parameters:**
+- `month` (number, optional) - Mois (1-12), défaut: mois actuel
+- `year` (number, optional) - Année, défaut: année actuelle
+
+**Response (200 OK):**
+```json
+{
+  "period": {
+    "month": 11,
+    "year": 2025
+  },
+  "monthlyRevenue": [
+    {
+      "currency": "EUR",
+      "amount": "15000.00"
+    }
+  ],
+  "invoicesSent": 25,
+  "totalPaid": "12000.00",
+  "totalUnpaid": "8000.00",
+  "invoicesByStatus": [
+    {
+      "status": "draft",
+      "count": 5
+    },
+    {
+      "status": "sent",
+      "count": 15
+    },
+    {
+      "status": "paid",
+      "count": 20
+    },
+    {
+      "status": "overdue",
+      "count": 3
+    }
+  ],
+  "monthlyRevenues": [
+    {
+      "month": 6,
+      "year": 2025,
+      "revenue": "10000.00"
+    },
+    {
+      "month": 7,
+      "year": 2025,
+      "revenue": "12000.00"
+    },
+    {
+      "month": 8,
+      "year": 2025,
+      "revenue": "15000.00"
+    },
+    {
+      "month": 9,
+      "year": 2025,
+      "revenue": "18000.00"
+    },
+    {
+      "month": 10,
+      "year": 2025,
+      "revenue": "14000.00"
+    },
+    {
+      "month": 11,
+      "year": 2025,
+      "revenue": "15000.00"
+    }
+  ]
+}
+```
+
+### GET `/clients/:id/revenue?months=6`
+
+**Query Parameters:**
+- `months` (number, default: 6) - Nombre de mois à retourner
+
+**Response (200 OK):**
+```json
+{
+  "clientId": "uuid",
+  "clientName": "Acme Corp",
+  "monthlyRevenues": [
+    {
+      "month": 6,
+      "year": 2025,
+      "revenue": [
+        {
+          "currency": "EUR",
+          "amount": "5000.00"
+        }
+      ],
+      "invoicesSent": 5,
+      "invoicesPaid": 4
+    },
+    {
+      "month": 7,
+      "year": 2025,
+      "revenue": [
+        {
+          "currency": "EUR",
+          "amount": "7500.00"
+        }
+      ],
+      "invoicesSent": 8,
+      "invoicesPaid": 7
+    },
+    {
+      "month": 8,
+      "year": 2025,
+      "revenue": [
+        {
+          "currency": "EUR",
+          "amount": "6000.00"
+        }
+      ],
+      "invoicesSent": 6,
+      "invoicesPaid": 6
+    }
+  ]
+}
+```
+
 ---
 
 ### Notes de conception
 
-- Les endpoints sont protégés via l’authentification (ex. JWT ou session) et scellés à la `company` du user courant.
+- Les endpoints sont protégés via l'authentification JWT et scellés à la `company` du user courant.
 - Les ressources paginées (clients, produits, invoices) exposent des query params `page`, `limit`, `search`.
-- La gestion des fichiers (logo, documents) n’est pas incluse dans le MVP.
-- Les limites liées aux plans sont appliquées lors de la création d’une facture / client / produit selon le `plan` courant.
+- La gestion des fichiers (logo, documents) n'est pas incluse dans le MVP.
+- Les limites liées aux plans sont appliquées lors de la création d'une facture / client / produit selon le `plan` courant.
+- Tous les endpoints retournent uniquement les données de l'utilisateur connecté (pas d'accès admin).
+- Les statistiques et revenus sont calculés en temps réel depuis la base de données.
 
 

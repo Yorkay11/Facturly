@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Download, Mail, RefreshCcw, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,10 +26,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
+import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/ui/skeleton";
-import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation } from "@/services/facturlyApi";
+import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useMarkInvoicePaidMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { ReminderModal } from "@/components/modals/ReminderModal";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", {
@@ -68,7 +74,14 @@ export default function InvoiceDetailPage() {
   );
   const [deleteInvoice, { isLoading: isDeleting }] = useDeleteInvoiceMutation();
   const [cancelInvoice, { isLoading: isCancelling }] = useCancelInvoiceMutation();
+  const [markInvoicePaid, { isLoading: isMarkingPaid }] = useMarkInvoicePaidMutation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [showMarkPaidDialog, setShowMarkPaidDialog] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
+  const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
+  const [paymentNotes, setPaymentNotes] = useState("");
 
   const handleDelete = async () => {
     if (!invoiceId || !invoice) return;
@@ -156,6 +169,55 @@ export default function InvoiceDetailPage() {
   const clientName = invoice.client.name;
   const clientEmail = invoice.client.email;
 
+  const handleCopyPaymentLink = () => {
+    if (invoice.paymentLink) {
+      navigator.clipboard.writeText(invoice.paymentLink);
+      toast.success("Lien copié", {
+        description: "Le lien de paiement a été copié dans le presse-papiers.",
+      });
+    }
+  };
+
+  const handleMarkPaid = async () => {
+    if (!invoiceId || !invoice) return;
+
+    const amount = paymentAmount || invoice.totalAmount;
+    const remainingAmount = parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid);
+
+    if (parseFloat(amount) > remainingAmount) {
+      toast.error("Erreur", {
+        description: `Le montant ne peut pas dépasser ${formatCurrency(remainingAmount.toString(), invoice.currency)}.`,
+      });
+      return;
+    }
+
+    try {
+      await markInvoicePaid({
+        id: invoiceId,
+        payload: {
+          amount,
+          paymentDate,
+          method: paymentMethod,
+          notes: paymentNotes || undefined,
+        },
+      }).unwrap();
+      toast.success("Facture marquée comme payée", {
+        description: `Le paiement de ${formatCurrency(amount, invoice.currency)} a été enregistré.`,
+      });
+      setShowMarkPaidDialog(false);
+      setPaymentAmount("");
+      setPaymentNotes("");
+    } catch (error) {
+      let errorMessage = "Une erreur est survenue lors de l'enregistrement du paiement.";
+      if (error && typeof error === "object" && error !== null && "data" in error) {
+        errorMessage = (error.data as { message?: string })?.message ?? errorMessage;
+      }
+      toast.error("Erreur", {
+        description: errorMessage,
+      });
+    }
+  };
+
   const timeline = [
     {
       title: "Facture créée",
@@ -206,17 +268,33 @@ export default function InvoiceDetailPage() {
               Modifier
             </Button>
           )}
-          <Button variant="outline" className="gap-2 border-primary/40 text-primary hover:bg-primary/10">
-            <Download className="h-4 w-4" />
-            Télécharger (mock)
-          </Button>
-          {invoice.status !== "draft" && (
+          {invoice.status !== "draft" && invoice.paymentLink && (
+            <Button
+              variant="outline"
+              className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+              onClick={handleCopyPaymentLink}
+            >
+              <LinkIcon className="h-4 w-4" />
+              Copier le lien de paiement
+            </Button>
+          )}
+          {invoice.status !== "draft" && invoice.status !== "paid" && invoice.status !== "cancelled" && (
             <>
-              <Button variant="outline" className="gap-2 border-primary/40 text-primary hover:bg-primary/10">
+              <Button 
+                variant="outline" 
+                className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+                onClick={() => setShowReminderModal(true)}
+              >
                 <Mail className="h-4 w-4" />
                 Envoyer un rappel
               </Button>
-              <Button className="gap-2">
+              <Button 
+                className="gap-2"
+                onClick={() => {
+                  setPaymentAmount((parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString());
+                  setShowMarkPaidDialog(true);
+                }}
+              >
                 <RefreshCcw className="h-4 w-4" />
                 Marquer comme payé
               </Button>
@@ -318,23 +396,125 @@ export default function InvoiceDetailPage() {
         </Card>
       </div>
 
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-primary">Notes internes</CardTitle>
-          <CardDescription>
-            Ces informations sont fictives. Elles seront connectées à la base de données dans la version API.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-foreground/70">
-          <p>
-            Prévoir une relance téléphonique si le paiement n&apos;est pas reçu 3 jours après l&apos;échéance. Ajouter des pénalités si le retard dépasse 15 jours.
-          </p>
-          <Separator />
-          <p>
-            Dernière note : le client a confirmé la réception par email, en attente de signature du responsable financier.
-          </p>
-        </CardContent>
-      </Card>
+      {invoice.notes && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Notes</CardTitle>
+            <CardDescription>Notes associées à cette facture.</CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm text-foreground/70">
+            <p className="whitespace-pre-wrap">{invoice.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {invoice.payments && invoice.payments.length > 0 && (
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Paiements</CardTitle>
+            <CardDescription>Historique des paiements reçus pour cette facture.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {invoice.payments.map((payment) => (
+                <div key={payment.id} className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-primary">
+                      {formatCurrency(payment.amount, invoice.currency)}
+                    </p>
+                    <Badge variant={payment.status === "completed" ? "secondary" : "outline"}>
+                      {payment.status === "completed" ? "Complété" : payment.status}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1 text-xs text-foreground/60">
+                    <p>Date : {formatDate(payment.paymentDate)}</p>
+                    <p>Méthode : {payment.method}</p>
+                    {payment.notes && <p>Notes : {payment.notes}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <ReminderModal
+        open={showReminderModal}
+        onClose={() => setShowReminderModal(false)}
+        preselectedInvoiceId={invoiceId}
+      />
+
+      <Dialog open={showMarkPaidDialog} onOpenChange={setShowMarkPaidDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Marquer comme payé</DialogTitle>
+            <DialogDescription>
+              Enregistrez un paiement reçu pour la facture {invoice.invoiceNumber}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="payment-amount">Montant *</Label>
+              <Input
+                id="payment-amount"
+                type="number"
+                step="0.01"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder={invoice.totalAmount}
+              />
+              <p className="text-xs text-foreground/60">
+                Restant à payer : {formatCurrency(
+                  (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
+                  invoice.currency
+                )}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payment-date">Date de paiement *</Label>
+              <Input
+                id="payment-date"
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payment-method">Méthode de paiement *</Label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger id="payment-method">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bank_transfer">Virement bancaire</SelectItem>
+                  <SelectItem value="check">Chèque</SelectItem>
+                  <SelectItem value="cash">Espèces</SelectItem>
+                  <SelectItem value="online_payment">Paiement en ligne</SelectItem>
+                  <SelectItem value="card">Carte bancaire</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="payment-notes">Notes (optionnel)</Label>
+              <Textarea
+                id="payment-notes"
+                placeholder="Ajouter des notes sur le paiement..."
+                value={paymentNotes}
+                onChange={(e) => setPaymentNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMarkPaidDialog(false)} disabled={isMarkingPaid}>
+              Annuler
+            </Button>
+            <Button onClick={handleMarkPaid} disabled={isMarkingPaid || !paymentAmount || !paymentDate}>
+              {isMarkingPaid ? "Traitement..." : "Enregistrer le paiement"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

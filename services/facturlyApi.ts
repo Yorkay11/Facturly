@@ -193,6 +193,16 @@ export interface InvoicePayment {
   method: string;
   status: string;
   notes?: string;
+  invoice?: {
+    id: string;
+    invoiceNumber: string;
+    totalAmount?: string;
+    amountPaid?: string;
+    client?: {
+      id: string;
+      name: string;
+    };
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -204,6 +214,10 @@ export interface Invoice {
   issueDate: string;
   dueDate: string;
   sentAt?: string;
+  recipientEmail?: string;
+  paymentLinkToken?: string;
+  paymentLinkExpiresAt?: string;
+  paymentLink?: string;
   currency: string;
   subtotalAmount: string;
   taxAmount: string;
@@ -254,6 +268,7 @@ export interface CreateInvoicePayload {
     unitPrice: string;
   }[];
   notes?: string;
+  recipientEmail?: string;
 }
 
 export interface UpdateInvoicePayload {
@@ -302,6 +317,85 @@ export interface CreatePaymentPayload {
 export interface UpdatePaymentPayload {
   status?: string;
   notes?: string;
+}
+
+// Bill (Received Invoice)
+export interface BillInvoice {
+  id: string;
+  invoiceNumber: string;
+  issueDate: string;
+  dueDate: string;
+  totalAmount: string;
+  amountPaid: string;
+  currency: string;
+  status: "draft" | "sent" | "paid" | "cancelled" | "overdue";
+  notes?: string;
+  issuer?: {
+    id: string;
+    name: string;
+    legalName?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+    taxId?: string;
+    vatNumber?: string;
+  };
+  items?: InvoiceItem[];
+  recipient?: {
+    name: string;
+    email: string;
+  };
+}
+
+export interface Bill {
+  id: string;
+  invoice: BillInvoice;
+  status: "RECEIVED" | "VIEWED" | "PAID" | "OVERDUE" | "CANCELLED";
+  viewedAt?: string | null;
+  paidAt?: string | null;
+  payment?: {
+    id: string;
+    amount: string;
+    currency: string;
+    method: string;
+    paidAt: string;
+  };
+  createdAt?: string;
+}
+
+export interface PayBillPayload {
+  method: string;
+  notes?: string;
+}
+
+// Public Invoice
+export interface PublicInvoiceResponse {
+  invoice: BillInvoice;
+  canPay: boolean;
+  remainingAmount: string;
+}
+
+export interface PublicPayPayload {
+  method: string;
+  notes?: string;
+  email?: string;
+}
+
+export interface PublicPayResponse {
+  success: boolean;
+  payment: {
+    id: string;
+    amount: string;
+    currency: string;
+    paidAt: string;
+  };
+  invoice: {
+    id: string;
+    invoiceNumber: string;
+    status: string;
+  };
 }
 
 // Settings
@@ -355,6 +449,110 @@ export interface Subscription {
   updatedAt?: string;
 }
 
+export interface SubscriptionPreview {
+  currentPlan: {
+    id: string;
+    code: string;
+    name: string;
+    price: string;
+  };
+  newPlan: {
+    id: string;
+    code: string;
+    name: string;
+    price: string;
+  };
+  prorationAmount: string;
+  nextBillingDate: string;
+  invoiceLimitChange: {
+    current: number | null;
+    new: number | null;
+  };
+}
+
+// Client Revenue
+export interface MonthlyRevenue {
+  month: number;
+  year: number;
+  revenue: {
+    currency: string;
+    amount: string;
+  }[];
+  invoicesSent: number;
+  invoicesPaid: number;
+}
+
+export interface ClientRevenue {
+  clientId: string;
+  clientName: string;
+  monthlyRevenues: MonthlyRevenue[];
+}
+
+// Dashboard
+export interface DashboardActivity {
+  type: string;
+  date: string;
+  title: string;
+  description?: string;
+  amount?: string;
+  currency?: string;
+  status?: string;
+  entityId: string;
+  entityType: string;
+}
+
+export interface OverdueInvoice {
+  id: string;
+  invoiceNumber: string;
+  clientName: string;
+  dueDate: string;
+  totalAmount: string;
+  amountPaid: string;
+  currency: string;
+  daysOverdue: number;
+}
+
+export interface ClientWithUnpaidInvoices {
+  clientId: string;
+  clientName: string;
+  clientEmail: string;
+  unpaidCount: number;
+  totalUnpaid: string;
+}
+
+export interface DashboardAlerts {
+  overdueInvoices: OverdueInvoice[];
+  clientsWithUnpaidInvoices: ClientWithUnpaidInvoices[];
+  totalUnpaid: string;
+}
+
+export interface InvoiceStatusCount {
+  status: "draft" | "sent" | "paid" | "cancelled" | "overdue";
+  count: number;
+}
+
+export interface MonthlyRevenueData {
+  month: number;
+  year: number;
+  revenue: string;
+}
+
+export interface DashboardStats {
+  period: {
+    month: number;
+    year: number;
+  };
+  monthlyRevenue: {
+    currency: string;
+    amount: string;
+  }[];
+  invoicesSent: number;
+  totalPaid: string;
+  totalUnpaid: string;
+  invoicesByStatus: InvoiceStatusCount[];
+  monthlyRevenues: MonthlyRevenueData[];
+}
+
 // Query parameters
 export interface ListQueryParams {
   page?: number;
@@ -365,6 +563,23 @@ export interface ListQueryParams {
 export interface InvoiceListQueryParams extends ListQueryParams {
   status?: "draft" | "sent" | "paid" | "cancelled" | "overdue";
   clientId?: string;
+}
+
+export interface BillListQueryParams extends ListQueryParams {
+  status?: "RECEIVED" | "VIEWED" | "PAID" | "OVERDUE" | "CANCELLED";
+}
+
+export interface ClientRevenueQueryParams {
+  months?: number;
+}
+
+export interface DashboardStatsQueryParams {
+  month?: number;
+  year?: number;
+}
+
+export interface DashboardActivitiesQueryParams {
+  limit?: number;
 }
 
 // ==================== API Service ====================
@@ -385,7 +600,7 @@ export const facturlyApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment"],
+  tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment", "Dashboard", "Bill"],
   endpoints: (builder) => ({
     // ==================== Auth ====================
     register: builder.mutation<AuthResponse, RegisterPayload>({
@@ -475,6 +690,15 @@ export const facturlyApi = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["Client"],
+    }),
+    getClientRevenue: builder.query<ClientRevenue, { id: string; params?: ClientRevenueQueryParams }>({
+      query: ({ id, params }) => {
+        const searchParams = new URLSearchParams();
+        if (params && params.months) searchParams.append("months", params.months.toString());
+        const queryString = searchParams.toString();
+        return `/clients/${id}/revenue${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: (_result, _error, { id }) => [{ type: "Client", id }],
     }),
 
     // ==================== Products ====================
@@ -664,7 +888,7 @@ export const facturlyApi = createApi({
       }),
       invalidatesTags: ["Subscription"],
     }),
-    previewSubscription: builder.mutation<any, { planId: string }>({
+    previewSubscription: builder.mutation<SubscriptionPreview, { planId: string }>({
       query: (body) => ({
         url: "/subscriptions/preview",
         method: "POST",
@@ -677,6 +901,68 @@ export const facturlyApi = createApi({
         method: "POST",
       }),
       invalidatesTags: ["Subscription"],
+    }),
+
+    // ==================== Dashboard ====================
+    getDashboardActivities: builder.query<{ data: DashboardActivity[] }, DashboardActivitiesQueryParams | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params && params.limit) searchParams.append("limit", params.limit.toString());
+        const queryString = searchParams.toString();
+        return `/dashboard/activities${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: ["Invoice", "Client", "Payment"],
+    }),
+    getDashboardAlerts: builder.query<DashboardAlerts, void>({
+      query: () => "/dashboard/alerts",
+      providesTags: ["Invoice", "Client"],
+    }),
+    getDashboardStats: builder.query<DashboardStats, DashboardStatsQueryParams | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params && params.month) searchParams.append("month", params.month.toString());
+        if (params && params.year) searchParams.append("year", params.year.toString());
+        const queryString = searchParams.toString();
+        return `/dashboard/stats${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: ["Invoice", "Payment"],
+    }),
+
+    // ==================== Bills (Received Invoices) ====================
+    getBills: builder.query<PaginatedResponse<Bill>, BillListQueryParams | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params && params.page) searchParams.append("page", params.page.toString());
+        if (params && params.limit) searchParams.append("limit", params.limit.toString());
+        if (params && params.status) searchParams.append("status", params.status);
+        const queryString = searchParams.toString();
+        return `/bills${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: ["Bill"],
+    }),
+    getBillById: builder.query<Bill, string>({
+      query: (id) => `/bills/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Bill", id }],
+    }),
+    payBill: builder.mutation<Bill, { id: string; payload: PayBillPayload }>({
+      query: ({ id, payload }) => ({
+        url: `/bills/${id}/pay`,
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: "Bill", id }, "Bill"],
+    }),
+
+    // ==================== Public Endpoints ====================
+    getPublicInvoice: builder.query<PublicInvoiceResponse, string>({
+      query: (token) => `/public/invoice/${token}`,
+    }),
+    payPublicInvoice: builder.mutation<PublicPayResponse, { token: string; payload: PublicPayPayload }>({
+      query: ({ token, payload }) => ({
+        url: `/public/pay/${token}`,
+        method: "POST",
+        body: payload,
+      }),
     }),
   }),
 });
@@ -700,6 +986,7 @@ export const {
   useCreateClientMutation,
   useUpdateClientMutation,
   useDeleteClientMutation,
+  useGetClientRevenueQuery,
   // Products
   useGetProductsQuery,
   useGetProductByIdQuery,
@@ -733,4 +1020,15 @@ export const {
   useCreateSubscriptionMutation,
   usePreviewSubscriptionMutation,
   useCancelSubscriptionMutation,
+  // Dashboard
+  useGetDashboardActivitiesQuery,
+  useGetDashboardAlertsQuery,
+  useGetDashboardStatsQuery,
+  // Bills
+  useGetBillsQuery,
+  useGetBillByIdQuery,
+  usePayBillMutation,
+  // Public
+  useGetPublicInvoiceQuery,
+  usePayPublicInvoiceMutation,
 } = facturlyApi;

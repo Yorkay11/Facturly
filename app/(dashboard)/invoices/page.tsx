@@ -165,7 +165,7 @@ export default function InvoicesPage() {
         )}
 
         {!isLoading && !isError && invoices && invoices.length > 0 && (
-          <div className="overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm">
+          <div className="relative z-0 overflow-x-auto rounded-xl border border-primary/20 bg-white shadow-sm">
             <Table>
               <TableHeader className="bg-primary/5">
                 <TableRow>

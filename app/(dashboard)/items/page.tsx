@@ -97,7 +97,7 @@ export default function ItemsPage() {
             Nouvelle prestation
           </Button>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className={`grid gap-4 ${products && products.length > 0 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
           <Card className="border-primary/30 bg-primary/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-primary/80">Prestations disponibles</CardTitle>
@@ -109,24 +109,53 @@ export default function ItemsPage() {
           </Card>
           <Card className="border-primary/30 bg-primary/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">Panier moyen estimé</CardTitle>
+              <CardTitle className="text-sm font-medium text-primary/80">Prix moyen</CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-2xl font-semibold text-primary">
-                {products && products.length > 0 ? `${(products.length * 35).toFixed(0)} €` : "—"}
+                {products && products.length > 0 
+                  ? (() => {
+                      const total = products.reduce((sum, p) => {
+                        const price = getPrice(p);
+                        return sum + price;
+                      }, 0);
+                      const average = total / products.length;
+                      return new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: products[0]?.currency || "EUR",
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      }).format(average);
+                    })()
+                  : "—"}
               </p>
-              <p className="text-xs text-foreground/60">Estimation fictive</p>
+              <p className="text-xs text-foreground/60">Prix moyen des prestations</p>
             </CardContent>
           </Card>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">Dernière mise à jour</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">Février 2025</p>
-              <p className="text-xs text-foreground/60">Planning actualisation à venir</p>
-            </CardContent>
-          </Card>
+          {products && products.length > 0 && (() => {
+            const latestProduct = products.reduce((latest, p) => {
+              if (!latest || !p.updatedAt) return latest || p;
+              if (!latest.updatedAt) return p;
+              return new Date(p.updatedAt) > new Date(latest.updatedAt) ? p : latest;
+            }, null as Product | null);
+            
+            return latestProduct?.updatedAt ? (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-primary/80">Dernière mise à jour</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-2xl font-semibold text-primary">
+                    {new Date(latestProduct.updatedAt).toLocaleDateString("fr-FR", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                  <p className="text-xs text-foreground/60">Dernière modification</p>
+                </CardContent>
+              </Card>
+            ) : null;
+          })()}
         </div>
       </div>
 
@@ -145,10 +174,10 @@ export default function ItemsPage() {
             <div>
               <CardTitle className="text-primary">Catalogue</CardTitle>
               <p className="text-sm text-foreground/60">
-                Ces données sont mockées ; la gestion CRUD arrivera avec le backend Nest.
+                Liste de vos produits et services disponibles.
               </p>
             </div>
-            <Input placeholder="Rechercher une prestation (mock)" className="max-w-sm" />
+            <Input placeholder="Rechercher une prestation" className="max-w-sm" />
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>
@@ -156,7 +185,7 @@ export default function ItemsPage() {
                 <TableRow>
                   <TableHead>Référence</TableHead>
                   <TableHead>Nom</TableHead>
-                  <TableHead className="text-right">Tarif HT (mock)</TableHead>
+                  <TableHead className="text-right">Tarif HT</TableHead>
                   <TableHead className="text-right">TVA par défaut</TableHead>
                   <TableHead className="w-[100px] text-right">Actions</TableHead>
                 </TableRow>

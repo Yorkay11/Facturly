@@ -57,6 +57,11 @@ const navItems: Array<{
         href: "/invoices/new",
         description: "Construisez un document de facturation",
       },
+      {
+        label: "Factures reçues",
+        href: "/bills",
+        description: "Consultez et gérez les factures reçues",
+      },
     ],
   },
   {
@@ -129,7 +134,7 @@ export const Topbar = () => {
    };
 
   return (
-    <header className="border-b border-primary/10 bg-white/85 py-4 backdrop-blur">
+    <header className="relative z-10 border-b border-primary/10 bg-white/85 py-4 backdrop-blur">
       <div className="mx-auto flex max-w-[90vw] flex-col gap-4 px-6 md:flex-row md:items-center md:justify-between md:px-10">
         <div className="flex items-center justify-between md:hidden">
           <div className="flex flex-col">

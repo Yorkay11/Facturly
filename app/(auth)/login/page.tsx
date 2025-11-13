@@ -32,8 +32,8 @@ function LoginForm() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "demo@facturly.app",
-      password: "secret123",
+      email: "",
+      password: "",
     },
   });
 
@@ -138,9 +138,6 @@ function LoginForm() {
           </div>
         </CardContent>
       </Card>
-      <p className="mt-6 text-center text-xs text-foreground/50">
-        Mock de connexion — l&apos;authentification sera gérée par l&apos;API Nest.js.
-      </p>
     </div>
   );
 }

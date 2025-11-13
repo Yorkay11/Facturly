@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Mail, Phone, MapPin, Building2, Trash2, Plus, History } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Building2, Trash2, Plus, History, TrendingUp } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   useGetClientByIdQuery,
   useGetInvoicesQuery,
   useDeleteClientMutation,
+  useGetClientRevenueQuery,
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
 
@@ -54,6 +55,11 @@ export default function ClientDetailPage() {
   
   const { data: invoicesResponse, isLoading: isLoadingInvoices } = useGetInvoicesQuery(
     shouldSkip ? { page: 1, limit: 10 } : { page: 1, limit: 10, clientId: clientId! },
+    { skip: shouldSkip }
+  );
+  
+  const { data: clientRevenue, isLoading: isLoadingRevenue } = useGetClientRevenueQuery(
+    shouldSkip ? { id: "" } : { id: clientId!, params: { months: 6 } },
     { skip: shouldSkip }
   );
   
@@ -299,6 +305,57 @@ export default function ClientDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {clientRevenue && clientRevenue.monthlyRevenues.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  Revenus mensuels
+                </CardTitle>
+                <CardDescription>Évolution sur les 6 derniers mois</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingRevenue ? (
+                  <div className="space-y-3">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {clientRevenue.monthlyRevenues.slice().reverse().map((monthData, index) => {
+                      const date = new Date(monthData.year, monthData.month - 1, 1);
+                      const monthName = date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+                      const revenue = monthData.revenue[0];
+                      
+                      return (
+                        <div
+                          key={`${monthData.month}-${monthData.year}`}
+                          className="rounded-lg border border-primary/20 bg-primary/5 p-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-primary capitalize">{monthName}</p>
+                              <p className="text-xs text-foreground/60">
+                                {monthData.invoicesSent} facture{monthData.invoicesSent > 1 ? "s" : ""} envoyée{monthData.invoicesSent > 1 ? "s" : ""} • {monthData.invoicesPaid} payée{monthData.invoicesPaid > 1 ? "s" : ""}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-primary">
+                                {revenue
+                                  ? formatCurrency(revenue.amount, revenue.currency)
+                                  : "—"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">

@@ -189,7 +189,7 @@ export default function PublicPayPage() {
                   {formatCurrency(invoice.totalAmount, invoice.currency)}
                 </p>
                 <p className="text-xs text-foreground/60">
-                  Restant à payer : {formatCurrency(invoiceData.remainingAmount, invoice.currency)}
+                  Restant à payer : {formatCurrency(invoice.remainingAmount, invoice.currency)}
                 </p>
               </div>
               <div className="space-y-1">
@@ -300,7 +300,7 @@ export default function PublicPayPage() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-foreground/70">Montant à payer</span>
                       <span className="text-lg font-semibold text-primary">
-                        {formatCurrency(invoiceData.remainingAmount, invoice.currency)}
+                        {formatCurrency(invoice.remainingAmount, invoice.currency)}
                       </span>
                     </div>
                   </div>

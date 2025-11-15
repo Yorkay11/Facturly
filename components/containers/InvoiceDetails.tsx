@@ -349,7 +349,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 }).unwrap();
 
                 toast.success("Facture envoyée", {
-                    description: `La facture ${sentInvoice.invoiceNumber || invoiceIdToSend} a été envoyée avec succès.`,
+                    description: `La facture ${sentInvoice.invoiceNumber || invoiceIdToSend} a été envoyée avec succès${sentInvoice.recipientEmail ? ` à ${sentInvoice.recipientEmail}` : ""}.`,
                 });
 
                 // Réinitialiser les stores

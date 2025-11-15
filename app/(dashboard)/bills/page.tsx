@@ -26,7 +26,7 @@ import Skeleton from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGetBillsQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const formatCurrency = (value: string | number, currency: string) => {
   const numValue = typeof value === "string" ? parseFloat(value) : value;
@@ -45,26 +45,48 @@ const formatDate = (value: string) =>
   });
 
 const getStatusBadge = (status: string) => {
-  const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-    RECEIVED: "default",
-    VIEWED: "default",
-    PAID: "secondary",
-    OVERDUE: "destructive",
-    CANCELLED: "outline",
-  };
-  
-  const labels: Record<string, string> = {
-    RECEIVED: "Reçue",
-    VIEWED: "Consultée",
-    PAID: "Payée",
-    OVERDUE: "En retard",
-    CANCELLED: "Annulée",
+  const statusMap: Record<string, { label: string; className: string }> = {
+    RECEIVED: {
+      label: "Reçue",
+      className: "bg-blue-100 text-blue-700 border border-blue-300",
+    },
+    VIEWED: {
+      label: "Consultée",
+      className: "bg-blue-100 text-blue-700 border border-blue-300",
+    },
+    PAID: {
+      label: "Payée",
+      className: "bg-emerald-100 text-emerald-700 border border-emerald-300",
+    },
+    OVERDUE: {
+      label: "En retard",
+      className: "bg-red-100 text-red-700 border border-red-300",
+    },
+    CANCELLED: {
+      label: "Annulée",
+      className: "bg-gray-100 text-gray-600 border border-gray-300",
+    },
   };
 
+  const config = statusMap[status];
+
+  if (!config) {
+    return (
+      <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+        {status}
+      </span>
+    );
+  }
+
   return (
-    <Badge variant={variants[status] || "default"}>
-      {labels[status] || status}
-    </Badge>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+        config.className
+      )}
+    >
+      {config.label}
+    </span>
   );
 };
 

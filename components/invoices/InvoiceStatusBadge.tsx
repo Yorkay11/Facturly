@@ -6,23 +6,23 @@ const statusMap: Record<
 > = {
   draft: {
     label: "Brouillon",
-    className: "bg-primary/10 text-primary border border-primary/30",
+    className: "bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-900/20 dark:text-amber-400",
   },
   sent: {
     label: "Envoyée",
-    className: "bg-secondary text-secondary-foreground border border-primary/30",
+    className: "bg-indigo-100 text-indigo-800 border border-indigo-300 dark:bg-indigo-900/20 dark:text-indigo-400",
   },
   paid: {
     label: "Payée",
-    className: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+    className: "bg-green-100 text-green-800 border border-green-400 dark:bg-green-900/20 dark:text-green-400",
   },
   overdue: {
     label: "En retard",
-    className: "bg-accent text-accent-foreground border border-accent/50",
+    className: "bg-orange-100 text-orange-800 border border-orange-400 dark:bg-orange-900/20 dark:text-orange-400",
   },
   cancelled: {
     label: "Annulée",
-    className: "bg-gray-100 text-gray-700 border border-gray-200",
+    className: "bg-slate-200 text-slate-700 border border-slate-400 dark:bg-slate-800 dark:text-slate-300",
   },
 };
 

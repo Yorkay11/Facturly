@@ -224,6 +224,10 @@ export interface Invoice {
   totalAmount: string;
   amountPaid: string;
   notes?: string;
+  viewedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionComment?: string | null;
+  rejectionReason?: string | null;
   client: {
     id: string;
     name: string;
@@ -371,10 +375,54 @@ export interface PayBillPayload {
 }
 
 // Public Invoice
-export interface PublicInvoiceResponse {
-  invoice: BillInvoice;
-  canPay: boolean;
+export interface PublicInvoice {
+  id: string;
+  invoiceNumber: string;
+  issueDate: string;
+  dueDate: string;
+  status: "draft" | "sent" | "paid" | "cancelled" | "overdue";
+  currency: string;
+  subtotalAmount: string;
+  taxAmount: string;
+  totalAmount: string;
+  amountPaid: string;
   remainingAmount: string;
+  notes?: string;
+  viewedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectionComment?: string | null;
+  rejectionReason?: string | null;
+  items: InvoiceItem[];
+  issuer: {
+    id: string;
+    name: string;
+    legalName?: string;
+    taxId?: string;
+    vatNumber?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+    email?: string;
+  };
+  recipient: {
+    id: string;
+    name: string;
+    email?: string;
+    addressLine1?: string;
+    city?: string;
+    country?: string;
+  };
+  payments: InvoicePayment[];
+}
+
+export interface PublicInvoiceResponse {
+  invoice: PublicInvoice;
+  canAccept: boolean;
+  canPay: boolean;
+  isRejected: boolean;
+  isPaid: boolean;
 }
 
 export interface PublicPayPayload {
@@ -396,6 +444,25 @@ export interface PublicPayResponse {
     invoiceNumber: string;
     status: string;
   };
+}
+
+export interface AcceptInvoiceResponse {
+  success: boolean;
+  message: string;
+  paymentLink: string;
+  remainingAmount: string;
+  currency: string;
+}
+
+export interface RejectInvoicePayload {
+  comment: string;
+  reason?: string;
+}
+
+export interface RejectInvoiceResponse {
+  success: boolean;
+  message: string;
+  rejectedAt: string;
 }
 
 // Settings
@@ -957,6 +1024,19 @@ export const facturlyApi = createApi({
     getPublicInvoice: builder.query<PublicInvoiceResponse, string>({
       query: (token) => `/public/invoice/${token}`,
     }),
+    acceptPublicInvoice: builder.mutation<AcceptInvoiceResponse, string>({
+      query: (token) => ({
+        url: `/public/invoice/${token}/accept`,
+        method: "POST",
+      }),
+    }),
+    rejectPublicInvoice: builder.mutation<RejectInvoiceResponse, { token: string; payload: RejectInvoicePayload }>({
+      query: ({ token, payload }) => ({
+        url: `/public/invoice/${token}/reject`,
+        method: "POST",
+        body: payload,
+      }),
+    }),
     payPublicInvoice: builder.mutation<PublicPayResponse, { token: string; payload: PublicPayPayload }>({
       query: ({ token, payload }) => ({
         url: `/public/pay/${token}`,
@@ -1030,5 +1110,7 @@ export const {
   usePayBillMutation,
   // Public
   useGetPublicInvoiceQuery,
+  useAcceptPublicInvoiceMutation,
+  useRejectPublicInvoiceMutation,
   usePayPublicInvoiceMutation,
 } = facturlyApi;

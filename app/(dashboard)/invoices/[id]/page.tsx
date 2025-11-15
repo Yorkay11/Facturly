@@ -169,11 +169,29 @@ export default function InvoiceDetailPage() {
   const clientName = invoice.client.name;
   const clientEmail = invoice.client.email;
 
+  // Construire le lien public de visualisation depuis le token
+  const getPublicInvoiceLink = () => {
+    if (!invoice.paymentLinkToken) return null;
+    // Utiliser window.location.origin pour l'URL du frontend
+    const frontendUrl = typeof window !== "undefined" ? window.location.origin : "";
+    return `${frontendUrl}/invoice/${invoice.paymentLinkToken}`;
+  };
+
   const handleCopyPaymentLink = () => {
     if (invoice.paymentLink) {
       navigator.clipboard.writeText(invoice.paymentLink);
       toast.success("Lien copié", {
         description: "Le lien de paiement a été copié dans le presse-papiers.",
+      });
+    }
+  };
+
+  const handleCopyPublicLink = () => {
+    const publicLink = getPublicInvoiceLink();
+    if (publicLink) {
+      navigator.clipboard.writeText(publicLink);
+      toast.success("Lien copié", {
+        description: "Le lien public de visualisation a été copié dans le presse-papiers.",
       });
     }
   };
@@ -268,15 +286,27 @@ export default function InvoiceDetailPage() {
               Modifier
             </Button>
           )}
-          {invoice.status !== "draft" && invoice.paymentLink && (
-            <Button
-              variant="outline"
-              className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-              onClick={handleCopyPaymentLink}
-            >
-              <LinkIcon className="h-4 w-4" />
-              Copier le lien de paiement
-            </Button>
+          {invoice.status !== "draft" && invoice.paymentLinkToken && (
+            <>
+              <Button
+                variant="outline"
+                className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+                onClick={handleCopyPublicLink}
+              >
+                <LinkIcon className="h-4 w-4" />
+                Copier le lien public
+              </Button>
+              {invoice.paymentLink && (
+                <Button
+                  variant="outline"
+                  className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+                  onClick={handleCopyPaymentLink}
+                >
+                  <LinkIcon className="h-4 w-4" />
+                  Copier le lien de paiement
+                </Button>
+              )}
+            </>
           )}
           {invoice.status !== "draft" && invoice.status !== "paid" && invoice.status !== "cancelled" && (
             <>

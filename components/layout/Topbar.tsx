@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { BadgeHelp, Bell, Menu, Plus, LogOut, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -29,7 +29,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
-import { useGetMeQuery, useGetCompanyQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
+import { useGetMeQuery, useGetCompanyQuery, useGetSubscriptionQuery, useLogoutMutation } from "@/services/facturlyApi";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const navItems: Array<{
   label: string;
@@ -48,19 +50,19 @@ const navItems: Array<{
     description: "Suivre, créer et envoyer vos factures",
     children: [
       {
-        label: "Toutes les factures",
+        label: "Factures créées",
         href: "/invoices",
-        description: "Consultez vos factures par statut",
-      },
-      {
-        label: "Nouvelle facture",
-        href: "/invoices/new",
-        description: "Construisez un document de facturation",
+        description: "Consultez vos factures créées",
       },
       {
         label: "Factures reçues",
         href: "/bills",
         description: "Consultez et gérez les factures reçues",
+      },
+      {
+        label: "Nouvelle facture",
+        href: "/invoices/new",
+        description: "Construisez un document de facturation",
       },
     ],
   },
@@ -91,11 +93,13 @@ export const Topbar = () => {
   const isMobile = useIsMobile();
   const [isProfileOpen, setProfileOpen] = useState(false);
   const { handleNavigation } = useNavigationBlock();
+  const router = useRouter();
   
   // Fetch user data from API
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
   const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
   const { data: subscription, isLoading: isLoadingSubscription } = useGetSubscriptionQuery();
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   
   // Generate avatar initials from user name
   const getInitials = (firstName?: string, lastName?: string) => {
@@ -402,13 +406,56 @@ export const Topbar = () => {
             <Button 
               variant="destructive" 
               className="w-full"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
-                handleNavigation("/logout");
+                try {
+                  // Appeler la mutation de logout
+                  await logout().unwrap();
+                  
+                  // Supprimer le cookie d'authentification
+                  if (typeof window !== "undefined") {
+                    document.cookie = "facturly_access_token=; path=/; max-age=0";
+                    document.cookie = "facturly_refresh_token=; path=/; max-age=0";
+                  }
+                  
+                  // Afficher un message de succès
+                  toast.success("Déconnexion réussie", {
+                    description: "Vous avez été déconnecté avec succès.",
+                  });
+                  
+                  // Fermer le sheet de profil
+                  setProfileOpen(false);
+                  
+                  // Rediriger vers la page de connexion
+                  router.push("/login");
+                } catch (error) {
+                  // En cas d'erreur, supprimer quand même le cookie et rediriger
+                  if (typeof window !== "undefined") {
+                    document.cookie = "facturly_access_token=; path=/; max-age=0";
+                    document.cookie = "facturly_refresh_token=; path=/; max-age=0";
+                  }
+                  
+                  toast.error("Erreur lors de la déconnexion", {
+                    description: "Vous avez été déconnecté localement.",
+                  });
+                  
+                  setProfileOpen(false);
+                  router.push("/login");
+                }
               }}
+              disabled={isLoggingOut}
             >
-              <LogOut className="h-4 w-4" />
-              Déconnexion
+              {isLoggingOut ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Déconnexion...
+                </>
+              ) : (
+                <>
+                  <LogOut className="h-4 w-4" />
+                  Déconnexion
+                </>
+              )}
             </Button>
           </SheetFooter>
         </SheetContent>

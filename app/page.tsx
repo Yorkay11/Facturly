@@ -16,11 +16,8 @@ export default function LandingPage() {
       <div className="relative z-10">
         <main className="max-w-[1320px] mx-auto relative">
           <HeroSection />
-          {/* Dashboard Preview Wrapper */}
           <div className="absolute bottom-[-150px] md:bottom-[-400px] left-1/2 transform -translate-x-1/2 z-30">
-            <AnimatedSection>
-              <DashboardPreview />
-            </AnimatedSection>
+            <DashboardPreview />
           </div>
         </main>
         <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto px-6 mt-[411px] md:mt-[400px]" delay={0.1}>

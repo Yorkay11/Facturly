@@ -26,7 +26,9 @@ export function DashboardPreview() {
           scale,
           y,
           transformStyle: "preserve-3d",
-          transformPerspective: 1000
+          transformPerspective: 1000,
+          willChange: "transform, opacity",
+          backfaceVisibility: "hidden"
         }}
         className="bg-primary-dark/50 rounded-xl p-2 shadow-2xl origin-center"
       >
@@ -36,6 +38,7 @@ export function DashboardPreview() {
           width={1160}
           height={700}
           className="w-full h-[700px] object-cover rounded-lg shadow-lg"
+          priority
         />
       </motion.div>
     </div>

@@ -37,7 +37,7 @@ export function DashboardPreview() {
           alt="Dashboard preview"
           width={1160}
           height={700}
-          className="w-full h-[700px] object-cover rounded-lg shadow-lg"
+          className="w-full h-full object-cover rounded-lg shadow-lg"
           priority
         />
       </motion.div>

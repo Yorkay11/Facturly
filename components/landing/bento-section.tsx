@@ -1,9 +1,9 @@
-import AiCodeReviews from "./bento/ai-code-reviews"
-import RealtimeCodingPreviews from "./bento/real-time-previews"
-import OneClickIntegrationsIllustration from "./bento/one-click-integrations-illustration"
-import MCPConnectivityIllustration from "./bento/mcp-connectivity-illustration" // Updated import
-import EasyDeployment from "./bento/easy-deployment"
-import ParallelCodingAgents from "./bento/parallel-agents" // Updated import
+import InvoiceCreation from "./bento/invoice-creation"
+import EmailSending from "./bento/email-sending"
+import PaymentTracking from "./bento/payment-tracking"
+import ClientManagement from "./bento/client-management"
+import OnlinePayment from "./bento/online-payment"
+import DashboardIntelligence from "./bento/dashboard-intelligence"
 import type { ComponentType } from "react"
 
 interface BentoCardProps {
@@ -45,32 +45,32 @@ export function BentoSection() {
     {
       title: "Création de factures simplifiée.",
       description: "Créez des factures professionnelles en quelques clics.",
-      Component: AiCodeReviews,
+      Component: InvoiceCreation,
     },
     {
       title: "Envoi par email automatique",
       description: "Envoyez vos factures directement par email à vos clients.",
-      Component: RealtimeCodingPreviews,
+      Component: EmailSending,
     },
     {
       title: "Suivi des paiements en temps réel",
       description: "Visualisez l'état de vos factures et paiements en direct.",
-      Component: OneClickIntegrationsIllustration,
+      Component: PaymentTracking,
     },
     {
       title: "Gestion de clients et produits",
       description: "Organisez vos contacts et produits pour facturer plus vite.",
-      Component: MCPConnectivityIllustration, // Updated component
+      Component: ClientManagement,
     },
     {
-      title: "Paiement en ligne sécurisé", // Swapped position
+      title: "Paiement en ligne sécurisé",
       description: "Permettez à vos clients de payer directement en ligne.",
-      Component: ParallelCodingAgents, // Updated component
+      Component: OnlinePayment,
     },
     {
-      title: "Tableau de bord intelligent", // Swapped position
+      title: "Tableau de bord intelligent",
       description: "Suivez vos revenus et statistiques en un coup d'œil.",
-      Component: EasyDeployment,
+      Component: DashboardIntelligence,
     },
   ]
 

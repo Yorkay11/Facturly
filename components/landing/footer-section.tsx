@@ -1,11 +1,22 @@
 "use client"
 
+import Link from "next/link"
+import Image from "next/image"
+
 export function FooterSection() {
   return (
     <footer className="w-full max-w-[1320px] mx-auto px-5 flex flex-col md:flex-row justify-between items-start gap-8 md:gap-0 py-10 md:py-[70px]">
       {/* Left Section: Logo, Description */}
       <div className="flex flex-col justify-start items-start gap-4 p-4 md:p-8">
-        <div className="text-foreground text-xl font-semibold">Facturly</div>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logos/logo.png"
+            alt="Facturly"
+            width={120}
+            height={40}
+            className="h-8 w-auto object-contain"
+          />
+        </Link>
         <p className="text-foreground/90 text-sm font-medium leading-[18px] text-left max-w-sm">
           Facturation simple & intelligente
         </p>

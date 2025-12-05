@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 import StatCard from "@/components/dashboard/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilePlus, RefreshCcw, Users, PieChart, Wallet, TrendingUp, TrendingDown, HelpCircle, BookOpen, Mail, Sparkles, ExternalLink, ArrowRight, BarChart3 } from "lucide-react";
+import { IoDocumentTextOutline, IoRefreshOutline, IoPeopleOutline, IoPieChartOutline, IoWalletOutline, IoTrendingUpOutline, IoTrendingDownOutline, IoHelpCircleOutline, IoBookOutline, IoMailOutline, IoOpenOutline, IoArrowForwardOutline, IoBarChartOutline } from "react-icons/io5";
+import { FaMagic } from "react-icons/fa";
 import QuickActionCard from "@/components/dashboard/QuickActionCard";
-import SimpleChart from "@/components/dashboard/SimpleChart";
 import RevenueChart from "@/components/dashboard/RevenueChart";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import AtRiskCard from "@/components/dashboard/AtRiskCard";
@@ -220,21 +220,21 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
           <QuickActionCard
-            icon={<FilePlus className="h-5 w-5" />}
+            icon={<IoDocumentTextOutline className="h-5 w-5" />}
             title="Créer une facture"
             description="Brouillon en 5 étapes, preview et envoi."
             onClick={() => router.push("/invoices/new")}
             color="blue"
           />
           <QuickActionCard
-            icon={<RefreshCcw className="h-5 w-5" />}
+            icon={<IoRefreshOutline className="h-5 w-5" />}
             title="Relancer un paiement"
             description="Choisissez un client et envoyez un rappel."
             onClick={() => router.push("/reminders")}
             color="orange"
           />
           <QuickActionCard
-            icon={<Users className="h-5 w-5" />}
+            icon={<IoPeopleOutline className="h-5 w-5" />}
             title="Ajouter un client"
             description="Ajoutez un contact depuis votre carnet (modal)."
             onClick={() => setClientModalOpen(true)}
@@ -255,13 +255,13 @@ export default function DashboardPage() {
                 }).format(stats.monthlyRevenue)
           }
           helper={isLoading ? "Chargement..." : undefined}
-          icon={<Wallet className="h-5 w-5" />}
+          icon={<IoWalletOutline className="h-5 w-5" />}
         />
         <StatCard
           title="Factures envoyées"
           value={isLoading ? "--" : stats.invoicesSent.toString()}
           helper={isLoading ? "Chargement..." : undefined}
-          icon={<PieChart className="h-5 w-5" />}
+          icon={<IoPieChartOutline className="h-5 w-5" />}
         />
         <StatCard
           title="Total payé"
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                 }).format(stats.totalPaid)
           }
           helper={isLoading ? "Chargement..." : undefined}
-          icon={<TrendingUp className="h-5 w-5" />}
+          icon={<IoTrendingUpOutline className="h-5 w-5" />}
         />
         <StatCard
           title="Impayés"
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                 }).format(stats.totalUnpaid)
           }
           helper={isLoading ? "Chargement..." : undefined}
-          icon={<TrendingDown className="h-5 w-5" />}
+          icon={<IoTrendingDownOutline className="h-5 w-5" />}
           variant="accent"
         />
       </div>
@@ -297,7 +297,7 @@ export default function DashboardPage() {
         <Card className="border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
-              <BarChart3 className="h-5 w-5" />
+              <IoBarChartOutline className="h-5 w-5" />
               Tendances des revenus
             </CardTitle>
             <p className="text-xs text-foreground/60">
@@ -316,7 +316,7 @@ export default function DashboardPage() {
               </div>
             ) : monthlyRevenue.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <BarChart3 className="h-12 w-12 text-foreground/30 mb-3" />
+                <IoBarChartOutline className="h-12 w-12 text-foreground/30 mb-3" />
                 <p className="text-sm font-medium text-foreground/70 mb-1">
                   Aucune donnée disponible
                 </p>
@@ -356,7 +356,7 @@ export default function DashboardPage() {
         <Card className="border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
-              <HelpCircle className="h-5 w-5" />
+              <IoHelpCircleOutline className="h-5 w-5" />
               Support & nouveautés
             </CardTitle>
             <p className="text-xs text-foreground/60">Ressources, guides et assistance.</p>
@@ -368,18 +368,18 @@ export default function DashboardPage() {
               rel="noopener noreferrer"
               className="group flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 transition-all hover:border-primary/40 hover:bg-primary/10"
             >
-              <BookOpen className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+              <IoBookOutline className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-primary">Documentation</p>
-                  <ExternalLink className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <IoOpenOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>
                 <p className="text-xs text-foreground/70">Guides complets, tutoriels vidéo et FAQ pour maîtriser Facturly.</p>
               </div>
             </a>
             <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-3">
               <div className="flex items-start gap-3">
-                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                <FaMagic className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold text-primary">Nouvelle fonctionnalité</p>
@@ -393,24 +393,16 @@ export default function DashboardPage() {
               href="mailto:support@facturly.app?subject=Demande d'assistance"
               className="group flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 transition-all hover:border-primary/40 hover:bg-primary/10"
             >
-              <Mail className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+              <IoMailOutline className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-primary">Support par email</p>
-                  <ArrowRight className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-1" />
+                  <IoArrowForwardOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-1" />
                 </div>
                 <p className="text-xs text-foreground/70">Une question ? Contactez notre équipe à support@facturly.app</p>
               </div>
             </a>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <div className="flex items-start gap-3">
-                <Sparkles className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-600" />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-semibold text-slate-800">À venir</p>
-                  <p className="text-xs text-slate-600">Templates PDF personnalisables, intégrations comptables et API publique en développement.</p>
-                </div>
-              </div>
-            </div>
+            
           </CardContent>
         </Card>
       </div>
@@ -428,7 +420,7 @@ export default function DashboardPage() {
                 <Skeleton className="h-20 w-full" />
               </div>
             ) : activities.length > 0 ? (
-              <RecentActivity items={activities} />
+              <RecentActivity items={activities.slice(0, 3)} />
             ) : (
               <div className="rounded-lg border border-dashed border-primary/30 bg-white py-8 text-center">
                 <p className="text-sm text-foreground/60">Aucune activité récente</p>

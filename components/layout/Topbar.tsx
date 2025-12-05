@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { BadgeHelp, Bell, Menu, Plus, LogOut, Settings, User } from "lucide-react";
+import { IoHelpCircleOutline, IoNotificationsOutline, IoMenuOutline, IoAddOutline, IoLogOutOutline, IoSettingsOutline, IoPersonOutline } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -141,14 +142,19 @@ export const Topbar = () => {
     <header className="relative z-10 border-b border-primary/10 bg-white/85 py-4 backdrop-blur">
       <div className="mx-auto flex max-w-[90vw] flex-col gap-4 px-6 md:flex-row md:items-center md:justify-between md:px-10">
         <div className="flex items-center justify-between md:hidden">
-          <div className="flex flex-col">
-            <p className="text-xl font-bold text-primary">Facturly</p>
-            <span className="text-xs text-foreground/60">Facturation simple & intelligente</span>
-          </div>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Image
+              src="/logos/logo.png"
+              alt="Facturly"
+              width={120}
+              height={40}
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
-                <Menu className="h-5 w-5" />
+                <IoMenuOutline className="h-5 w-5" />
                 <span className="sr-only">Ouvrir la navigation</span>
               </Button>
             </SheetTrigger>
@@ -213,10 +219,15 @@ export const Topbar = () => {
         </div>
 
         <div className="hidden flex-wrap items-center gap-3 md:flex">
-          <div className="flex flex-col">
-            <p className="text-xl font-bold text-primary">Facturly</p>
-            <span className="text-xs text-foreground/60">Facturation simple & intelligente</span>
-          </div>
+          <Link href="/dashboard" className="flex items-center">
+            <Image
+              src="/logos/logo.png"
+              alt="Facturly"
+              width={120}
+              height={40}
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
           <Separator orientation="vertical" className="hidden h-6 md:block" />
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList className="flex-wrap gap-1">
@@ -303,7 +314,7 @@ export const Topbar = () => {
 
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-2 text-foreground/70">
-            <BadgeHelp className="h-4 w-4 text-primary" />
+            <IoHelpCircleOutline className="h-4 w-4 text-primary" />
             <span>Support</span>
           </div>
           <Separator orientation="vertical" className="hidden h-6 md:block" />
@@ -316,11 +327,11 @@ export const Topbar = () => {
               handleNavigation("/invoices/new");
             }}
           >
-            <Plus className="h-4 w-4" />
+            <IoAddOutline className="h-4 w-4" />
             Nouvelle facture
           </Button>
           <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
+            <IoNotificationsOutline className="h-5 w-5" />
             <span className="absolute right-1 top-1 inline-flex h-2 w-2 rounded-full bg-emerald-500" />
           </Button>
           <button
@@ -372,7 +383,7 @@ export const Topbar = () => {
               <div className="space-y-3 text-sm text-foreground/70">
                 {company && (
                   <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                    <User className="h-4 w-4 text-primary" />
+                    <IoPersonOutline className="h-4 w-4 text-primary" />
                     <div>
                       <p className="font-medium text-foreground">Entreprise</p>
                       <p className="text-xs">
@@ -382,7 +393,7 @@ export const Topbar = () => {
                   </div>
                 )}
                 <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <Settings className="h-4 w-4 text-primary" />
+                  <IoSettingsOutline className="h-4 w-4 text-primary" />
                   <div>
                     <p className="font-medium text-foreground">Préférences</p>
                     <p className="text-xs">Notifications, mentions légales, branding</p>
@@ -452,7 +463,7 @@ export const Topbar = () => {
                 </>
               ) : (
                 <>
-                  <LogOut className="h-4 w-4" />
+                  <IoLogOutOutline className="h-4 w-4" />
                   Déconnexion
                 </>
               )}

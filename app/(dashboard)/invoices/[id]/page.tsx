@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -236,26 +236,129 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const timeline = [
-    {
-      title: "Facture créée",
-      date: formatDate(invoice.issueDate),
-      description: "Document généré et enregistré dans Facturly.",
-    },
-    {
-      title: invoice.sentAt ? "Envoyée au client" : "Brouillon",
-      date: invoice.sentAt ? formatDate(invoice.sentAt) : formatDate(invoice.issueDate),
-      description: invoice.sentAt ? `Email envoyé à ${clientEmail ?? clientName}.` : "Facture en brouillon, non envoyée.",
-    },
-    {
-      title: invoice.status === "paid" ? "Paiement reçu" : "En attente",
-      date: formatDate(invoice.dueDate),
-      description:
-        invoice.status === "paid"
-          ? "Paiement confirmé et rapproché."
-          : "Paiement en attente, planifier une relance.",
-    },
-  ];
+  // Timeline dynamique basée sur les données réelles de la facture
+  const timeline = useMemo(() => {
+    const events: Array<{ title: string; date: string; description: string; timestamp: number }> = [];
+
+    // 1. Création de la facture
+    if (invoice.createdAt) {
+      events.push({
+        title: "Facture créée",
+        date: formatDate(invoice.createdAt),
+        description: "Document généré et enregistré dans Facturly.",
+        timestamp: new Date(invoice.createdAt).getTime(),
+      });
+    } else if (invoice.issueDate) {
+      events.push({
+        title: "Facture créée",
+        date: formatDate(invoice.issueDate),
+        description: "Document généré et enregistré dans Facturly.",
+        timestamp: new Date(invoice.issueDate).getTime(),
+      });
+    }
+
+    // 2. Envoi de la facture
+    if (invoice.sentAt) {
+      events.push({
+        title: "Envoyée au client",
+        date: formatDate(invoice.sentAt),
+        description: `Email envoyé à ${clientEmail ?? clientName}.`,
+        timestamp: new Date(invoice.sentAt).getTime(),
+      });
+    } else if (invoice.status === "draft") {
+      events.push({
+        title: "Brouillon",
+        date: formatDate(invoice.issueDate),
+        description: "Facture en brouillon, non envoyée.",
+        timestamp: new Date(invoice.issueDate).getTime(),
+      });
+    }
+
+    // 3. Visualisation par le client
+    if (invoice.viewedAt) {
+      events.push({
+        title: "Visualisée par le client",
+        date: formatDate(invoice.viewedAt),
+        description: "Le client a ouvert la facture.",
+        timestamp: new Date(invoice.viewedAt).getTime(),
+      });
+    }
+
+    // 4. Rejet de la facture
+    if (invoice.rejectedAt) {
+      events.push({
+        title: "Facture rejetée",
+        date: formatDate(invoice.rejectedAt),
+        description: invoice.rejectionComment 
+          ? `Rejetée : ${invoice.rejectionComment}`
+          : invoice.rejectionReason 
+          ? `Raison : ${invoice.rejectionReason}`
+          : "La facture a été rejetée par le client.",
+        timestamp: new Date(invoice.rejectedAt).getTime(),
+      });
+    }
+
+    // 5. Paiements reçus
+    if (invoice.payments && invoice.payments.length > 0) {
+      invoice.payments
+        .sort((a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime())
+        .forEach((payment) => {
+          events.push({
+            title: `Paiement reçu - ${formatCurrency(payment.amount, invoice.currency)}`,
+            date: formatDate(payment.paymentDate),
+            description: payment.method 
+              ? `Paiement par ${payment.method}${payment.notes ? ` - ${payment.notes}` : ""}.`
+              : "Paiement confirmé et rapproché.",
+            timestamp: new Date(payment.paymentDate).getTime(),
+          });
+        });
+    } else if (invoice.status === "paid" && parseFloat(invoice.amountPaid) > 0) {
+      // Si payée mais pas de paiements détaillés, utiliser la date de mise à jour
+      events.push({
+        title: "Paiement reçu",
+        date: invoice.updatedAt ? formatDate(invoice.updatedAt) : formatDate(invoice.dueDate),
+        description: `Paiement de ${formatCurrency(invoice.amountPaid, invoice.currency)} confirmé.`,
+        timestamp: invoice.updatedAt 
+          ? new Date(invoice.updatedAt).getTime() 
+          : new Date(invoice.dueDate).getTime(),
+      });
+    }
+
+    // 6. Échéance
+    if (invoice.status !== "paid" && invoice.status !== "cancelled") {
+      const dueDate = new Date(invoice.dueDate);
+      const now = new Date();
+      const isOverdue = dueDate < now;
+      
+      events.push({
+        title: isOverdue ? "Échéance dépassée" : "Échéance",
+        date: formatDate(invoice.dueDate),
+        description: isOverdue
+          ? `Échéance dépassée. Montant restant : ${formatCurrency(
+              (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
+              invoice.currency
+            )}`
+          : `Date d'échéance : ${formatDate(invoice.dueDate)}. Montant restant : ${formatCurrency(
+              (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
+              invoice.currency
+            )}`,
+        timestamp: dueDate.getTime(),
+      });
+    }
+
+    // 7. Annulation
+    if (invoice.status === "cancelled" && invoice.updatedAt) {
+      events.push({
+        title: "Facture annulée",
+        date: formatDate(invoice.updatedAt),
+        description: "La facture a été annulée.",
+        timestamp: new Date(invoice.updatedAt).getTime(),
+      });
+    }
+
+    // Trier par date (plus récent en premier)
+    return events.sort((a, b) => b.timestamp - a.timestamp).map(({ timestamp, ...rest }) => rest);
+  }, [invoice, clientEmail, clientName]);
 
   return (
     <div className="space-y-6">

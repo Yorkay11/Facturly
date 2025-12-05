@@ -4,8 +4,9 @@ import type React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
+import { IoMenuOutline } from "react-icons/io5"
 import Link from "next/link"
+import Image from "next/image"
 import { useGetMeQuery } from "@/services/facturlyApi"
 import { useRouter } from "next/navigation"
 
@@ -45,9 +46,16 @@ export function Header() {
     <header className="w-full py-4 px-6">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <span className="text-foreground text-xl font-semibold">Facturly</span>
-          </div>
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/logos/logo.png"
+              alt="Facturly"
+              width={120}
+              height={40}
+              className="h-8 w-auto object-contain"
+              priority
+            />
+          </Link>
           <nav className="hidden md:flex items-center gap-2">
             {navItems.map((item) => (
               <Link
@@ -70,7 +78,7 @@ export function Header() {
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="text-foreground">
-                <Menu className="h-7 w-7" />
+                <IoMenuOutline className="h-7 w-7" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>

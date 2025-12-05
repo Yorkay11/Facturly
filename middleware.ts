@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/register", "/auth/login", "/auth"];
+const PUBLIC_PATHS = ["/login", "/register", "/auth/login", "/auth", "/"];
 
 const isPublicPath = (pathname: string): boolean => {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("facturly_access_token")?.value;
 
   if (!token) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL("/", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }

@@ -83,44 +83,16 @@ export const invoices = [
 
 export const devises = [
   {
-      value: "usd",
-      label: "Dollar américain",
+      value: "EUR",
+      label: "Euro (€)",
   },
   {
-      value: "eur",
-      label: "Euro",
+      value: "USD",
+      label: "Dollar américain ($)",
   },
   {
-      value: "gbp",
-      label: "Livre sterling",
+      value: "XOF",
+      label: "Franc CFA (XOF)",
   },
-  {
-      value: "jpy",
-      label: "Yen japonais",
-  },
-  {
-      value: "cad",
-      label: "Dollar canadien",
-  },
-  {
-      value: "aud",
-      label: "Dollar australien",
-  },
-  {
-      value: "chf",
-      label: "Franc suisse",
-  },
-  {
-      value: "cny",
-      label: "Yuan renminbi chinois",
-  },
-  {
-      value: "inr",
-      label: "Roupie indienne",
-  },
-  {
-      value: "brl",
-      label: "Real brésilien",
-  }
 ];
 

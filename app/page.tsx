@@ -70,7 +70,7 @@ export default function LandingPage() {
     {
       question: "Puis-je intégrer Facturly avec mes outils existants ?",
       answer:
-        "Oui ! Facturly offre des intégrations avec les outils comptables les plus populaires. Notre API permet également de connecter Facturly à votre système existant pour une synchronisation automatique des données.",
+        "Oui ! Facturly offre des intégrations avec les outils comptables les plus populaires. Notre API permet également de connecter Facturly à votre système existant.",
     },
     {
       question: "Que comprend le plan gratuit ?",

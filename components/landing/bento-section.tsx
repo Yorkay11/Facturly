@@ -13,28 +13,31 @@ interface BentoCardProps {
 }
 
 const BentoCard = ({ title, description, Component }: BentoCardProps) => (
-  <div className="overflow-hidden rounded-2xl border border-white/20 flex flex-col justify-start items-start relative">
+  <div className="overflow-hidden rounded-lg border border-white/20 flex flex-col justify-start items-start relative transition-all duration-300 ease-out hover:scale-[1.02] hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10 group cursor-pointer">
     {/* Background with blur effect */}
     <div
-      className="absolute inset-0 rounded-2xl"
+      className="absolute inset-0 rounded-lg transition-all duration-300 group-hover:bg-opacity-12"
       style={{
         background: "rgba(231, 236, 235, 0.08)",
         backdropFilter: "blur(4px)",
         WebkitBackdropFilter: "blur(4px)",
       }}
     />
-    {/* Additional subtle gradient overlay */}
-    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl" />
+    {/* Additional subtle gradient overlay with hover effect */}
+    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-lg transition-all duration-300 group-hover:from-primary/10 group-hover:to-transparent" />
 
-    <div className="self-stretch p-6 flex flex-col justify-start items-start gap-2 relative z-10">
+    {/* Glow effect on hover */}
+    <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+
+    <div className="self-stretch p-6 flex flex-col justify-start items-start gap-2 relative z-10 transition-transform duration-300 group-hover:translate-y-[-2px]">
       <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
-        <p className="self-stretch text-foreground text-lg font-normal leading-7">
+        <p className="self-stretch text-foreground text-lg font-normal leading-7 transition-colors duration-300 group-hover:text-primary/90">
           {title} <br />
-          <span className="text-muted-foreground">{description}</span>
+          <span className="text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80">{description}</span>
         </p>
       </div>
     </div>
-    <div className="self-stretch h-72 relative -mt-0.5 z-10">
+    <div className="self-stretch h-72 relative -mt-0.5 z-10 transition-transform duration-300 group-hover:scale-[1.01]">
       <Component />
     </div>
   </div>

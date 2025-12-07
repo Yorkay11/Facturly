@@ -1,65 +1,96 @@
-import type React from "react"
+"use client"
+
+import React from "react"
+import { Plus, Mail, Phone, MapPin, User } from "lucide-react"
 
 const ClientManagement: React.FC = () => {
+  const clients = [
+    { id: 1, name: "Acme Corp", email: "contact@acme.com", city: "Paris", initial: "AC" },
+    { id: 2, name: "Tech Solutions", email: "info@techsol.fr", city: "Lyon", initial: "TS" },
+    { id: 3, name: "Design Studio", email: "hello@design.fr", city: "Marseille", initial: "DS" },
+  ]
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   return (
-    <div className="w-full h-full flex items-center justify-center p-6 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
-      <svg
-        viewBox="0 0 320 240"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
-      >
-        <defs>
-          <filter id="cardShadow">
-            <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="hsl(var(--foreground))" floodOpacity="0.08" />
-          </filter>
-        </defs>
-        
-        {/* Client avatars with professional styling */}
-        <g>
-          {/* Avatar 1 */}
-          <circle cx="90" cy="70" r="28" fill="hsl(var(--primary))" opacity="0.12" filter="url(#cardShadow)" />
-          <circle cx="90" cy="65" r="14" fill="hsl(var(--primary))" opacity="0.7" />
-          <path d="M75 85Q75 75, 90 75Q105 75, 105 85" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.7" />
-          <rect x="70" y="95" width="40" height="3" rx="1.5" fill="hsl(var(--muted-foreground))" opacity="0.4" />
-          
-          {/* Avatar 2 */}
-          <circle cx="160" cy="70" r="28" fill="hsl(var(--primary))" opacity="0.12" filter="url(#cardShadow)" />
-          <circle cx="160" cy="65" r="14" fill="hsl(var(--primary))" opacity="0.7" />
-          <path d="M145 85Q145 75, 160 75Q175 75, 175 85" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.7" />
-          <rect x="140" y="95" width="40" height="3" rx="1.5" fill="hsl(var(--muted-foreground))" opacity="0.4" />
-          
-          {/* Avatar 3 */}
-          <circle cx="230" cy="70" r="28" fill="hsl(var(--primary))" opacity="0.12" filter="url(#cardShadow)" />
-          <circle cx="230" cy="65" r="14" fill="hsl(var(--primary))" opacity="0.7" />
-          <path d="M215 85Q215 75, 230 75Q245 75, 245 85" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.7" />
-          <rect x="210" y="95" width="40" height="3" rx="1.5" fill="hsl(var(--muted-foreground))" opacity="0.4" />
-        </g>
-        
-        {/* Product cards with professional design */}
-        <g>
-          {/* Product card 1 */}
-          <rect x="60" y="130" width="80" height="70" rx="10" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1.5" filter="url(#cardShadow)" />
-          <rect x="70" y="140" width="60" height="12" rx="4" fill="hsl(var(--primary))" opacity="0.2" />
-          <rect x="70" y="158" width="50" height="6" rx="3" fill="hsl(var(--muted-foreground))" opacity="0.3" />
-          <rect x="70" y="170" width="45" height="6" rx="3" fill="hsl(var(--muted-foreground))" opacity="0.3" />
-          <circle cx="125" cy="145" r="8" fill="hsl(var(--primary))" opacity="0.15" />
-          <path d="M120 145L123 148L130 141" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          
-          {/* Product card 2 */}
-          <rect x="160" y="130" width="80" height="70" rx="10" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1.5" filter="url(#cardShadow)" />
-          <rect x="170" y="140" width="60" height="12" rx="4" fill="hsl(var(--primary))" opacity="0.2" />
-          <rect x="170" y="158" width="50" height="6" rx="3" fill="hsl(var(--muted-foreground))" opacity="0.3" />
-          <rect x="170" y="170" width="45" height="6" rx="3" fill="hsl(var(--muted-foreground))" opacity="0.3" />
-          <circle cx="225" cy="145" r="8" fill="hsl(var(--primary))" opacity="0.15" />
-          <path d="M220 145L223 148L230 141" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-        </g>
-        
-        {/* Connection lines */}
-        <path d="M90 110 Q90 120, 100 130" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.3" fill="none" />
-        <path d="M160 110 Q160 120, 170 130" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.3" fill="none" />
-        <path d="M230 110 Q230 120, 220 130" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.3" fill="none" />
-      </svg>
+    <div className="w-full h-full flex items-center justify-center p-1.5 bg-white relative overflow-hidden">
+      <div className="w-full h-full relative overflow-hidden">
+        {/* Header avec stats */}
+        <div className="absolute top-1 left-1 right-1 flex items-center justify-between mb-1 z-10">
+          <div>
+            <p className="text-[10px] font-semibold text-slate-900">Gestion clients</p>
+            <p className="text-[8px] text-slate-500">24 clients actifs</p>
+          </div>
+          <div className="h-5 px-1.5 rounded border border-primary/20 bg-primary/5 flex items-center gap-1 pointer-events-none">
+            <Plus className="h-2.5 w-2.5 text-primary" />
+            <span className="text-[8px] font-medium text-primary">Nouveau</span>
+          </div>
+        </div>
+
+        {/* Liste des clients */}
+        <div className="absolute top-[22%] left-1 right-1 bottom-[25%] space-y-0.5 overflow-hidden pointer-events-none">
+          {clients.map((client) => (
+            <div
+              key={client.id}
+              className="rounded border border-slate-200 bg-white p-1 shadow-sm flex items-center gap-1"
+            >
+              {/* Avatar */}
+              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[8px] font-semibold text-primary">{client.initial}</span>
+              </div>
+              
+              {/* Infos */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-semibold text-primary truncate">{client.name}</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Mail className="h-2 w-2 text-slate-400 flex-shrink-0" />
+                  <p className="text-[7px] text-slate-600 truncate">{client.email}</p>
+                </div>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <MapPin className="h-2 w-2 text-slate-400 flex-shrink-0" />
+                  <p className="text-[7px] text-slate-500">{client.city}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Formulaire d'ajout superposé */}
+        <div className="absolute bottom-1 left-1 right-1 rounded border border-primary/30 bg-white shadow-lg pointer-events-none z-20 p-1.5"
+             style={{ transform: 'scale(0.95)' }}>
+          <div className="flex items-center gap-1 mb-1 pb-1 border-b border-slate-200">
+            <User className="h-3 w-3 text-primary" />
+            <p className="text-[9px] font-semibold text-slate-900">Nouveau client</p>
+          </div>
+          <div className="space-y-1">
+            <div>
+              <label className="text-[7px] text-slate-600 block mb-0.5">Nom</label>
+              <div className="h-3 w-full rounded border border-slate-300 bg-white px-1 text-[8px] pointer-events-none">
+                Nom de l'entreprise
+              </div>
+            </div>
+            <div>
+              <label className="text-[7px] text-slate-600 block mb-0.5">Email</label>
+              <div className="h-3 w-full rounded border border-slate-300 bg-white px-1 text-[8px] pointer-events-none flex items-center gap-0.5">
+                <Mail className="h-2 w-2 text-slate-400" />
+                <span>contact@example.com</span>
+              </div>
+            </div>
+            <div className="pt-0.5">
+              <div className="h-3 w-full rounded bg-primary flex items-center justify-center pointer-events-none">
+                <span className="text-[8px] font-medium text-primary-foreground">Enregistrer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -137,7 +137,6 @@ export default function RemindersPage() {
                 <p className="text-2xl font-semibold text-primary">
                   {totalAmount > 0 ? formatCurrency(totalAmount, "EUR") : "—"}
                 </p>
-                <p className="text-xs text-foreground/60">Synchronisation API</p>
               </CardContent>
           </Card>
         </div>

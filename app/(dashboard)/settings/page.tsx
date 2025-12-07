@@ -23,8 +23,22 @@ import {
   useUpdateSettingsMutation,
   useGetSubscriptionQuery,
   useGetPlansQuery,
+  useCreateSubscriptionMutation,
+  usePreviewSubscriptionMutation,
+  useCancelSubscriptionMutation,
+  Plan,
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AlertCircle, CheckCircle2, Calendar, ArrowRight, Crown, Zap, Infinity, CreditCard, TrendingUp, BadgeCheck, Receipt, Globe, DollarSign, Percent, FileText, Clock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/landing/ui/alert";
 
 // Schémas de validation
 const userSchema = z.object({
@@ -79,6 +93,16 @@ export default function SettingsPage() {
   const [updateUser, { isLoading: isUpdatingUser }] = useUpdateUserMutation();
   const [updateCompany, { isLoading: isUpdatingCompany }] = useUpdateCompanyMutation();
   const [updateSettings, { isLoading: isUpdatingSettings }] = useUpdateSettingsMutation();
+  const [createSubscription, { isLoading: isChangingPlan }] = useCreateSubscriptionMutation();
+  const [previewSubscription, { isLoading: isPreviewing }] = usePreviewSubscriptionMutation();
+  const [cancelSubscription, { isLoading: isCanceling }] = useCancelSubscriptionMutation();
+  
+  // États pour la gestion des abonnements
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   
   // Forms
   const userForm = useForm<UserFormValues>({
@@ -239,6 +263,65 @@ export default function SettingsPage() {
       });
     }
   };
+
+  // Fonctions de gestion des abonnements
+  async function handlePlanSelect(plan: Plan) {
+    if (!subscription) return;
+
+    // Si c'est le même plan, ne rien faire
+    if (plan.code === subscription.plan.code) {
+      return;
+    }
+
+    setSelectedPlan(plan);
+    setShowPreviewDialog(true);
+
+    // Prévisualiser le changement
+    try {
+      const preview = await previewSubscription({ planId: plan.id }).unwrap();
+      setPreviewData(preview);
+    } catch (error: any) {
+      console.error("Erreur lors de la prévisualisation:", error);
+      toast.error("Erreur", {
+        description: error?.data?.message || "Impossible de prévisualiser le changement de plan",
+      });
+      setShowPreviewDialog(false);
+    }
+  }
+
+  async function handleConfirmPlanChange() {
+    if (!selectedPlan) return;
+
+    try {
+      await createSubscription({ planId: selectedPlan.id }).unwrap();
+      toast.success("Plan changé avec succès", {
+        description: `Vous avez souscrit au plan ${selectedPlan.name}`,
+      });
+      setShowPreviewDialog(false);
+      setSelectedPlan(null);
+      setPreviewData(null);
+    } catch (error: any) {
+      console.error("Erreur lors du changement de plan:", error);
+      toast.error("Erreur", {
+        description: error?.data?.message || "Impossible de changer de plan",
+      });
+    }
+  }
+
+  async function handleCancelSubscription() {
+    try {
+      await cancelSubscription().unwrap();
+      toast.success("Abonnement annulé", {
+        description: "Votre abonnement sera annulé à la fin de la période en cours",
+      });
+      setShowCancelDialog(false);
+    } catch (error: any) {
+      console.error("Erreur lors de l'annulation:", error);
+      toast.error("Erreur", {
+        description: error?.data?.message || "Impossible d'annuler l'abonnement",
+      });
+    }
+  }
   
   const plans = plansResponse?.data ?? [];
   const isLoading = isLoadingUser || isLoadingCompany || isLoadingSettings;
@@ -419,7 +502,6 @@ export default function SettingsPage() {
                             <SelectContent>
                               <SelectItem value="EUR">EUR (€)</SelectItem>
                               <SelectItem value="USD">USD ($)</SelectItem>
-                              <SelectItem value="GBP">GBP (£)</SelectItem>
                               <SelectItem value="XOF">XOF (CFA)</SelectItem>
                             </SelectContent>
                           </Select>
@@ -506,299 +588,761 @@ export default function SettingsPage() {
 
           {/* Paramètres de facturation */}
           <TabsContent value="billing">
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-primary">Paramètres de facturation</CardTitle>
-                <CardDescription>
-                  Configurez les paramètres par défaut pour vos factures (langue, devise, TVA, etc.).
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="language">
-                        Langue <span className="text-destructive">*</span>
-                      </Label>
-                      <Controller
-                        name="language"
-                        control={settingsForm.control}
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                            <SelectTrigger className={settingsForm.formState.errors.language ? "border-destructive" : ""}>
-                              <SelectValue placeholder="Langue" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="fr">Français</SelectItem>
-                              <SelectItem value="en">English</SelectItem>
-                              <SelectItem value="es">Español</SelectItem>
-                            </SelectContent>
-                          </Select>
+            <div className="space-y-6">
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-primary flex items-center gap-2">
+                    <Receipt className="h-5 w-5" />
+                    Paramètres de facturation
+                  </CardTitle>
+                  <CardDescription>
+                    Configurez les paramètres par défaut pour vos factures. Ces valeurs seront utilisées pour toutes vos nouvelles factures.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
+                    {/* Section Localisation */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                        <Globe className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-primary">Localisation</h3>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="language" className="flex items-center gap-2">
+                            <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                            Langue <span className="text-destructive">*</span>
+                          </Label>
+                          <Controller
+                            name="language"
+                            control={settingsForm.control}
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
+                                <SelectTrigger className={settingsForm.formState.errors.language ? "border-destructive" : ""}>
+                                  <SelectValue placeholder="Langue" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="fr">Français</SelectItem>
+                                  <SelectItem value="en">English</SelectItem>
+                                  <SelectItem value="es">Español</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {settingsForm.formState.errors.language && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.language.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="timezone" className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            Fuseau horaire <span className="text-destructive">*</span>
+                          </Label>
+                          <Controller
+                            name="timezone"
+                            control={settingsForm.control}
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
+                                <SelectTrigger className={settingsForm.formState.errors.timezone ? "border-destructive" : ""}>
+                                  <SelectValue placeholder="Fuseau horaire" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Europe/Paris">Europe/Paris</SelectItem>
+                                  <SelectItem value="Europe/London">Europe/London</SelectItem>
+                                  <SelectItem value="America/New_York">America/New_York</SelectItem>
+                                  <SelectItem value="America/Los_Angeles">America/Los_Angeles</SelectItem>
+                                  <SelectItem value="Africa/Lome">Africa/Lomé</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {settingsForm.formState.errors.timezone && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.timezone.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section Format */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-primary">Format des factures</h3>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="invoice-prefix" className="flex items-center gap-2">
+                            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                            Préfixe facture <span className="text-destructive">*</span>
+                          </Label>
+                          <Input
+                            id="invoice-prefix"
+                            placeholder="FAC"
+                            {...settingsForm.register("invoicePrefix")}
+                            disabled={isUpdatingSettings}
+                            className={settingsForm.formState.errors.invoicePrefix ? "border-destructive" : ""}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Exemple : FAC-2024-001, INV-2024-001
+                          </p>
+                          {settingsForm.formState.errors.invoicePrefix && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.invoicePrefix.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="date-format" className="flex items-center gap-2">
+                            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                            Format de date <span className="text-destructive">*</span>
+                          </Label>
+                          <Controller
+                            name="dateFormat"
+                            control={settingsForm.control}
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
+                                <SelectTrigger className={settingsForm.formState.errors.dateFormat ? "border-destructive" : ""}>
+                                  <SelectValue placeholder="Format" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (31/12/2024)</SelectItem>
+                                  <SelectItem value="MM/DD/YYYY">MM/DD/YYYY (12/31/2024)</SelectItem>
+                                  <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (2024-12-31)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {settingsForm.formState.errors.dateFormat && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.dateFormat.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section Financier */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-primary">Paramètres financiers</h3>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="currency" className="flex items-center gap-2">
+                            <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                            Devise <span className="text-destructive">*</span>
+                          </Label>
+                          <Controller
+                            name="currency"
+                            control={settingsForm.control}
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
+                                <SelectTrigger className={settingsForm.formState.errors.currency ? "border-destructive" : ""}>
+                                  <SelectValue placeholder="Devise" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                                  <SelectItem value="USD">USD ($)</SelectItem>
+                                  <SelectItem value="XOF">XOF (CFA)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {settingsForm.formState.errors.currency && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.currency.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="tax-rate" className="flex items-center gap-2">
+                            <Percent className="h-3.5 w-3.5 text-muted-foreground" />
+                            Taux de TVA (%) <span className="text-destructive">*</span>
+                          </Label>
+                          <Input
+                            id="tax-rate"
+                            type="number"
+                            step="0.01"
+                            placeholder="20.00"
+                            {...settingsForm.register("taxRate", { valueAsNumber: false })}
+                            disabled={isUpdatingSettings}
+                            className={settingsForm.formState.errors.taxRate ? "border-destructive" : ""}
+                          />
+                          {settingsForm.formState.errors.taxRate && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.taxRate.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="payment-terms" className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            Délai de paiement <span className="text-destructive">*</span>
+                          </Label>
+                          <Input
+                            id="payment-terms"
+                            type="number"
+                            placeholder="30"
+                            {...settingsForm.register("paymentTerms", { valueAsNumber: true })}
+                            disabled={isUpdatingSettings}
+                            className={settingsForm.formState.errors.paymentTerms ? "border-destructive" : ""}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            En jours (ex: 30 = 30 jours)
+                          </p>
+                          {settingsForm.formState.errors.paymentTerms && (
+                            <p className="text-xs text-destructive">
+                              {settingsForm.formState.errors.paymentTerms.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Info séquence */}
+                    <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-primary/5 to-white p-5">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="rounded-lg bg-primary/10 p-2">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-primary">Séquence actuelle</p>
+                              <p className="text-xs text-muted-foreground">Numéro de la prochaine facture</p>
+                            </div>
+                          </div>
+                          <p className="text-3xl font-bold text-primary mt-3">{settings?.invoiceSequence ?? 0}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground mb-1">Prochaine facture</p>
+                          <p className="text-lg font-semibold text-primary">
+                            {settings?.invoicePrefix ?? "FAC"}-{new Date().getFullYear()}-{(settings?.invoiceSequence ?? 0).toString().padStart(3, "0")}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-4 pt-4 border-t border-primary/20">
+                        Le numéro de séquence est automatiquement incrémenté à chaque nouvelle facture créée.
+                      </p>
+                    </div>
+
+                    <div className="flex justify-end pt-4 border-t">
+                      <Button type="submit" disabled={isUpdatingSettings} size="lg">
+                        {isUpdatingSettings ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Enregistrement...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Enregistrer les paramètres
+                          </>
                         )}
-                      />
-                      {settingsForm.formState.errors.language && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.language.message}
-                        </p>
-                      )}
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="timezone">
-                        Fuseau horaire <span className="text-destructive">*</span>
-                      </Label>
-                      <Controller
-                        name="timezone"
-                        control={settingsForm.control}
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                            <SelectTrigger className={settingsForm.formState.errors.timezone ? "border-destructive" : ""}>
-                              <SelectValue placeholder="Fuseau horaire" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Europe/Paris">Europe/Paris</SelectItem>
-                              <SelectItem value="Europe/London">Europe/London</SelectItem>
-                              <SelectItem value="America/New_York">America/New_York</SelectItem>
-                              <SelectItem value="America/Los_Angeles">America/Los_Angeles</SelectItem>
-                              <SelectItem value="Africa/Lome">Africa/Lomé</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {settingsForm.formState.errors.timezone && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.timezone.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="invoice-prefix">
-                        Préfixe facture <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="invoice-prefix"
-                        placeholder="FAC"
-                        {...settingsForm.register("invoicePrefix")}
-                        disabled={isUpdatingSettings}
-                        className={settingsForm.formState.errors.invoicePrefix ? "border-destructive" : ""}
-                      />
-                      {settingsForm.formState.errors.invoicePrefix && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.invoicePrefix.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="date-format">
-                        Format de date <span className="text-destructive">*</span>
-                      </Label>
-                      <Controller
-                        name="dateFormat"
-                        control={settingsForm.control}
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                            <SelectTrigger className={settingsForm.formState.errors.dateFormat ? "border-destructive" : ""}>
-                              <SelectValue placeholder="Format" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                              <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                              <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {settingsForm.formState.errors.dateFormat && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.dateFormat.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="currency">
-                        Devise <span className="text-destructive">*</span>
-                      </Label>
-                      <Controller
-                        name="currency"
-                        control={settingsForm.control}
-                        render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                            <SelectTrigger className={settingsForm.formState.errors.currency ? "border-destructive" : ""}>
-                              <SelectValue placeholder="Devise" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="EUR">EUR (€)</SelectItem>
-                              <SelectItem value="USD">USD ($)</SelectItem>
-                              <SelectItem value="GBP">GBP (£)</SelectItem>
-                              <SelectItem value="XOF">XOF (CFA)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {settingsForm.formState.errors.currency && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.currency.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tax-rate">
-                        Taux de TVA (%) <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="tax-rate"
-                        type="number"
-                        step="0.01"
-                        placeholder="20.00"
-                        {...settingsForm.register("taxRate", { valueAsNumber: false })}
-                        disabled={isUpdatingSettings}
-                        className={settingsForm.formState.errors.taxRate ? "border-destructive" : ""}
-                      />
-                      {settingsForm.formState.errors.taxRate && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.taxRate.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="payment-terms">
-                        Termes de paiement (jours) <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="payment-terms"
-                        type="number"
-                        placeholder="30"
-                        {...settingsForm.register("paymentTerms", { valueAsNumber: true })}
-                        disabled={isUpdatingSettings}
-                        className={settingsForm.formState.errors.paymentTerms ? "border-destructive" : ""}
-                      />
-                      {settingsForm.formState.errors.paymentTerms && (
-                        <p className="text-xs text-destructive">
-                          {settingsForm.formState.errors.paymentTerms.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                    <p className="text-sm font-semibold text-primary">Séquence actuelle</p>
-                    <p className="text-2xl font-bold text-primary">{settings?.invoiceSequence ?? 0}</p>
-                    <p className="text-xs text-foreground/60">
-                      Le numéro de séquence est automatiquement incrémenté à chaque nouvelle facture.
-                    </p>
-                  </div>
-                  <Button type="submit" disabled={isUpdatingSettings}>
-                    {isUpdatingSettings && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Enregistrer les paramètres
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Abonnement */}
           <TabsContent value="subscription">
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-primary">Abonnement & Plans</CardTitle>
-                <CardDescription>
-                  Gérez votre abonnement et consultez les plans disponibles.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {isLoadingSubscription ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                  </div>
-                ) : subscription ? (
-                  <div className="space-y-4">
-                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-primary">Plan actuel</p>
-                          <p className="text-xl font-bold text-primary">{subscription.plan.name}</p>
-                          <p className="text-xs text-foreground/60">
-                            {subscription.plan.price === "0.00" ? "Gratuit" : `${subscription.plan.price} ${subscription.plan.currency}/${subscription.plan.billingInterval === "monthly" ? "mois" : "an"}`}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-foreground/60">Statut</p>
-                          <p className={`text-sm font-semibold ${subscription.status === "active" ? "text-emerald-600" : "text-gray-600"}`}>
-                            {subscription.status === "active" ? "Actif" : subscription.status}
-                          </p>
-                        </div>
-                      </div>
-                      {subscription.plan.invoiceLimit && (
-                        <div className="mt-4 pt-4 border-t border-primary/20">
-                          <p className="text-xs text-foreground/60">
-                            Limite : {subscription.plan.invoiceLimit} factures par mois
-                          </p>
-                        </div>
-                      )}
+            <div className="space-y-6">
+              {/* Plan actuel */}
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-primary flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Mon abonnement
+                  </CardTitle>
+                  <CardDescription>
+                    Gérez votre abonnement actuel et consultez vos informations de facturation.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingSubscription ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-24 w-full" />
                     </div>
-                    {subscription.cancelAtPeriodEnd && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                        <p className="font-semibold">Abonnement annulé</p>
-                        <p className="text-xs">
-                          Votre abonnement sera annulé à la fin de la période en cours ({new Date(subscription.currentPeriodEnd).toLocaleDateString("fr-FR")}).
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-dashed border-primary/30 bg-white py-8 text-center">
-                    <p className="text-sm text-foreground/60">Aucun abonnement actif</p>
-                  </div>
-                )}
-                
-                {isLoadingPlans ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-32 w-full" />
-                  </div>
-                ) : plans.length > 0 ? (
-                  <div className="space-y-4">
-                    <Separator />
-                    <div>
-                      <p className="text-sm font-semibold text-primary mb-3">Plans disponibles</p>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        {plans.map((plan) => (
-                          <div
-                            key={plan.id}
-                            className="rounded-lg border border-primary/20 bg-white p-4"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="font-semibold text-primary">{plan.name}</p>
-                              <p className="text-lg font-bold text-primary">
-                                {plan.price === "0.00" ? "Gratuit" : `${plan.price} ${plan.currency}/${plan.billingInterval === "monthly" ? "mois" : "an"}`}
+                  ) : subscription ? (
+                    <div className="space-y-3">
+                      {/* Carte principale du plan actuel - Version compacte */}
+                      <div className="relative rounded-lg border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          {/* Section gauche - Plan et prix */}
+                          <div className="flex items-center gap-4 flex-1">
+                            <div className="rounded-lg bg-primary/20 p-2.5 flex-shrink-0">
+                              <Crown className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-lg font-bold text-primary">{subscription.plan.name}</h3>
+                                <BadgeCheck className={`h-4 w-4 flex-shrink-0 ${subscription.status === "active" ? "text-emerald-600" : "text-gray-400"}`} />
+                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                                  subscription.status === "active" 
+                                    ? "bg-emerald-100 text-emerald-700" 
+                                    : "bg-gray-100 text-gray-600"
+                                }`}>
+                                  {subscription.status === "active" ? "Actif" : subscription.status}
+                                </span>
+                              </div>
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-xl font-bold text-primary">
+                                  {subscription.plan.price === "0.00" 
+                                    ? "Gratuit" 
+                                    : `${subscription.plan.price} ${subscription.plan.currency}`
+                                  }
+                                </span>
+                                {subscription.plan.price !== "0.00" && (
+                                  <span className="text-xs text-muted-foreground">
+                                    /{subscription.plan.billingInterval === "monthly" ? "mois" : "an"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Section droite - Informations détaillées */}
+                          <div className="flex items-center gap-6 flex-shrink-0">
+                            <div className="text-center">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <Zap className="h-3.5 w-3.5 text-primary/60" />
+                                <p className="text-xs text-muted-foreground">Factures</p>
+                              </div>
+                              <p className="text-sm font-semibold">
+                                {subscription.plan.invoiceLimit ? (
+                                  <span>{subscription.plan.invoiceLimit}/{subscription.plan.billingInterval === "monthly" ? "mois" : "an"}</span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-emerald-600">
+                                    <Infinity className="h-3.5 w-3.5" />
+                                  </span>
+                                )}
                               </p>
                             </div>
-                            <p className="text-xs text-foreground/60 mb-3">{plan.description}</p>
-                            {plan.metadata?.features && Array.isArray(plan.metadata.features) && (
-                              <ul className="text-xs text-foreground/70 space-y-1 mb-3">
-                                {plan.metadata.features.map((feature: string, index: number) => (
-                                  <li key={index}>• {feature}</li>
-                                ))}
-                              </ul>
+                            
+                            <div className="text-center">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <Calendar className="h-3.5 w-3.5 text-primary/60" />
+                                <p className="text-xs text-muted-foreground">Jusqu'au</p>
+                              </div>
+                              <p className="text-sm font-semibold">
+                                {new Date(subscription.currentPeriodEnd).toLocaleDateString("fr-FR", {
+                                  day: "numeric",
+                                  month: "short"
+                                })}
+                              </p>
+                            </div>
+
+                            {/* Bouton d'annulation (si actif) */}
+                            {!subscription.cancelAtPeriodEnd && subscription.status === "active" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => setShowCancelDialog(true)}
+                                disabled={isCanceling}
+                              >
+                                {isCanceling ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Annuler"
+                                )}
+                              </Button>
                             )}
-                            <Button
-                              variant={plan.code === subscription?.plan.code ? "outline" : "default"}
-                              size="sm"
-                              className="w-full"
-                              disabled={plan.code === subscription?.plan.code || isLoadingSubscription}
-                            >
-                              {plan.code === subscription?.plan.code ? "Plan actuel" : "Changer de plan"}
-                            </Button>
                           </div>
-                        ))}
+                        </div>
+
+                        {/* Alerte d'annulation - Version compacte */}
+                        {subscription.cancelAtPeriodEnd && (
+                          <div className="mt-3 pt-3 border-t border-primary/20">
+                            <Alert className="border-amber-200 bg-amber-50/50 py-2">
+                              <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                              <AlertDescription className="text-amber-900">
+                                <p className="text-xs">
+                                  <span className="font-semibold">Annulation programmée</span> - 
+                                  Votre abonnement sera annulé le {new Date(subscription.currentPeriodEnd).toLocaleDateString("fr-FR")} et votre compte passera au plan gratuit.
+                                </p>
+                              </AlertDescription>
+                            </Alert>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
+                  ) : (
+                    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 py-12 text-center">
+                      <CreditCard className="h-12 w-12 mx-auto mb-3 text-primary/40" />
+                      <p className="text-sm font-medium text-foreground/70 mb-1">Aucun abonnement actif</p>
+                      <p className="text-xs text-muted-foreground">
+                        Souscrivez à un plan pour commencer à utiliser Facturly
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Plans disponibles */}
+              {!isLoadingPlans && plans.length > 0 && (
+                <Card className="border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-primary flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Plans disponibles
+                    </CardTitle>
+                    <CardDescription>
+                      Choisissez le plan qui correspond le mieux à vos besoins.
+                    </CardDescription>
+                    {/* Tabs Mensuel/Annuel */}
+                    <div className="mt-4 flex justify-center">
+                      <div className="inline-flex items-center gap-2 p-1 bg-muted/50 rounded-lg border border-border">
+                        <button
+                          onClick={() => setBillingInterval("monthly")}
+                          className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                            billingInterval === "monthly"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Mensuel
+                        </button>
+                        <button
+                          onClick={() => setBillingInterval("yearly")}
+                          className={`px-4 py-2 rounded-md text-sm font-medium transition-all relative ${
+                            billingInterval === "yearly"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Annuel
+                          {billingInterval === "yearly" && (
+                            <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                              -20%
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {plans
+                        .filter((plan) => {
+                          // Le plan gratuit apparaît toujours (seulement le premier trouvé pour éviter les doublons)
+                          if (plan.code === "free") {
+                            return true;
+                          }
+                          // Les autres plans sont filtrés par intervalle
+                          return plan.billingInterval === billingInterval;
+                        })
+                        .filter((plan, index, self) => {
+                          // S'assurer qu'un seul plan gratuit apparaît
+                          if (plan.code === "free") {
+                            return index === self.findIndex((p) => p.code === "free");
+                          }
+                          return true;
+                        })
+                        .map((plan) => {
+                        const isCurrentPlan = plan.code === subscription?.plan.code;
+                        const isFreePlan = plan.code === "free";
+                        
+                        return (
+                          <div
+                            key={plan.id}
+                            className={`relative rounded-xl border-2 p-5 transition-all ${
+                              isCurrentPlan
+                                ? "border-primary bg-primary/5 shadow-md"
+                                : "border-border bg-white hover:border-primary/30 hover:shadow-md"
+                            }`}
+                          >
+                            {isCurrentPlan && (
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                <span className="rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground">
+                                  Plan actuel
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="mb-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-bold text-primary">{plan.name}</h3>
+                                {isFreePlan ? (
+                                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                    Gratuit
+                                  </span>
+                                ) : (
+                                  <Crown className="h-5 w-5 text-primary/60" />
+                                )}
+                              </div>
+                              
+                              <div className="mb-3">
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-3xl font-bold text-primary">
+                                    {plan.price === "0.00" ? "Gratuit" : `${plan.price}`}
+                                  </span>
+                                  {plan.price !== "0.00" && (
+                                    <>
+                                      <span className="text-sm text-muted-foreground">{plan.currency}</span>
+                                      <span className="text-sm text-muted-foreground">
+                                        /{plan.billingInterval === "monthly" ? "mois" : "an"}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                {plan.price !== "0.00" && plan.billingInterval === "yearly" && (
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                                      Économisez 20%
+                                    </span>
+                                    <span className="text-xs text-muted-foreground line-through">
+                                      {plan.price === "24" ? "29" : plan.price === "159" ? "199" : plan.price}€/mois
+                                    </span>
+                                  </div>
+                                )}
+                                {/* Message spécial pour le plan gratuit */}
+                                {isFreePlan && (
+                                  <p className="text-xs text-muted-foreground mt-1 italic">
+                                    Identique en mensuel et annuel
+                                  </p>
+                                )}
+                                {plan.description && !isFreePlan && (
+                                  <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
+                                )}
+                              </div>
+
+                              {plan.metadata?.features && Array.isArray(plan.metadata.features) && (
+                                <ul className="space-y-2 mb-4">
+                                  {plan.metadata.features.map((feature: string, index: number) => (
+                                    <li key={index} className="flex items-start gap-2 text-xs">
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                      <span className="text-foreground/80">{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+
+                              <div className="mt-4 pt-4 border-t border-border/50">
+                                <div className="flex items-center justify-between mb-3">
+                                  <span className="text-xs text-muted-foreground">Limite</span>
+                                  <span className="text-xs font-semibold">
+                                    {plan.invoiceLimit ? (
+                                      `${plan.invoiceLimit} factures/${plan.billingInterval === "monthly" ? "mois" : "an"}`
+                                    ) : (
+                                      <span className="flex items-center gap-1 text-emerald-600">
+                                        <Infinity className="h-3.5 w-3.5" />
+                                        Illimité
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <Button
+                              variant={isCurrentPlan ? "outline" : "default"}
+                              size="sm"
+                              className="w-full"
+                              disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
+                              onClick={() => handlePlanSelect(plan)}
+                            >
+                              {isCurrentPlan ? (
+                                <>
+                                  <BadgeCheck className="mr-2 h-4 w-4" />
+                                  Plan actuel
+                                </>
+                              ) : (
+                                "Changer de plan"
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {isLoadingPlans && (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-64 w-full" />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       )}
+
+      {/* Dialog de prévisualisation du changement de plan */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirmer le changement de plan</DialogTitle>
+            <DialogDescription>
+              Prévisualisez les changements avant de confirmer
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isPreviewing ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : previewData ? (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div>
+                    <p className="text-sm font-medium">Plan actuel</p>
+                    <p className="text-xs text-muted-foreground">{previewData.currentPlan.name}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Nouveau plan</p>
+                    <p className="text-xs text-muted-foreground">{previewData.newPlan.name}</p>
+                  </div>
+                </div>
+
+                {previewData.prorationAmount && parseFloat(previewData.prorationAmount) > 0 && (
+                  <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+                    <p className="text-xs text-muted-foreground mb-1">Prorata à payer</p>
+                    <p className="text-lg font-semibold text-primary">
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: previewData.newPlan.currency || "EUR",
+                      }).format(parseFloat(previewData.prorationAmount))}
+                    </p>
+                  </div>
+                )}
+
+                {previewData.invoiceLimitChange && (
+                  <div className="p-3 rounded-lg border">
+                    <p className="text-xs text-muted-foreground mb-2">Changement de limite</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">
+                        {previewData.invoiceLimitChange.current === null
+                          ? "Illimité"
+                          : `${previewData.invoiceLimitChange.current} factures/mois`}
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-semibold">
+                        {previewData.invoiceLimitChange.new === null
+                          ? "Illimité"
+                          : `${previewData.invoiceLimitChange.new} factures/mois`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {previewData.nextBillingDate && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>
+                      Prochaine facturation :{" "}
+                      {new Date(previewData.nextBillingDate).toLocaleDateString("fr-FR")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Chargement de la prévisualisation...</p>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowPreviewDialog(false)}
+              disabled={isChangingPlan}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleConfirmPlanChange}
+              disabled={isPreviewing || isChangingPlan}
+            >
+              {isChangingPlan ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Changement...
+                </>
+              ) : (
+                "Confirmer le changement"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmation d'annulation */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Annuler l'abonnement</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir annuler votre abonnement ?
+            </DialogDescription>
+          </DialogHeader>
+
+          {subscription && (
+            <div className="space-y-3">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <p className="font-semibold mb-1">Important</p>
+                  <p className="text-sm">
+                    Votre abonnement restera actif jusqu'à la fin de la période en cours (
+                    {new Date(subscription.currentPeriodEnd).toLocaleDateString("fr-FR")}).
+                    Après cette date, votre compte passera au plan gratuit avec ses limitations.
+                  </p>
+                </AlertDescription>
+              </Alert>
+
+              {subscription.plan.invoiceLimit && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-1">Limite après annulation</p>
+                  <p className="text-sm font-semibold">
+                    Plan gratuit : {subscription.plan.invoiceLimit} factures par mois
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelDialog(false)}
+              disabled={isCanceling}
+            >
+              Conserver mon abonnement
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelSubscription}
+              disabled={isCanceling}
+            >
+              {isCanceling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Annulation...
+                </>
+              ) : (
+                "Confirmer l'annulation"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

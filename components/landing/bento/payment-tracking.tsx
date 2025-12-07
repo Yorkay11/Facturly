@@ -1,71 +1,117 @@
-import type React from "react"
+"use client"
+
+import React from "react"
+import { CheckCircle2, Clock, AlertCircle } from "lucide-react"
 
 const PaymentTracking: React.FC = () => {
+  const invoices = [
+    { id: 1, number: "FAC-042", client: "Acme Corp", amount: "2 400€", status: "paid", date: "15/04/2024" },
+    { id: 2, number: "FAC-043", client: "Tech Solutions", amount: "1 800€", status: "sent", date: "18/04/2024" },
+    { id: 3, number: "FAC-044", client: "Design Studio", amount: "950€", status: "overdue", date: "10/04/2024" },
+    { id: 4, number: "FAC-045", client: "Marketing Pro", amount: "3 200€", status: "paid", date: "20/04/2024" },
+  ]
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return (
+          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-300">
+            <CheckCircle2 className="h-2 w-2" />
+            <span className="text-[7px] font-medium">Payée</span>
+          </div>
+        )
+      case "sent":
+        return (
+          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300">
+            <Clock className="h-2 w-2" />
+            <span className="text-[7px] font-medium">Envoyée</span>
+          </div>
+        )
+      case "overdue":
+        return (
+          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-400">
+            <AlertCircle className="h-2 w-2" />
+            <span className="text-[7px] font-medium">En retard</span>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
-    <div className="w-full h-full flex items-center justify-center p-6 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
-      <svg
-        viewBox="0 0 320 240"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
-      >
-        <defs>
-          <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-          </linearGradient>
-          <filter id="chartShadow">
-            <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="hsl(var(--primary))" floodOpacity="0.2" />
-          </filter>
-        </defs>
-        
-        {/* Chart background */}
-        <rect x="50" y="60" width="200" height="120" rx="8" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        
-        {/* Grid lines */}
-        <line x1="50" y1="120" x2="250" y2="120" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" strokeDasharray="2,2" />
-        <line x1="50" y1="150" x2="250" y2="150" stroke="hsl(var(--border))" strokeWidth="1" opacity="0.3" strokeDasharray="2,2" />
-        
-        {/* Bar chart */}
-        <rect x="70" y="140" width="25" height="40" rx="4" fill="hsl(var(--primary))" opacity="0.3" filter="url(#chartShadow)" />
-        <rect x="110" y="120" width="25" height="60" rx="4" fill="hsl(var(--primary))" opacity="0.5" filter="url(#chartShadow)" />
-        <rect x="150" y="100" width="25" height="80" rx="4" fill="hsl(var(--primary))" filter="url(#chartShadow)" />
-        <rect x="190" y="90" width="25" height="90" rx="4" fill="hsl(var(--primary))" filter="url(#chartShadow)" />
-        
-        {/* Line chart overlay */}
-        <path
-          d="M82.5 160 Q110 150, 137.5 130 T192.5 100"
-          stroke="hsl(var(--primary))"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M82.5 160 Q110 150, 137.5 130 T192.5 100 L192.5 180 L82.5 180 Z"
-          fill="url(#chartGradient)"
-        />
-        
-        {/* Data points */}
-        <circle cx="82.5" cy="160" r="5" fill="hsl(var(--primary))" />
-        <circle cx="137.5" cy="130" r="5" fill="hsl(var(--primary))" />
-        <circle cx="192.5" cy="100" r="6" fill="hsl(var(--primary))" stroke="hsl(var(--background))" strokeWidth="2" />
-        
-        {/* Real-time indicator */}
-        <circle cx="260" cy="50" r="22" fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth="1.5" />
-        <circle cx="260" cy="50" r="18" fill="hsl(var(--primary))" opacity="0.1" />
-        <circle cx="260" cy="50" r="14" fill="hsl(var(--primary))" />
-        <line x1="260" y1="50" x2="260" y2="40" stroke="hsl(var(--primary-foreground))" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="260" y1="50" x2="268" y2="50" stroke="hsl(var(--primary-foreground))" strokeWidth="2" strokeLinecap="round" />
-        
-        {/* Pulse animation indicator */}
-        <circle cx="260" cy="50" r="18" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" opacity="0.3" />
-        
-        {/* Status badges */}
-        <rect x="60" y="200" width="60" height="24" rx="12" fill="hsl(var(--primary))" opacity="0.1" />
-        <circle cx="72" cy="212" r="4" fill="hsl(var(--primary))" />
-        <text x="82" y="217" fontSize="10" fill="hsl(var(--foreground))" opacity="0.7">Payé</text>
-      </svg>
+    <div className="w-full h-full flex items-center justify-center p-1.5 bg-white relative overflow-hidden">
+      <div className="w-full h-full relative overflow-hidden">
+        {/* Header */}
+        <div className="absolute top-1 left-1 right-1 flex items-center justify-between mb-1 z-10">
+          <div>
+            <p className="text-[10px] font-semibold text-slate-900">Suivi des paiements</p>
+            <p className="text-[8px] text-slate-500">Statut des factures</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] font-semibold text-primary">4 650€</p>
+            <p className="text-[7px] text-slate-500">Payé ce mois</p>
+          </div>
+        </div>
+
+        {/* Liste des factures */}
+        <div className="absolute top-[22%] left-1 right-1 bottom-1 space-y-0.5 overflow-hidden pointer-events-none">
+          {invoices.map((invoice, index) => (
+            <div
+              key={invoice.id}
+              className="rounded border border-slate-200 bg-white p-1 shadow-sm flex items-center justify-between gap-1"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <p className="text-[9px] font-semibold text-primary">{invoice.number}</p>
+                  {getStatusBadge(invoice.status)}
+                </div>
+                <p className="text-[8px] text-slate-600 truncate">{invoice.client}</p>
+                <p className="text-[7px] text-slate-500">{invoice.date}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-semibold text-slate-900">{invoice.amount}</p>
+                {invoice.status === "paid" && (
+                  <div className="mt-0.5 flex items-center justify-end gap-0.5">
+                    <CheckCircle2 className="h-2 w-2 text-green-600" />
+                    <span className="text-[6px] text-green-600">Payé</span>
+                  </div>
+                )}
+                {invoice.status === "overdue" && (
+                  <div className="mt-0.5 flex items-center justify-end gap-0.5">
+                    <AlertCircle className="h-2 w-2 text-orange-600" />
+                    <span className="text-[6px] text-orange-600">Retard</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Graphique de progression (mini) */}
+        <div className="absolute bottom-1 left-1 right-1 h-[18%] rounded border border-primary/20 bg-primary/5 p-1 pointer-events-none z-20">
+          <div className="flex items-end justify-between gap-0.5 h-full">
+            <div className="flex-1 flex flex-col items-center justify-end gap-0.5">
+              <div className="w-full bg-primary/30 rounded-t" style={{ height: "40%" }} />
+              <p className="text-[6px] text-slate-500">Jan</p>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-end gap-0.5">
+              <div className="w-full bg-primary/50 rounded-t" style={{ height: "60%" }} />
+              <p className="text-[6px] text-slate-500">Fév</p>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-end gap-0.5">
+              <div className="w-full bg-primary rounded-t" style={{ height: "80%" }} />
+              <p className="text-[6px] text-slate-500">Mar</p>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-end gap-0.5">
+              <div className="w-full bg-primary rounded-t" style={{ height: "100%" }} />
+              <p className="text-[6px] text-slate-500 font-semibold text-primary">Avr</p>
+            </div>
+          </div>
+          <p className="text-[7px] text-center text-slate-600 mt-0.5">Évolution des paiements</p>
+        </div>
+      </div>
     </div>
   )
 }

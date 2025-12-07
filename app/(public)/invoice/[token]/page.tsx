@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { CheckCircle2, AlertCircle, FileText, XCircle, Check, X, Loader2, Maximize2 } from "lucide-react";
 import { useState } from "react";
 
@@ -110,11 +111,18 @@ export default function PublicInvoicePage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Token invalide</CardTitle>
-            <CardDescription>Le lien de la facture est invalide ou manquant.</CardDescription>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4">
+        <Card className="w-full max-w-md bg-gradient-to-br from-red-50 to-white">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3 text-destructive mb-2">
+              <div className="p-2 rounded-full bg-red-200">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <CardTitle className="text-destructive text-xl">Token invalide</CardTitle>
+            </div>
+            <CardDescription className="text-base leading-relaxed">
+              Le lien de la facture est invalide ou manquant.
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -123,29 +131,41 @@ export default function PublicInvoicePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
-        <Card className="w-full max-w-4xl">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-48" />
-              <Skeleton className="h-64 w-full" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4">
+        <div className="w-full max-w-7xl mx-auto space-y-8">
+          <div className="flex justify-center mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-md p-4">
+              <Skeleton className="h-10 w-40" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <Card>
+            <CardContent className="pt-6 p-8">
+              <div className="space-y-6">
+                <div className="flex items-center justify-center gap-4">
+                  <Skeleton className="h-12 w-12 rounded-md" />
+                  <Skeleton className="h-10 w-64" />
+                </div>
+                <Skeleton className="h-96 w-full rounded-md" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (isError || !invoiceData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <div className="flex items-center gap-2 text-destructive mb-2">
-              <AlertCircle className="h-5 w-5" />
-              <CardTitle className="text-destructive">Erreur</CardTitle>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4">
+        <Card className="w-full max-w-md bg-gradient-to-br from-red-50 to-white">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3 text-destructive mb-2">
+              <div className="p-2 rounded-full bg-red-200">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <CardTitle className="text-destructive text-xl">Erreur</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-base leading-relaxed">
               {error && typeof error === "object" && "data" in error
                 ? (error.data as { message?: string })?.message ||
                   "Impossible de charger la facture."
@@ -177,11 +197,10 @@ export default function PublicInvoicePage() {
   // Fonction pour rendre la facture (réutilisable pour le plein écran)
   const renderInvoiceContent = () => (
     <div
-      className="rounded-xl border-2 shadow-2xl space-y-10 p-10 md:p-16 bg-white"
+      className="rounded-md space-y-10 p-10 md:p-16 bg-white transition-all duration-300"
       style={{
         backgroundColor: template.backgroundColor || "#fff",
         color: template.textColor || "#1F1B2E",
-        borderColor: `${template.accentColor}20`,
       }}
     >
       {/* Header avec émetteur et destinataire */}
@@ -280,7 +299,7 @@ export default function PublicInvoicePage() {
       <div className="space-y-4">
         <Table>
           <TableHeader>
-            <TableRow className="border-b-2" style={{ borderColor: `${template.accentColor}30` }}>
+            <TableRow>
               <TableHead className="text-sm font-bold py-4" style={{ color: template.accentColor }}>
                 Description
               </TableHead>
@@ -298,7 +317,7 @@ export default function PublicInvoicePage() {
           <TableBody>
             {items.length > 0 ? (
               items.map((item) => (
-                <TableRow key={item.id} className="border-b hover:bg-primary/5 transition-colors">
+                <TableRow key={item.id} className="hover:bg-primary/5 transition-colors">
                   <TableCell className="py-4 text-base font-medium">{item.description}</TableCell>
                   <TableCell className="text-right py-4 text-base">{item.quantity}</TableCell>
                   <TableCell className="text-right py-4 text-base opacity-80">
@@ -318,7 +337,7 @@ export default function PublicInvoicePage() {
             )}
           </TableBody>
           <TableFooter>
-            <TableRow className="border-t-2" style={{ borderColor: `${template.accentColor}30` }}>
+            <TableRow>
               <TableCell colSpan={3} className="text-right text-sm font-semibold py-4 opacity-70">
                 Sous-total HT
               </TableCell>
@@ -354,7 +373,7 @@ export default function PublicInvoicePage() {
                 </TableRow>
               </>
             )}
-            <TableRow className="border-t-2 bg-primary/5" style={{ borderColor: `${template.accentColor}40` }}>
+            <TableRow className="bg-primary/5">
               <TableCell colSpan={3} className="text-right text-base font-bold py-4">
                 Total TTC
               </TableCell>
@@ -382,36 +401,54 @@ export default function PublicInvoicePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4 py-8 md:py-12">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header avec statut */}
-        <div className="text-center space-y-3 mb-6">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <FileText className="h-8 w-8" style={{ color: template.accentColor }} />
-            <h1 className="text-4xl font-bold tracking-tight" style={{ color: template.textColor }}>
-              Facture {invoice.invoiceNumber}
-            </h1>
+        {/* Logo Facturly avec animation */}
+        <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="bg-white/80 backdrop-blur-sm rounded-md p-4">
+            <Image
+              src="/logos/logo.png"
+              alt="Facturly"
+              width={150}
+              height={50}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+          </div>
+        </div>
+
+        {/* Header avec statut - Design amélioré */}
+        <div className="text-center space-y-4 mb-8 animate-in fade-in slide-in-from-top-6 duration-700">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-md bg-gradient-to-br from-primary/10 to-primary/5">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Facture {invoice.invoiceNumber}
+              </h1>
+            </div>
             <Button
               variant="outline"
               size="icon"
-              className="ml-2 border-primary/40 text-primary hover:bg-primary/10"
+              className="text-primary hover:bg-primary/10 transition-all"
               onClick={() => setIsFullscreenOpen(true)}
               title="Agrandir la facture"
             >
               <Maximize2 className="h-5 w-5" />
             </Button>
           </div>
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <InvoiceStatusBadge status={invoice.status} />
             {isPaid && (
-              <Badge variant="secondary" className="text-base px-4 py-2">
-                <CheckCircle2 className="h-4 w-4 mr-2" />
+              <Badge variant="secondary" className="text-sm px-4 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                 Payée
               </Badge>
             )}
             {isRejected && (
-              <Badge variant="destructive" className="text-base px-4 py-2">
-                <XCircle className="h-4 w-4 mr-2" />
+              <Badge variant="destructive" className="text-sm px-4 py-1.5">
+                <XCircle className="h-3.5 w-3.5 mr-1.5" />
                 Refusée
               </Badge>
             )}
@@ -419,42 +456,53 @@ export default function PublicInvoicePage() {
         </div>
 
         {/* Invoice Template */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_420px] animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Main Invoice Template - Style professionnel agrandi */}
-          {renderInvoiceContent()}
+          <div className="animate-in fade-in slide-in-from-left-8 duration-700">
+            {renderInvoiceContent()}
+          </div>
 
-          {/* Actions Card - Plus compact */}
-          <Card className="border-2 shadow-lg self-start sticky top-4" style={{ borderColor: `${template.accentColor}30` }}>
+          {/* Actions Card - Design amélioré */}
+          <Card className="self-start sticky top-6 bg-white/95 backdrop-blur-sm rounded-md animate-in fade-in slide-in-from-right-8 duration-700">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg" style={{ color: template.accentColor }}>Actions</CardTitle>
-              <CardDescription className="text-xs">
-                {isPaid
-                  ? "Cette facture a été payée."
-                  : isRejected
-                  ? "Cette facture a été refusée."
-                  : canAccept
-                  ? "Acceptez ou refusez cette facture."
-                  : "Aucune action disponible pour le moment."}
-              </CardDescription>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-md bg-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold" style={{ color: template.accentColor }}>Actions</CardTitle>
+                  <CardDescription className="text-xs mt-1">
+                    {isPaid
+                      ? "Cette facture a été payée."
+                      : isRejected
+                      ? "Cette facture a été refusée."
+                      : canAccept
+                      ? "Acceptez ou refusez cette facture."
+                      : "Aucune action disponible pour le moment."}
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Status Messages */}
+            <CardContent className="space-y-5 pt-6">
+              {/* Status Messages - Design amélioré */}
               {isPaid && (
-                <div className="space-y-2 rounded-lg border border-green-200 bg-green-50 p-4">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <CheckCircle2 className="h-5 w-5" />
-                    <p className="font-semibold">Facture payée</p>
+                <div className="space-y-3 rounded-md bg-gradient-to-br from-green-50 to-green-100/50 p-5">
+                  <div className="flex items-center gap-3 text-green-700">
+                    <div className="p-2 rounded-full bg-green-200">
+                      <CheckCircle2 className="h-5 w-5" />
+                    </div>
+                    <p className="font-bold text-base">Facture payée</p>
                   </div>
-                  <p className="text-sm text-green-600">
-                    Le paiement de {formatCurrency(invoice.totalAmount, invoice.currency)} a été
+                  <p className="text-sm text-green-700 leading-relaxed">
+                    Le paiement de <span className="font-semibold">{formatCurrency(invoice.totalAmount, invoice.currency)}</span> a été
                     effectué avec succès.
                   </p>
                   {invoice.payments && invoice.payments.length > 0 && (
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-3 pt-3 space-y-2">
                       {invoice.payments.map((payment) => (
-                        <div key={payment.id} className="text-xs text-green-600">
-                          {formatCurrency(payment.amount, invoice.currency)} payé le{" "}
-                          {formatDate(payment.paymentDate)}
+                        <div key={payment.id} className="flex items-center justify-between text-xs text-green-700 bg-white/50 rounded-md p-2">
+                          <span className="font-medium">{formatCurrency(payment.amount, invoice.currency)}</span>
+                          <span className="opacity-70">{formatDate(payment.paymentDate)}</span>
                         </div>
                       ))}
                     </div>
@@ -463,20 +511,22 @@ export default function PublicInvoicePage() {
               )}
 
               {isRejected && (
-                <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-4">
-                  <div className="flex items-center gap-2 text-red-700">
-                    <XCircle className="h-5 w-5" />
-                    <p className="font-semibold">Facture refusée</p>
+                <div className="space-y-3 rounded-md bg-gradient-to-br from-red-50 to-red-100/50 p-5">
+                  <div className="flex items-center gap-3 text-red-700">
+                    <div className="p-2 rounded-full bg-red-200">
+                      <XCircle className="h-5 w-5" />
+                    </div>
+                    <p className="font-bold text-base">Facture refusée</p>
                   </div>
                   {invoice.rejectionComment && (
-                    <div className="text-sm text-red-600">
-                      <p className="font-semibold mb-1">Commentaire :</p>
-                      <p className="whitespace-pre-wrap">{invoice.rejectionComment}</p>
+                    <div className="text-sm text-red-700 bg-white/50 rounded-md p-3">
+                      <p className="font-semibold mb-2">Commentaire :</p>
+                      <p className="whitespace-pre-wrap leading-relaxed">{invoice.rejectionComment}</p>
                     </div>
                   )}
                   {invoice.rejectionReason && (
-                    <div className="text-xs text-red-600 mt-2">
-                      Raison : {invoice.rejectionReason}
+                    <div className="text-xs text-red-600 bg-white/50 rounded-md p-2">
+                      <span className="font-semibold">Raison :</span> {invoice.rejectionReason}
                     </div>
                   )}
                   {invoice.rejectedAt && (
@@ -487,34 +537,34 @@ export default function PublicInvoicePage() {
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons - Design amélioré */}
               {canAccept && (
-                <div className="space-y-3">
+                <div className="space-y-3 pt-2">
                   <Button
-                    className="w-full gap-2"
+                    className="w-full gap-2 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all duration-300"
                     onClick={handleAccept}
                     disabled={isAccepting}
                     size="lg"
                   >
                     {isAccepting ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                         Traitement...
                       </>
                     ) : (
                       <>
-                        <Check className="h-4 w-4" />
+                        <Check className="h-5 w-5" />
                         Accepter la facture
                       </>
                     )}
                   </Button>
                   <Button
-                    className="w-full gap-2"
+                    className="w-full gap-2 h-12 text-base font-semibold transition-all duration-300"
                     variant="destructive"
                     onClick={handleRejectClick}
                     size="lg"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5" />
                     Refuser la facture
                   </Button>
                 </div>
@@ -522,21 +572,23 @@ export default function PublicInvoicePage() {
 
               {canPay && !isPaid && !isRejected && (
                 <Button
-                  className="w-full gap-2"
+                  className="w-full gap-2 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all duration-300"
                   onClick={() => router.push(`/pay/${token}`)}
                   size="lg"
                 >
-                  Payer maintenant
+                  💳 Payer maintenant
                 </Button>
               )}
 
               {!canAccept && !canPay && !isPaid && !isRejected && (
-                <div className="space-y-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-                  <div className="flex items-center gap-2 text-yellow-700">
-                    <AlertCircle className="h-5 w-5" />
-                    <p className="font-semibold">Action indisponible</p>
+                <div className="space-y-3 rounded-md bg-gradient-to-br from-yellow-50 to-yellow-100/50 p-5">
+                  <div className="flex items-center gap-3 text-yellow-700">
+                    <div className="p-2 rounded-full bg-yellow-200">
+                      <AlertCircle className="h-5 w-5" />
+                    </div>
+                    <p className="font-bold text-base">Action indisponible</p>
                   </div>
-                  <p className="text-sm text-yellow-600">
+                  <p className="text-sm text-yellow-700 leading-relaxed">
                     Cette facture ne peut pas être acceptée ou payée pour le moment. Veuillez
                     contacter l&apos;émetteur.
                   </p>
@@ -546,16 +598,21 @@ export default function PublicInvoicePage() {
           </Card>
         </div>
 
-        {/* Rejection Info (if rejected) */}
+        {/* Rejection Info (if rejected) - Design amélioré */}
         {isRejected && invoice.rejectionComment && (
-          <Card className="border-red-200 bg-red-50/50">
+          <Card className="bg-gradient-to-br from-red-50 to-red-100/30 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <CardHeader>
-              <CardTitle className="text-red-700">Information de refus</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-red-200">
+                  <XCircle className="h-5 w-5 text-red-700" />
+                </div>
+                <CardTitle className="text-red-700">Information de refus</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="text-sm text-red-600">
-              <p className="whitespace-pre-wrap">{invoice.rejectionComment}</p>
+            <CardContent className="pt-6 text-sm text-red-700">
+              <p className="whitespace-pre-wrap leading-relaxed">{invoice.rejectionComment}</p>
               {invoice.rejectionReason && (
-                <p className="mt-2 text-xs">
+                <p className="mt-4 pt-4 text-xs">
                   Raison : <span className="font-semibold">{invoice.rejectionReason}</span>
                 </p>
               )}
@@ -574,16 +631,31 @@ export default function PublicInvoicePage() {
         />
       )}
 
-      {/* Fullscreen Invoice Dialog */}
+      {/* Fullscreen Invoice Dialog - Design amélioré */}
       <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-6 overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold" style={{ color: template.accentColor }}>
-              Facture {invoice.invoiceNumber}
-            </DialogTitle>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-0 overflow-hidden bg-gradient-to-br from-primary/5 to-white">
+          <DialogHeader className="px-6 pt-6 pb-4 bg-white/50 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-md bg-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Facture {invoice.invoiceNumber}
+                </DialogTitle>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFullscreenOpen(false)}
+                className="hover:bg-primary/10"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </DialogHeader>
-          <div className="mt-6 overflow-y-auto">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-5xl mx-auto">
               {renderInvoiceContent()}
             </div>
           </div>

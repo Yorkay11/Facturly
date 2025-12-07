@@ -4,17 +4,13 @@ import { useState } from "react"
 import { Check, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useGetMeQuery } from "@/services/facturlyApi"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export function PricingSection() {
   const router = useRouter()
   const [isAnnual, setIsAnnual] = useState(true)
-  const { data: user, isLoading } = useGetMeQuery(undefined, {
-    skip: typeof window === "undefined",
-  })
-
-  const isAuthenticated = !!user && !isLoading
+  const { isAuthenticated } = useAuth()
 
   const pricingPlans = [
     {
@@ -30,7 +26,7 @@ export function PricingSection() {
         "Support par email",
       ],
       buttonText: "Commencer gratuitement",
-      buttonHref: "/register",
+      buttonHref: "/login",
       authenticatedText: "Accéder au tableau de bord",
       authenticatedHref: "/dashboard",
       popular: false,
@@ -51,7 +47,7 @@ export function PricingSection() {
         "Support prioritaire",
       ],
       buttonText: "Essayer Pro",
-      buttonHref: "/register",
+      buttonHref: "/login",
       authenticatedText: "Accéder au tableau de bord",
       authenticatedHref: "/dashboard",
       popular: true,

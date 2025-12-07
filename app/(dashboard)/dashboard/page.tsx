@@ -171,9 +171,17 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     if (dashboardStats) {
       const monthlyRev = dashboardStats.monthlyRevenue?.[0];
+      
+      // Utiliser invoicesByStatus pour obtenir le nombre total de factures envoyées
+      // Plus précis que invoicesSent qui peut être limité au mois en cours
+      const sentStatusCount = dashboardStats.invoicesByStatus?.find(
+        (status) => status.status === "sent"
+      );
+      const totalSentCount = sentStatusCount?.count || 0;
+      
       return {
         monthlyRevenue: monthlyRev ? parseFloat(monthlyRev.amount || "0") : 0,
-        invoicesSent: dashboardStats.invoicesSent || 0,
+        invoicesSent: totalSentCount,
         totalPaid: parseFloat(dashboardStats.totalPaid || "0"),
         totalUnpaid: parseFloat(dashboardStats.totalUnpaid || "0"),
       };

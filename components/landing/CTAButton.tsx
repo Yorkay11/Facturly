@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useGetMeQuery } from "@/services/facturlyApi"
 import { useRouter } from "next/navigation"
 import { ReactNode } from "react"
+import { useAuth } from "@/hooks/useAuth"
 
 interface CTAButtonProps {
   href?: string
@@ -26,15 +26,11 @@ export function CTAButton({
   size = "default",
   defaultText,
   authenticatedText,
-  defaultHref = "/register",
+  defaultHref = "/login",
   authenticatedHref = "/dashboard",
 }: CTAButtonProps) {
   const router = useRouter()
-  const { data: user, isLoading } = useGetMeQuery(undefined, {
-    skip: typeof window === "undefined",
-  })
-
-  const isAuthenticated = !!user && !isLoading
+  const { isAuthenticated } = useAuth()
   const displayText = isAuthenticated ? authenticatedText || "Accéder au tableau de bord" : defaultText || children
   const targetHref = isAuthenticated ? authenticatedHref : (href || defaultHref)
 

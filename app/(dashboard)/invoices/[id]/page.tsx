@@ -28,7 +28,7 @@ import {
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/ui/skeleton";
-import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useMarkInvoicePaidMutation } from "@/services/facturlyApi";
+import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useMarkInvoicePaidMutation, useGetInvoiceRemindersQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import { ReminderModal } from "@/components/modals/ReminderModal";
@@ -72,6 +72,10 @@ export default function InvoiceDetailPage() {
     invoiceId || "",
     { skip: shouldSkip }
   );
+  const { data: reminders, isLoading: isLoadingReminders } = useGetInvoiceRemindersQuery(
+    invoiceId || "",
+    { skip: shouldSkip }
+  );
   const [deleteInvoice, { isLoading: isDeleting }] = useDeleteInvoiceMutation();
   const [cancelInvoice, { isLoading: isCancelling }] = useCancelInvoiceMutation();
   const [markInvoicePaid, { isLoading: isMarkingPaid }] = useMarkInvoicePaidMutation();
@@ -82,6 +86,137 @@ export default function InvoiceDetailPage() {
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0]);
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [paymentNotes, setPaymentNotes] = useState("");
+
+  // Timeline dynamique basée sur les données réelles de la facture
+  // Doit être appelé AVANT tous les return conditionnels pour respecter les règles des Hooks
+  const timeline = useMemo(() => {
+    if (!invoice) {
+      return [];
+    }
+
+    const events: Array<{ title: string; date: string; description: string; timestamp: number }> = [];
+    const clientName = invoice.client?.name || "";
+    const clientEmail = invoice.client?.email || "";
+
+    // 1. Création de la facture
+    if (invoice.createdAt) {
+      events.push({
+        title: "Facture créée",
+        date: formatDate(invoice.createdAt),
+        description: "Document généré et enregistré dans Facturly.",
+        timestamp: new Date(invoice.createdAt).getTime(),
+      });
+    } else if (invoice.issueDate) {
+      events.push({
+        title: "Facture créée",
+        date: formatDate(invoice.issueDate),
+        description: "Document généré et enregistré dans Facturly.",
+        timestamp: new Date(invoice.issueDate).getTime(),
+      });
+    }
+
+    // 2. Envoi de la facture
+    if (invoice.sentAt) {
+      events.push({
+        title: "Envoyée au client",
+        date: formatDate(invoice.sentAt),
+        description: `Email envoyé à ${clientEmail || clientName}.`,
+        timestamp: new Date(invoice.sentAt).getTime(),
+      });
+    } else if (invoice.status === "draft") {
+      events.push({
+        title: "Brouillon",
+        date: formatDate(invoice.issueDate),
+        description: "Facture en brouillon, non envoyée.",
+        timestamp: new Date(invoice.issueDate).getTime(),
+      });
+    }
+
+    // 3. Visualisation par le client
+    if (invoice.viewedAt) {
+      events.push({
+        title: "Visualisée par le client",
+        date: formatDate(invoice.viewedAt),
+        description: "Le client a ouvert la facture.",
+        timestamp: new Date(invoice.viewedAt).getTime(),
+      });
+    }
+
+    // 4. Rejet de la facture
+    if (invoice.rejectedAt) {
+      events.push({
+        title: "Facture rejetée",
+        date: formatDate(invoice.rejectedAt),
+        description: invoice.rejectionComment 
+          ? `Rejetée : ${invoice.rejectionComment}`
+          : invoice.rejectionReason 
+          ? `Raison : ${invoice.rejectionReason}`
+          : "La facture a été rejetée par le client.",
+        timestamp: new Date(invoice.rejectedAt).getTime(),
+      });
+    }
+
+    // 5. Paiements reçus
+    if (invoice.payments && invoice.payments.length > 0) {
+      invoice.payments
+        .sort((a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime())
+        .forEach((payment) => {
+          events.push({
+            title: `Paiement reçu - ${formatCurrency(payment.amount, invoice.currency)}`,
+            date: formatDate(payment.paymentDate),
+            description: payment.method 
+              ? `Paiement par ${payment.method}${payment.notes ? ` - ${payment.notes}` : ""}.`
+              : "Paiement confirmé et rapproché.",
+            timestamp: new Date(payment.paymentDate).getTime(),
+          });
+        });
+    } else if (invoice.status === "paid" && parseFloat(invoice.amountPaid) > 0) {
+      // Si payée mais pas de paiements détaillés, utiliser la date de mise à jour
+      events.push({
+        title: "Paiement reçu",
+        date: invoice.updatedAt ? formatDate(invoice.updatedAt) : formatDate(invoice.dueDate),
+        description: `Paiement de ${formatCurrency(invoice.amountPaid, invoice.currency)} confirmé.`,
+        timestamp: invoice.updatedAt 
+          ? new Date(invoice.updatedAt).getTime() 
+          : new Date(invoice.dueDate).getTime(),
+      });
+    }
+
+    // 6. Échéance
+    if (invoice.status !== "paid" && invoice.status !== "cancelled") {
+      const dueDate = new Date(invoice.dueDate);
+      const now = new Date();
+      const isOverdue = dueDate < now;
+      
+      events.push({
+        title: isOverdue ? "Échéance dépassée" : "Échéance",
+        date: formatDate(invoice.dueDate),
+        description: isOverdue
+          ? `Échéance dépassée. Montant restant : ${formatCurrency(
+              (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
+              invoice.currency
+            )}`
+          : `Date d'échéance : ${formatDate(invoice.dueDate)}. Montant restant : ${formatCurrency(
+              (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
+              invoice.currency
+            )}`,
+        timestamp: dueDate.getTime(),
+      });
+    }
+
+    // 7. Annulation
+    if (invoice.status === "cancelled" && invoice.updatedAt) {
+      events.push({
+        title: "Facture annulée",
+        date: formatDate(invoice.updatedAt),
+        description: "La facture a été annulée.",
+        timestamp: new Date(invoice.updatedAt).getTime(),
+      });
+    }
+
+    // Trier par date (plus récent en premier)
+    return events.sort((a, b) => b.timestamp - a.timestamp).map(({ timestamp, ...rest }) => rest);
+  }, [invoice]);
 
   const handleDelete = async () => {
     if (!invoiceId || !invoice) return;
@@ -235,130 +370,6 @@ export default function InvoiceDetailPage() {
       });
     }
   };
-
-  // Timeline dynamique basée sur les données réelles de la facture
-  const timeline = useMemo(() => {
-    const events: Array<{ title: string; date: string; description: string; timestamp: number }> = [];
-
-    // 1. Création de la facture
-    if (invoice.createdAt) {
-      events.push({
-        title: "Facture créée",
-        date: formatDate(invoice.createdAt),
-        description: "Document généré et enregistré dans Facturly.",
-        timestamp: new Date(invoice.createdAt).getTime(),
-      });
-    } else if (invoice.issueDate) {
-      events.push({
-        title: "Facture créée",
-        date: formatDate(invoice.issueDate),
-        description: "Document généré et enregistré dans Facturly.",
-        timestamp: new Date(invoice.issueDate).getTime(),
-      });
-    }
-
-    // 2. Envoi de la facture
-    if (invoice.sentAt) {
-      events.push({
-        title: "Envoyée au client",
-        date: formatDate(invoice.sentAt),
-        description: `Email envoyé à ${clientEmail ?? clientName}.`,
-        timestamp: new Date(invoice.sentAt).getTime(),
-      });
-    } else if (invoice.status === "draft") {
-      events.push({
-        title: "Brouillon",
-        date: formatDate(invoice.issueDate),
-        description: "Facture en brouillon, non envoyée.",
-        timestamp: new Date(invoice.issueDate).getTime(),
-      });
-    }
-
-    // 3. Visualisation par le client
-    if (invoice.viewedAt) {
-      events.push({
-        title: "Visualisée par le client",
-        date: formatDate(invoice.viewedAt),
-        description: "Le client a ouvert la facture.",
-        timestamp: new Date(invoice.viewedAt).getTime(),
-      });
-    }
-
-    // 4. Rejet de la facture
-    if (invoice.rejectedAt) {
-      events.push({
-        title: "Facture rejetée",
-        date: formatDate(invoice.rejectedAt),
-        description: invoice.rejectionComment 
-          ? `Rejetée : ${invoice.rejectionComment}`
-          : invoice.rejectionReason 
-          ? `Raison : ${invoice.rejectionReason}`
-          : "La facture a été rejetée par le client.",
-        timestamp: new Date(invoice.rejectedAt).getTime(),
-      });
-    }
-
-    // 5. Paiements reçus
-    if (invoice.payments && invoice.payments.length > 0) {
-      invoice.payments
-        .sort((a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime())
-        .forEach((payment) => {
-          events.push({
-            title: `Paiement reçu - ${formatCurrency(payment.amount, invoice.currency)}`,
-            date: formatDate(payment.paymentDate),
-            description: payment.method 
-              ? `Paiement par ${payment.method}${payment.notes ? ` - ${payment.notes}` : ""}.`
-              : "Paiement confirmé et rapproché.",
-            timestamp: new Date(payment.paymentDate).getTime(),
-          });
-        });
-    } else if (invoice.status === "paid" && parseFloat(invoice.amountPaid) > 0) {
-      // Si payée mais pas de paiements détaillés, utiliser la date de mise à jour
-      events.push({
-        title: "Paiement reçu",
-        date: invoice.updatedAt ? formatDate(invoice.updatedAt) : formatDate(invoice.dueDate),
-        description: `Paiement de ${formatCurrency(invoice.amountPaid, invoice.currency)} confirmé.`,
-        timestamp: invoice.updatedAt 
-          ? new Date(invoice.updatedAt).getTime() 
-          : new Date(invoice.dueDate).getTime(),
-      });
-    }
-
-    // 6. Échéance
-    if (invoice.status !== "paid" && invoice.status !== "cancelled") {
-      const dueDate = new Date(invoice.dueDate);
-      const now = new Date();
-      const isOverdue = dueDate < now;
-      
-      events.push({
-        title: isOverdue ? "Échéance dépassée" : "Échéance",
-        date: formatDate(invoice.dueDate),
-        description: isOverdue
-          ? `Échéance dépassée. Montant restant : ${formatCurrency(
-              (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
-              invoice.currency
-            )}`
-          : `Date d'échéance : ${formatDate(invoice.dueDate)}. Montant restant : ${formatCurrency(
-              (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
-              invoice.currency
-            )}`,
-        timestamp: dueDate.getTime(),
-      });
-    }
-
-    // 7. Annulation
-    if (invoice.status === "cancelled" && invoice.updatedAt) {
-      events.push({
-        title: "Facture annulée",
-        date: formatDate(invoice.updatedAt),
-        description: "La facture a été annulée.",
-        timestamp: new Date(invoice.updatedAt).getTime(),
-      });
-    }
-
-    // Trier par date (plus récent en premier)
-    return events.sort((a, b) => b.timestamp - a.timestamp).map(({ timestamp, ...rest }) => rest);
-  }, [invoice, clientEmail, clientName]);
 
   return (
     <div className="space-y-6">
@@ -527,6 +538,37 @@ export default function InvoiceDetailPage() {
             ))}
           </CardContent>
         </Card>
+
+        {reminders && reminders.length > 0 && (
+          <Card className="border-primary/20 self-start">
+            <CardHeader>
+              <CardTitle className="text-primary">Historique des relances</CardTitle>
+              <CardDescription>
+                {reminders.length} relance{reminders.length > 1 ? "s" : ""} envoyée{reminders.length > 1 ? "s" : ""}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {reminders.map((reminder) => (
+                <div key={reminder.id} className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-primary">
+                      Relance n°{reminder.reminderNumber}
+                    </p>
+                    <Badge variant={reminder.reminderType === "manual" ? "default" : "secondary"}>
+                      {reminder.reminderType === "manual" ? "Manuelle" : "Automatique"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-foreground/60">
+                    Envoyée le {formatDate(reminder.sentAt)} • {reminder.daysAfterDue} jour{reminder.daysAfterDue > 1 ? "s" : ""} après échéance
+                  </p>
+                  <p className="text-xs text-foreground/70">
+                    Destinataire: {reminder.recipientEmail}
+                  </p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {invoice.notes && (

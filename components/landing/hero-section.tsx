@@ -4,18 +4,14 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Header } from "./header"
 import Link from "next/link"
-import { useGetMeQuery } from "@/services/facturlyApi"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export function HeroSection() {
   const router = useRouter()
-  const { data: user, isLoading } = useGetMeQuery(undefined, {
-    skip: typeof window === "undefined",
-  })
-
-  const isAuthenticated = !!user && !isLoading
+  const { isAuthenticated } = useAuth()
   const buttonText = isAuthenticated ? "Accéder au tableau de bord" : "Commencer gratuitement"
-  const buttonHref = isAuthenticated ? "/dashboard" : "/register"
+  const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isAuthenticated) {

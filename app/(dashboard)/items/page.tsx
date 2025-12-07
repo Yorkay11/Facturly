@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import Skeleton from "@/components/ui/skeleton";
 import { useState } from "react";
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -27,13 +28,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import ProductModal from "@/components/modals/ProductModal";
+import ImportProductsModal from "@/components/modals/ImportProductsModal";
 import { useGetProductsQuery, Product, useDeleteProductMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
+import { IoCloudUploadOutline } from "react-icons/io5";
 
 const getPrice = (product: Product): number => {
-  // Product.price est toujours une string selon l'API
-  if (product.price) {
-    const parsed = parseFloat(product.price);
+  // Product.unitPrice est toujours une string selon l'API (price est un alias)
+  const priceValue = product.unitPrice || product.price;
+  if (priceValue) {
+    const parsed = parseFloat(priceValue);
     // Vérifier que le résultat est un nombre valide et fini
     if (!isNaN(parsed) && isFinite(parsed)) {
       return parsed;
@@ -43,14 +47,19 @@ const getPrice = (product: Product): number => {
   return 0;
 };
 
+const ITEMS_PER_PAGE = 20;
+
 export default function ItemsPage() {
-  const { data: productsResponse, isLoading, isError } = useGetProductsQuery({ page: 1, limit: 100 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data: productsResponse, isLoading, isError, refetch: refetchProducts } = useGetProductsQuery({ page: currentPage, limit: ITEMS_PER_PAGE });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isImportModalOpen, setImportModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const products = productsResponse?.data ?? [];
   const totalProducts = productsResponse?.meta?.total ?? 0;
+  const totalPages = productsResponse?.meta?.totalPages ?? 1;
 
   const handleDeleteClick = (product: { id: string; name: string }) => {
     setProductToDelete({ id: product.id, name: product.name });
@@ -92,10 +101,16 @@ export default function ItemsPage() {
               Centralisez vos prestations pour accélérer la création de factures et de devis.
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Nouvelle prestation
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setImportModalOpen(true)}>
+              <IoCloudUploadOutline className="h-4 w-4" />
+              Importer CSV
+            </Button>
+            <Button className="gap-2" onClick={() => setModalOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Nouvelle prestation
+            </Button>
+          </div>
         </div>
         <div className={`grid gap-4 ${products && products.length > 0 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
           <Card className="border-primary/30 bg-primary/5">
@@ -104,7 +119,6 @@ export default function ItemsPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-2xl font-semibold text-primary">{totalProducts}</p>
-              <p className="text-xs text-foreground/60">Synchronisation API</p>
             </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5">
@@ -147,7 +161,8 @@ export default function ItemsPage() {
                 <CardContent className="pt-0">
                   <p className="text-2xl font-semibold text-primary">
                     {new Date(latestProduct.updatedAt).toLocaleDateString("fr-FR", {
-                      month: "long",
+                      day: "2-digit",
+                      month: "2-digit",
                       year: "numeric",
                     })}
                   </p>
@@ -227,6 +242,36 @@ export default function ItemsPage() {
               </TableBody>
             </Table>
           </CardContent>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t px-6 py-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} sur {totalPages} • {totalProducts} produit(s) au total
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1 || isLoading}
+                >
+                  <IoChevronBackOutline className="h-4 w-4" />
+                  Précédent
+                </Button>
+                <div className="text-sm font-medium px-3">
+                  {currentPage} / {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages || isLoading}
+                >
+                  Suivant
+                  <IoChevronForwardOutline className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       ) : (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
@@ -240,7 +285,30 @@ export default function ItemsPage() {
           </Button>
         </div>
       )}
-      <ProductModal open={isModalOpen} onClose={() => setModalOpen(false)} />
+      <ProductModal 
+        open={isModalOpen} 
+        onClose={() => {
+          setModalOpen(false);
+        }}
+        onSuccess={() => {
+          toast.success("Prestation créée", {
+            description: "La prestation a été créée avec succès.",
+          });
+          setModalOpen(false);
+          // RTK Query invalide déjà le cache, pas besoin de refetch manuel
+        }}
+      />
+      <ImportProductsModal
+        open={isImportModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => {
+          toast.success("Import réussi", {
+            description: "Les produits ont été importés avec succès.",
+          });
+          setImportModalOpen(false);
+          // RTK Query invalide déjà le cache, pas besoin de refetch manuel
+        }}
+      />
 
       <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
         <AlertDialogContent>

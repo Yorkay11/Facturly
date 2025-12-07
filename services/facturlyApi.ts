@@ -139,36 +139,101 @@ export interface Product {
   id: string;
   name: string;
   description?: string;
-  type: "product" | "service";
-  price: string;
+  type?: "product" | "service"; // Optionnel car peut ne pas être retourné par le backend
+  unitPrice: string; // Le backend retourne unitPrice
   currency: string;
   taxRate: string;
-  unit?: string;
-  sku?: string;
+  unitOfMeasure?: string | null; // Le backend utilise unitOfMeasure (peut être null)
+  sku?: string | null; // Peut être null
+  isActive?: boolean;
+  companyId?: string;
   createdAt?: string;
   updatedAt?: string;
+  // Alias pour compatibilité avec le code existant
+  price?: string; // Alias de unitPrice
 }
 
 export interface CreateProductPayload {
   name: string;
   description?: string;
   type: "product" | "service";
-  price: string;
+  price: string; // Le backend accepte aussi unitPrice
   currency: string;
   taxRate: string;
-  unit?: string;
+  unitOfMeasure?: string; // Le backend attend unitOfMeasure, pas unit
   sku?: string;
+  isActive?: boolean;
 }
 
 export interface UpdateProductPayload {
   name?: string;
   description?: string;
   type?: "product" | "service";
-  price?: string;
+  price?: string; // Le backend accepte aussi unitPrice
   currency?: string;
   taxRate?: string;
-  unit?: string;
+  unitOfMeasure?: string; // Le backend attend unitOfMeasure
   sku?: string;
+  isActive?: boolean;
+}
+
+// Bulk Import
+export interface BulkImportCreatedItem {
+  line: number;
+  clientId?: string;
+  productId?: string;
+  name: string;
+}
+
+export interface BulkImportFailedItem {
+  line: number;
+  data: object;
+  error: string;
+}
+
+export interface BulkImportResponse {
+  total: number;
+  successCount: number;
+  failedCount: number;
+  created: BulkImportCreatedItem[];
+  failed: BulkImportFailedItem[];
+}
+
+export interface BulkImportClientsPayload {
+  clients: CreateClientPayload[];
+}
+
+export interface BulkImportProductsPayload {
+  products: Array<{
+    name: string;
+    description?: string;
+    type?: "product" | "service";
+    price?: string; // Le backend accepte price ou unitPrice
+    unitPrice?: string; // Alias de price pour compatibilité
+    currency?: string;
+    taxRate?: string;
+    unitOfMeasure?: string;
+    sku?: string;
+    isActive?: boolean;
+  }>;
+}
+
+// Invoice Reminders
+export interface InvoiceReminder {
+  id: string;
+  reminderNumber: number;
+  sentAt: string;
+  reminderType: "manual" | "automatic";
+  dueDate: string;
+  daysAfterDue: number;
+  recipientEmail: string;
+  createdAt: string;
+}
+
+export interface SendReminderResponse {
+  success: boolean;
+  reminderNumber: number;
+  reminderId: string;
 }
 
 // Invoice
@@ -649,6 +714,47 @@ export interface DashboardActivitiesQueryParams {
   limit?: number;
 }
 
+// ==================== Notifications ====================
+
+export type NotificationType =
+  | 'invoice_paid'
+  | 'invoice_overdue'
+  | 'invoice_sent'
+  | 'invoice_rejected'
+  | 'payment_received'
+  | 'reminder_sent'
+  | 'client_created'
+  | 'system_alert';
+
+export type NotificationPriority = 'info' | 'warning' | 'error' | 'success';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  title: string;
+  message: string;
+  data?: Record<string, unknown>;
+  read: boolean;
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface NotificationListQueryParams extends ListQueryParams {
+  read?: boolean;
+  type?: NotificationType;
+  priority?: NotificationPriority;
+}
+
+export interface UnreadCountResponse {
+  count: number;
+}
+
+export interface MarkAllAsReadResponse {
+  success: boolean;
+  updatedCount: number;
+}
+
 // ==================== API Service ====================
 
 export const facturlyApi = createApi({
@@ -667,7 +773,7 @@ export const facturlyApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment", "Dashboard", "Bill"],
+  tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment", "Dashboard", "Bill", "Notification"],
   endpoints: (builder) => ({
     // ==================== Auth ====================
     register: builder.mutation<AuthResponse, RegisterPayload>({
@@ -758,6 +864,14 @@ export const facturlyApi = createApi({
       }),
       invalidatesTags: ["Client"],
     }),
+    bulkImportClients: builder.mutation<BulkImportResponse, BulkImportClientsPayload>({
+      query: (body) => ({
+        url: "/clients/bulk",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Client"],
+    }),
     getClientRevenue: builder.query<ClientRevenue, { id: string; params?: ClientRevenueQueryParams }>({
       query: ({ id, params }) => {
         const searchParams = new URLSearchParams();
@@ -778,32 +892,83 @@ export const facturlyApi = createApi({
         const queryString = searchParams.toString();
         return `/products${queryString ? `?${queryString}` : ""}`;
       },
+      transformResponse: (response: { data: any[]; meta: any }) => {
+        // Mapper unitPrice vers price pour compatibilité avec le code existant
+        return {
+          ...response,
+          data: response.data.map((product) => ({
+            ...product,
+            price: product.unitPrice, // Alias pour compatibilité
+          })),
+        };
+      },
       providesTags: ["Product"],
     }),
     getProductById: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
+      transformResponse: (product: any) => {
+        // Mapper unitPrice vers price pour compatibilité avec le code existant
+        return {
+          ...product,
+          price: product.unitPrice, // Alias pour compatibilité
+        };
+      },
       providesTags: (_result, _error, id) => [{ type: "Product", id }],
     }),
     createProduct: builder.mutation<Product, CreateProductPayload>({
       query: (body) => ({
         url: "/products",
         method: "POST",
-        body,
+        body: {
+          ...body,
+          // Le backend accepte price comme alias de unitPrice, mais on envoie price pour compatibilité
+          unitPrice: body.price, // Envoyer unitPrice au backend
+        },
       }),
+      transformResponse: (product: any) => {
+        // Mapper unitPrice vers price pour compatibilité avec le code existant
+        return {
+          ...product,
+          price: product.unitPrice, // Alias pour compatibilité
+        };
+      },
       invalidatesTags: ["Product"],
     }),
     updateProduct: builder.mutation<Product, { id: string; payload: UpdateProductPayload }>({
-      query: ({ id, payload }) => ({
-        url: `/products/${id}`,
-        method: "PATCH",
-        body: payload,
-      }),
+      query: ({ id, payload }) => {
+        // Créer un nouveau payload sans price, en utilisant unitPrice à la place
+        const { price, ...restPayload } = payload;
+        const body = {
+          ...restPayload,
+          ...(price && { unitPrice: price }), // Convertir price en unitPrice pour le backend
+        };
+        return {
+          url: `/products/${id}`,
+          method: "PATCH",
+          body,
+        };
+      },
+      transformResponse: (product: any) => {
+        // Mapper unitPrice vers price pour compatibilité avec le code existant
+        return {
+          ...product,
+          price: product.unitPrice, // Alias pour compatibilité
+        };
+      },
       invalidatesTags: (_result, _error, { id }) => [{ type: "Product", id }, "Product"],
     }),
     deleteProduct: builder.mutation<void, string>({
       query: (id) => ({
         url: `/products/${id}`,
         method: "DELETE",
+      }),
+      invalidatesTags: ["Product"],
+    }),
+    bulkImportProducts: builder.mutation<BulkImportResponse, BulkImportProductsPayload>({
+      query: (body) => ({
+        url: "/products/bulk",
+        method: "POST",
+        body,
       }),
       invalidatesTags: ["Product"],
     }),
@@ -871,6 +1036,17 @@ export const facturlyApi = createApi({
         method: "DELETE",
       }),
       invalidatesTags: (_result, _error, id) => [{ type: "Invoice", id }, "Invoice"],
+    }),
+    sendReminder: builder.mutation<SendReminderResponse, string>({
+      query: (id) => ({
+        url: `/invoices/${id}/remind`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, id) => [{ type: "Invoice", id }, "Invoice"],
+    }),
+    getInvoiceReminders: builder.query<InvoiceReminder[], string>({
+      query: (id) => `/invoices/${id}/reminders`,
+      providesTags: (_result, _error, id) => [{ type: "Invoice", id }],
     }),
 
     // ==================== Invoice Items ====================
@@ -1044,6 +1220,46 @@ export const facturlyApi = createApi({
         body: payload,
       }),
     }),
+
+    // ==================== Notifications ====================
+    getNotifications: builder.query<PaginatedResponse<Notification>, NotificationListQueryParams | void>({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params && params.page) searchParams.append("page", params.page.toString());
+        if (params && params.limit) searchParams.append("limit", params.limit.toString());
+        if (params && params.read !== undefined) searchParams.append("read", params.read.toString());
+        if (params && params.type) searchParams.append("type", params.type);
+        if (params && params.priority) searchParams.append("priority", params.priority);
+        const queryString = searchParams.toString();
+        return `/notifications${queryString ? `?${queryString}` : ""}`;
+      },
+      providesTags: ["Notification"],
+    }),
+    getUnreadNotificationsCount: builder.query<UnreadCountResponse, void>({
+      query: () => "/notifications/unread-count",
+      providesTags: ["Notification"],
+    }),
+    markNotificationAsRead: builder.mutation<Notification, string>({
+      query: (id) => ({
+        url: `/notifications/${id}/read`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+    markAllNotificationsAsRead: builder.mutation<MarkAllAsReadResponse, void>({
+      query: () => ({
+        url: "/notifications/read-all",
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+    deleteNotification: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/notifications/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Notification"],
+    }),
   }),
 });
 
@@ -1067,12 +1283,14 @@ export const {
   useUpdateClientMutation,
   useDeleteClientMutation,
   useGetClientRevenueQuery,
+  useBulkImportClientsMutation,
   // Products
   useGetProductsQuery,
   useGetProductByIdQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useBulkImportProductsMutation,
   // Invoices
   useGetInvoicesQuery,
   useGetInvoiceByIdQuery,
@@ -1082,6 +1300,8 @@ export const {
   useMarkInvoicePaidMutation,
   useCancelInvoiceMutation,
   useDeleteInvoiceMutation,
+  useSendReminderMutation,
+  useGetInvoiceRemindersQuery,
   // Invoice Items
   useCreateInvoiceItemMutation,
   useUpdateInvoiceItemMutation,
@@ -1113,4 +1333,10 @@ export const {
   useAcceptPublicInvoiceMutation,
   useRejectPublicInvoiceMutation,
   usePayPublicInvoiceMutation,
+  // Notifications
+  useGetNotificationsQuery,
+  useGetUnreadNotificationsCountQuery,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
+  useDeleteNotificationMutation,
 } = facturlyApi;

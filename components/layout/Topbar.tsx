@@ -33,6 +33,7 @@ import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
 import { useGetMeQuery, useGetCompanyQuery, useGetSubscriptionQuery, useLogoutMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 const navItems: Array<{
   label: string;
@@ -330,10 +331,7 @@ export const Topbar = () => {
             <IoAddOutline className="h-4 w-4" />
             Nouvelle facture
           </Button>
-          <Button variant="ghost" size="icon" className="relative">
-            <IoNotificationsOutline className="h-5 w-5" />
-            <span className="absolute right-1 top-1 inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </Button>
+          <NotificationDropdown />
           <button
             type="button"
             onClick={() => setProfileOpen(true)}

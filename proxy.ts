@@ -2,15 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/register", "/auth/login", "/auth", "/"];
+// Routes publiques avec paramètres dynamiques (ex: /invoice/[token], /pay/[token])
+const PUBLIC_PATH_PATTERNS = [/^\/invoice\/[^/]+$/, /^\/pay\/[^/]+$/];
 
 const isPublicPath = (pathname: string): boolean => {
-  return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  // Vérifier les chemins exacts ou qui commencent par un chemin public
+  if (PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+    return true;
+  }
+  // Vérifier les patterns pour les routes publiques avec paramètres
+  return PUBLIC_PATH_PATTERNS.some((pattern) => pattern.test(pathname));
 };
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for static files, API routes, and public paths
+  // Skip proxy for static files, API routes, and public paths
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -26,7 +33,7 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("facturly_access_token")?.value;
 
   if (!token) {
-    const loginUrl = new URL("/", request.url);
+    const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -46,3 +53,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+

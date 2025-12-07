@@ -89,7 +89,8 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
     if (product) {
       setSelectedProductId(productId);
       setDescription(product.name);
-      const price = parseFloat(product.price);
+      const priceValue = product.unitPrice || product.price || '0';
+      const price = parseFloat(priceValue);
       const formattedPrice = isNaN(price) ? '0' : price.toFixed(2);
       setUnitPrice(formattedPrice);
       setVatRate(product.taxRate || '20');
@@ -161,13 +162,10 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
       // Créer le produit
       await createProduct({
         name: description,
-        description: undefined,
         type: productType,
         price: unitPrice,
         currency: productCurrency,
         taxRate: vatRate,
-        unit: undefined,
-        sku: undefined,
       }).unwrap();
       
       // Rafraîchir la liste des produits
@@ -350,7 +348,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                             )}
                                             <div className="flex items-center gap-3 text-xs">
                                               <span className="font-medium text-primary">
-                                                {parseFloat(product.price).toFixed(2)} {product.currency}
+                                                {parseFloat(product.unitPrice || product.price || '0').toFixed(2)} {product.currency}
                                               </span>
                                               <span className="text-muted-foreground">
                                                 TVA: {product.taxRate}%
@@ -439,7 +437,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                           )}
                           <div className="flex items-center gap-4">
                             <span>
-                              <span className="font-medium">Prix:</span> {parseFloat(selectedProduct.price).toFixed(2)} {selectedProduct.currency}
+                              <span className="font-medium">Prix:</span> {parseFloat(selectedProduct.unitPrice || selectedProduct.price || '0').toFixed(2)} {selectedProduct.currency}
                             </span>
                             <span>
                               <span className="font-medium">TVA:</span> {selectedProduct.taxRate}%
@@ -649,7 +647,6 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                 <SelectContent>
                   <SelectItem value="EUR">EUR (€)</SelectItem>
                   <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
                   <SelectItem value="XOF">XOF (CFA)</SelectItem>
                 </SelectContent>
               </Select>

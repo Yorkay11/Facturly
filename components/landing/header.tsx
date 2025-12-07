@@ -7,18 +7,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { IoMenuOutline } from "react-icons/io5"
 import Link from "next/link"
 import Image from "next/image"
-import { useGetMeQuery } from "@/services/facturlyApi"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 
 export function Header() {
   const router = useRouter()
-  const { data: user, isLoading } = useGetMeQuery(undefined, {
-    skip: typeof window === "undefined",
-  })
-
-  const isAuthenticated = !!user && !isLoading
+  const { isAuthenticated } = useAuth()
   const buttonText = isAuthenticated ? "Tableau de bord" : "Essayer gratuitement"
-  const buttonHref = isAuthenticated ? "/dashboard" : "/register"
+  const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
   const navItems = [
     { name: "Fonctionnalités", href: "#features-section" },

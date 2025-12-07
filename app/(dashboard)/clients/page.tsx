@@ -1,8 +1,9 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -28,8 +29,10 @@ import {
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
 import ClientModal from "@/components/modals/ClientModal";
+import ImportClientsModal from "@/components/modals/ImportClientsModal";
 import { useGetClientsQuery, useGetInvoicesQuery, useDeleteClientMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
+import { IoCloudUploadOutline } from "react-icons/io5";
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", {
@@ -38,19 +41,43 @@ const formatDate = (value: string) =>
     year: "numeric",
   });
 
+const ITEMS_PER_PAGE = 20;
+
 export default function ClientsPage() {
-  const { data: clientsResponse, isLoading, isError } = useGetClientsQuery({ page: 1, limit: 100 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data: clientsResponse, isLoading, isError, refetch: refetchClients } = useGetClientsQuery({ page: currentPage, limit: ITEMS_PER_PAGE });
   const { data: invoicesResponse } = useGetInvoicesQuery({ page: 1, limit: 1 });
   const [deleteClient, { isLoading: isDeleting }] = useDeleteClientMutation();
   const [isModalOpen, setModalOpen] = useState(false);
+  const [isImportModalOpen, setImportModalOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const clients = clientsResponse?.data ?? [];
   const totalClients = clientsResponse?.meta?.total ?? 0;
+  const totalPages = clientsResponse?.meta?.totalPages ?? 1;
   const totalInvoices = invoicesResponse?.meta?.total ?? 0;
-  const lastClientDate = clients.length > 0 && clients[0].createdAt 
-    ? formatDate(clients[0].createdAt) 
-    : "—";
+  
+  // Trouver le client le plus récent dynamiquement
+  const lastClientDate = useMemo(() => {
+    if (clients.length === 0) return "—";
+    
+    // Trouver le client avec la date de création la plus récente
+    const clientsWithDates = clients.filter((client) => client.createdAt);
+    if (clientsWithDates.length === 0) return "—";
+    
+    const mostRecentClient = clientsWithDates.reduce((latest, client) => {
+      if (!latest) return client;
+      if (!client.createdAt) return latest;
+      if (!latest.createdAt) return client;
+      
+      const clientDate = new Date(client.createdAt).getTime();
+      const latestDate = new Date(latest.createdAt).getTime();
+      
+      return clientDate > latestDate ? client : latest;
+    }, clientsWithDates[0]);
+    
+    return mostRecentClient?.createdAt ? formatDate(mostRecentClient.createdAt) : "—";
+  }, [clients]);
 
   const handleDeleteClick = (client: { id: string; name: string }) => {
     setClientToDelete({ id: client.id, name: client.name });
@@ -93,10 +120,16 @@ export default function ClientsPage() {
               Gérez votre carnet d&apos;adresses, consultez l&apos;historique des factures et préparez vos relances.
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Nouveau client
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setImportModalOpen(true)}>
+              <IoCloudUploadOutline className="h-4 w-4" />
+              Importer CSV
+            </Button>
+            <Button className="gap-2" onClick={() => setModalOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Nouveau client
+            </Button>
+          </div>
         </div>
         <div className="flex flex-col gap-4 lg:flex-row">
           <Card className="flex-1 border-primary/30 bg-primary/5">
@@ -105,7 +138,6 @@ export default function ClientsPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-2xl font-semibold text-primary">{totalClients}</p>
-              <p className="text-xs text-foreground/60">Synchronisation API</p>
             </CardContent>
           </Card>
           <Card className="flex-1 border-primary/30 bg-primary/5">
@@ -114,7 +146,6 @@ export default function ClientsPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-2xl font-semibold text-primary">{totalInvoices}</p>
-              <p className="text-xs text-foreground/60">Synchronisation API</p>
             </CardContent>
           </Card>
           <Card className="flex-1 border-primary/30 bg-primary/5">
@@ -205,6 +236,36 @@ export default function ClientsPage() {
               </TableBody>
             </Table>
           </CardContent>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t px-6 py-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} sur {totalPages} • {totalClients} client(s) au total
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1 || isLoading}
+                >
+                  <IoChevronBackOutline className="h-4 w-4" />
+                  Précédent
+                </Button>
+                <div className="text-sm font-medium px-3">
+                  {currentPage} / {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages || isLoading}
+                >
+                  Suivant
+                  <IoChevronForwardOutline className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       ) : (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
@@ -218,7 +279,30 @@ export default function ClientsPage() {
           </Button>
         </div>
       )}
-      <ClientModal open={isModalOpen} onClose={() => setModalOpen(false)} />
+      <ClientModal 
+        open={isModalOpen} 
+        onClose={() => {
+          setModalOpen(false);
+        }}
+        onSuccess={() => {
+          toast.success("Client créé", {
+            description: "Le client a été créé avec succès.",
+          });
+          setModalOpen(false);
+          // RTK Query invalide déjà le cache, pas besoin de refetch manuel
+        }}
+      />
+      <ImportClientsModal
+        open={isImportModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => {
+          toast.success("Import réussi", {
+            description: "Les clients ont été importés avec succès.",
+          });
+          setImportModalOpen(false);
+          // RTK Query invalide déjà le cache, pas besoin de refetch manuel
+        }}
+      />
 
       <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
         <AlertDialogContent>

@@ -9,12 +9,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useGetInvoicesQuery, useSendInvoiceMutation, type Invoice, type InvoiceSummary } from "@/services/facturlyApi";
+import { useGetInvoicesQuery, useSendReminderMutation, type InvoiceSummary } from "@/services/facturlyApi";
 import { toast } from "sonner";
 
 const reminderSchema = z.object({
   invoiceId: z.string().min(1, "Veuillez sélectionner une facture"),
-  sendEmail: z.boolean().default(true),
 });
 
 type ReminderFormValues = z.infer<typeof reminderSchema>;
@@ -42,7 +41,7 @@ const formatCurrency = (value: string | number, currency: string) => {
 };
 
 export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderModalProps) => {
-  const [sendInvoice, { isLoading, isSuccess, isError, error }] = useSendInvoiceMutation();
+  const [sendReminder, { isLoading, isSuccess, isError, error }] = useSendReminderMutation();
   
   // Récupérer les factures en retard et envoyées
   const { data: overdueInvoices } = useGetInvoicesQuery({ 
@@ -74,7 +73,6 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
     resolver: zodResolver(reminderSchema),
     defaultValues: {
       invoiceId: preselectedInvoiceId || "",
-      sendEmail: true,
     },
   });
 
@@ -96,7 +94,8 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
       form.reset();
       onClose();
     }
-  }, [isSuccess, form, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
   useEffect(() => {
     if (isError && error) {
@@ -127,23 +126,12 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
     }
 
     try {
-      // InvoiceSummary retourné par useGetInvoicesQuery n'a pas recipientEmail
-      // On utilise uniquement l'email du client s'il existe
-      let clientEmail: string | undefined = undefined;
-      if (invoice.client && 'email' in invoice.client) {
-        const email = invoice.client.email;
-        if (typeof email === 'string') {
-          clientEmail = email;
-        }
-      }
-      
-      await sendInvoice({
-        id: values.invoiceId,
-        payload: {
-          sendEmail: values.sendEmail,
-          emailTo: clientEmail,
-        },
-      }).unwrap();
+      const response = await sendReminder(values.invoiceId).unwrap();
+      toast.success("Relance envoyée", {
+        description: `Relance n°${response.reminderNumber} envoyée avec succès.`,
+      });
+      form.reset();
+      onClose();
     } catch (err) {
       // L'erreur sera gérée par le useEffect
     }

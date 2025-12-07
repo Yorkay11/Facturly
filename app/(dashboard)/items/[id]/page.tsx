@@ -117,7 +117,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 currency: product.currency || "EUR",
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              }).format(parseFloat(product.price ?? "0"))}
+              }).format(parseFloat(product.unitPrice || product.price || "0"))}
             </p>
             <p className="text-xs text-foreground/50">TVA par défaut : {product.taxRate ?? "0"}%</p>
           </div>
@@ -162,10 +162,10 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <span className="text-foreground/60">Type :</span>
                 <span className="font-medium capitalize">{product.type || "—"}</span>
               </div>
-              {product.unit && (
+              {product.unitOfMeasure && (
                 <div className="flex justify-between">
                   <span className="text-foreground/60">Unité :</span>
-                  <span className="font-medium">{product.unit}</span>
+                  <span className="font-medium">{product.unitOfMeasure}</span>
                 </div>
               )}
               {product.sku && (

@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Lock, Mail, User, Building2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Lock, Mail, User, Building2, Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useRegisterMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const registerSchema = z.object({
   firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
@@ -35,6 +37,12 @@ export default function RegisterPage() {
   const [register, { isLoading, isSuccess, isError, error, data }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const steps = [
+    { id: 1, label: "Informations personnelles" },
+    { id: 2, label: "Sécurité" },
+  ];
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -81,7 +89,30 @@ export default function RegisterPage() {
     }
   }, [error, isError]);
 
+  const handleNext = () => {
+    // Valider les champs de l'étape 1 avant de passer à l'étape 2
+    if (currentStep === 1) {
+      form.trigger(["firstName", "lastName", "email", "companyName"]).then((isValid) => {
+        if (isValid) {
+          setCurrentStep(2);
+        }
+      });
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const onSubmit = (values: RegisterFormValues) => {
+    // S'assurer qu'on est sur la dernière étape avant de soumettre
+    if (currentStep !== steps.length) {
+      handleNext();
+      return;
+    }
+
     register({
       email: values.email,
       password: values.password,
@@ -91,166 +122,270 @@ export default function RegisterPage() {
     });
   };
 
+  const isLastStep = currentStep === steps.length;
+
   return (
-    <div className="mx-auto w-full max-w-md">
-      <Card className="border-primary/20 shadow-lg">
-        <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <User className="h-6 w-6" />
-          </div>
-          <div>
-            <CardTitle className="text-2xl font-semibold text-primary">Créer un compte Facturly</CardTitle>
-            <CardDescription className="text-foreground/60">
-              Inscrivez-vous pour commencer à gérer vos factures en toute simplicité.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Prénom</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="John"
-                    className="pl-9"
-                    {...form.register("firstName")}
-                  />
-                </div>
-                {form.formState.errors.firstName ? (
-                  <p className="text-xs text-destructive">{form.formState.errors.firstName.message}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Nom</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    className="pl-9"
-                    {...form.register("lastName")}
-                  />
-                </div>
-                {form.formState.errors.lastName ? (
-                  <p className="text-xs text-destructive">{form.formState.errors.lastName.message}</p>
-                ) : null}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Adresse email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="vous@entreprise.com"
-                  className="pl-9"
-                  {...form.register("email")}
-                />
-              </div>
-              {form.formState.errors.email ? (
-                <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="companyName">Nom de l&apos;entreprise</Label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-                <Input
-                  id="companyName"
-                  type="text"
-                  placeholder="Mon Entreprise SAS"
-                  className="pl-9"
-                  {...form.register("companyName")}
-                />
-              </div>
-              {form.formState.errors.companyName ? (
-                <p className="text-xs text-destructive">{form.formState.errors.companyName.message}</p>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pl-9 pr-9"
-                  {...form.register("password")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
-                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {form.formState.errors.password ? (
-                <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
-              ) : null}
-              <p className="text-xs text-foreground/50">
-                Le mot de passe doit contenir au moins 8 caractères.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="pl-9 pr-9"
-                  {...form.register("confirmPassword")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
-                  aria-label={showConfirmPassword ? "Masquer la confirmation du mot de passe" : "Afficher la confirmation du mot de passe"}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {form.formState.errors.confirmPassword ? (
-                <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>
-              ) : null}
-            </div>
-            <Button type="submit" className="w-full gap-2" disabled={isLoading}>
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Créer mon compte
-            </Button>
-          </form>
-          <div className="space-y-3 text-center text-sm text-foreground/60">
-            <Separator />
-            <p>
-              Vous avez déjà un compte ? {" "}
-              <Link href="/login" className="text-primary hover:underline">
-                Se connecter
-              </Link>
+    <div className="flex min-h-screen">
+      {/* Section gauche : Logo avec fond sombre */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
+        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-md">
+          <Image
+            src="/logos/logo.png"
+            alt="Facturly"
+            width={300}
+            height={100}
+            className="w-auto h-24 object-contain brightness-0 invert"
+            priority
+          />
+          <div className="space-y-3">
+            <h2 className="text-3xl font-bold text-white">
+              Rejoignez Facturly
+            </h2>
+            <p className="text-white/80 text-lg">
+              Créez votre compte et commencez à gérer vos factures en toute simplicité
             </p>
           </div>
-        </CardContent>
-      </Card>
-      <p className="mt-6 text-center text-xs text-foreground/50">
-        En créant un compte, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité.
-      </p>
+        </div>
+      </div>
+
+      {/* Section droite : Formulaire */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white">
+        <div className="w-full max-w-md">
+          <Card className="border-primary/20 shadow-lg">
+            <CardHeader className="space-y-4 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <User className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl font-semibold text-primary">Créer un compte Facturly</CardTitle>
+                <CardDescription className="text-foreground/60">
+                  Inscrivez-vous pour commencer à gérer vos factures en toute simplicité.
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Indicateur de progression */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                {steps.map((step, index) => (
+                  <div key={step.id} className="flex items-center">
+                    <div
+                      className={cn(
+                        "h-2 rounded-full transition-all duration-300",
+                        index + 1 === currentStep
+                          ? "w-8 bg-primary"
+                          : index + 1 < currentStep
+                          ? "w-2 bg-primary/50"
+                          : "w-2 bg-muted-foreground/30"
+                      )}
+                    />
+                    {index < steps.length - 1 && (
+                      <div
+                        className={cn(
+                          "h-0.5 w-4 transition-all duration-300",
+                          index + 1 < currentStep ? "bg-primary/50" : "bg-muted-foreground/30"
+                        )}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" onKeyDown={(e) => {
+                if (e.key === "Enter" && !isLastStep) {
+                  e.preventDefault();
+                  handleNext();
+                }
+              }}>
+                {/* Étape 1 : Informations personnelles */}
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Prénom</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                          <Input
+                            id="firstName"
+                            type="text"
+                            placeholder="John"
+                            className="pl-9"
+                            {...form.register("firstName")}
+                          />
+                        </div>
+                        {form.formState.errors.firstName ? (
+                          <p className="text-xs text-destructive">{form.formState.errors.firstName.message}</p>
+                        ) : null}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Nom</Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                          <Input
+                            id="lastName"
+                            type="text"
+                            placeholder="Doe"
+                            className="pl-9"
+                            {...form.register("lastName")}
+                          />
+                        </div>
+                        {form.formState.errors.lastName ? (
+                          <p className="text-xs text-destructive">{form.formState.errors.lastName.message}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Adresse email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="vous@entreprise.com"
+                          className="pl-9"
+                          {...form.register("email")}
+                        />
+                      </div>
+                      {form.formState.errors.email ? (
+                        <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+                      ) : null}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Nom de l&apos;entreprise</Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                        <Input
+                          id="companyName"
+                          type="text"
+                          placeholder="Mon Entreprise SAS"
+                          className="pl-9"
+                          {...form.register("companyName")}
+                        />
+                      </div>
+                      {form.formState.errors.companyName ? (
+                        <p className="text-xs text-destructive">{form.formState.errors.companyName.message}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+
+                {/* Étape 2 : Sécurité */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Mot de passe</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="pl-9 pr-9"
+                          {...form.register("password")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                          aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                      {form.formState.errors.password ? (
+                        <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+                      ) : null}
+                      <p className="text-xs text-foreground/50">
+                        Le mot de passe doit contenir au moins 8 caractères.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="pl-9 pr-9"
+                          {...form.register("confirmPassword")}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                          aria-label={showConfirmPassword ? "Masquer la confirmation du mot de passe" : "Afficher la confirmation du mot de passe"}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                      {form.formState.errors.confirmPassword ? (
+                        <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+
+                {/* Boutons de navigation */}
+                <div className="flex gap-3 pt-4">
+                  {currentStep > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handlePrevious}
+                      className="flex-1"
+                      disabled={isLoading}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-2" />
+                      Précédent
+                    </Button>
+                  )}
+                  <Button
+                    type="submit"
+                    className={cn("flex-1 gap-2", currentStep === 1 && "ml-auto")}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Création...
+                      </>
+                    ) : isLastStep ? (
+                      "Créer mon compte"
+                    ) : (
+                      <>
+                        Suivant
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+
+              <div className="space-y-3 text-center text-sm text-foreground/60">
+                <Separator />
+                <p>
+                  Vous avez déjà un compte ? {" "}
+                  <Link href="/login" className="text-primary hover:underline">
+                    Se connecter
+                  </Link>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <p className="mt-6 text-center text-xs text-foreground/50">
+            En créant un compte, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

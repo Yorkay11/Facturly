@@ -3,6 +3,8 @@ import "./globals.css";
 import { Nunito } from 'next/font/google'
 import Providers from "./providers";
 import { Toaster } from "sonner";
+import { Analytics } from "@/components/analytics/Analytics";
+import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
 
 
 const inter = Nunito({ subsets: ['latin'] })
@@ -81,14 +83,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID as string;
+
   return (
     <html lang="fr">
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon.png" />
+        <GoogleTagManager gtmId={gtmId} />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
+        <link
+          rel="icon"
+          href="/icon?<generated>"
+          type="image/<generated>"
+          sizes="<generated>"
+        />
+        <link
+          rel="apple-touch-icon"
+          href="/icon?<generated>"
+          type="image/<generated>"
+          sizes="<generated>"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -122,9 +138,14 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.className} `}
+        className={`${inter.className}`}
       >
+        <GoogleTagManagerNoscript gtmId={gtmId} />
         <Providers>
+          <Analytics 
+            ga4Id={process.env.NEXT_PUBLIC_GA4_ID}
+            plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+          />
           {children}
           <Toaster 
             position="top-right"

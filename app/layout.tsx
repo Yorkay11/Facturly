@@ -4,6 +4,8 @@ import { Nunito } from 'next/font/google'
 import Providers from "./providers";
 import { Toaster } from "sonner";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 
 
 const inter = Nunito({ subsets: ['latin'] })
@@ -83,11 +85,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID as string;
+  const gaId = process.env.NEXT_PUBLIC_GA4_ID as string;
 
   return (
     <html lang="fr">
       <head>
         {gtmId && <GoogleTagManager gtmId={gtmId} />}
+        {gaId && <GoogleAnalytics gaId={gaId} />}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icon.png" />
@@ -141,6 +145,7 @@ export default function RootLayout({
       >
         {gtmId && <GoogleTagManagerNoscript gtmId={gtmId} />}
         <Providers>
+          {gaId && <PageViewTracker />}
           {children}
           <Toaster 
             position="top-right"

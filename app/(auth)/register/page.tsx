@@ -89,37 +89,75 @@ export default function RegisterPage() {
     }
   }, [error, isError]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Valider les champs de l'étape 1 avant de passer à l'étape 2
     if (currentStep === 1) {
-      form.trigger(["firstName", "lastName", "email", "companyName"]).then((isValid) => {
-        if (isValid) {
-          setCurrentStep(2);
+      const fieldsToValidate: (keyof RegisterFormValues)[] = ["firstName", "lastName", "email", "companyName"];
+      
+      // Déclencher la validation et attendre le résultat
+      const isValid = await form.trigger(fieldsToValidate);
+      
+      if (isValid) {
+        setCurrentStep(2);
+        // Scroll to top pour voir la nouvelle étape
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }, 100);
+      } else {
+        // Attendre un peu pour que les erreurs soient mises à jour dans le DOM
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        // Trouver le premier champ avec une erreur et le mettre en focus
+        const errors = form.formState.errors;
+        const firstErrorField = fieldsToValidate.find(field => errors[field]);
+        
+        if (firstErrorField) {
+          // Attendre un peu plus pour que le DOM soit mis à jour avec les erreurs
+          setTimeout(() => {
+            const fieldElement = document.getElementById(firstErrorField);
+            if (fieldElement) {
+              fieldElement.focus();
+              fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }, 100);
+          
+          const errorMessage = errors[firstErrorField]?.message || "Erreur de validation";
+          toast.error("Erreur de validation", {
+            description: errorMessage,
+          });
+        } else {
+          toast.error("Veuillez remplir tous les champs obligatoires");
         }
-      });
+      }
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      // Scroll to top pour voir la nouvelle étape
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  const onSubmit = (values: RegisterFormValues) => {
-    // S'assurer qu'on est sur la dernière étape avant de soumettre
-    if (currentStep !== steps.length) {
-      handleNext();
-      return;
-    }
+  const onSubmit = async (values: RegisterFormValues) => {
+    // Sur la dernière étape uniquement, soumettre le formulaire
+    if (currentStep === steps.length) {
+      // Valider tous les champs avant de soumettre
+      const isValid = await form.trigger();
+      if (!isValid) {
+        toast.error("Veuillez corriger les erreurs avant de soumettre");
+        return;
+      }
 
-    register({
-      email: values.email,
-      password: values.password,
-      firstName: values.firstName,
-      lastName: values.lastName,
-      companyName: values.companyName,
-    });
+      register({
+        email: values.email,
+        password: values.password,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        companyName: values.companyName,
+      });
+    }
   };
 
   const isLastStep = currentStep === steps.length;
@@ -191,10 +229,10 @@ export default function RegisterPage() {
                 ))}
               </div>
 
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" onKeyDown={(e) => {
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" onKeyDown={async (e) => {
                 if (e.key === "Enter" && !isLastStep) {
                   e.preventDefault();
-                  handleNext();
+                  await handleNext();
                 }
               }}>
                 {/* Étape 1 : Informations personnelles */}
@@ -208,7 +246,7 @@ export default function RegisterPage() {
                           <Input
                             id="firstName"
                             type="text"
-                            placeholder="John"
+                            placeholder="York"
                             className="pl-9"
                             {...form.register("firstName")}
                           />
@@ -224,7 +262,7 @@ export default function RegisterPage() {
                           <Input
                             id="lastName"
                             type="text"
-                            placeholder="Doe"
+                            placeholder="Wona"
                             className="pl-9"
                             {...form.register("lastName")}
                           />
@@ -349,7 +387,8 @@ export default function RegisterPage() {
                     </Button>
                   )}
                   <Button
-                    type="submit"
+                    type={isLastStep ? "submit" : "button"}
+                    onClick={!isLastStep ? handleNext : undefined}
                     className={cn("flex-1 gap-2", currentStep === 1 && "ml-auto")}
                     disabled={isLoading}
                   >

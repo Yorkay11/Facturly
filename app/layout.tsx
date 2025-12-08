@@ -3,7 +3,6 @@ import "./globals.css";
 import { Nunito } from 'next/font/google'
 import Providers from "./providers";
 import { Toaster } from "sonner";
-import { Analytics } from "@/components/analytics/Analytics";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
 
 
@@ -88,7 +87,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <GoogleTagManager gtmId={gtmId} />
+        {gtmId && <GoogleTagManager gtmId={gtmId} />}
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icon.png" />
@@ -140,12 +139,8 @@ export default function RootLayout({
       <body
         className={`${inter.className}`}
       >
-        <GoogleTagManagerNoscript gtmId={gtmId} />
+        {gtmId && <GoogleTagManagerNoscript gtmId={gtmId} />}
         <Providers>
-          <Analytics 
-            ga4Id={process.env.NEXT_PUBLIC_GA4_ID}
-            plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
-          />
           {children}
           <Toaster 
             position="top-right"

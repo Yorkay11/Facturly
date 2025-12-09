@@ -130,8 +130,8 @@ Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou so
 
 ## 📞 Support
 
-- 📧 **Email** : support@facturly.app
-- 📖 **Documentation** : [docs.facturly.app](https://docs.facturly.app)
+- 📧 **Email** : support@facturly.online
+- 📖 **Documentation** : [docs.facturly.online](https://docs.facturly.online)
 - 🐛 **Issues** : [GitHub Issues](https://github.com/votre-username/facturly/issues)
 
 ---
@@ -146,6 +146,6 @@ Ce projet est sous licence propriétaire. Tous droits réservés.
 
 **Fait avec ❤️ par l'équipe Facturly**
 
-[🌐 Site web](https://facturly.app) • [📖 Documentation](https://docs.facturly.app) 
+[🌐 Site web](https://facturly.online) • [📖 Documentation](https://docs.facturly.online) 
 
 </div>

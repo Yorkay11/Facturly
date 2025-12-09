@@ -63,8 +63,26 @@ function LoginForm() {
         document.cookie = "facturly_access_token=; path=/; max-age=0";
         document.cookie = "facturly_refresh_token=; path=/; max-age=0";
       }
+      
+      // Récupérer le code d'erreur et le message depuis l'erreur RTK Query
+      const errorData = error && "data" in error ? (error.data as { code?: string; message?: string }) : null;
+      const errorCode = errorData?.code;
+      const errorMessage = errorData?.message || "Vérifiez vos identifiants ou réessayez plus tard.";
+      
+      // Messages d'erreur spécifiques selon le code
+      const errorMessages: Record<string, string> = {
+        AUTH_UNAUTHORIZED: "Identifiants incorrects. Veuillez réessayer.",
+        AUTH_TOKEN_EXPIRED: "Votre session a expiré. Veuillez vous reconnecter.",
+        AUTH_TOKEN_INVALID: "Session invalide. Veuillez vous reconnecter.",
+        AUTH_TOKEN_MISSING: "Vous devez être connecté pour accéder à cette page.",
+      };
+      
+      const displayMessage = errorCode && errorMessages[errorCode] 
+        ? errorMessages[errorCode] 
+        : errorMessage;
+      
       toast.error("Échec de la connexion", {
-        description: "Vérifiez vos identifiants ou réessayez plus tard.",
+        description: displayMessage,
       });
     }
   }, [error, isError]);

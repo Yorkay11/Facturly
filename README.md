@@ -1,38 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧾 Facturly
 
-## Getting Started
+> **Facturation simple & intelligente** pour freelances et petites entreprises
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.3-blue?logo=react)](https://react.dev/)
+
+---
+
+## 🚀 Pourquoi Facturly ?
+
+**Facturly** est la solution de facturation moderne qui vous fait gagner du temps et de l'argent. Créez des factures professionnelles en quelques clics, suivez vos paiements en temps réel et automatisez votre comptabilité.
+
+### ✨ Ce qui rend Facturly unique
+
+- ⚡ **Ultra rapide** - Créez une facture en moins de 2 minutes
+- 🎨 **100% personnalisable** - Votre logo, vos couleurs, votre style
+- 📱 **Mobile-first** - Gérez vos factures depuis n'importe où
+- 💰 **Paiements en ligne** - Acceptez les paiements directement sur vos factures
+- 🔔 **Rappels automatiques** - Ne perdez plus jamais un paiement
+- 📊 **Tableaux de bord intelligents** - Visualisez vos revenus en un coup d'œil
+- 🔒 **100% sécurisé** - Vos données sont protégées et chiffrées
+
+---
+
+## 🎯 Fonctionnalités principales
+
+### 📄 Factures professionnelles
+Créez des factures élégantes avec vos informations, votre logo et votre branding. Export PDF haute qualité, envoi par email automatique.
+
+### 💳 Paiements en ligne
+Intégrez des liens de paiement sécurisés directement sur vos factures. Vos clients paient en un clic.
+
+### 📊 Suivi intelligent
+Tableaux de bord avec graphiques, statistiques détaillées et alertes pour ne rien manquer.
+
+### 🔔 Automatisation
+Rappels automatiques, notifications en temps réel, sauvegarde automatique. Facturly travaille pour vous.
+
+### 👥 Gestion clients
+Carnet d'adresses complet, historique par client, import CSV/Excel en masse.
+
+### 📦 Catalogue produits
+Gérez votre catalogue de produits et services, réutilisez-les en un clic.
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend moderne** : Next.js 16 • React 18 • TypeScript • Tailwind CSS
+
+**Architecture** : Redux Toolkit • RTK Query • React Hook Form • Zod
+
+**UI/UX** : Radix UI • Framer Motion • Recharts • Sonner
+
+---
+
+## 🚀 Démarrage rapide
 
 ```bash
+# Cloner le projet
+git clone https://github.com/votre-username/facturly.git
+cd facturly
+
+# Installer les dépendances
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env.local
+
+# Lancer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### ⚙️ Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Créez un fichier `.env.local` :
 
-## Learn More
+```env
+NEXT_PUBLIC_API_URL=https://votre-api-backend.com
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📦 Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` - Serveur de développement
+- `npm run build` - Build de production
+- `npm run start` - Serveur de production
+- `npm run lint` - Vérification du code
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Aperçu
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Dashboard moderne
+Visualisez vos revenus, vos factures en attente et vos statistiques en temps réel.
 
-## Documentation produit/technique pour Facturly
+### Création de factures intuitive
+Interface drag & drop, ajout de produits en un clic, calcul automatique des totaux.
+
+### Templates personnalisables
+Plusieurs templates professionnels, personnalisables à 100% avec votre branding.
+
+---
+
+## 📚 Documentation
+
+- [Documentation API](./docs/api-endpoints.md)
+- [Guide d'utilisation](./docs/)
+- [Plans tarifaires](./docs/pricing-plans.md)
+
+---
+
+## 🤝 Contribuer
+
+Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou soumettre une pull request.
+
+1. Fork le projet
+2. Créez votre branche (`git checkout -b feature/AmazingFeature`)
+3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+---
+
+## 📞 Support
+
+- 📧 **Email** : support@facturly.app
+- 📖 **Documentation** : [docs.facturly.app](https://docs.facturly.app)
+- 🐛 **Issues** : [GitHub Issues](https://github.com/votre-username/facturly/issues)
+
+---
+
+## 📝 Licence
+
+Ce projet est sous licence propriétaire. Tous droits réservés.
+
+---
+
+<div align="center">
+
+**Fait avec ❤️ par l'équipe Facturly**
+
+[🌐 Site web](https://facturly.app) • [📖 Documentation](https://docs.facturly.app) 
+
+</div>

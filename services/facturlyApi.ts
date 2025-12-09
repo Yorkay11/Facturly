@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://facturlybackend-production.up.railway.app";
 // const BASE_URL = "http://192.168.1.69:3000";
@@ -51,6 +52,7 @@ export interface User {
   firstName: string;
   lastName: string;
   lastLoginAt?: string;
+  profileCompletion?: number;
   company: Company;
 }
 
@@ -74,6 +76,7 @@ export interface Company {
   country?: string;
   defaultCurrency: string;
   logoUrl?: string | null;
+  profileCompletion?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -757,22 +760,67 @@ export interface MarkAllAsReadResponse {
 
 // ==================== API Service ====================
 
+// Fonction pour nettoyer les cookies et rediriger vers la page de connexion
+function logoutAndRedirect() {
+  if (typeof window !== "undefined") {
+    // Supprimer les cookies
+    document.cookie = "facturly_access_token=; path=/; max-age=0";
+    document.cookie = "facturly_refresh_token=; path=/; max-age=0";
+    
+    // Rediriger vers la page de connexion
+    window.location.href = "/login";
+  }
+}
+
+// Base query standard
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  prepareHeaders: (headers) => {
+    if (typeof window !== "undefined") {
+      const cookies = document.cookie.split("; ");
+      const tokenCookie = cookies.find((cookie) => cookie.startsWith("facturly_access_token="));
+      if (tokenCookie) {
+        const token = tokenCookie.split("=")[1];
+        headers.set("authorization", `Bearer ${token}`);
+      }
+    }
+    return headers;
+  },
+});
+
+// Base query avec gestion des erreurs d'authentification
+const baseQueryWithAuth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await baseQuery(args, api, extraOptions);
+  
+  // Gérer les erreurs d'authentification
+  if (result.error && result.error.status === 401) {
+    const errorData = result.error.data as { code?: string; message?: string };
+    const errorCode = errorData?.code;
+    
+    // Codes qui nécessitent une déconnexion
+    const logoutCodes = [
+      "AUTH_TOKEN_EXPIRED",
+      "AUTH_TOKEN_INVALID",
+      "AUTH_TOKEN_MISSING",
+      "AUTH_UNAUTHORIZED",
+    ];
+    
+    if (errorCode && logoutCodes.includes(errorCode)) {
+      // Nettoyer les cookies et rediriger vers la page de connexion
+      logoutAndRedirect();
+    }
+  }
+  
+  return result;
+};
+
 export const facturlyApi = createApi({
   reducerPath: "facturlyApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers) => {
-      if (typeof window !== "undefined") {
-        const cookies = document.cookie.split("; ");
-        const tokenCookie = cookies.find((cookie) => cookie.startsWith("facturly_access_token="));
-        if (tokenCookie) {
-          const token = tokenCookie.split("=")[1];
-          headers.set("authorization", `Bearer ${token}`);
-        }
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithAuth,
   tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment", "Dashboard", "Bill", "Notification"],
   endpoints: (builder) => ({
     // ==================== Auth ====================

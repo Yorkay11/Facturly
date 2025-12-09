@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Topbar from "@/components/layout/Topbar";
 import { NavigationBlockProvider, useNavigationBlock } from "@/contexts/NavigationBlockContext";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
@@ -9,6 +9,8 @@ import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
 import { useRouter } from "next/navigation";
+import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { useGetMeQuery, useGetCompanyQuery } from "@/services/facturlyApi";
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -127,6 +129,87 @@ function NavigationBlockDialog() {
   );
 }
 
+// Composant pour gérer l'onboarding
+function OnboardingHandler() {
+  const { data: user, isLoading: isLoadingUser, refetch: refetchUser } = useGetMeQuery();
+  const { data: company, isLoading: isLoadingCompany, refetch: refetchCompany } = useGetCompanyQuery();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
+
+  useEffect(() => {
+    // Attendre que les données soient chargées
+    if (isLoadingUser || isLoadingCompany) return;
+
+    // Ne vérifier qu'une seule fois
+    if (hasChecked) return;
+
+    // Vérifier si le profil n'est pas complet
+    if (user && company) {
+      // Petit délai pour s'assurer que tout est bien chargé
+      const checkTimer = setTimeout(() => {
+        const userCompletion = user.profileCompletion ?? 0;
+        const companyCompletion = company.profileCompletion ?? 0;
+        
+        // Vérifier aussi si c'est un nouveau compte (pas de lastLoginAt)
+        const isNewUser = !user.lastLoginAt;
+        
+        // Vérifier si les champs essentiels manquent
+        const hasMissingUserInfo = !user.firstName || !user.lastName;
+        const hasMissingCompanyInfo = !company.name || !company.defaultCurrency;
+        
+        // Debug (à retirer en production)
+        console.log('Onboarding check:', {
+          userCompletion,
+          companyCompletion,
+          isNewUser,
+          hasMissingUserInfo,
+          hasMissingCompanyInfo,
+          user: { firstName: user.firstName, lastName: user.lastName, lastLoginAt: user.lastLoginAt },
+          company: { name: company.name, defaultCurrency: company.defaultCurrency }
+        });
+        
+        // Afficher l'onboarding si :
+        // 1. Le profil utilisateur ou l'entreprise n'est pas complet (< 100)
+        // 2. OU c'est un nouveau compte (pas de lastLoginAt) - FORCER pour les nouveaux utilisateurs
+        // 3. OU les champs essentiels manquent
+        const shouldShow = 
+          userCompletion < 100 || 
+          companyCompletion < 100 || 
+          isNewUser || 
+          hasMissingUserInfo || 
+          hasMissingCompanyInfo;
+        
+        console.log('Should show onboarding:', shouldShow);
+        
+        if (shouldShow) {
+          setShowOnboarding(true);
+        }
+        setHasChecked(true);
+      }, 500); // Délai de 500ms pour s'assurer que les données sont bien chargées
+
+      return () => clearTimeout(checkTimer);
+    }
+  }, [user, company, isLoadingUser, isLoadingCompany, hasChecked]);
+
+  const handleOnboardingComplete = async () => {
+    // Rafraîchir les données après la complétion
+    await Promise.all([refetchUser(), refetchCompany()]);
+    setShowOnboarding(false);
+  };
+
+  // Ne rien afficher si les données ne sont pas encore chargées
+  if (isLoadingUser || isLoadingCompany || !user || !company) {
+    return null;
+  }
+
+  return (
+    <OnboardingModal 
+      open={showOnboarding} 
+      onComplete={handleOnboardingComplete}
+    />
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -143,6 +226,7 @@ export default function DashboardLayout({
             </div>
           </main>
           <NavigationBlockDialog />
+          <OnboardingHandler />
         </div>
       </NavigationBlockProvider>
     </LoadingProvider>

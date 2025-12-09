@@ -78,13 +78,28 @@ export default function RegisterPage() {
     if (isError && error) {
       if (typeof window !== "undefined") {
         document.cookie = "facturly_access_token=; path=/; max-age=0";
+        document.cookie = "facturly_refresh_token=; path=/; max-age=0";
       }
-      const errorMessage = error && "data" in error 
-        ? (error.data as { message?: string })?.message ?? "Une erreur est survenue lors de l'inscription."
-        : "Vérifiez vos informations ou réessayez plus tard.";
+      
+      // Récupérer le code d'erreur et le message depuis l'erreur RTK Query
+      const errorData = error && "data" in error ? (error.data as { code?: string; message?: string }) : null;
+      const errorCode = errorData?.code;
+      const errorMessage = errorData?.message || "Une erreur est survenue lors de l'inscription.";
+      
+      // Messages d'erreur spécifiques selon le code
+      const errorMessages: Record<string, string> = {
+        CONFLICT_EMAIL_EXISTS: "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.",
+        AUTH_UNAUTHORIZED: "Erreur lors de l'inscription. Veuillez réessayer.",
+        AUTH_TOKEN_EXPIRED: "Votre session a expiré. Veuillez réessayer.",
+        AUTH_TOKEN_INVALID: "Session invalide. Veuillez réessayer.",
+      };
+      
+      const displayMessage = errorCode && errorMessages[errorCode] 
+        ? errorMessages[errorCode] 
+        : errorMessage;
       
       toast.error("Échec de l'inscription", {
-        description: errorMessage,
+        description: displayMessage,
       });
     }
   }, [error, isError]);

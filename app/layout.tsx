@@ -5,6 +5,7 @@ import Providers from "./providers";
 import { Toaster } from "sonner";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 
 
@@ -154,6 +155,7 @@ export default function RootLayout({
           />
         </Providers>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

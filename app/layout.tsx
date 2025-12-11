@@ -4,6 +4,7 @@ import { Nunito } from 'next/font/google'
 import Providers from "./providers";
 import { Toaster } from "sonner";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
+import { Analytics } from "@vercel/analytics/next"
 
 
 
@@ -152,6 +153,7 @@ export default function RootLayout({
             closeButton
           />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );

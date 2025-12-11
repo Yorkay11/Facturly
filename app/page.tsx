@@ -11,6 +11,7 @@ import { CTASection } from "@/components/landing/cta-section"
 import { FooterSection } from "@/components/landing/footer-section"
 import { AnimatedSection } from "@/components/landing/animated-section"
 
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.app";
 
 export const metadata: Metadata = {
@@ -131,6 +132,8 @@ export default function LandingPage() {
       },
     ],
   };
+
+  
 
   return (
     <>

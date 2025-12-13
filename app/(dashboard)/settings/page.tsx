@@ -1246,11 +1246,46 @@ function SettingsContent() {
                   </div>
                 )}
 
-                {/* Pas de paiement immédiat */}
-                {(!previewData.prorationAmount || parseFloat(previewData.prorationAmount) === 0) && 
+                {/* Prorata pour passage gratuit → payant (si prorata = 0 mais nouveau plan payant) */}
+                {parseFloat(previewData.currentPlan.price) === 0 && 
+                 parseFloat(previewData.newPlan.price) > 0 &&
+                 (!previewData.prorationAmount || parseFloat(previewData.prorationAmount) === 0) && 
+                 (!previewData.creditAmount || parseFloat(previewData.creditAmount) === 0) && (
+                  <div className="p-3 rounded-md border border-primary/20 bg-primary/5">
+                    <p className="text-xs text-muted-foreground mb-1">Montant à payer maintenant</p>
+                    <p className="text-lg font-semibold text-primary">
+                      {previewData.prorationDetails?.remainingValue 
+                        ? new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: previewData.newPlan.currency || "EUR",
+                          }).format(parseFloat(previewData.prorationDetails.remainingValue))
+                        : new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: previewData.newPlan.currency || "EUR",
+                          }).format(parseFloat(previewData.newPlan.price))
+                      }
+                    </p>
+                    {previewData.prorationDetails && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Pour {previewData.prorationDetails.daysRemaining} jour{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} restant{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} dans la période
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Puis {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: previewData.newPlan.currency || "EUR",
+                      }).format(parseFloat(previewData.newPlan.price))}
+                      / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
+                    </p>
+                  </div>
+                )}
+
+                {/* Pas de paiement immédiat (pour les autres cas) */}
+                {parseFloat(previewData.currentPlan.price) > 0 &&
+                 (!previewData.prorationAmount || parseFloat(previewData.prorationAmount) === 0) && 
                  (!previewData.creditAmount || parseFloat(previewData.creditAmount) === 0) && 
                  parseFloat(previewData.newPlan.price) > 0 && (
-                  <div className="p-3 rounded-lg border border-muted">
+                  <div className="p-3 rounded-md border border-muted">
                     <p className="text-xs text-muted-foreground mb-1">Prix du nouveau plan</p>
                     <p className="text-sm font-semibold">
                       {new Intl.NumberFormat("fr-FR", {

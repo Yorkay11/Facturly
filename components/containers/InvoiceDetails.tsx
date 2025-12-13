@@ -71,12 +71,12 @@ import { Loader } from "@/components/ui/loader"
 
 const FormSchema = z.object({
     receiver: z.string().min(1, "Le destinataire est requis"),
-    subject: z.string().min(1, "L&apos;objet est requis"),
+    subject: z.string().min(1, "L'objet est requis"),
     issueDate: z.date({
-        required_error: "La date d&apos;émission est requise",
+        required_error: "La date d'émission est requise",
     }),
     dueDate: z.date({
-        required_error: "La date d&apos;échéance est requise",
+        required_error: "La date d'échéance est requise",
     }),
     currency: z.string().min(1, "La devise est obligatoire"),
     notes: z.string().optional(),

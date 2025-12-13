@@ -56,7 +56,7 @@ export function InvoiceLimitCard({ invoiceLimit, className, showUpgradeButton = 
             : `Période du ${new Date(invoiceLimit.periodStart).toLocaleDateString("fr-FR")} au ${new Date(invoiceLimit.periodEnd).toLocaleDateString("fr-FR")}`}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         {!isUnlimited && (
           <>
             {/* Barre de progression */}

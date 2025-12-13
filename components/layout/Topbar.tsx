@@ -406,7 +406,7 @@ export const Topbar = () => {
               className="w-full"
               onClick={(e) => {
                 e.preventDefault();
-                handleNavigation("/settings");
+                handleNavigation("/settings?tab=profile");
               }}
             >
               Gérer mon compte

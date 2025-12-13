@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,7 +42,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle2, Calendar, ArrowRight, Crown, Zap, Infinity, CreditCard, TrendingUp, BadgeCheck, Receipt, Globe, DollarSign, Percent, FileText, Clock } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/landing/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Schémas de validation
 const userSchema = z.object({
@@ -84,7 +85,29 @@ const sections = [
   { value: "subscription", label: "Abonnement" },
 ];
 
-export default function SettingsPage() {
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get("tab");
+  
+  // Valider que le tab est dans la liste des sections valides
+  const validTabs = useMemo(() => sections.map(s => s.value), []);
+  const defaultTab = tabParam && validTabs.includes(tabParam) ? tabParam : "profile";
+  
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // Mettre à jour l'onglet actif si le paramètre change depuis l'URL
+  useEffect(() => {
+    if (tabParam && validTabs.includes(tabParam) && tabParam !== activeTab) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam, validTabs, activeTab]);
+
+  // Gérer le changement de tab et mettre à jour l'URL
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    router.push(`/settings?tab=${value}`, { scroll: false });
+  };
   // Queries
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
   const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
@@ -376,7 +399,7 @@ export default function SettingsPage() {
           <Skeleton className="h-64 w-full" />
         </div>
       ) : (
-        <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="flex-wrap bg-primary/10">
             {sections.map((section) => (
               <TabsTrigger
@@ -891,169 +914,7 @@ export default function SettingsPage() {
                   planCode={subscription.plan?.code}
                 />
               )}
-              {/* Plan actuel */}
-              <Card className="border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-primary flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    Mon abonnement
-                  </CardTitle>
-                  <CardDescription>
-                    Gérez votre abonnement actuel et consultez vos informations de facturation.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingSubscription ? (
-                    <div className="space-y-3">
-                      <Skeleton className="h-24 w-full" />
-                    </div>
-                  ) : subscription ? (
-                    <div className="space-y-3">
-                      {/* Carte principale du plan actuel - Version compacte */}
-                      <div className="relative rounded-lg border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4">
-                        <div className="flex items-center justify-between gap-4">
-                          {/* Section gauche - Plan et prix */}
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="rounded-lg bg-primary/20 p-2.5 flex-shrink-0">
-                              <Crown className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-bold text-primary">{subscription.plan.name}</h3>
-                                <BadgeCheck className={`h-4 w-4 flex-shrink-0 ${subscription.status === "active" ? "text-emerald-600" : "text-gray-400"}`} />
-                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                                  subscription.status === "active" 
-                                    ? "bg-emerald-100 text-emerald-700" 
-                                    : "bg-gray-100 text-gray-600"
-                                }`}>
-                                  {subscription.status === "active" ? "Actif" : subscription.status}
-                                </span>
-                              </div>
-                              <div className="flex items-baseline gap-1.5">
-                                <span className="text-xl font-bold text-primary">
-                                  {subscription.plan.price === "0.00" 
-                                    ? "Gratuit" 
-                                    : `${subscription.plan.price} ${subscription.plan.currency}`
-                                  }
-                                </span>
-                                {subscription.plan.price !== "0.00" && (
-                                  <span className="text-xs text-muted-foreground">
-                                    /{subscription.plan.billingInterval === "monthly" ? "mois" : "an"}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Section droite - Informations détaillées */}
-                          <div className="flex items-center gap-6 flex-shrink-0">
-                            <div className="text-center">
-                              <div className="flex items-center gap-1.5 mb-0.5">
-                                <Zap className="h-3.5 w-3.5 text-primary/60" />
-                                <p className="text-xs text-muted-foreground">Factures</p>
-                              </div>
-                              <p className="text-sm font-semibold">
-                                {subscription.plan.invoiceLimit ? (
-                                  <span>{subscription.plan.invoiceLimit}/{subscription.plan.billingInterval === "monthly" ? "mois" : "an"}</span>
-                                ) : (
-                                  <span className="flex items-center gap-1 text-emerald-600">
-                                    <Infinity className="h-3.5 w-3.5" />
-                                  </span>
-                                )}
-                              </p>
-                            </div>
-                            
-                            <div className="text-center">
-                              <div className="flex items-center gap-1.5 mb-0.5">
-                                <Calendar className="h-3.5 w-3.5 text-primary/60" />
-                                <p className="text-xs text-muted-foreground">Jusqu'au</p>
-                              </div>
-                              <p className="text-sm font-semibold">
-                                {new Date(subscription.currentPeriodEnd).toLocaleDateString("fr-FR", {
-                                  day: "numeric",
-                                  month: "short"
-                                })}
-                              </p>
-                            </div>
-
-                            {/* Boutons d'action */}
-                            {!subscription.cancelAtPeriodEnd && subscription.status === "active" && parseFloat(subscription.plan.price) > 0 && (
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={handleOpenPortal}
-                                  disabled={isCreatingPortal}
-                                >
-                                  {isCreatingPortal ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <>
-                                      <CreditCard className="h-4 w-4 mr-2" />
-                                      Gérer
-                                    </>
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                  onClick={() => setShowCancelDialog(true)}
-                                  disabled={isCanceling}
-                                >
-                                  {isCanceling ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    "Annuler"
-                                  )}
-                                </Button>
-                              </div>
-                            )}
-                            {!subscription.cancelAtPeriodEnd && subscription.status === "active" && parseFloat(subscription.plan.price) === 0 && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                                onClick={() => setShowCancelDialog(true)}
-                                disabled={isCanceling}
-                              >
-                                {isCanceling ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Annuler"
-                                )}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Alerte d'annulation - Version compacte */}
-                        {subscription.cancelAtPeriodEnd && (
-                          <div className="mt-3 pt-3 border-t border-primary/20">
-                            <Alert className="border-amber-200 bg-amber-50/50 py-2">
-                              <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0" />
-                              <AlertDescription className="text-amber-900">
-                                <p className="text-xs">
-                                  <span className="font-semibold">Annulation programmée</span> - 
-                                  Votre abonnement sera annulé le {new Date(subscription.currentPeriodEnd).toLocaleDateString("fr-FR")} et votre compte passera au plan gratuit.
-                                </p>
-                              </AlertDescription>
-                            </Alert>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 py-12 text-center">
-                      <CreditCard className="h-12 w-12 mx-auto mb-3 text-primary/40" />
-                      <p className="text-sm font-medium text-foreground/70 mb-1">Aucun abonnement actif</p>
-                      <p className="text-xs text-muted-foreground">
-                        Souscrivez à un plan pour commencer à utiliser Facturly
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+             
 
               {/* Plans disponibles */}
               {!isLoadingPlans && plans.length > 0 && (
@@ -1269,25 +1130,137 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm font-medium">Plan actuel</p>
                     <p className="text-xs text-muted-foreground">{previewData.currentPlan.name}</p>
+                    {parseFloat(previewData.currentPlan.price) === 0 ? (
+                      <p className="text-xs font-semibold mt-1">Gratuit</p>
+                    ) : (
+                      <div className="mt-1">
+                        <p className="text-xs font-semibold">
+                          {new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: previewData.currentPlan.currency || "EUR",
+                          }).format(parseFloat(previewData.currentPlan.price))}
+                        </p>
+                        {previewData.currentPlan.billingInterval && (
+                          <p className="text-xs text-muted-foreground">
+                            / {previewData.currentPlan.billingInterval === "monthly" ? "mois" : "an"}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                  <div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground mx-2" />
+                  <div className="flex-1 text-right">
                     <p className="text-sm font-medium">Nouveau plan</p>
                     <p className="text-xs text-muted-foreground">{previewData.newPlan.name}</p>
+                    {parseFloat(previewData.newPlan.price) === 0 ? (
+                      <p className="text-xs font-semibold mt-1 text-primary">Gratuit</p>
+                    ) : (
+                      <div className="mt-1">
+                        <p className="text-xs font-semibold text-primary">
+                          {new Intl.NumberFormat("fr-FR", {
+                            style: "currency",
+                            currency: previewData.newPlan.currency || "EUR",
+                          }).format(parseFloat(previewData.newPlan.price))}
+                        </p>
+                        {previewData.newPlan.billingInterval && (
+                          <p className="text-xs text-muted-foreground">
+                            / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
+                {/* Avertissement pour changement d'intervalle */}
+                {previewData.prorationDetails?.intervalChange && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Changement d'intervalle de facturation</AlertTitle>
+                    <AlertDescription>
+                      Vous passez d'un plan {previewData.currentPlan.billingInterval === "monthly" ? "mensuel" : "annuel"} à un plan {previewData.newPlan.billingInterval === "monthly" ? "mensuel" : "annuel"}. 
+                      La facturation future utilisera le nouvel intervalle.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Avertissement pour downgrade */}
+                {previewData.prorationDetails?.isDowngrade && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Rétrogradation de plan</AlertTitle>
+                    <AlertDescription>
+                      Vous passez à un plan avec moins de fonctionnalités. Certaines fonctionnalités pourront être limitées.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Prorata à payer */}
                 {previewData.prorationAmount && parseFloat(previewData.prorationAmount) > 0 && (
                   <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
-                    <p className="text-xs text-muted-foreground mb-1">Prorata à payer</p>
+                    <p className="text-xs text-muted-foreground mb-1">Prorata à payer maintenant</p>
                     <p className="text-lg font-semibold text-primary">
                       {new Intl.NumberFormat("fr-FR", {
                         style: "currency",
                         currency: previewData.newPlan.currency || "EUR",
                       }).format(parseFloat(previewData.prorationAmount))}
+                    </p>
+                    {parseFloat(previewData.newPlan.price) > 0 && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Puis {new Intl.NumberFormat("fr-FR", {
+                          style: "currency",
+                          currency: previewData.newPlan.currency || "EUR",
+                        }).format(parseFloat(previewData.newPlan.price))}
+                        / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
+                      </p>
+                    )}
+                    {previewData.prorationDetails && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Pour {previewData.prorationDetails.daysRemaining} jour{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} restant{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} dans la période
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Crédit à appliquer */}
+                {previewData.creditAmount && parseFloat(previewData.creditAmount) > 0 && (
+                  <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50">
+                    <p className="text-xs text-muted-foreground mb-1">Crédit à appliquer</p>
+                    <p className="text-lg font-semibold text-emerald-600">
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: previewData.newPlan.currency || "EUR",
+                      }).format(parseFloat(previewData.creditAmount))}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Ce crédit sera appliqué sur votre prochaine facture.
+                    </p>
+                    {previewData.prorationDetails && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Basé sur {previewData.prorationDetails.daysRemaining} jour{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} non utilisés du plan actuel
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Pas de paiement immédiat */}
+                {(!previewData.prorationAmount || parseFloat(previewData.prorationAmount) === 0) && 
+                 (!previewData.creditAmount || parseFloat(previewData.creditAmount) === 0) && 
+                 parseFloat(previewData.newPlan.price) > 0 && (
+                  <div className="p-3 rounded-lg border border-muted">
+                    <p className="text-xs text-muted-foreground mb-1">Prix du nouveau plan</p>
+                    <p className="text-sm font-semibold">
+                      {new Intl.NumberFormat("fr-FR", {
+                        style: "currency",
+                        currency: previewData.newPlan.currency || "EUR",
+                      }).format(parseFloat(previewData.newPlan.price))}
+                      / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      La facturation commencera à la prochaine période.
                     </p>
                   </div>
                 )}
@@ -1412,5 +1385,26 @@ export default function SettingsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto py-8 space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Tableau de bord", href: "/dashboard" },
+            { label: "Paramètres", href: "/settings" },
+          ]}
+        />
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    }>
+      <SettingsContent />
+    </Suspense>
   );
 }

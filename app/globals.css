@@ -49,6 +49,55 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Animation de vague pour le gradient violet */
+  @keyframes wave-flow {
+    0% {
+      background-position: 0% 50%;
+      filter: hue-rotate(0deg);
+    }
+    33% {
+      background-position: 100% 0%;
+      filter: hue-rotate(10deg);
+    }
+    66% {
+      background-position: 200% 100%;
+      filter: hue-rotate(-5deg);
+    }
+    100% {
+      background-position: 0% 50%;
+      filter: hue-rotate(0deg);
+    }
+  }
+
+  @keyframes wave-pulse {
+    0%, 100% {
+      opacity: 0.75;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(1.01);
+    }
+  }
+
+  .animate-wave-gradient {
+    background-size: 400% 400%;
+    animation: wave-flow 20s ease-in-out infinite, wave-pulse 6s ease-in-out infinite;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, rgba(55, 15, 85, 0.8) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(20, 35, 90, 0.7) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(120, 15, 60, 0.6) 0%, transparent 50%),
+      linear-gradient(
+        135deg,
+        rgba(55, 15, 85, 0.75) 0%,
+        rgba(55, 15, 85, 0.7) 20%,
+        rgba(20, 35, 90, 0.65) 40%,
+        rgba(55, 15, 85, 0.7) 60%,
+        rgba(120, 15, 60, 0.55) 80%,
+        rgba(55, 15, 85, 0.75) 100%
+      );
+  }
 }
 
 @layer base {

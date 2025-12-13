@@ -604,14 +604,29 @@ export interface SubscriptionPreview {
     code: string;
     name: string;
     price: string;
+    billingInterval?: "monthly" | "yearly";
+    currency?: string;
   };
   newPlan: {
     id: string;
     code: string;
     name: string;
     price: string;
+    billingInterval?: "monthly" | "yearly";
+    currency?: string;
   };
   prorationAmount: string;
+  creditAmount?: string | null;
+  prorationDetails?: {
+    daysElapsed: number;
+    daysRemaining: number;
+    totalDaysInPeriod: number;
+    usedValue: string;
+    remainingValue: string;
+    isUpgrade: boolean;
+    isDowngrade: boolean;
+    intervalChange: boolean;
+  };
   nextBillingDate: string;
   invoiceLimitChange: {
     current: number | null;

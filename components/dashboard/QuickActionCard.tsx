@@ -61,7 +61,7 @@ export const QuickActionCard = ({
   return (
     <div
       className={cn(
-        "cursor-pointer rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md",
+        "cursor-pointer rounded-md border bg-white p-4 shadow-sm transition hover:shadow-sm",
         colors.border,
         disabled && "cursor-not-allowed opacity-70"
       )}
@@ -79,7 +79,7 @@ export const QuickActionCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full",
+            "flex h-10 w-10 items-center justify-center rounded-md",
             colors.iconBg,
             colors.iconText
           )}>

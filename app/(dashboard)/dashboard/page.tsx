@@ -214,7 +214,7 @@ export default function DashboardPage() {
   const isLoading = isLoadingStats || isLoadingInvoices;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 ">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Tableau de bord</h1>
         <p className="mt-2 text-sm text-slate-500">
@@ -255,7 +255,7 @@ export default function DashboardPage() {
           <QuickActionCard
             icon={<IoPeopleOutline className="h-5 w-5" />}
             title="Ajouter un client"
-            description="Ajoutez un contact depuis votre carnet (modal)."
+            description="Ajoutez un contact depuis votre carnet."
             onClick={() => setClientModalOpen(true)}
             color="green"
           />
@@ -473,6 +473,7 @@ export default function DashboardPage() {
         )}
       </div>
       <ClientModal open={isClientModalOpen} onClose={() => setClientModalOpen(false)} />
+    </div>
     </div>
   );
 }

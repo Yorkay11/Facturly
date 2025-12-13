@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { useGetSubscriptionQuery } from "@/services/facturlyApi";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Link from "next/link";
 
-export default function BillingSuccessPage() {
+function BillingSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
@@ -103,6 +103,35 @@ export default function BillingSuccessPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto py-8 space-y-6">
+        <Breadcrumb
+          items={[
+            { label: "Paramètres", href: "/settings" },
+            { label: "Paiement réussi", href: "/billing/success" },
+          ]}
+        />
+        <div className="max-w-2xl mx-auto">
+          <Card className="border-green-200 bg-green-50/50">
+            <CardContent className="py-8">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">
+                  Chargement...
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <BillingSuccessContent />
+    </Suspense>
   );
 }
 

@@ -1242,6 +1242,23 @@ export const facturlyApi = createApi({
         body,
       }),
     }),
+    changePlan: builder.mutation<
+      {
+        success: boolean;
+        message: string;
+        subscriptionId: string;
+        newPlanId: string;
+        newPlanName: string;
+      },
+      { planId: string }
+    >({
+      query: (body) => ({
+        url: "/subscriptions/change-plan",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Subscription"],
+    }),
     createPortalSession: builder.mutation<StripePortalResponse, void>({
       query: () => ({
         url: "/portal/create",
@@ -1425,6 +1442,7 @@ export const {
   useCancelSubscriptionMutation,
   // Stripe
   useCreateCheckoutSessionMutation,
+  useChangePlanMutation,
   useCreatePortalSessionMutation,
   // Dashboard
   useGetDashboardActivitiesQuery,

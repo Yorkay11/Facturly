@@ -28,6 +28,7 @@ import {
   usePreviewSubscriptionMutation,
   useCancelSubscriptionMutation,
   useCreateCheckoutSessionMutation,
+  useChangePlanMutation,
   useCreatePortalSessionMutation,
   Plan,
 } from "@/services/facturlyApi";
@@ -112,7 +113,7 @@ function SettingsContent() {
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
   const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
   const { data: settings, isLoading: isLoadingSettings } = useGetSettingsQuery();
-  const { data: subscription, isLoading: isLoadingSubscription } = useGetSubscriptionQuery();
+  const { data: subscription, isLoading: isLoadingSubscription, refetch: refetchSubscription } = useGetSubscriptionQuery();
   const { data: plansResponse, isLoading: isLoadingPlans } = useGetPlansQuery();
   
   // Mutations
@@ -123,6 +124,7 @@ function SettingsContent() {
   const [previewSubscription, { isLoading: isPreviewing }] = usePreviewSubscriptionMutation();
   const [cancelSubscription, { isLoading: isCanceling }] = useCancelSubscriptionMutation();
   const [createCheckoutSession, { isLoading: isCreatingCheckout }] = useCreateCheckoutSessionMutation();
+  const [changePlan, { isLoading: isChangingPlanStripe }] = useChangePlanMutation();
   const [createPortalSession, { isLoading: isCreatingPortal }] = useCreatePortalSessionMutation();
   
   // États pour la gestion des abonnements
@@ -321,13 +323,14 @@ function SettingsContent() {
     if (!selectedPlan) return;
 
     try {
-      // Si le plan est payant (price > 0), utiliser Stripe Checkout
       const planPrice = parseFloat(selectedPlan.price);
-      if (planPrice > 0) {
-        const { url } = await createCheckoutSession({ planId: selectedPlan.id }).unwrap();
-        // Rediriger vers Stripe Checkout
-        window.location.href = url;
-      } else {
+      
+      // Vérifier si l'utilisateur a déjà un abonnement actif (payant)
+      const hasActivePaidSubscription = 
+        subscription?.status === "active" && 
+        subscription?.plan?.code !== "free";
+
+      if (planPrice === 0) {
         // Plan gratuit : utiliser l'endpoint direct
         await createSubscription({ planId: selectedPlan.id }).unwrap();
         toast.success("Plan changé avec succès", {
@@ -336,14 +339,96 @@ function SettingsContent() {
         setShowPreviewDialog(false);
         setSelectedPlan(null);
         setPreviewData(null);
+      } else if (hasActivePaidSubscription) {
+        // Utilisateur a déjà un abonnement payant actif : utiliser change-plan
+        const result = await changePlan({ planId: selectedPlan.id }).unwrap();
+        toast.success("Changement de plan en cours", {
+          description: result.message || "Stripe va créer une facture avec le prorata.",
+        });
+        setShowPreviewDialog(false);
+        setSelectedPlan(null);
+        setPreviewData(null);
+        
+        // Polling pour vérifier la mise à jour
+        startPollingSubscription();
+      } else {
+        // Nouvel abonnement : utiliser Stripe Checkout
+        const { url } = await createCheckoutSession({ planId: selectedPlan.id }).unwrap();
+        // Rediriger vers Stripe Checkout
+        window.location.href = url;
       }
     } catch (error: any) {
       console.error("Erreur lors du changement de plan:", error);
-      toast.error("Erreur", {
-        description: error?.data?.message || "Impossible de changer de plan",
-      });
+      const errorMessage = error?.data?.message || "Impossible de changer de plan";
+      
+      // Gestion spécifique des erreurs selon la documentation
+      if (errorMessage.includes("déjà un abonnement actif")) {
+        toast.error("Abonnement existant", {
+          description: "Vous avez déjà un abonnement actif. Le changement de plan va être effectué.",
+        });
+        // Réessayer avec change-plan
+        try {
+          const result = await changePlan({ planId: selectedPlan.id }).unwrap();
+          toast.success("Changement de plan en cours", {
+            description: result.message,
+          });
+          setShowPreviewDialog(false);
+          setSelectedPlan(null);
+          setPreviewData(null);
+          startPollingSubscription();
+        } catch (retryError: any) {
+          toast.error("Erreur", {
+            description: retryError?.data?.message || "Impossible de changer de plan",
+          });
+        }
+      } else if (errorMessage.includes("Aucun abonnement actif")) {
+        toast.error("Aucun abonnement", {
+          description: "Vous n'avez pas d'abonnement actif. Utilisez 'S'abonner' pour créer un nouvel abonnement.",
+        });
+      } else {
+        toast.error("Erreur", {
+          description: errorMessage,
+        });
+      }
       setShowPreviewDialog(false);
     }
+  }
+
+  // Fonction de polling pour vérifier la mise à jour de l'abonnement
+  function startPollingSubscription() {
+    if (!selectedPlan) return;
+    
+    let attempts = 0;
+    const maxAttempts = 5;
+    const pollInterval = 2000; // 2 secondes
+    const targetPlanId = selectedPlan.id;
+
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        // Refetch de l'abonnement
+        const result = await refetchSubscription();
+        const currentSubscription = result.data;
+        
+        // Vérifier si le plan a changé
+        if (currentSubscription?.plan?.id === targetPlanId) {
+          clearInterval(poll);
+          toast.success("Plan mis à jour", {
+            description: `Vous êtes maintenant sur le plan ${selectedPlan.name}`,
+          });
+        } else if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          toast.info("Mise à jour en cours", {
+            description: "Le changement peut prendre quelques instants. Vous pouvez rafraîchir la page.",
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors du polling:", error);
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+        }
+      }
+    }, pollInterval);
   }
 
   async function handleOpenPortal() {
@@ -1084,9 +1169,12 @@ function SettingsContent() {
                                   <BadgeCheck className="mr-2 h-4 w-4" />
                                   Plan actuel
                                 </>
-                              ) : (
-                                "Changer de plan"
-                              )}
+                              ) : (() => {
+                                const hasActivePaidSubscription = 
+                                  subscription?.status === "active" && 
+                                  subscription?.plan?.code !== "free";
+                                return hasActivePaidSubscription ? "Changer de plan" : "S'abonner";
+                              })()}
                             </Button>
                           </div>
                         );
@@ -1175,6 +1263,19 @@ function SettingsContent() {
                   </div>
                 </div>
 
+                {/* Message informatif pour changement de plan avec abonnement actif */}
+                {subscription?.status === "active" && 
+                 subscription?.plan?.code !== "free" && 
+                 parseFloat(previewData.newPlan.price) > 0 && (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Changement de plan avec prorata automatique</AlertTitle>
+                    <AlertDescription>
+                      Stripe calculera automatiquement le prorata. Vous serez crédité pour le temps restant de votre plan actuel et facturé pour le nouveau plan. Le changement prendra effet immédiatement.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Avertissement pour changement d'intervalle */}
                 {previewData.prorationDetails?.intervalChange && (
                   <Alert>
@@ -1189,114 +1290,32 @@ function SettingsContent() {
 
                 {/* Avertissement pour downgrade */}
                 {previewData.prorationDetails?.isDowngrade && (
-                  <Alert variant="destructive">
+                  <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Rétrogradation de plan</AlertTitle>
                     <AlertDescription>
-                      Vous passez à un plan avec moins de fonctionnalités. Certaines fonctionnalités pourront être limitées.
+                      Vous passez à un plan avec moins de fonctionnalités. Le crédit pour le temps non utilisé sera appliqué sur votre prochaine facture.
                     </AlertDescription>
                   </Alert>
                 )}
 
-                {/* Prorata à payer */}
-                {previewData.prorationAmount && parseFloat(previewData.prorationAmount) > 0 && (
-                  <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
-                    <p className="text-xs text-muted-foreground mb-1">Prorata à payer maintenant</p>
-                    <p className="text-lg font-semibold text-primary">
-                      {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: previewData.newPlan.currency || "EUR",
-                      }).format(parseFloat(previewData.prorationAmount))}
-                    </p>
-                    {parseFloat(previewData.newPlan.price) > 0 && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Puis {new Intl.NumberFormat("fr-FR", {
-                          style: "currency",
-                          currency: previewData.newPlan.currency || "EUR",
-                        }).format(parseFloat(previewData.newPlan.price))}
-                        / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
-                      </p>
-                    )}
-                    {previewData.prorationDetails && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Pour {previewData.prorationDetails.daysRemaining} jour{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} restant{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} dans la période
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Crédit à appliquer */}
-                {previewData.creditAmount && parseFloat(previewData.creditAmount) > 0 && (
-                  <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50">
-                    <p className="text-xs text-muted-foreground mb-1">Crédit à appliquer</p>
-                    <p className="text-lg font-semibold text-emerald-600">
-                      {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: previewData.newPlan.currency || "EUR",
-                      }).format(parseFloat(previewData.creditAmount))}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Ce crédit sera appliqué sur votre prochaine facture.
-                    </p>
-                    {previewData.prorationDetails && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Basé sur {previewData.prorationDetails.daysRemaining} jour{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} non utilisés du plan actuel
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Prorata pour passage gratuit → payant (si prorata = 0 mais nouveau plan payant) */}
-                {parseFloat(previewData.currentPlan.price) === 0 && 
-                 parseFloat(previewData.newPlan.price) > 0 &&
-                 (!previewData.prorationAmount || parseFloat(previewData.prorationAmount) === 0) && 
-                 (!previewData.creditAmount || parseFloat(previewData.creditAmount) === 0) && (
+                {/* Prix du nouveau plan */}
+                {parseFloat(previewData.newPlan.price) > 0 && (
                   <div className="p-3 rounded-md border border-primary/20 bg-primary/5">
-                    <p className="text-xs text-muted-foreground mb-1">Montant à payer maintenant</p>
+                    <p className="text-xs text-muted-foreground mb-1">Prix du plan</p>
                     <p className="text-lg font-semibold text-primary">
-                      {previewData.prorationDetails?.remainingValue 
-                        ? new Intl.NumberFormat("fr-FR", {
-                            style: "currency",
-                            currency: previewData.newPlan.currency || "EUR",
-                          }).format(parseFloat(previewData.prorationDetails.remainingValue))
-                        : new Intl.NumberFormat("fr-FR", {
-                            style: "currency",
-                            currency: previewData.newPlan.currency || "EUR",
-                          }).format(parseFloat(previewData.newPlan.price))
-                      }
-                    </p>
-                    {previewData.prorationDetails && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Pour {previewData.prorationDetails.daysRemaining} jour{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} restant{previewData.prorationDetails.daysRemaining > 1 ? "s" : ""} dans la période
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Puis {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: previewData.newPlan.currency || "EUR",
-                      }).format(parseFloat(previewData.newPlan.price))}
-                      / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
-                    </p>
-                  </div>
-                )}
-
-                {/* Pas de paiement immédiat (pour les autres cas) */}
-                {parseFloat(previewData.currentPlan.price) > 0 &&
-                 (!previewData.prorationAmount || parseFloat(previewData.prorationAmount) === 0) && 
-                 (!previewData.creditAmount || parseFloat(previewData.creditAmount) === 0) && 
-                 parseFloat(previewData.newPlan.price) > 0 && (
-                  <div className="p-3 rounded-md border border-muted">
-                    <p className="text-xs text-muted-foreground mb-1">Prix du nouveau plan</p>
-                    <p className="text-sm font-semibold">
                       {new Intl.NumberFormat("fr-FR", {
                         style: "currency",
                         currency: previewData.newPlan.currency || "EUR",
                       }).format(parseFloat(previewData.newPlan.price))}
                       / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      La facturation commencera à la prochaine période.
-                    </p>
+                    {subscription?.status === "active" && 
+                     subscription?.plan?.code !== "free" && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Le prorata sera calculé automatiquement par Stripe lors du changement.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -1338,21 +1357,38 @@ function SettingsContent() {
             <Button
               variant="outline"
               onClick={() => setShowPreviewDialog(false)}
-              disabled={isChangingPlan}
+              disabled={isChangingPlan || isCreatingCheckout || isChangingPlanStripe}
             >
               Annuler
             </Button>
             <Button
               onClick={handleConfirmPlanChange}
-              disabled={isPreviewing || isChangingPlan || isCreatingCheckout || !selectedPlan}
+              disabled={isPreviewing || isChangingPlan || isCreatingCheckout || isChangingPlanStripe || !selectedPlan}
             >
-              {isChangingPlan || isCreatingCheckout ? (
+              {isChangingPlan || isCreatingCheckout || isChangingPlanStripe ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {parseFloat(selectedPlan?.price || "0") > 0 ? "Redirection vers le paiement..." : "Changement..."}
+                  {isChangingPlanStripe 
+                    ? "Changement en cours..." 
+                    : parseFloat(selectedPlan?.price || "0") > 0 
+                      ? "Redirection vers le paiement..." 
+                      : "Changement..."}
                 </>
               ) : (
-                parseFloat(selectedPlan?.price || "0") > 0 ? "Payer avec Stripe" : "Confirmer le changement"
+                (() => {
+                  const planPrice = parseFloat(selectedPlan?.price || "0");
+                  const hasActivePaidSubscription = 
+                    subscription?.status === "active" && 
+                    subscription?.plan?.code !== "free";
+                  
+                  if (planPrice === 0) {
+                    return "Confirmer le changement";
+                  } else if (hasActivePaidSubscription) {
+                    return "Changer de plan";
+                  } else {
+                    return "S'abonner avec Stripe";
+                  }
+                })()
               )}
             </Button>
           </DialogFooter>

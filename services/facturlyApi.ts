@@ -573,6 +573,18 @@ export interface Plan {
   };
 }
 
+export interface InvoiceLimit {
+  effective: number | null; // Limite effective (null = illimité)
+  used: number; // Nombre de factures utilisées
+  remaining: number | null; // Nombre restant (null = illimité)
+  percentage: number | null; // Pourcentage utilisé (null = illimité)
+  periodStart: string; // Date de début de période
+  periodEnd: string; // Date de fin de période
+  isUnlimited: boolean; // true si plan illimité
+  isNearLimit: boolean; // true si >= 80% de la limite
+  isLimitReached: boolean; // true si limite atteinte
+}
+
 export interface Subscription {
   id: string;
   status: string;
@@ -580,6 +592,8 @@ export interface Subscription {
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
   plan: Plan;
+  invoicesIssuedCurrentPeriod?: number; // Nombre de factures émises dans la période actuelle
+  invoiceLimit?: InvoiceLimit; // Informations détaillées sur la limite
   createdAt?: string;
   updatedAt?: string;
 }
@@ -603,6 +617,16 @@ export interface SubscriptionPreview {
     current: number | null;
     new: number | null;
   };
+}
+
+// Stripe
+export interface StripeCheckoutResponse {
+  sessionId: string;
+  url: string;
+}
+
+export interface StripePortalResponse {
+  url: string;
 }
 
 // Client Revenue
@@ -686,6 +710,7 @@ export interface DashboardStats {
   totalUnpaid: string;
   invoicesByStatus: InvoiceStatusCount[];
   monthlyRevenues: MonthlyRevenueData[];
+  invoiceLimit?: InvoiceLimit; // Informations sur la limite de factures
 }
 
 // Query parameters
@@ -1194,6 +1219,21 @@ export const facturlyApi = createApi({
       invalidatesTags: ["Subscription"],
     }),
 
+    // ==================== Stripe ====================
+    createCheckoutSession: builder.mutation<StripeCheckoutResponse, { planId: string }>({
+      query: (body) => ({
+        url: "/checkout/create",
+        method: "POST",
+        body,
+      }),
+    }),
+    createPortalSession: builder.mutation<StripePortalResponse, void>({
+      query: () => ({
+        url: "/portal/create",
+        method: "POST",
+      }),
+    }),
+
     // ==================== Dashboard ====================
     getDashboardActivities: builder.query<{ data: DashboardActivity[] }, DashboardActivitiesQueryParams | void>({
       query: (params) => {
@@ -1368,6 +1408,9 @@ export const {
   useCreateSubscriptionMutation,
   usePreviewSubscriptionMutation,
   useCancelSubscriptionMutation,
+  // Stripe
+  useCreateCheckoutSessionMutation,
+  useCreatePortalSessionMutation,
   // Dashboard
   useGetDashboardActivitiesQuery,
   useGetDashboardAlertsQuery,

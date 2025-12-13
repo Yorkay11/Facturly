@@ -26,8 +26,11 @@ import {
   useCreateSubscriptionMutation,
   usePreviewSubscriptionMutation,
   useCancelSubscriptionMutation,
+  useCreateCheckoutSessionMutation,
+  useCreatePortalSessionMutation,
   Plan,
 } from "@/services/facturlyApi";
+import { InvoiceLimitCard } from "@/components/dashboard/InvoiceLimitCard";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -96,6 +99,8 @@ export default function SettingsPage() {
   const [createSubscription, { isLoading: isChangingPlan }] = useCreateSubscriptionMutation();
   const [previewSubscription, { isLoading: isPreviewing }] = usePreviewSubscriptionMutation();
   const [cancelSubscription, { isLoading: isCanceling }] = useCancelSubscriptionMutation();
+  const [createCheckoutSession, { isLoading: isCreatingCheckout }] = useCreateCheckoutSessionMutation();
+  const [createPortalSession, { isLoading: isCreatingPortal }] = useCreatePortalSessionMutation();
   
   // États pour la gestion des abonnements
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -293,17 +298,40 @@ export default function SettingsPage() {
     if (!selectedPlan) return;
 
     try {
-      await createSubscription({ planId: selectedPlan.id }).unwrap();
-      toast.success("Plan changé avec succès", {
-        description: `Vous avez souscrit au plan ${selectedPlan.name}`,
-      });
-      setShowPreviewDialog(false);
-      setSelectedPlan(null);
-      setPreviewData(null);
+      // Si le plan est payant (price > 0), utiliser Stripe Checkout
+      const planPrice = parseFloat(selectedPlan.price);
+      if (planPrice > 0) {
+        const { url } = await createCheckoutSession({ planId: selectedPlan.id }).unwrap();
+        // Rediriger vers Stripe Checkout
+        window.location.href = url;
+      } else {
+        // Plan gratuit : utiliser l'endpoint direct
+        await createSubscription({ planId: selectedPlan.id }).unwrap();
+        toast.success("Plan changé avec succès", {
+          description: `Vous avez souscrit au plan ${selectedPlan.name}`,
+        });
+        setShowPreviewDialog(false);
+        setSelectedPlan(null);
+        setPreviewData(null);
+      }
     } catch (error: any) {
       console.error("Erreur lors du changement de plan:", error);
       toast.error("Erreur", {
         description: error?.data?.message || "Impossible de changer de plan",
+      });
+      setShowPreviewDialog(false);
+    }
+  }
+
+  async function handleOpenPortal() {
+    try {
+      const { url } = await createPortalSession().unwrap();
+      // Rediriger vers le portail client Stripe
+      window.location.href = url;
+    } catch (error: any) {
+      console.error("Erreur lors de l'ouverture du portail:", error);
+      toast.error("Erreur", {
+        description: error?.data?.message || "Impossible d'ouvrir le portail de gestion",
       });
     }
   }
@@ -855,6 +883,14 @@ export default function SettingsPage() {
           {/* Abonnement */}
           <TabsContent value="subscription">
             <div className="space-y-6">
+              {/* Limite de factures */}
+              {subscription?.invoiceLimit && (
+                <InvoiceLimitCard 
+                  invoiceLimit={subscription.invoiceLimit} 
+                  showUpgradeButton={true}
+                  planCode={subscription.plan?.code}
+                />
+              )}
               {/* Plan actuel */}
               <Card className="border-primary/20">
                 <CardHeader>
@@ -940,8 +976,40 @@ export default function SettingsPage() {
                               </p>
                             </div>
 
-                            {/* Bouton d'annulation (si actif) */}
-                            {!subscription.cancelAtPeriodEnd && subscription.status === "active" && (
+                            {/* Boutons d'action */}
+                            {!subscription.cancelAtPeriodEnd && subscription.status === "active" && parseFloat(subscription.plan.price) > 0 && (
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleOpenPortal}
+                                  disabled={isCreatingPortal}
+                                >
+                                  {isCreatingPortal ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <CreditCard className="h-4 w-4 mr-2" />
+                                      Gérer
+                                    </>
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                  onClick={() => setShowCancelDialog(true)}
+                                  disabled={isCanceling}
+                                >
+                                  {isCanceling ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    "Annuler"
+                                  )}
+                                </Button>
+                              </div>
+                            )}
+                            {!subscription.cancelAtPeriodEnd && subscription.status === "active" && parseFloat(subscription.plan.price) === 0 && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -1268,15 +1336,15 @@ export default function SettingsPage() {
             </Button>
             <Button
               onClick={handleConfirmPlanChange}
-              disabled={isPreviewing || isChangingPlan}
+              disabled={isPreviewing || isChangingPlan || isCreatingCheckout || !selectedPlan}
             >
-              {isChangingPlan ? (
+              {isChangingPlan || isCreatingCheckout ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Changement...
+                  {parseFloat(selectedPlan?.price || "0") > 0 ? "Redirection vers le paiement..." : "Changement..."}
                 </>
               ) : (
-                "Confirmer le changement"
+                parseFloat(selectedPlan?.price || "0") > 0 ? "Payer avec Stripe" : "Confirmer le changement"
               )}
             </Button>
           </DialogFooter>

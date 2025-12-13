@@ -8,7 +8,17 @@ import { cn } from "@/lib/utils";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { format } from "date-fns";
 import { invoiceTemplates } from "@/types/invoiceTemplate";
-import { TemplateClassic, TemplateBold, type InvoiceTemplateProps } from "@/templates/invoices";
+import {
+  TemplateInvoice,
+  TemplateProfessional,
+  TemplateModern,
+  TemplateMinimal,
+  TemplateElegant,
+  TemplateCompact,
+  TemplateColorful,
+  TemplateClassicSerif,
+  type InvoiceTemplateProps,
+} from "@/templates/invoices";
 import { useGetCompanyQuery, useGetClientByIdQuery } from "@/services/facturlyApi";
 import Skeleton from "@/components/ui/skeleton";
 import {
@@ -27,8 +37,14 @@ import {
 import { Maximize2 } from "lucide-react";
 
 const templateRegistry: Record<string, React.ComponentType<InvoiceTemplateProps>> = {
-  classic: TemplateClassic,
-  bold: TemplateBold,
+  invoice: TemplateInvoice,
+  professional: TemplateProfessional,
+  modern: TemplateModern,
+  minimal: TemplateMinimal,
+  elegant: TemplateElegant,
+  compact: TemplateCompact,
+  colorful: TemplateColorful,
+  classicSerif: TemplateClassicSerif,
 };
 
 const TemplateSelector = ({
@@ -75,7 +91,7 @@ const Preview = () => {
     dueDate: metadataStore.dueDate,
     notes: metadataStore.notes,
   };
-  const TemplateComponent = templateRegistry[currentTemplate.id] ?? TemplateClassic;
+  const TemplateComponent = templateRegistry[currentTemplate.id] ?? TemplateInvoice;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsHydrated(true), 400);

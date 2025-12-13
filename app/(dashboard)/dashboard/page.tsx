@@ -16,7 +16,10 @@ import {
   useGetDashboardStatsQuery,
   useGetDashboardActivitiesQuery,
   useGetDashboardAlertsQuery,
+  useGetSubscriptionQuery,
 } from "@/services/facturlyApi";
+import { InvoiceLimitCard } from "@/components/dashboard/InvoiceLimitCard";
+import { InvoiceLimitBanner } from "@/components/dashboard/InvoiceLimitBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -29,6 +32,7 @@ export default function DashboardPage() {
   const { data: dashboardStats, isLoading: isLoadingStats } = useGetDashboardStatsQuery();
   const { data: activitiesData, isLoading: isLoadingActivities } = useGetDashboardActivitiesQuery({ limit: 5 });
   const { data: alertsData, isLoading: isLoadingAlerts } = useGetDashboardAlertsQuery();
+  const { data: subscription } = useGetSubscriptionQuery(); // Pour vérifier le plan
   
   // Récupérer les factures pour le graphique (fallback si stats non disponibles)
   const { data: invoicesData, isLoading: isLoadingInvoices } = useGetInvoicesQuery({ 
@@ -217,6 +221,13 @@ export default function DashboardPage() {
           Retrouvez un aperçu rapide de vos revenus et des actions à suivre.
         </p>
       </div>
+      
+      {/* Banner pour les utilisateurs du plan gratuit */}
+      <InvoiceLimitBanner 
+        invoiceLimit={dashboardStats?.invoiceLimit || subscription?.invoiceLimit}
+        planCode={subscription?.plan?.code}
+      />
+      
       <Card className="border border-primary/20 bg-white">
         <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -302,11 +313,12 @@ export default function DashboardPage() {
         />
       </div>
       <div className="grid gap-6 xl:grid-cols-[2fr_1.2fr]">
-        <Card className="border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <IoBarChartOutline className="h-5 w-5" />
-              Tendances des revenus
+        <div className="space-y-6">
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <IoBarChartOutline className="h-5 w-5" />
+                Tendances des revenus
             </CardTitle>
             <p className="text-xs text-foreground/60">
               Évolution sur les 4 derniers mois
@@ -361,14 +373,21 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card className="border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <IoHelpCircleOutline className="h-5 w-5" />
-              Support & nouveautés
-            </CardTitle>
-            <p className="text-xs text-foreground/60">Ressources, guides et assistance.</p>
-          </CardHeader>
+        </div>
+        <div className="space-y-6">
+          <InvoiceLimitCard 
+            invoiceLimit={dashboardStats?.invoiceLimit || subscription?.invoiceLimit} 
+            showUpgradeButton={true}
+            planCode={subscription?.plan?.code}
+          />
+          <Card className="border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <IoHelpCircleOutline className="h-5 w-5" />
+                Support & nouveautés
+              </CardTitle>
+              <p className="text-xs text-foreground/60">Ressources, guides et assistance.</p>
+            </CardHeader>
           <CardContent className="space-y-3">
             <a
               href="https://docs.facturly.app"

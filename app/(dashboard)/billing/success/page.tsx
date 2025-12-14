@@ -62,7 +62,9 @@ function BillingSuccessContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-muted-foreground">Plan actuel</p>
-                      <p className="text-lg font-semibold">{subscription.plan.name}</p>
+                      <p className="text-lg font-semibold">
+                        {subscription.plan === null ? "Gratuit" : subscription.plan.name}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Statut</p>

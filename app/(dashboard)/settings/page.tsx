@@ -299,7 +299,23 @@ function SettingsContent() {
     if (!subscription) return;
 
     // Si c'est le même plan, ne rien faire
+    // Pour le plan gratuit : plan.code === "free" et subscription.plan === null
+    if (plan.code === "free" && subscription.plan === null) {
+      return;
+    }
     if (subscription?.plan && plan.code === subscription.plan.code) {
+      return;
+    }
+
+    // Pour le plan gratuit, on ne peut pas faire de preview car il n'existe pas en base
+    // On passe directement à la confirmation
+    if (plan.code === "free") {
+      // Pour revenir au plan gratuit, on doit annuler l'abonnement Stripe actif
+      // ou simplement changer le plan vers null
+      // Pour l'instant, on affiche un message d'information
+      toast.info("Revenir au plan gratuit", {
+        description: "Pour revenir au plan gratuit, vous devez annuler votre abonnement actif via le portail Stripe.",
+      });
       return;
     }
 
@@ -1090,6 +1106,129 @@ function SettingsContent() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {/* Plan gratuit virtuel - affiché tout le temps */}
+                      {(() => {
+                        const freePlan = {
+                          id: "free-implicit",
+                          code: "free",
+                          name: "Gratuit",
+                          price: "0.00",
+                          currency: "EUR",
+                          billingInterval: "monthly" as const,
+                          invoiceLimit: subscription?.invoiceLimit?.effective || 10,
+                          description: "Plan gratuit avec limite de factures",
+                          metadata: {
+                            features: [
+                              `${subscription?.invoiceLimit?.effective || 10} factures par mois`,
+                              "Génération de PDF",
+                              "Support par email"
+                            ]
+                          }
+                        };
+                        const isCurrentPlan = subscription?.plan === null; // Plan actuel seulement si plan === null
+                        const isFreePlan = true;
+                        
+                        return (
+                          <div
+                            key={freePlan.id}
+                            className={`relative flex flex-col rounded-xl border-2 p-5 transition-all ${
+                              isCurrentPlan
+                                ? "border-primary bg-primary/5 shadow-md"
+                                : "border-border bg-white hover:border-primary/30 hover:shadow-md"
+                            }`}
+                          >
+                            {isCurrentPlan && (
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                <span className="rounded-full bg-primary px-3 py-0.5 text-xs font-semibold text-primary-foreground">
+                                  Plan actuel
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="mb-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-lg font-bold text-primary">{freePlan.name}</h3>
+                                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                  Gratuit
+                                </span>
+                              </div>
+                              
+                              <div className="mb-3">
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-3xl font-bold text-primary">
+                                    Gratuit
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 italic">
+                                  Identique en mensuel et annuel
+                                </p>
+                              </div>
+
+                              {freePlan.metadata?.features && Array.isArray(freePlan.metadata.features) && (
+                                <ul className="space-y-2 mb-4">
+                                  {freePlan.metadata.features.map((feature: string, index: number) => (
+                                    <li key={index} className="flex items-start gap-2 text-xs">
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                      <span className="text-foreground/80">{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+
+                              <div className="mt-4 pt-4 border-t border-border/50">
+                                <div className="flex items-center justify-between mb-3">
+                                  <span className="text-xs text-muted-foreground">Limite</span>
+                                  <span className="text-xs font-semibold">
+                                    {freePlan.invoiceLimit ? `${freePlan.invoiceLimit} factures/mois` : "Illimité"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-auto pt-4">
+                              <Button
+                                variant={isCurrentPlan ? "outline" : "default"}
+                                size="sm"
+                                className="w-full"
+                                disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
+                                onClick={() => {
+                                  if (!isCurrentPlan) {
+                                    // Créer un plan virtuel pour le plan gratuit
+                                    const virtualFreePlan: Plan = {
+                                      id: "free-implicit",
+                                      code: "free",
+                                      name: "Gratuit",
+                                      price: "0.00",
+                                      currency: "EUR",
+                                      billingInterval: "monthly",
+                                      invoiceLimit: subscription?.invoiceLimit?.effective || 10,
+                                      description: "Plan gratuit avec limite de factures",
+                                      metadata: {
+                                        features: [
+                                          `${subscription?.invoiceLimit?.effective || 10} factures par mois`,
+                                          "Génération de PDF",
+                                          "Support par email"
+                                        ]
+                                      }
+                                    };
+                                    handlePlanSelect(virtualFreePlan);
+                                  }
+                                }}
+                              >
+                                {isCurrentPlan ? (
+                                  <>
+                                    <BadgeCheck className="mr-2 h-4 w-4" />
+                                    Plan actuel
+                                  </>
+                                ) : (
+                                  "Revenir au plan gratuit"
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      
                       {plans
                         .filter((plan) => {
                           // Filtrer par intervalle de facturation
@@ -1099,8 +1238,8 @@ function SettingsContent() {
                         // Vérifier si c'est le plan actuel (gérer le cas où subscription.plan est null = plan gratuit implicite)
                         const isCurrentPlan = subscription?.plan 
                           ? plan.code === subscription.plan.code 
-                          : false; // Le plan gratuit implicite n'apparaît pas dans la liste des plans
-                        const isFreePlan = false; // Plus de plan "free" dans la liste
+                          : false;
+                        const isFreePlan = false;
                         
                         return (
                           <div
@@ -1194,25 +1333,27 @@ function SettingsContent() {
                               </div>
                             </div>
 
-                            <Button
-                              variant={isCurrentPlan ? "outline" : "default"}
-                              size="sm"
-                              className="w-full"
-                              disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
-                              onClick={() => handlePlanSelect(plan)}
-                            >
-                              {isCurrentPlan ? (
-                                <>
-                                  <BadgeCheck className="mr-2 h-4 w-4" />
-                                  Plan actuel
-                                </>
-                              ) : (() => {
-                                const hasActivePaidSubscription = 
-                                  subscription?.status === "active" && 
-                                  subscription?.plan !== null;
-                                return hasActivePaidSubscription ? "Changer de plan" : "S'abonner";
-                              })()}
-                            </Button>
+                            <div className="mt-auto pt-4">
+                              <Button
+                                variant={isCurrentPlan ? "outline" : "default"}
+                                size="sm"
+                                className="w-full"
+                                disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
+                                onClick={() => handlePlanSelect(plan)}
+                              >
+                                {isCurrentPlan ? (
+                                  <>
+                                    <BadgeCheck className="mr-2 h-4 w-4" />
+                                    Plan actuel
+                                  </>
+                                ) : (() => {
+                                  const hasActivePaidSubscription = 
+                                    subscription?.status === "active" && 
+                                    subscription?.plan !== null;
+                                  return hasActivePaidSubscription ? "Changer de plan" : "S'abonner";
+                                })()}
+                              </Button>
+                            </div>
                           </div>
                         );
                       })}

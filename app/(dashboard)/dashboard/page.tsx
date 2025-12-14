@@ -268,7 +268,7 @@ export default function DashboardPage() {
         invoiceLimit={
           dashboardStats?.invoiceLimit || subscription?.invoiceLimit
         }
-        planCode={subscription?.plan?.code}
+        planCode={subscription?.plan?.code || (subscription?.plan === null ? "free" : undefined)}
       />
 
       <Card className="border border-primary/20 bg-white shadow-sm">

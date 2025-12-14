@@ -591,7 +591,7 @@ export interface Subscription {
   currentPeriodStart: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
-  plan: Plan;
+  plan: Plan | null; // null = plan gratuit implicite
   invoicesIssuedCurrentPeriod?: number; // Nombre de factures émises dans la période actuelle
   invoiceLimit?: InvoiceLimit; // Informations détaillées sur la limite
   createdAt?: string;

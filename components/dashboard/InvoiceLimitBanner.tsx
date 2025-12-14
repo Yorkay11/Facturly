@@ -17,7 +17,7 @@ export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBanne
 
   // Ne pas afficher si :
   // - Pas de limite (plan illimité)
-  // - Plan payant
+  // - Plan payant (planCode !== "free" signifie que plan !== null)
   // - Banner fermé
   if (!invoiceLimit || invoiceLimit.isUnlimited || planCode !== "free" || isDismissed) {
     return null;

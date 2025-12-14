@@ -299,7 +299,7 @@ function SettingsContent() {
     if (!subscription) return;
 
     // Si c'est le même plan, ne rien faire
-    if (plan.code === subscription.plan.code) {
+    if (subscription?.plan && plan.code === subscription.plan.code) {
       return;
     }
 
@@ -328,7 +328,7 @@ function SettingsContent() {
       // Vérifier si l'utilisateur a déjà un abonnement actif (payant)
       const hasActivePaidSubscription = 
         subscription?.status === "active" && 
-        subscription?.plan?.code !== "free";
+        subscription?.plan !== null;
 
       if (planPrice === 0) {
         // Plan gratuit : utiliser l'endpoint direct
@@ -991,12 +991,57 @@ function SettingsContent() {
           {/* Abonnement */}
           <TabsContent value="subscription">
             <div className="space-y-6">
+              {/* Plan actuel */}
+              {subscription && (
+                <Card className="border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-primary flex items-center gap-2">
+                      <BadgeCheck className="h-5 w-5" />
+                      Plan actuel
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-semibold">
+                          {subscription.plan === null ? "Gratuit" : subscription.plan.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {subscription.plan === null 
+                            ? "Plan gratuit avec limite de factures" 
+                            : subscription.plan.billingInterval === "monthly" 
+                              ? "Facturation mensuelle" 
+                              : "Facturation annuelle"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-primary">
+                          {subscription.plan === null 
+                            ? "0,00 €" 
+                            : new Intl.NumberFormat("fr-FR", {
+                                style: "currency",
+                                currency: subscription.plan.currency || "EUR",
+                              }).format(parseFloat(subscription.plan.price))}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {subscription.plan === null 
+                            ? "" 
+                            : subscription.plan.billingInterval === "monthly" 
+                              ? "/ mois" 
+                              : "/ an"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Limite de factures */}
               {subscription?.invoiceLimit && (
                 <InvoiceLimitCard 
                   invoiceLimit={subscription.invoiceLimit} 
                   showUpgradeButton={true}
-                  planCode={subscription.plan?.code}
+                  planCode={subscription.plan?.code || (subscription.plan === null ? "free" : undefined)}
                 />
               )}
              
@@ -1047,23 +1092,15 @@ function SettingsContent() {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                       {plans
                         .filter((plan) => {
-                          // Le plan gratuit apparaît toujours (seulement le premier trouvé pour éviter les doublons)
-                          if (plan.code === "free") {
-                            return true;
-                          }
-                          // Les autres plans sont filtrés par intervalle
+                          // Filtrer par intervalle de facturation
                           return plan.billingInterval === billingInterval;
                         })
-                        .filter((plan, index, self) => {
-                          // S'assurer qu'un seul plan gratuit apparaît
-                          if (plan.code === "free") {
-                            return index === self.findIndex((p) => p.code === "free");
-                          }
-                          return true;
-                        })
                         .map((plan) => {
-                        const isCurrentPlan = plan.code === subscription?.plan.code;
-                        const isFreePlan = plan.code === "free";
+                        // Vérifier si c'est le plan actuel (gérer le cas où subscription.plan est null = plan gratuit implicite)
+                        const isCurrentPlan = subscription?.plan 
+                          ? plan.code === subscription.plan.code 
+                          : false; // Le plan gratuit implicite n'apparaît pas dans la liste des plans
+                        const isFreePlan = false; // Plus de plan "free" dans la liste
                         
                         return (
                           <div
@@ -1172,7 +1209,7 @@ function SettingsContent() {
                               ) : (() => {
                                 const hasActivePaidSubscription = 
                                   subscription?.status === "active" && 
-                                  subscription?.plan?.code !== "free";
+                                  subscription?.plan !== null;
                                 return hasActivePaidSubscription ? "Changer de plan" : "S'abonner";
                               })()}
                             </Button>
@@ -1379,7 +1416,7 @@ function SettingsContent() {
                   const planPrice = parseFloat(selectedPlan?.price || "0");
                   const hasActivePaidSubscription = 
                     subscription?.status === "active" && 
-                    subscription?.plan?.code !== "free";
+                    subscription?.plan !== null;
                   
                   if (planPrice === 0) {
                     return "Confirmer le changement";
@@ -1419,11 +1456,19 @@ function SettingsContent() {
                 </AlertDescription>
               </Alert>
 
-              {subscription.plan.invoiceLimit && (
+              {subscription?.plan?.invoiceLimit && (
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-xs text-muted-foreground mb-1">Limite après annulation</p>
                   <p className="text-sm font-semibold">
                     Plan gratuit : {subscription.plan.invoiceLimit} factures par mois
+                  </p>
+                </div>
+              )}
+              {!subscription?.plan && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-1">Limite après annulation</p>
+                  <p className="text-sm font-semibold">
+                    Plan gratuit : 10 factures par mois (limite par défaut)
                   </p>
                 </div>
               )}

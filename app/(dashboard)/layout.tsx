@@ -11,6 +11,7 @@ import { useItemsStore } from "@/hooks/useItemStore";
 import { useRouter } from "next/navigation";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { useGetMeQuery, useGetCompanyQuery } from "@/services/facturlyApi";
+import { useBetaBanner } from "@/hooks/useBetaBanner";
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -210,6 +211,28 @@ function OnboardingHandler() {
   );
 }
 
+function DashboardLayoutContent({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const isBetaBannerVisible = useBetaBanner();
+
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-900">
+      {isBetaBannerVisible && <div className="h-[42px]" />} {/* Spacer pour le banner fixe */}
+      <Topbar />
+      <main className="px-4 py-6 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-7xl space-y-6">
+          {children}
+        </div>
+      </main>
+      <NavigationBlockDialog />
+      <OnboardingHandler />
+    </div>
+  );
+}
+
 export default function DashboardLayout({
   children,
 }: {
@@ -218,16 +241,9 @@ export default function DashboardLayout({
   return (
     <LoadingProvider>
       <NavigationBlockProvider>
-        <div className="min-h-screen bg-slate-100 text-slate-900">
-          <Topbar />
-          <main className="px-4 py-6 lg:px-10 lg:py-8">
-            <div className="mx-auto max-w-7xl space-y-6">
-              {children}
-            </div>
-          </main>
-          <NavigationBlockDialog />
-          <OnboardingHandler />
-        </div>
+        <DashboardLayoutContent>
+          {children}
+        </DashboardLayoutContent>
       </NavigationBlockProvider>
     </LoadingProvider>
   );

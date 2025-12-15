@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
+import { useGetBetaAccessInfoQuery } from "@/services/facturlyApi"
+import { Users } from "lucide-react"
 
 export function CTASection() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
+  const { data: betaInfo } = useGetBetaAccessInfoQuery()
   const buttonText = isAuthenticated ? "Accéder au tableau de bord" : "Commencer gratuitement"
   const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
@@ -127,12 +130,28 @@ export function CTASection() {
             et améliorer leur trésorerie
           </p>
         </div>
+        
+        {/* Compteur bêta */}
+        {betaInfo && betaInfo.enabled && betaInfo.maxUsers !== null && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">
+              {betaInfo.isFull ? (
+                <>Bêta complète ({betaInfo.currentUsers}/{betaInfo.maxUsers} utilisateurs)</>
+              ) : (
+                <>{betaInfo.remaining} place{betaInfo.remaining !== 1 ? "s" : ""} disponible{betaInfo.remaining !== 1 ? "s" : ""} ({betaInfo.currentUsers}/{betaInfo.maxUsers})</>
+              )}
+            </span>
+          </div>
+        )}
+        
         <Link href={buttonHref} onClick={handleClick}>
           <Button
             className="px-[30px] py-2 bg-secondary text-secondary-foreground text-base font-medium leading-6 rounded-[99px] shadow-[0px_0px_0px_4px_rgba(255,255,255,0.13)] hover:bg-secondary/90 transition-all duration-200"
             size="lg"
+            disabled={betaInfo?.isFull && !isAuthenticated}
           >
-            {buttonText}
+            {betaInfo?.isFull && !isAuthenticated ? "Bêta complète" : buttonText}
           </Button>
         </Link>
       </div>

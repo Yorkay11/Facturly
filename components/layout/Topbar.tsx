@@ -34,6 +34,7 @@ import { useGetMeQuery, useGetCompanyQuery, useGetSubscriptionQuery, useLogoutMu
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { useBetaBanner } from "@/hooks/useBetaBanner";
 
 const navItems: Array<{
   label: string;
@@ -145,8 +146,10 @@ export const Topbar = () => {
      return children.some((child) => pathname === child.href || pathname?.startsWith(`${child.href}/`));
    };
 
+  const isBetaBannerVisible = useBetaBanner();
+
   return (
-    <header className="relative z-10 border-b border-primary/10 bg-white/85 py-4 backdrop-blur">
+    <header className={cn("sticky z-10 border-b border-primary/10 bg-white/85 py-4 backdrop-blur", isBetaBannerVisible ? "top-[42px]" : "top-0")}>
       <div className="mx-auto flex max-w-[90vw] flex-col gap-4 px-6 md:flex-row md:items-center md:justify-between md:px-10">
         <div className="flex items-center justify-between md:hidden">
           <Link href="/dashboard" className="flex items-center gap-2">

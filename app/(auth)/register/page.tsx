@@ -86,6 +86,15 @@ export default function RegisterPage() {
       const errorCode = errorData?.code;
       const errorMessage = errorData?.message || "Une erreur est survenue lors de l'inscription.";
       
+      // Vérifier si c'est une erreur 403 (bêta complète)
+      const errorStatus = error && "status" in error ? error.status : null;
+      if (errorStatus === 403) {
+        toast.error("Bêta complète", {
+          description: errorMessage || "La bêta est complète. Les inscriptions sont temporairement fermées.",
+        });
+        return;
+      }
+      
       // Messages d'erreur spécifiques selon le code
       const errorMessages: Record<string, string> = {
         CONFLICT_EMAIL_EXISTS: "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.",

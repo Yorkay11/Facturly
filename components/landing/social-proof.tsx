@@ -6,15 +6,15 @@ export function SocialProof() {
       <div className="text-center text-gray-300 text-sm font-medium leading-tight">
         Utilisé par des entreprises en pleine croissance
       </div>
-      <div className="self-stretch grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
-        {Array.from({ length: 8 }).map((_, i) => (
+      <div className="self-stretch flex items-center justify-center gap-8 flex-wrap">
+        {Array.from({ length: 2 }).map((_, i) => (
           <Image
             key={i}
-            src={`/logos/logo0${i + 1}.svg`}
+            src={`/logos/logo0${i + 1}.png`}
             alt={`Company Logo ${i + 1}`}
-            width={400}
-            height={120}
-            className="w-full max-w-[400px] h-auto object-contain grayscale opacity-70"
+            width={200}
+            height={60}
+            className="w-full max-w-[150px] h-auto object-contain grayscale opacity-70"
           />
         ))}
       </div>

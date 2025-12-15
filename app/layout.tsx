@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { BetaBanner } from "@/components/layout/BetaBanner";
 
 
 
@@ -141,6 +142,7 @@ export default function RootLayout({
       <body
         className={`${inter.className}`}
       >
+      <BetaBanner />
         {process.env.NEXT_PUBLIC_GTM_ID && (
           <>
             <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />

@@ -19,8 +19,13 @@ import {
   TemplateClassicSerif,
   type InvoiceTemplateProps,
 } from "@/templates/invoices";
-import { useGetCompanyQuery, useGetClientByIdQuery } from "@/services/facturlyApi";
+import { useGetCompanyQuery, useGetClientByIdQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
+import { getBackendTemplateName } from "@/types/invoiceTemplate";
 import Skeleton from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Lock, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -34,7 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Maximize2 } from "lucide-react";
+import { Maximize2, FileDown } from "lucide-react";
 
 const templateRegistry: Record<string, React.ComponentType<InvoiceTemplateProps>> = {
   invoice: TemplateInvoice,
@@ -70,18 +75,28 @@ const TemplateSelector = ({
   );
 };
 
-const Preview = () => {
+interface PreviewProps {
+  invoiceId?: string;
+}
+
+const Preview = ({ invoiceId }: PreviewProps = {}) => {
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { items } = useItemsStore();
   const metadataStore = useInvoiceMetadata();
   const [activeTemplate, setActiveTemplate] = useState(invoiceTemplates[0].id);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Récupérer les données de l'entreprise et du client
+  // Récupérer les données de l'entreprise, du client et de la subscription
   const { data: company } = useGetCompanyQuery();
   const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
     skip: !metadataStore.clientId,
   });
+  const { data: subscription } = useGetSubscriptionQuery();
+  
+  // Vérifier si l'utilisateur peut générer des PDF (Pro ou Enterprise uniquement)
+  const canGeneratePDF = subscription?.plan === "pro" || subscription?.plan === "enterprise";
+  const isFreePlan = subscription?.plan === "free";
 
   const currentTemplate = invoiceTemplates.find((tpl) => tpl.id === activeTemplate) ?? invoiceTemplates[0];
   const metadata = {
@@ -120,6 +135,78 @@ const Preview = () => {
 
   const formatDate = (date?: Date) => (date ? format(date, "dd/MM/yyyy") : "--/--/----");
 
+  const handleGeneratePDF = async () => {
+    if (!invoiceId) {
+      toast.error("Erreur", {
+        description: "La facture doit être sauvegardée avant de générer le PDF.",
+      });
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://facturlybackend-production.up.railway.app";
+      
+      // Obtenir le token d'authentification
+      const cookies = document.cookie.split("; ");
+      const tokenCookie = cookies.find((cookie) => cookie.startsWith("facturly_access_token="));
+      const token = tokenCookie ? tokenCookie.split("=")[1] : null;
+
+      if (!token) {
+        toast.error("Erreur", {
+          description: "Vous devez être connecté pour générer le PDF.",
+        });
+        setIsGeneratingPDF(false);
+        return;
+      }
+
+      // Mapper le template frontend au nom backend
+      const backendTemplateName = getBackendTemplateName(activeTemplate);
+      
+      // Construire l'URL avec le paramètre template optionnel
+      const pdfUrl = `${BASE_URL}/invoices/${invoiceId}/pdf${backendTemplateName ? `?template=${backendTemplateName}` : ""}`;
+
+      // Créer un lien temporaire pour télécharger le PDF
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = `facture-${invoiceId}.pdf`;
+      
+      // Ajouter le token dans les headers via fetch puis créer un blob
+      const response = await fetch(pdfUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error("La génération de PDF est réservée aux plans Pro ou Entreprise.");
+        }
+        throw new Error("Erreur lors de la génération du PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      link.href = url;
+      link.click();
+      
+      // Nettoyer
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("PDF généré", {
+        description: "Le PDF a été téléchargé avec succès.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la génération du PDF:", error);
+      toast.error("Erreur", {
+        description: error?.message || "Impossible de générer le PDF. Veuillez réessayer.",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <Card className="w-full flex-1 space-y-6 border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -142,18 +229,20 @@ const Preview = () => {
       </div>
 
       {isHydrated ? (
-        <TemplateComponent
-          metadata={metadata}
-          company={company}
-          client={client}
-          items={items}
-          subtotal={subtotal}
-          vatAmount={vatAmount}
-          totalAmount={totalAmount}
-          formatAmount={(value) => amountFormatter.format(value)}
-          formatDate={formatDate}
-          template={currentTemplate}
-        />
+        <div data-invoice-preview>
+          <TemplateComponent
+            metadata={metadata}
+            company={company}
+            client={client}
+            items={items}
+            subtotal={subtotal}
+            vatAmount={vatAmount}
+            totalAmount={totalAmount}
+            formatAmount={(value) => amountFormatter.format(value)}
+            formatDate={formatDate}
+            template={currentTemplate}
+          />
+        </div>
       ) : (
         <div className="space-y-4">
           <Skeleton className="h-6 w-48" />
@@ -163,8 +252,31 @@ const Preview = () => {
       )}
 
       <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-        <Button variant="default" size="sm" className="w-full sm:w-auto" disabled>
-          Envoi rapide (bientôt)
+        {isFreePlan && (
+          <Alert className="mb-2 border-amber-200 bg-amber-50">
+            <Lock className="h-4 w-4 text-amber-600" />
+            <AlertTitle className="text-amber-800">Génération PDF réservée</AlertTitle>
+            <AlertDescription className="text-amber-700">
+              La génération de PDF est disponible uniquement avec les plans Pro ou Entreprise.
+              <Link 
+                href="/settings?tab=subscription" 
+                className="ml-1 inline-flex items-center gap-1 font-semibold text-amber-800 hover:text-amber-900 underline"
+              >
+                Passer au plan Pro
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="w-full sm:w-auto gap-2"
+          onClick={handleGeneratePDF}
+          disabled={!isHydrated || !company || !client || !invoiceId || isGeneratingPDF || !canGeneratePDF}
+        >
+          <FileDown className={`h-4 w-4 ${isGeneratingPDF ? "animate-spin" : ""}`} />
+          {isGeneratingPDF ? "Génération..." : "Générer PDF"}
         </Button>
       </div>
 

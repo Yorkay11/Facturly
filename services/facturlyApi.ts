@@ -867,11 +867,28 @@ const baseQueryWithAuth: BaseQueryFn<
   return result;
 };
 
+// Beta Access
+export interface BetaAccessInfo {
+  enabled: boolean;
+  maxUsers: number | null;
+  currentUsers: number;
+  remaining: number | null;
+  isFull: boolean;
+}
+
 export const facturlyApi = createApi({
   reducerPath: "facturlyApi",
   baseQuery: baseQueryWithAuth,
   tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment", "Dashboard", "Bill", "Notification"],
   endpoints: (builder) => ({
+    // ==================== Public ====================
+    getBetaAccessInfo: builder.query<BetaAccessInfo, void>({
+      query: () => ({
+        url: "/public/beta",
+      }),
+      // Pas besoin d'auth pour cet endpoint public
+    }),
+    
     // ==================== Auth ====================
     register: builder.mutation<AuthResponse, RegisterPayload>({
       query: (body) => ({
@@ -1394,6 +1411,8 @@ export const facturlyApi = createApi({
 // ==================== Exported Hooks ====================
 
 export const {
+  // Public
+  useGetBetaAccessInfoQuery,
   // Auth
   useRegisterMutation,
   useLoginMutation,

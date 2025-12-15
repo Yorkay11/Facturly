@@ -141,7 +141,7 @@ const InvoiceEditPage = () => {
             </Suspense>
           </div>
           <div className='w-full order-2 xl:order-none'>
-            <Preview />
+            <Preview invoiceId={invoiceId} />
           </div>
         </div>
       </div>

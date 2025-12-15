@@ -6,10 +6,13 @@ import { Header } from "./header"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/useAuth"
+import { useBetaBanner } from "@/hooks/useBetaBanner"
+import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
+  const isBetaBannerVisible = useBetaBanner()
   const buttonText = isAuthenticated ? "Accéder au tableau de bord" : "Commencer gratuitement"
   const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
@@ -448,7 +451,7 @@ export function HeroSection() {
       </div>
 
       {/* Header positioned at top of hero container */}
-      <div className="absolute top-0 left-0 right-0 z-20">
+      <div className={cn("absolute left-0 right-0 z-20", isBetaBannerVisible ? "top-[42px]" : "top-0")}>
         <Header />
       </div>
 

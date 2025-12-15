@@ -559,6 +559,14 @@ export interface UpdateSettingsPayload {
 }
 
 // Plans & Subscriptions
+// Nouveau format : catalogue depuis Stripe (pas de table plans)
+export interface PlanCatalogItem {
+  plan: "free" | "pro" | "enterprise";
+  interval: "month" | "year";
+  stripePriceId: string | null; // null = non configuré, désactiver l'option
+}
+
+// Ancien format Plan (pour compatibilité temporaire)
 export interface Plan {
   id: string;
   code: string;
@@ -587,11 +595,12 @@ export interface InvoiceLimit {
 
 export interface Subscription {
   id: string;
-  status: string;
+  status: "active" | "past_due" | "canceled" | string;
   currentPeriodStart: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
-  plan: Plan | null; // null = plan gratuit implicite
+  plan: "free" | "pro" | "enterprise"; // Nouveau format : string au lieu de Plan | null
+  interval: "month" | "year"; // Nouveau format : intervalle de facturation
   invoicesIssuedCurrentPeriod?: number; // Nombre de factures émises dans la période actuelle
   invoiceLimit?: InvoiceLimit; // Informations détaillées sur la limite
   createdAt?: string;
@@ -1203,7 +1212,7 @@ export const facturlyApi = createApi({
     }),
 
     // ==================== Plans & Subscriptions ====================
-    getPlans: builder.query<{ data: Plan[] }, void>({
+    getPlans: builder.query<PlanCatalogItem[], void>({
       query: () => "/plans",
       providesTags: ["Subscription"],
     }),
@@ -1235,7 +1244,10 @@ export const facturlyApi = createApi({
     }),
 
     // ==================== Stripe ====================
-    createCheckoutSession: builder.mutation<StripeCheckoutResponse, { planId: string }>({
+    createCheckoutSession: builder.mutation<
+      StripeCheckoutResponse,
+      { plan: "free" | "pro" | "enterprise"; interval: "month" | "year" }
+    >({
       query: (body) => ({
         url: "/checkout/create",
         method: "POST",
@@ -1245,12 +1257,11 @@ export const facturlyApi = createApi({
     changePlan: builder.mutation<
       {
         success: boolean;
-        message: string;
         subscriptionId: string;
-        newPlanId: string;
-        newPlanName: string;
+        plan: "free" | "pro" | "enterprise";
+        interval: "month" | "year";
       },
-      { planId: string }
+      { plan: "free" | "pro" | "enterprise"; interval: "month" | "year" }
     >({
       query: (body) => ({
         url: "/subscriptions/change-plan",

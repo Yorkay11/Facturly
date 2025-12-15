@@ -25,12 +25,11 @@ import {
   useGetSubscriptionQuery,
   useGetPlansQuery,
   useCreateSubscriptionMutation,
-  usePreviewSubscriptionMutation,
   useCancelSubscriptionMutation,
   useCreateCheckoutSessionMutation,
   useChangePlanMutation,
   useCreatePortalSessionMutation,
-  Plan,
+  PlanCatalogItem,
 } from "@/services/facturlyApi";
 import { InvoiceLimitCard } from "@/components/dashboard/InvoiceLimitCard";
 import { toast } from "sonner";
@@ -121,18 +120,15 @@ function SettingsContent() {
   const [updateCompany, { isLoading: isUpdatingCompany }] = useUpdateCompanyMutation();
   const [updateSettings, { isLoading: isUpdatingSettings }] = useUpdateSettingsMutation();
   const [createSubscription, { isLoading: isChangingPlan }] = useCreateSubscriptionMutation();
-  const [previewSubscription, { isLoading: isPreviewing }] = usePreviewSubscriptionMutation();
   const [cancelSubscription, { isLoading: isCanceling }] = useCancelSubscriptionMutation();
   const [createCheckoutSession, { isLoading: isCreatingCheckout }] = useCreateCheckoutSessionMutation();
   const [changePlan, { isLoading: isChangingPlanStripe }] = useChangePlanMutation();
   const [createPortalSession, { isLoading: isCreatingPortal }] = useCreatePortalSessionMutation();
   
   // États pour la gestion des abonnements
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [previewData, setPreviewData] = useState<any>(null);
-  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<{ plan: "free" | "pro" | "enterprise"; interval: "month" | "year" } | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   
   // Forms
   const userForm = useForm<UserFormValues>({
@@ -295,81 +291,68 @@ function SettingsContent() {
   };
 
   // Fonctions de gestion des abonnements
-  async function handlePlanSelect(plan: Plan) {
+  async function handlePlanSelect(plan: "free" | "pro" | "enterprise", interval: "month" | "year") {
     if (!subscription) return;
 
-    // Si c'est le même plan, ne rien faire
-    // Pour le plan gratuit : plan.code === "free" et subscription.plan === null
-    if (plan.code === "free" && subscription.plan === null) {
-      return;
-    }
-    if (subscription?.plan && plan.code === subscription.plan.code) {
+    // Si c'est le même plan et intervalle, ne rien faire
+    if (subscription.plan === plan && subscription.interval === interval) {
       return;
     }
 
-    // Pour le plan gratuit, on ne peut pas faire de preview car il n'existe pas en base
-    // On passe directement à la confirmation
-    if (plan.code === "free") {
-      // Pour revenir au plan gratuit, on doit annuler l'abonnement Stripe actif
-      // ou simplement changer le plan vers null
-      // Pour l'instant, on affiche un message d'information
+    // Pour le plan gratuit, on ne peut pas souscrire via Stripe
+    if (plan === "free") {
       toast.info("Revenir au plan gratuit", {
         description: "Pour revenir au plan gratuit, vous devez annuler votre abonnement actif via le portail Stripe.",
       });
       return;
     }
 
-    setSelectedPlan(plan);
-    setShowPreviewDialog(true);
-
-    // Prévisualiser le changement
-    try {
-      const preview = await previewSubscription({ planId: plan.id }).unwrap();
-      setPreviewData(preview);
-    } catch (error: any) {
-      console.error("Erreur lors de la prévisualisation:", error);
-      toast.error("Erreur", {
-        description: error?.data?.message || "Impossible de prévisualiser le changement de plan",
+    // Vérifier que le plan est disponible (stripePriceId !== null)
+    const catalogItem = plansCatalog.find(item => item.plan === plan && item.interval === interval);
+    if (!catalogItem || !catalogItem.stripePriceId) {
+      toast.error("Plan non disponible", {
+        description: "Ce plan n'est pas configuré pour le moment.",
       });
-      setShowPreviewDialog(false);
+      return;
     }
+
+    setSelectedPlan({ plan, interval });
+    
+    // Pas de preview selon la nouvelle doc, on passe directement à la confirmation
+    // Mais on peut afficher un message informatif
+    toast.info("Confirmation requise", {
+      description: "Vous allez être redirigé vers Stripe pour finaliser votre abonnement.",
+    });
   }
 
   async function handleConfirmPlanChange() {
     if (!selectedPlan) return;
 
     try {
-      const planPrice = parseFloat(selectedPlan.price);
-      
-      // Vérifier si l'utilisateur a déjà un abonnement actif (payant)
+      // Vérifier si l'utilisateur a déjà un abonnement Stripe actif
       const hasActivePaidSubscription = 
         subscription?.status === "active" && 
-        subscription?.plan !== null;
+        subscription?.plan !== "free";
 
-      if (planPrice === 0) {
-        // Plan gratuit : utiliser l'endpoint direct
-        await createSubscription({ planId: selectedPlan.id }).unwrap();
-        toast.success("Plan changé avec succès", {
-          description: `Vous avez souscrit au plan ${selectedPlan.name}`,
-        });
-        setShowPreviewDialog(false);
-        setSelectedPlan(null);
-        setPreviewData(null);
-      } else if (hasActivePaidSubscription) {
+      if (hasActivePaidSubscription) {
         // Utilisateur a déjà un abonnement payant actif : utiliser change-plan
-        const result = await changePlan({ planId: selectedPlan.id }).unwrap();
+        const result = await changePlan({ 
+          plan: selectedPlan.plan, 
+          interval: selectedPlan.interval 
+        }).unwrap();
         toast.success("Changement de plan en cours", {
-          description: result.message || "Stripe va créer une facture avec le prorata.",
+          description: "Stripe va créer une facture avec le prorata.",
         });
-        setShowPreviewDialog(false);
         setSelectedPlan(null);
-        setPreviewData(null);
         
         // Polling pour vérifier la mise à jour
         startPollingSubscription();
       } else {
         // Nouvel abonnement : utiliser Stripe Checkout
-        const { url } = await createCheckoutSession({ planId: selectedPlan.id }).unwrap();
+        const { url } = await createCheckoutSession({ 
+          plan: selectedPlan.plan, 
+          interval: selectedPlan.interval 
+        }).unwrap();
         // Rediriger vers Stripe Checkout
         window.location.href = url;
       }
@@ -384,13 +367,14 @@ function SettingsContent() {
         });
         // Réessayer avec change-plan
         try {
-          const result = await changePlan({ planId: selectedPlan.id }).unwrap();
+          const result = await changePlan({ 
+            plan: selectedPlan.plan, 
+            interval: selectedPlan.interval 
+          }).unwrap();
           toast.success("Changement de plan en cours", {
-            description: result.message,
+            description: "Stripe va créer une facture avec le prorata.",
           });
-          setShowPreviewDialog(false);
           setSelectedPlan(null);
-          setPreviewData(null);
           startPollingSubscription();
         } catch (retryError: any) {
           toast.error("Erreur", {
@@ -406,7 +390,6 @@ function SettingsContent() {
           description: errorMessage,
         });
       }
-      setShowPreviewDialog(false);
     }
   }
 
@@ -417,7 +400,8 @@ function SettingsContent() {
     let attempts = 0;
     const maxAttempts = 5;
     const pollInterval = 2000; // 2 secondes
-    const targetPlanId = selectedPlan.id;
+    const targetPlan = selectedPlan.plan;
+    const targetInterval = selectedPlan.interval;
 
     const poll = setInterval(async () => {
       attempts++;
@@ -427,10 +411,15 @@ function SettingsContent() {
         const currentSubscription = result.data;
         
         // Vérifier si le plan a changé
-        if (currentSubscription?.plan?.id === targetPlanId) {
+        if (currentSubscription?.plan === targetPlan && currentSubscription?.interval === targetInterval) {
           clearInterval(poll);
+          const planNames: Record<"free" | "pro" | "enterprise", string> = {
+            free: "Gratuit",
+            pro: "Pro",
+            enterprise: "Enterprise"
+          };
           toast.success("Plan mis à jour", {
-            description: `Vous êtes maintenant sur le plan ${selectedPlan.name}`,
+            description: `Vous êtes maintenant sur le plan ${planNames[targetPlan]}`,
           });
         } else if (attempts >= maxAttempts) {
           clearInterval(poll);
@@ -475,7 +464,31 @@ function SettingsContent() {
     }
   }
   
-  const plans = plansResponse?.data ?? [];
+  const plansCatalog = plansResponse ?? [];
+  
+  // Construire les plans à afficher à partir du catalogue
+  const plans = useMemo(() => {
+    const planNames: Record<"free" | "pro" | "enterprise", string> = {
+      free: "Gratuit",
+      pro: "Pro",
+      enterprise: "Enterprise"
+    };
+    
+    const planPrices: Record<string, Record<"month" | "year", string>> = {
+      pro: { month: "29", year: "24" },
+      enterprise: { month: "99", year: "79" }
+    };
+    
+    return plansCatalog
+      .filter(item => item.stripePriceId !== null) // Filtrer les plans non configurés
+      .map(item => ({
+        plan: item.plan,
+        interval: item.interval,
+        name: planNames[item.plan],
+        price: item.plan === "free" ? "0" : planPrices[item.plan]?.[item.interval] || "0",
+        stripePriceId: item.stripePriceId,
+      }));
+  }, [plansCatalog]);
   const isLoading = isLoadingUser || isLoadingCompany || isLoadingSettings;
   
   return (
@@ -1008,56 +1021,65 @@ function SettingsContent() {
           <TabsContent value="subscription">
             <div className="space-y-6">
               {/* Plan actuel */}
-              {subscription && (
-                <Card className="border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-primary flex items-center gap-2">
-                      <BadgeCheck className="h-5 w-5" />
-                      Plan actuel
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-semibold">
-                          {subscription.plan === null ? "Gratuit" : subscription.plan.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {subscription.plan === null 
-                            ? "Plan gratuit avec limite de factures" 
-                            : subscription.plan.billingInterval === "monthly" 
-                              ? "Facturation mensuelle" 
-                              : "Facturation annuelle"}
-                        </p>
+              {subscription && (() => {
+                const planNames: Record<"free" | "pro" | "enterprise", string> = {
+                  free: "Gratuit",
+                  pro: "Pro",
+                  enterprise: "Enterprise"
+                };
+                const planPrices: Record<"pro" | "enterprise", Record<"month" | "year", string>> = {
+                  pro: { month: "29", year: "24" },
+                  enterprise: { month: "99", year: "79" }
+                };
+                const currentPlanName = planNames[subscription.plan];
+                const currentPrice = subscription.plan === "free" 
+                  ? "0,00 €" 
+                  : planPrices[subscription.plan]?.[subscription.interval] 
+                    ? `${planPrices[subscription.plan][subscription.interval]} €` 
+                    : "N/A";
+                
+                return (
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="text-primary flex items-center gap-2">
+                        <BadgeCheck className="h-5 w-5" />
+                        Plan actuel
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-lg font-semibold">{currentPlanName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {subscription.plan === "free" 
+                              ? "Plan gratuit avec limite de factures" 
+                              : subscription.interval === "month" 
+                                ? "Facturation mensuelle" 
+                                : "Facturation annuelle"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-semibold text-primary">{currentPrice}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {subscription.plan === "free" 
+                              ? "" 
+                              : subscription.interval === "month" 
+                                ? "/ mois" 
+                                : "/ an"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-semibold text-primary">
-                          {subscription.plan === null 
-                            ? "0,00 €" 
-                            : new Intl.NumberFormat("fr-FR", {
-                                style: "currency",
-                                currency: subscription.plan.currency || "EUR",
-                              }).format(parseFloat(subscription.plan.price))}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {subscription.plan === null 
-                            ? "" 
-                            : subscription.plan.billingInterval === "monthly" 
-                              ? "/ mois" 
-                              : "/ an"}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
 
               {/* Limite de factures */}
               {subscription?.invoiceLimit && (
                 <InvoiceLimitCard 
                   invoiceLimit={subscription.invoiceLimit} 
                   showUpgradeButton={true}
-                  planCode={subscription.plan?.code || (subscription.plan === null ? "free" : undefined)}
+                  planCode={subscription.plan === "free" ? "free" : subscription.plan}
                 />
               )}
              
@@ -1077,9 +1099,9 @@ function SettingsContent() {
                     <div className="mt-4 flex justify-center">
                       <div className="inline-flex items-center gap-2 p-1 bg-muted/50 rounded-lg border border-border">
                         <button
-                          onClick={() => setBillingInterval("monthly")}
+                          onClick={() => setBillingInterval("month")}
                           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                            billingInterval === "monthly"
+                            billingInterval === "month"
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
                           }`}
@@ -1087,15 +1109,15 @@ function SettingsContent() {
                           Mensuel
                         </button>
                         <button
-                          onClick={() => setBillingInterval("yearly")}
+                          onClick={() => setBillingInterval("year")}
                           className={`px-4 py-2 rounded-md text-sm font-medium transition-all relative ${
-                            billingInterval === "yearly"
+                            billingInterval === "year"
                               ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
                           Annuel
-                          {billingInterval === "yearly" && (
+                          {billingInterval === "year" && (
                             <span className="absolute -top-1.5 -right-1.5 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                               -20%
                             </span>
@@ -1125,7 +1147,7 @@ function SettingsContent() {
                             ]
                           }
                         };
-                        const isCurrentPlan = subscription?.plan === null; // Plan actuel seulement si plan === null
+                        const isCurrentPlan = subscription?.plan === "free"; // Plan actuel si plan === "free"
                         const isFreePlan = true;
                         
                         return (
@@ -1194,24 +1216,10 @@ function SettingsContent() {
                                 onClick={() => {
                                   if (!isCurrentPlan) {
                                     // Créer un plan virtuel pour le plan gratuit
-                                    const virtualFreePlan: Plan = {
-                                      id: "free-implicit",
-                                      code: "free",
-                                      name: "Gratuit",
-                                      price: "0.00",
-                                      currency: "EUR",
-                                      billingInterval: "monthly",
-                                      invoiceLimit: subscription?.invoiceLimit?.effective || 10,
-                                      description: "Plan gratuit avec limite de factures",
-                                      metadata: {
-                                        features: [
-                                          `${subscription?.invoiceLimit?.effective || 10} factures par mois`,
-                                          "Génération de PDF",
-                                          "Support par email"
-                                        ]
-                                      }
-                                    };
-                                    handlePlanSelect(virtualFreePlan);
+                                    // Plan gratuit - pas de souscription via Stripe
+                                    toast.info("Revenir au plan gratuit", {
+                                      description: "Pour revenir au plan gratuit, vous devez annuler votre abonnement actif via le portail Stripe.",
+                                    });
                                   }
                                 }}
                               >
@@ -1230,21 +1238,50 @@ function SettingsContent() {
                       })()}
                       
                       {plans
-                        .filter((plan) => {
+                        .filter((planItem) => {
                           // Filtrer par intervalle de facturation
-                          return plan.billingInterval === billingInterval;
+                          return planItem.interval === billingInterval;
                         })
-                        .map((plan) => {
-                        // Vérifier si c'est le plan actuel (gérer le cas où subscription.plan est null = plan gratuit implicite)
-                        const isCurrentPlan = subscription?.plan 
-                          ? plan.code === subscription.plan.code 
-                          : false;
-                        const isFreePlan = false;
+                        .map((planItem) => {
+                        // Vérifier si c'est le plan actuel
+                        const isCurrentPlan = subscription?.plan === planItem.plan && 
+                                             subscription?.interval === planItem.interval;
+                        const isFreePlan = planItem.plan === "free";
+                        
+                        // Déterminer les limites de factures selon le plan
+                        const invoiceLimits: Record<"free" | "pro" | "enterprise", number | null> = {
+                          free: subscription?.invoiceLimit?.effective || 10,
+                          pro: 100,
+                          enterprise: null // Illimité
+                        };
+                        const invoiceLimit = invoiceLimits[planItem.plan];
+                        
+                        // Features par plan
+                        const planFeatures: Record<"free" | "pro" | "enterprise", string[]> = {
+                          free: [
+                            `${invoiceLimit} factures par mois`,
+                            "Génération de PDF",
+                            "Support par email"
+                          ],
+                          pro: [
+                            "100 factures par mois",
+                            "Génération de PDF",
+                            "Support prioritaire",
+                            "Statistiques avancées"
+                          ],
+                          enterprise: [
+                            "Factures illimitées",
+                            "Génération de PDF",
+                            "Support dédié",
+                            "Statistiques avancées",
+                            "API personnalisée"
+                          ]
+                        };
                         
                         return (
                           <div
-                            key={plan.id}
-                            className={`relative rounded-xl border-2 p-5 transition-all ${
+                            key={`${planItem.plan}-${planItem.interval}`}
+                            className={`relative flex flex-col rounded-xl border-2 p-5 transition-all ${
                               isCurrentPlan
                                 ? "border-primary bg-primary/5 shadow-md"
                                 : "border-border bg-white hover:border-primary/30 hover:shadow-md"
@@ -1260,7 +1297,7 @@ function SettingsContent() {
 
                             <div className="mb-4">
                               <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-lg font-bold text-primary">{plan.name}</h3>
+                                <h3 className="text-lg font-bold text-primary">{planItem.name}</h3>
                                 {isFreePlan ? (
                                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                                     Gratuit
@@ -1273,55 +1310,43 @@ function SettingsContent() {
                               <div className="mb-3">
                                 <div className="flex items-baseline gap-1">
                                   <span className="text-3xl font-bold text-primary">
-                                    {plan.price === "0.00" ? "Gratuit" : `${plan.price}`}
+                                    {planItem.price === "0" ? "Gratuit" : `${planItem.price} €`}
                                   </span>
-                                  {plan.price !== "0.00" && (
-                                    <>
-                                      <span className="text-sm text-muted-foreground">{plan.currency}</span>
-                                      <span className="text-sm text-muted-foreground">
-                                        /{plan.billingInterval === "monthly" ? "mois" : "an"}
-                                      </span>
-                                    </>
+                                  {planItem.price !== "0" && (
+                                    <span className="text-sm text-muted-foreground">
+                                      /{planItem.interval === "month" ? "mois" : "an"}
+                                    </span>
                                   )}
                                 </div>
-                                {plan.price !== "0.00" && plan.billingInterval === "yearly" && (
+                                {planItem.price !== "0" && planItem.interval === "year" && (
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">
                                       Économisez 20%
                                     </span>
-                                    <span className="text-xs text-muted-foreground line-through">
-                                      {plan.price === "24" ? "29" : plan.price === "159" ? "199" : plan.price}€/mois
-                                    </span>
                                   </div>
                                 )}
-                                {/* Message spécial pour le plan gratuit */}
                                 {isFreePlan && (
                                   <p className="text-xs text-muted-foreground mt-1 italic">
                                     Identique en mensuel et annuel
                                   </p>
                                 )}
-                                {plan.description && !isFreePlan && (
-                                  <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>
-                                )}
                               </div>
 
-                              {plan.metadata?.features && Array.isArray(plan.metadata.features) && (
-                                <ul className="space-y-2 mb-4">
-                                  {plan.metadata.features.map((feature: string, index: number) => (
-                                    <li key={index} className="flex items-start gap-2 text-xs">
-                                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                                      <span className="text-foreground/80">{feature}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
+                              <ul className="space-y-2 mb-4">
+                                {planFeatures[planItem.plan].map((feature: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2 text-xs">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                                    <span className="text-foreground/80">{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
 
                               <div className="mt-4 pt-4 border-t border-border/50">
                                 <div className="flex items-center justify-between mb-3">
                                   <span className="text-xs text-muted-foreground">Limite</span>
                                   <span className="text-xs font-semibold">
-                                    {plan.invoiceLimit ? (
-                                      `${plan.invoiceLimit} factures/${plan.billingInterval === "monthly" ? "mois" : "an"}`
+                                    {invoiceLimit ? (
+                                      `${invoiceLimit} factures/${planItem.interval === "month" ? "mois" : "an"}`
                                     ) : (
                                       <span className="flex items-center gap-1 text-emerald-600">
                                         <Infinity className="h-3.5 w-3.5" />
@@ -1339,7 +1364,10 @@ function SettingsContent() {
                                 size="sm"
                                 className="w-full"
                                 disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
-                                onClick={() => handlePlanSelect(plan)}
+                                onClick={() => {
+                                  setSelectedPlan({ plan: planItem.plan, interval: planItem.interval });
+                                  handleConfirmPlanChange();
+                                }}
                               >
                                 {isCurrentPlan ? (
                                   <>
@@ -1349,7 +1377,7 @@ function SettingsContent() {
                                 ) : (() => {
                                   const hasActivePaidSubscription = 
                                     subscription?.status === "active" && 
-                                    subscription?.plan !== null;
+                                    subscription?.plan !== "free";
                                   return hasActivePaidSubscription ? "Changer de plan" : "S'abonner";
                                 })()}
                               </Button>
@@ -1378,200 +1406,7 @@ function SettingsContent() {
         </Tabs>
       )}
 
-      {/* Dialog de prévisualisation du changement de plan */}
-      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirmer le changement de plan</DialogTitle>
-            <DialogDescription>
-              Prévisualisez les changements avant de confirmer
-            </DialogDescription>
-          </DialogHeader>
-          
-          {isPreviewing ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : previewData ? (
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Plan actuel</p>
-                    <p className="text-xs text-muted-foreground">{previewData.currentPlan.name}</p>
-                    {parseFloat(previewData.currentPlan.price) === 0 ? (
-                      <p className="text-xs font-semibold mt-1">Gratuit</p>
-                    ) : (
-                      <div className="mt-1">
-                        <p className="text-xs font-semibold">
-                          {new Intl.NumberFormat("fr-FR", {
-                            style: "currency",
-                            currency: previewData.currentPlan.currency || "EUR",
-                          }).format(parseFloat(previewData.currentPlan.price))}
-                        </p>
-                        {previewData.currentPlan.billingInterval && (
-                          <p className="text-xs text-muted-foreground">
-                            / {previewData.currentPlan.billingInterval === "monthly" ? "mois" : "an"}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground mx-2" />
-                  <div className="flex-1 text-right">
-                    <p className="text-sm font-medium">Nouveau plan</p>
-                    <p className="text-xs text-muted-foreground">{previewData.newPlan.name}</p>
-                    {parseFloat(previewData.newPlan.price) === 0 ? (
-                      <p className="text-xs font-semibold mt-1 text-primary">Gratuit</p>
-                    ) : (
-                      <div className="mt-1">
-                        <p className="text-xs font-semibold text-primary">
-                          {new Intl.NumberFormat("fr-FR", {
-                            style: "currency",
-                            currency: previewData.newPlan.currency || "EUR",
-                          }).format(parseFloat(previewData.newPlan.price))}
-                        </p>
-                        {previewData.newPlan.billingInterval && (
-                          <p className="text-xs text-muted-foreground">
-                            / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Message informatif pour changement de plan avec abonnement actif */}
-                {subscription?.status === "active" && 
-                 subscription?.plan?.code !== "free" && 
-                 parseFloat(previewData.newPlan.price) > 0 && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Changement de plan avec prorata automatique</AlertTitle>
-                    <AlertDescription>
-                      Stripe calculera automatiquement le prorata. Vous serez crédité pour le temps restant de votre plan actuel et facturé pour le nouveau plan. Le changement prendra effet immédiatement.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Avertissement pour changement d'intervalle */}
-                {previewData.prorationDetails?.intervalChange && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Changement d'intervalle de facturation</AlertTitle>
-                    <AlertDescription>
-                      Vous passez d'un plan {previewData.currentPlan.billingInterval === "monthly" ? "mensuel" : "annuel"} à un plan {previewData.newPlan.billingInterval === "monthly" ? "mensuel" : "annuel"}. 
-                      La facturation future utilisera le nouvel intervalle.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Avertissement pour downgrade */}
-                {previewData.prorationDetails?.isDowngrade && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Rétrogradation de plan</AlertTitle>
-                    <AlertDescription>
-                      Vous passez à un plan avec moins de fonctionnalités. Le crédit pour le temps non utilisé sera appliqué sur votre prochaine facture.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Prix du nouveau plan */}
-                {parseFloat(previewData.newPlan.price) > 0 && (
-                  <div className="p-3 rounded-md border border-primary/20 bg-primary/5">
-                    <p className="text-xs text-muted-foreground mb-1">Prix du plan</p>
-                    <p className="text-lg font-semibold text-primary">
-                      {new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: previewData.newPlan.currency || "EUR",
-                      }).format(parseFloat(previewData.newPlan.price))}
-                      / {previewData.newPlan.billingInterval === "monthly" ? "mois" : "an"}
-                    </p>
-                    {subscription?.status === "active" && 
-                     subscription?.plan?.code !== "free" && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Le prorata sera calculé automatiquement par Stripe lors du changement.
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {previewData.invoiceLimitChange && (
-                  <div className="p-3 rounded-lg border">
-                    <p className="text-xs text-muted-foreground mb-2">Changement de limite</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">
-                        {previewData.invoiceLimitChange.current === null
-                          ? "Illimité"
-                          : `${previewData.invoiceLimitChange.current} factures/mois`}
-                      </span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-semibold">
-                        {previewData.invoiceLimitChange.new === null
-                          ? "Illimité"
-                          : `${previewData.invoiceLimitChange.new} factures/mois`}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {previewData.nextBillingDate && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>
-                      Prochaine facturation :{" "}
-                      {new Date(previewData.nextBillingDate).toLocaleDateString("fr-FR")}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Chargement de la prévisualisation...</p>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowPreviewDialog(false)}
-              disabled={isChangingPlan || isCreatingCheckout || isChangingPlanStripe}
-            >
-              Annuler
-            </Button>
-            <Button
-              onClick={handleConfirmPlanChange}
-              disabled={isPreviewing || isChangingPlan || isCreatingCheckout || isChangingPlanStripe || !selectedPlan}
-            >
-              {isChangingPlan || isCreatingCheckout || isChangingPlanStripe ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isChangingPlanStripe 
-                    ? "Changement en cours..." 
-                    : parseFloat(selectedPlan?.price || "0") > 0 
-                      ? "Redirection vers le paiement..." 
-                      : "Changement..."}
-                </>
-              ) : (
-                (() => {
-                  const planPrice = parseFloat(selectedPlan?.price || "0");
-                  const hasActivePaidSubscription = 
-                    subscription?.status === "active" && 
-                    subscription?.plan !== null;
-                  
-                  if (planPrice === 0) {
-                    return "Confirmer le changement";
-                  } else if (hasActivePaidSubscription) {
-                    return "Changer de plan";
-                  } else {
-                    return "S'abonner avec Stripe";
-                  }
-                })()
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Dialog de preview supprimé - plus nécessaire selon la nouvelle doc */}
 
       {/* Dialog de confirmation d'annulation */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
@@ -1597,22 +1432,12 @@ function SettingsContent() {
                 </AlertDescription>
               </Alert>
 
-              {subscription?.plan?.invoiceLimit && (
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground mb-1">Limite après annulation</p>
-                  <p className="text-sm font-semibold">
-                    Plan gratuit : {subscription.plan.invoiceLimit} factures par mois
-                  </p>
-                </div>
-              )}
-              {!subscription?.plan && (
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground mb-1">Limite après annulation</p>
-                  <p className="text-sm font-semibold">
-                    Plan gratuit : 10 factures par mois (limite par défaut)
-                  </p>
-                </div>
-              )}
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="text-xs text-muted-foreground mb-1">Limite après annulation</p>
+                <p className="text-sm font-semibold">
+                  Plan gratuit : {subscription?.invoiceLimit?.effective || 10} factures par mois
+                </p>
+              </div>
             </div>
           )}
 

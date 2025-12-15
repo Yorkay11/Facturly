@@ -23,13 +23,11 @@ import {
   useGetSettingsQuery,
   useUpdateSettingsMutation,
   useGetSubscriptionQuery,
-  useGetPlansQuery,
   useCreateSubscriptionMutation,
   useCancelSubscriptionMutation,
   useCreateCheckoutSessionMutation,
   useChangePlanMutation,
   useCreatePortalSessionMutation,
-  PlanCatalogItem,
 } from "@/services/facturlyApi";
 import { InvoiceLimitCard } from "@/components/dashboard/InvoiceLimitCard";
 import { toast } from "sonner";
@@ -113,7 +111,16 @@ function SettingsContent() {
   const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
   const { data: settings, isLoading: isLoadingSettings } = useGetSettingsQuery();
   const { data: subscription, isLoading: isLoadingSubscription, refetch: refetchSubscription } = useGetSubscriptionQuery();
-  const { data: plansResponse, isLoading: isLoadingPlans } = useGetPlansQuery();
+  
+  // Plans disponibles - définis localement (plus d'API GET /plans)
+  const availablePlans = useMemo(() => {
+    return [
+      { plan: "pro" as const, interval: "month" as const },
+      { plan: "pro" as const, interval: "year" as const },
+      { plan: "enterprise" as const, interval: "month" as const },
+      { plan: "enterprise" as const, interval: "year" as const },
+    ];
+  }, []);
   
   // Mutations
   const [updateUser, { isLoading: isUpdatingUser }] = useUpdateUserMutation();
@@ -129,6 +136,10 @@ function SettingsContent() {
   const [selectedPlan, setSelectedPlan] = useState<{ plan: "free" | "pro" | "enterprise"; interval: "month" | "year" } | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
+  const [isProcessingPlan, setIsProcessingPlan] = useState(false);
+  
+  // État de chargement combiné pour les boutons d'abonnement
+  const isLoadingSubscriptionAction = isCreatingCheckout || isChangingPlanStripe || isProcessingPlan || isCreatingPortal;
   
   // Forms
   const userForm = useForm<UserFormValues>({
@@ -307,9 +318,9 @@ function SettingsContent() {
       return;
     }
 
-    // Vérifier que le plan est disponible (stripePriceId !== null)
-    const catalogItem = plansCatalog.find(item => item.plan === plan && item.interval === interval);
-    if (!catalogItem || !catalogItem.stripePriceId) {
+    // Vérifier que le plan est disponible
+    const isPlanAvailable = availablePlans.some(item => item.plan === plan && item.interval === interval);
+    if (!isPlanAvailable) {
       toast.error("Plan non disponible", {
         description: "Ce plan n'est pas configuré pour le moment.",
       });
@@ -326,8 +337,9 @@ function SettingsContent() {
   }
 
   async function handleConfirmPlanChange() {
-    if (!selectedPlan) return;
+    if (!selectedPlan || isLoadingSubscriptionAction) return;
 
+    setIsProcessingPlan(true);
     try {
       // Vérifier si l'utilisateur a déjà un abonnement Stripe actif
       const hasActivePaidSubscription = 
@@ -356,6 +368,7 @@ function SettingsContent() {
         // Rediriger vers Stripe Checkout
         window.location.href = url;
       }
+      setIsProcessingPlan(false);
     } catch (error: any) {
       console.error("Erreur lors du changement de plan:", error);
       const errorMessage = error?.data?.message || "Impossible de changer de plan";
@@ -375,17 +388,21 @@ function SettingsContent() {
             description: "Stripe va créer une facture avec le prorata.",
           });
           setSelectedPlan(null);
+          setIsProcessingPlan(false);
           startPollingSubscription();
         } catch (retryError: any) {
+          setIsProcessingPlan(false);
           toast.error("Erreur", {
             description: retryError?.data?.message || "Impossible de changer de plan",
           });
         }
       } else if (errorMessage.includes("Aucun abonnement actif")) {
+        setIsProcessingPlan(false);
         toast.error("Aucun abonnement", {
           description: "Vous n'avez pas d'abonnement actif. Utilisez 'S'abonner' pour créer un nouvel abonnement.",
         });
       } else {
+        setIsProcessingPlan(false);
         toast.error("Erreur", {
           description: errorMessage,
         });
@@ -464,9 +481,7 @@ function SettingsContent() {
     }
   }
   
-  const plansCatalog = plansResponse ?? [];
-  
-  // Construire les plans à afficher à partir du catalogue
+  // Construire les plans à afficher
   const plans = useMemo(() => {
     const planNames: Record<"free" | "pro" | "enterprise", string> = {
       free: "Gratuit",
@@ -475,20 +490,17 @@ function SettingsContent() {
     };
     
     const planPrices: Record<string, Record<"month" | "year", string>> = {
-      pro: { month: "29", year: "24" },
-      enterprise: { month: "99", year: "79" }
+      pro: { month: "5", year: "48" },
+      enterprise: { month: "20", year: "192" }
     };
     
-    return plansCatalog
-      .filter(item => item.stripePriceId !== null) // Filtrer les plans non configurés
-      .map(item => ({
-        plan: item.plan,
-        interval: item.interval,
-        name: planNames[item.plan],
-        price: item.plan === "free" ? "0" : planPrices[item.plan]?.[item.interval] || "0",
-        stripePriceId: item.stripePriceId,
-      }));
-  }, [plansCatalog]);
+    return availablePlans.map(item => ({
+      plan: item.plan,
+      interval: item.interval,
+      name: planNames[item.plan],
+      price: planPrices[item.plan]?.[item.interval] || "0",
+    }));
+  }, [availablePlans]);
   const isLoading = isLoadingUser || isLoadingCompany || isLoadingSettings;
   
   return (
@@ -1028,8 +1040,8 @@ function SettingsContent() {
                   enterprise: "Enterprise"
                 };
                 const planPrices: Record<"pro" | "enterprise", Record<"month" | "year", string>> = {
-                  pro: { month: "29", year: "24" },
-                  enterprise: { month: "99", year: "79" }
+                  pro: { month: "5", year: "48" },
+                  enterprise: { month: "20", year: "192" }
                 };
                 const currentPlanName = planNames[subscription.plan];
                 const currentPrice = subscription.plan === "free" 
@@ -1085,7 +1097,7 @@ function SettingsContent() {
              
 
               {/* Plans disponibles */}
-              {!isLoadingPlans && plans.length > 0 && (
+              {plans.length > 0 && (
                 <Card className="border-primary/20">
                   <CardHeader>
                     <CardTitle className="text-primary flex items-center gap-2">
@@ -1141,8 +1153,10 @@ function SettingsContent() {
                           description: "Plan gratuit avec limite de factures",
                           metadata: {
                             features: [
-                              `${subscription?.invoiceLimit?.effective || 10} factures par mois`,
-                              "Génération de PDF",
+                              "Jusqu'à 10 factures par mois",
+                              "Gestion de clients illimitée",
+                              "Envoi par email",
+                              "Tableau de bord de base",
                               "Support par email"
                             ]
                           }
@@ -1212,9 +1226,9 @@ function SettingsContent() {
                                 variant={isCurrentPlan ? "outline" : "default"}
                                 size="sm"
                                 className="w-full"
-                                disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
+                                disabled={isCurrentPlan || isLoadingSubscriptionAction || isLoadingSubscription}
                                 onClick={() => {
-                                  if (!isCurrentPlan) {
+                                  if (!isCurrentPlan && !isLoadingSubscriptionAction) {
                                     // Créer un plan virtuel pour le plan gratuit
                                     // Plan gratuit - pas de souscription via Stripe
                                     toast.info("Revenir au plan gratuit", {
@@ -1256,25 +1270,32 @@ function SettingsContent() {
                         };
                         const invoiceLimit = invoiceLimits[planItem.plan];
                         
-                        // Features par plan
+                        // Features par plan (alignées avec la landing page)
                         const planFeatures: Record<"free" | "pro" | "enterprise", string[]> = {
                           free: [
-                            `${invoiceLimit} factures par mois`,
-                            "Génération de PDF",
+                            "Jusqu'à 10 factures par mois",
+                            "Gestion de clients illimitée",
+                            "Envoi par email",
+                            "Tableau de bord de base",
                             "Support par email"
                           ],
                           pro: [
                             "100 factures par mois",
-                            "Génération de PDF",
-                            "Support prioritaire",
-                            "Statistiques avancées"
+                            "Paiement en ligne intégré",
+                            "Rappels automatiques",
+                            "Statistiques avancées",
+                            "Personnalisation de factures",
+                            "Export PDF illimité",
+                            "Support prioritaire"
                           ],
                           enterprise: [
-                            "Factures illimitées",
-                            "Génération de PDF",
+                            "Tout du plan Pro",
                             "Support dédié",
-                            "Statistiques avancées",
-                            "API personnalisée"
+                            "Formation de l'équipe",
+                            "API personnalisée",
+                            "Sécurité renforcée",
+                            "SLA garanti",
+                            "Intégrations personnalisées"
                           ]
                         };
                         
@@ -1363,8 +1384,9 @@ function SettingsContent() {
                                 variant={isCurrentPlan ? "outline" : "default"}
                                 size="sm"
                                 className="w-full"
-                                disabled={isCurrentPlan || isChangingPlan || isLoadingSubscription}
+                                disabled={isCurrentPlan || isLoadingSubscriptionAction || isLoadingSubscription}
                                 onClick={() => {
+                                  if (isLoadingSubscriptionAction) return;
                                   setSelectedPlan({ plan: planItem.plan, interval: planItem.interval });
                                   handleConfirmPlanChange();
                                 }}
@@ -1373,6 +1395,11 @@ function SettingsContent() {
                                   <>
                                     <BadgeCheck className="mr-2 h-4 w-4" />
                                     Plan actuel
+                                  </>
+                                ) : isLoadingSubscriptionAction ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Traitement...
                                   </>
                                 ) : (() => {
                                   const hasActivePaidSubscription = 
@@ -1390,17 +1417,6 @@ function SettingsContent() {
                 </Card>
               )}
 
-              {isLoadingPlans && (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-64 w-full" />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </TabsContent>
         </Tabs>

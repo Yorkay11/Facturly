@@ -121,9 +121,13 @@ export const Topbar = () => {
   // Get subscription plan name
   const getSubscriptionPlanName = () => {
     if (!subscription) return "Aucun plan";
-    // Plan gratuit implicite : plan === null
-    if (subscription.plan === null) return "Gratuit";
-    return subscription.plan.name;
+    // Nouveau format : plan est une string
+    const planNames: Record<"free" | "pro" | "enterprise", string> = {
+      free: "Gratuit",
+      pro: "Pro",
+      enterprise: "Enterprise"
+    };
+    return planNames[subscription.plan] || "Aucun plan";
   };
   
   // Get company location string

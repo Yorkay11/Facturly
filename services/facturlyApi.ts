@@ -1212,10 +1212,7 @@ export const facturlyApi = createApi({
     }),
 
     // ==================== Plans & Subscriptions ====================
-    getPlans: builder.query<PlanCatalogItem[], void>({
-      query: () => "/plans",
-      providesTags: ["Subscription"],
-    }),
+    // Note: GET /plans n'existe plus dans le backend, les plans sont définis localement dans le frontend
     getSubscription: builder.query<Subscription, void>({
       query: () => "/subscriptions/me",
       providesTags: ["Subscription"],
@@ -1446,7 +1443,7 @@ export const {
   useGetSettingsQuery,
   useUpdateSettingsMutation,
   // Plans & Subscriptions
-  useGetPlansQuery,
+  // Note: useGetPlansQuery supprimé car GET /plans n'existe plus dans le backend
   useGetSubscriptionQuery,
   useCreateSubscriptionMutation,
   usePreviewSubscriptionMutation,

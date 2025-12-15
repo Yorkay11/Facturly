@@ -33,12 +33,12 @@ export function PricingSection() {
     },
     {
       name: "Pro",
-      monthlyPrice: "29",
-      annualPrice: "24",
+      monthlyPrice: "5",
+      annualPrice: "48",
       description: "Idéal pour les professionnels indépendants.",
-      savings: "Économisez 17%",
+      savings: "Économisez 20%",
       features: [
-        "Factures illimitées",
+        "100 factures par mois",
         "Paiement en ligne intégré",
         "Rappels automatiques",
         "Statistiques avancées",
@@ -54,8 +54,8 @@ export function PricingSection() {
     },
     {
       name: "Entreprise",
-      monthlyPrice: "199",
-      annualPrice: "159",
+      monthlyPrice: "20",
+      annualPrice: "192",
       description: "Solutions sur mesure pour les équipes.",
       savings: "Économisez 20%",
       features: [

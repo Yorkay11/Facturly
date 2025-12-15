@@ -1260,7 +1260,6 @@ function SettingsContent() {
                         // Vérifier si c'est le plan actuel
                         const isCurrentPlan = subscription?.plan === planItem.plan && 
                                              subscription?.interval === planItem.interval;
-                        const isFreePlan = planItem.plan === "free";
                         
                         // Déterminer les limites de factures selon le plan
                         const invoiceLimits: Record<"free" | "pro" | "enterprise", number | null> = {
@@ -1319,13 +1318,7 @@ function SettingsContent() {
                             <div className="mb-4">
                               <div className="flex items-center justify-between mb-2">
                                 <h3 className="text-lg font-bold text-primary">{planItem.name}</h3>
-                                {isFreePlan ? (
-                                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                                    Gratuit
-                                  </span>
-                                ) : (
-                                  <Crown className="h-5 w-5 text-primary/60" />
-                                )}
+                                <Crown className="h-5 w-5 text-primary/60" />
                               </div>
                               
                               <div className="mb-3">
@@ -1345,11 +1338,6 @@ function SettingsContent() {
                                       Économisez 20%
                                     </span>
                                   </div>
-                                )}
-                                {isFreePlan && (
-                                  <p className="text-xs text-muted-foreground mt-1 italic">
-                                    Identique en mensuel et annuel
-                                  </p>
                                 )}
                               </div>
 

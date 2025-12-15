@@ -12,7 +12,7 @@ import { FooterSection } from "@/components/landing/footer-section"
 import { AnimatedSection } from "@/components/landing/animated-section"
 
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.online";
 
 export const metadata: Metadata = {
   title: "Facturation simple & intelligente pour votre entreprise",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     siteName: "Facturly",
     images: [
       {
-        url: `${siteUrl}/images/og-image.png`,
+        url: `${siteUrl}/icon.png`,
         width: 1200,
         height: 630,
         alt: "Facturly - Facturation simple & intelligente",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Facturly - Facturation simple & intelligente",
     description: "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.",
-    images: [`${siteUrl}/images/og-image.png`],
+    images: [`${siteUrl}/icon.png`],
   },
   alternates: {
     canonical: siteUrl,
@@ -95,7 +95,7 @@ export default function LandingPage() {
     "@type": "Organization",
     "name": "Facturly",
     "url": siteUrl,
-    "logo": `${siteUrl}/logos/logo facturly.png`,
+    "logo": `${siteUrl}/icon.png`,
     "description": "Plateforme de gestion de facturation simple et intelligente",
     "sameAs": [
       // Ajoutez vos liens sociaux ici

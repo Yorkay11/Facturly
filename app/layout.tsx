@@ -11,7 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Nunito({ subsets: ['latin'] })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.online";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     description: "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.",
     images: [
       {
-        url: `${siteUrl}/images/og-image.png`,
+        url: `${siteUrl}/icon.png`,
         width: 1200,
         height: 630,
         alt: "Facturly - Facturation simple & intelligente",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Facturly - Facturation simple & intelligente",
     description: "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.",
-    images: [`${siteUrl}/images/og-image.png`],
+    images: [`${siteUrl}/icon.png`],
     creator: "@facturly",
   },
   robots: {

@@ -12,7 +12,7 @@ import { FooterSection } from "@/components/landing/footer-section"
 import { AnimatedSection } from "@/components/landing/animated-section"
 
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.online";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
 
 export const metadata: Metadata = {
   title: "Facturation simple & intelligente pour votre entreprise",

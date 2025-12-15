@@ -11,7 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Nunito({ subsets: ['latin'] })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.online";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

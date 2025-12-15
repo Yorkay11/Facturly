@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://facturly.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
 
 export default function robots(): MetadataRoute.Robots {
   return {

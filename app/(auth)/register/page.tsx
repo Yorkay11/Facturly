@@ -22,8 +22,14 @@ const registerSchema = z.object({
   firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   email: z.string().email("Adresse email invalide"),
-  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
-  confirmPassword: z.string().min(8, "La confirmation du mot de passe doit contenir au moins 8 caractères"),
+  password: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .max(128, "Le mot de passe ne doit pas dépasser 128 caractères")
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
+    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
+  confirmPassword: z.string().min(1, "Veuillez confirmer votre mot de passe"),
   companyName: z.string().min(2, "Le nom de l'entreprise doit contenir au moins 2 caractères"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",
@@ -362,7 +368,7 @@ export default function RegisterPage() {
                         <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
                       ) : null}
                       <p className="text-xs text-foreground/50">
-                        Le mot de passe doit contenir au moins 8 caractères.
+                        Le mot de passe doit contenir entre 8 et 128 caractères, avec au moins une majuscule, une minuscule et un chiffre.
                       </p>
                     </div>
                     <div className="space-y-2">

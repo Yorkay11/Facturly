@@ -139,45 +139,25 @@ function OnboardingHandler() {
 
   useEffect(() => {
     // Attendre que les données soient chargées
-    if (isLoadingUser || isLoadingCompany) return;
+    if (isLoadingCompany) return;
 
     // Ne vérifier qu'une seule fois
     if (hasChecked) return;
 
     // Vérifier si le profil n'est pas complet
-    if (user && company) {
+    if (company) {
       // Petit délai pour s'assurer que tout est bien chargé
       const checkTimer = setTimeout(() => {
-        const userCompletion = user.profileCompletion ?? 0;
         const companyCompletion = company.profileCompletion ?? 0;
         
-        // Vérifier aussi si c'est un nouveau compte (pas de lastLoginAt)
-        const isNewUser = !user.lastLoginAt;
-        
-        // Vérifier si les champs essentiels manquent
-        const hasMissingUserInfo = !user.firstName || !user.lastName;
+        // Vérifier si les champs essentiels de l'entreprise manquent
         const hasMissingCompanyInfo = !company.name || !company.defaultCurrency;
         
-        // Debug (à retirer en production)
-        console.log('Onboarding check:', {
-          userCompletion,
-          companyCompletion,
-          isNewUser,
-          hasMissingUserInfo,
-          hasMissingCompanyInfo,
-          user: { firstName: user.firstName, lastName: user.lastName, lastLoginAt: user.lastLoginAt },
-          company: { name: company.name, defaultCurrency: company.defaultCurrency }
-        });
-        
         // Afficher l'onboarding si :
-        // 1. Le profil utilisateur ou l'entreprise n'est pas complet (< 100)
-        // 2. OU c'est un nouveau compte (pas de lastLoginAt) - FORCER pour les nouveaux utilisateurs
-        // 3. OU les champs essentiels manquent
+        // 1. L'entreprise n'est pas complète (< 100)
+        // 2. OU les champs essentiels manquent
         const shouldShow = 
-          userCompletion < 100 || 
           companyCompletion < 100 || 
-          isNewUser || 
-          hasMissingUserInfo || 
           hasMissingCompanyInfo;
         
         console.log('Should show onboarding:', shouldShow);
@@ -190,16 +170,16 @@ function OnboardingHandler() {
 
       return () => clearTimeout(checkTimer);
     }
-  }, [user, company, isLoadingUser, isLoadingCompany, hasChecked]);
+  }, [company, isLoadingCompany, hasChecked]);
 
   const handleOnboardingComplete = async () => {
     // Rafraîchir les données après la complétion
-    await Promise.all([refetchUser(), refetchCompany()]);
+    await refetchCompany();
     setShowOnboarding(false);
   };
 
   // Ne rien afficher si les données ne sont pas encore chargées
-  if (isLoadingUser || isLoadingCompany || !user || !company) {
+  if (isLoadingCompany || !company) {
     return null;
   }
 
@@ -220,7 +200,7 @@ function DashboardLayoutContent({
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
-      {isBetaBannerVisible && <div className="h-[42px]" />} {/* Spacer pour le banner fixe */}
+      {isBetaBannerVisible && <div className="h-[44px] md:h-[42px]" />} {/* Spacer pour le banner fixe */}
       <Topbar />
       <main className="px-4 py-6 lg:px-10 lg:py-8">
         <div className="mx-auto max-w-7xl space-y-6">

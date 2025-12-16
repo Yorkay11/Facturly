@@ -26,7 +26,7 @@ export function HeroSection() {
   return (
     <section
       className="flex flex-col items-center text-center relative mx-auto rounded-2xl overflow-hidden my-6 py-0 px-4
-         w-full h-[400px] md:w-[1220px] md:h-[600px] lg:h-[810px] md:px-0"
+         w-full min-h-[500px] md:w-[1220px] md:h-[600px] lg:h-[810px] md:px-0"
     >
       {/* SVG Background */}
       <div className="absolute inset-0 z-0">
@@ -455,7 +455,12 @@ export function HeroSection() {
         <Header />
       </div>
 
-      <div className="relative z-10 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] mt-16 md:mt-[120px] lg:mt-[160px] px-4">
+      <div className={cn(
+        "relative z-10 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4",
+        isBetaBannerVisible 
+          ? "mt-28 md:mt-[120px] lg:mt-[160px]" 
+          : "mt-24 md:mt-[120px] lg:mt-[160px]"
+      )}>
         <h1 className="text-foreground text-3xl md:text-4xl lg:text-6xl font-semibold leading-tight">
           Facturation simple & intelligente
         </h1>
@@ -464,7 +469,7 @@ export function HeroSection() {
         </p>
       </div>
 
-      <Link href={buttonHref} onClick={handleClick} className="relative z-10">
+      <Link href={buttonHref} onClick={handleClick} className="relative z-10 mt-4 md:mt-0">
         <Button className="bg-gradient-to-r from-primary via-primary to-primary/90 text-primary-foreground hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 px-8 py-3 rounded-full font-medium text-base shadow-lg ring-1 ring-white/10 transition-all duration-300">
           {buttonText}
         </Button>

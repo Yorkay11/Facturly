@@ -17,35 +17,27 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import {
-  useGetMeQuery,
-  useUpdateUserMutation,
   useGetCompanyQuery,
   useUpdateCompanyMutation,
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, User, Building2 } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Schémas de validation
-const userSchema = z.object({
-  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-});
-
 const companySchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  legalName: z.string().optional(),
-  taxId: z.string().optional(),
-  vatNumber: z.string().optional(),
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  postalCode: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
+  legalName: z.string().min(2, "La raison sociale est obligatoire"),
+  taxId: z.string().min(1, "Le numéro d'identification fiscale est obligatoire"),
+  vatNumber: z.string().min(1, "Le numéro de TVA est obligatoire"),
+  addressLine1: z.string().min(1, "L'adresse ligne 1 est obligatoire"),
+  addressLine2: z.string().min(1, "L'adresse ligne 2 est obligatoire"),
+  postalCode: z.string().min(1, "Le code postal est obligatoire"),
+  city: z.string().min(1, "La ville est obligatoire"),
+  country: z.string().min(1, "Le pays est obligatoire"),
   defaultCurrency: z.string().min(1, "La devise est obligatoire"),
 });
 
-type UserFormValues = z.infer<typeof userSchema>;
 type CompanyFormValues = z.infer<typeof companySchema>;
 
 const COUNTRIES = [
@@ -129,26 +121,15 @@ interface OnboardingModalProps {
 }
 
 export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
-  const [currentStep, setCurrentStep] = useState<"user" | "company">("user");
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Queries
-  const { data: user, isLoading: isLoadingUser, refetch: refetchUser } = useGetMeQuery();
   const { data: company, isLoading: isLoadingCompany, refetch: refetchCompany } = useGetCompanyQuery();
 
   // Mutations
-  const [updateUser, { isLoading: isUpdatingUser }] = useUpdateUserMutation();
   const [updateCompany, { isLoading: isUpdatingCompany }] = useUpdateCompanyMutation();
 
   // Forms
-  const userForm = useForm<UserFormValues>({
-    resolver: zodResolver(userSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-    },
-  });
-
   const companyForm = useForm<CompanyFormValues>({
     resolver: zodResolver(companySchema),
     defaultValues: {
@@ -165,33 +146,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     },
   });
 
-  // Déterminer l'étape initiale en fonction de ce qui manque
-  useEffect(() => {
-    if (user && company && open) {
-      const userCompletion = user.profileCompletion || 0;
-      const companyCompletion = company.profileCompletion || 0;
-      
-      // Commencer par l'étape qui a le moins de complétion
-      if (userCompletion < companyCompletion) {
-        setCurrentStep("user");
-      } else if (companyCompletion < 100) {
-        setCurrentStep("company");
-      } else {
-        setCurrentStep("user");
-      }
-    }
-  }, [user, company, open]);
-
   // Remplir les formulaires avec les données existantes
-  useEffect(() => {
-    if (user) {
-      userForm.reset({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-      });
-    }
-  }, [user, userForm]);
-
   useEffect(() => {
     if (company) {
       companyForm.reset({
@@ -211,55 +166,17 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
 
   // Calculer le pourcentage de complétion
   const getCompletionPercentage = () => {
-    if (!user || !company) return 0;
-    const userCompletion = user.profileCompletion || 0;
-    const companyCompletion = company.profileCompletion || 0;
-    return Math.round((userCompletion + companyCompletion) / 2);
+    if (!company) return 0;
+    return company.profileCompletion || 0;
   };
 
   // Vérifier si le profil est complet
   const isProfileComplete = () => {
-    if (!user || !company) return false;
-    return (user.profileCompletion || 0) >= 100 && (company.profileCompletion || 0) >= 100;
+    if (!company) return false;
+    return (company.profileCompletion || 0) >= 100;
   };
 
   // Handlers
-  const onUserSubmit = async (values: UserFormValues) => {
-    try {
-      await updateUser({
-        firstName: values.firstName,
-        lastName: values.lastName,
-      }).unwrap();
-
-      toast.success("Profil mis à jour", {
-        description: "Vos informations personnelles ont été mises à jour.",
-      });
-
-      // Rafraîchir les données utilisateur et entreprise
-      const [updatedUserResult, updatedCompanyResult] = await Promise.all([
-        refetchUser(),
-        refetchCompany(),
-      ]);
-      
-      const userCompletion = updatedUserResult.data?.profileCompletion || 0;
-      const companyCompletion = updatedCompanyResult.data?.profileCompletion || 0;
-
-      // Vérifier quelle étape afficher ensuite
-      if (userCompletion >= 100 && companyCompletion >= 100) {
-        handleComplete();
-      } else if (companyCompletion < 100) {
-        setCurrentStep("company");
-      } else {
-        // Si l'utilisateur n'est toujours pas complet, rester sur user
-        setCurrentStep("user");
-      }
-    } catch (error: any) {
-      toast.error("Erreur", {
-        description: error?.data?.message || "Impossible de mettre à jour votre profil.",
-      });
-    }
-  };
-
   const onCompanySubmit = async (values: CompanyFormValues) => {
     try {
       await updateCompany({
@@ -280,19 +197,12 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
       });
 
       // Rafraîchir les données
-      const [updatedUserResult, updatedCompanyResult] = await Promise.all([
-        refetchUser(),
-        refetchCompany(),
-      ]);
-      
-      const userCompletion = updatedUserResult.data?.profileCompletion || 0;
+      const updatedCompanyResult = await refetchCompany();
       const companyCompletion = updatedCompanyResult.data?.profileCompletion || 0;
 
       // Vérifier si tout est complet
-      if (userCompletion >= 100 && companyCompletion >= 100) {
+      if (companyCompletion >= 100) {
         handleComplete();
-      } else if (userCompletion < 100) {
-        setCurrentStep("user");
       }
     } catch (error: any) {
       toast.error("Erreur", {
@@ -320,7 +230,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
     return null;
   }
 
-  const isLoading = isLoadingUser || isLoadingCompany;
+  const isLoading = isLoadingCompany;
   const completionPercentage = getCompletionPercentage();
 
   return (
@@ -344,66 +254,8 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
 
         {/* Étapes */}
         <div className="space-y-6">
-          {/* Étape 1: Profil utilisateur */}
-          {currentStep === "user" && (
-            <form onSubmit={userForm.handleSubmit(onUserSubmit)} className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold">
-                <User className="h-5 w-5 text-primary" />
-                <span>Informations personnelles</span>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom *</Label>
-                  <Input
-                    id="firstName"
-                    {...userForm.register("firstName")}
-                    placeholder="John"
-                    disabled={isUpdatingUser}
-                  />
-                  {userForm.formState.errors.firstName && (
-                    <p className="text-sm text-destructive">
-                      {userForm.formState.errors.firstName.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom *</Label>
-                  <Input
-                    id="lastName"
-                    {...userForm.register("lastName")}
-                    placeholder="Doe"
-                    disabled={isUpdatingUser}
-                  />
-                  {userForm.formState.errors.lastName && (
-                    <p className="text-sm text-destructive">
-                      {userForm.formState.errors.lastName.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={isUpdatingUser}>
-                  {isUpdatingUser ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enregistrement...
-                    </>
-                  ) : (
-                    <>
-                      Continuer
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {/* Étape 2: Informations entreprise */}
-          {currentStep === "company" && (
+          {/* Informations entreprise */}
+          {(
             <form onSubmit={companyForm.handleSubmit(onCompanySubmit)} className="space-y-4">
               <div className="flex items-center gap-2 text-lg font-semibold">
                 <Building2 className="h-5 w-5 text-primary" />
@@ -411,12 +263,13 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyName">Nom de l'entreprise *</Label>
+                <Label htmlFor="companyName">Nom de l'entreprise <span className="text-destructive">*</span></Label>
                 <Input
                   id="companyName"
                   {...companyForm.register("name")}
                   placeholder="Ma Société SARL"
                   disabled={isUpdatingCompany}
+                  className={companyForm.formState.errors.name ? "border-destructive" : ""}
                 />
                 {companyForm.formState.errors.name && (
                   <p className="text-sm text-destructive">
@@ -427,23 +280,29 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="legalName">Nom légal</Label>
+                  <Label htmlFor="legalName">Nom légal <span className="text-destructive">*</span></Label>
                   <Input
                     id="legalName"
                     {...companyForm.register("legalName")}
                     placeholder="Ma Société SARL"
                     disabled={isUpdatingCompany}
+                    className={companyForm.formState.errors.legalName ? "border-destructive" : ""}
                   />
+                  {companyForm.formState.errors.legalName && (
+                    <p className="text-sm text-destructive">
+                      {companyForm.formState.errors.legalName.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="defaultCurrency">Devise *</Label>
+                  <Label htmlFor="defaultCurrency">Devise <span className="text-destructive">*</span></Label>
                   <Controller
                     name="defaultCurrency"
                     control={companyForm.control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingCompany}>
-                        <SelectTrigger>
+                        <SelectTrigger className={companyForm.formState.errors.defaultCurrency ? "border-destructive" : ""}>
                           <SelectValue placeholder="Sélectionner une devise" />
                         </SelectTrigger>
                         <SelectContent>
@@ -466,75 +325,111 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="taxId">Numéro SIRET / Tax ID</Label>
+                  <Label htmlFor="taxId">Numéro SIRET / Tax ID <span className="text-destructive">*</span></Label>
                   <Input
                     id="taxId"
                     {...companyForm.register("taxId")}
                     placeholder="12345678901234"
                     disabled={isUpdatingCompany}
+                    className={companyForm.formState.errors.taxId ? "border-destructive" : ""}
                   />
+                  {companyForm.formState.errors.taxId && (
+                    <p className="text-sm text-destructive">
+                      {companyForm.formState.errors.taxId.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="vatNumber">Numéro de TVA</Label>
+                  <Label htmlFor="vatNumber">Numéro de TVA <span className="text-destructive">*</span></Label>
                   <Input
                     id="vatNumber"
                     {...companyForm.register("vatNumber")}
                     placeholder="FR12345678901"
                     disabled={isUpdatingCompany}
+                    className={companyForm.formState.errors.vatNumber ? "border-destructive" : ""}
                   />
+                  {companyForm.formState.errors.vatNumber && (
+                    <p className="text-sm text-destructive">
+                      {companyForm.formState.errors.vatNumber.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="addressLine1">Adresse ligne 1</Label>
+                <Label htmlFor="addressLine1">Adresse ligne 1 <span className="text-destructive">*</span></Label>
                 <Input
                   id="addressLine1"
                   {...companyForm.register("addressLine1")}
                   placeholder="123 Rue de la République"
                   disabled={isUpdatingCompany}
+                  className={companyForm.formState.errors.addressLine1 ? "border-destructive" : ""}
                 />
+                {companyForm.formState.errors.addressLine1 && (
+                  <p className="text-sm text-destructive">
+                    {companyForm.formState.errors.addressLine1.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="addressLine2">Adresse ligne 2</Label>
+                <Label htmlFor="addressLine2">Adresse ligne 2 <span className="text-destructive">*</span></Label>
                 <Input
                   id="addressLine2"
                   {...companyForm.register("addressLine2")}
                   placeholder="Bâtiment A, Bureau 101"
                   disabled={isUpdatingCompany}
+                  className={companyForm.formState.errors.addressLine2 ? "border-destructive" : ""}
                 />
+                {companyForm.formState.errors.addressLine2 && (
+                  <p className="text-sm text-destructive">
+                    {companyForm.formState.errors.addressLine2.message}
+                  </p>
+                )}
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code postal</Label>
+                  <Label htmlFor="postalCode">Code postal <span className="text-destructive">*</span></Label>
                   <Input
                     id="postalCode"
                     {...companyForm.register("postalCode")}
                     placeholder="75001"
                     disabled={isUpdatingCompany}
+                    className={companyForm.formState.errors.postalCode ? "border-destructive" : ""}
                   />
+                  {companyForm.formState.errors.postalCode && (
+                    <p className="text-sm text-destructive">
+                      {companyForm.formState.errors.postalCode.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
+                  <Label htmlFor="city">Ville <span className="text-destructive">*</span></Label>
                   <Input
                     id="city"
                     {...companyForm.register("city")}
                     placeholder="Paris"
                     disabled={isUpdatingCompany}
+                    className={companyForm.formState.errors.city ? "border-destructive" : ""}
                   />
+                  {companyForm.formState.errors.city && (
+                    <p className="text-sm text-destructive">
+                      {companyForm.formState.errors.city.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="country">Pays</Label>
+                  <Label htmlFor="country">Pays <span className="text-destructive">*</span></Label>
                   <Controller
                     name="country"
                     control={companyForm.control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingCompany}>
-                        <SelectTrigger>
+                        <SelectTrigger className={companyForm.formState.errors.country ? "border-destructive" : ""}>
                           <SelectValue placeholder="Sélectionner un pays" />
                         </SelectTrigger>
                         <SelectContent>
@@ -547,6 +442,11 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
                       </Select>
                     )}
                   />
+                  {companyForm.formState.errors.country && (
+                    <p className="text-sm text-destructive">
+                      {companyForm.formState.errors.country.message}
+                    </p>
+                  )}
                 </div>
               </div>
 

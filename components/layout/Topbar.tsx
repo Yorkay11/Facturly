@@ -149,26 +149,52 @@ export const Topbar = () => {
   const isBetaBannerVisible = useBetaBanner();
 
   return (
-    <header className={cn("sticky z-10 border-b border-primary/10 bg-white/85 py-4 backdrop-blur", isBetaBannerVisible ? "top-[42px]" : "top-0")}>
-      <div className="mx-auto flex max-w-[90vw] flex-col gap-4 px-6 md:flex-row md:items-center md:justify-between md:px-10">
-        <div className="flex items-center justify-between md:hidden">
-          <Link href="/dashboard" className="flex items-center gap-2">
+    <header className={cn("sticky z-10 border-b border-primary/10 bg-white/85 backdrop-blur", isBetaBannerVisible ? "top-[44px] md:top-[42px]" : "top-0", "py-2 md:py-4")}>
+      <div className="mx-auto flex max-w-[90vw] flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between md:gap-4 md:px-10">
+        <div className="flex items-center justify-between w-full md:hidden">
+          <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
             <Image
               src="/logos/logo.png"
               alt="Facturly"
               width={120}
               height={40}
-              className="h-8 w-auto object-contain"
+              className="h-7 w-auto object-contain"
             />
           </Link>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <IoMenuOutline className="h-5 w-5" />
-                <span className="sr-only">Ouvrir la navigation</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side={isMobile ? "left" : "right"} className="w-full max-w-xs space-y-6">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10 h-8 px-2"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation("/invoices/new");
+              }}
+            >
+              <IoAddOutline className="h-4 w-4" />
+              <span className="hidden xs:inline">Nouveau</span>
+            </Button>
+            <NotificationDropdown />
+            <button
+              type="button"
+              onClick={() => setProfileOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition hover:bg-primary/20 flex-shrink-0"
+              aria-label="Ouvrir le profil utilisateur"
+            >
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  {isLoadingUser ? "..." : getInitials(user?.firstName, user?.lastName)}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8">
+                  <IoMenuOutline className="h-5 w-5" />
+                  <span className="sr-only">Ouvrir la navigation</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side={isMobile ? "left" : "right"} className="w-full max-w-xs space-y-6">
               <SheetHeader className="space-y-1">
                 <SheetTitle>Facturly</SheetTitle>
                 <SheetDescription>Navigation principale</SheetDescription>
@@ -224,8 +250,9 @@ export const Topbar = () => {
                   );
                 })}
               </nav>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
 
         <div className="hidden flex-wrap items-center gap-3 md:flex">
@@ -322,12 +349,12 @@ export const Topbar = () => {
           </NavigationMenu>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-sm">
+        <div className="hidden md:flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-2 text-foreground/70">
             <IoHelpCircleOutline className="h-4 w-4 text-primary" />
             <span>Support</span>
           </div>
-          <Separator orientation="vertical" className="hidden h-6 md:block" />
+          <Separator orientation="vertical" className="h-6" />
           <Button 
             variant="outline" 
             size="sm" 

@@ -21,7 +21,7 @@ import {
   useUpdateCompanyMutation,
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Building2 } from "lucide-react";
+import { Loader2, CheckCircle2, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Schémas de validation
@@ -450,16 +450,7 @@ export function OnboardingModal({ open, onComplete }: OnboardingModalProps) {
                 </div>
               </div>
 
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setCurrentStep("user")}
-                  disabled={isUpdatingCompany}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Retour
-                </Button>
+              <div className="flex justify-end pt-4">
                 <Button type="submit" disabled={isUpdatingCompany}>
                   {isUpdatingCompany ? (
                     <>

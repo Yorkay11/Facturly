@@ -23,11 +23,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: baseDate,
         changeFrequency: page === '' ? 'daily' : 'monthly',
         priority: page === '' ? 1 : page === '/register' ? 0.9 : 0.8,
-        alternates: {
-          languages: Object.fromEntries(
-            routing.locales.map((loc) => [loc, `${siteUrl}/${loc}${page}`])
-          ),
-        },
       });
     });
   });

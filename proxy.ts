@@ -27,6 +27,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip proxy pour les fichiers statiques, API routes, sitemap, robots, etc.
+  // IMPORTANT: Ces fichiers doivent être exclus AVANT le middleware next-intl
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -35,7 +36,9 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/public") ||
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt" ||
-    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|xml|txt)$/)
+    pathname.endsWith(".xml") ||
+    pathname.endsWith(".txt") ||
+    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp)$/)
   ) {
     return NextResponse.next();
   }
@@ -81,7 +84,8 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder
      * - api routes
+     * - sitemap.xml and robots.txt
      */
-    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|xml|txt)$).*)",
   ],
 };

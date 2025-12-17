@@ -1,9 +1,12 @@
+"use client"
+
 import InvoiceCreation from "./bento/invoice-creation"
 import EmailSending from "./bento/email-sending"
 import PaymentTracking from "./bento/payment-tracking"
 import ClientManagement from "./bento/client-management"
 import OnlinePayment from "./bento/online-payment"
 import DashboardIntelligence from "./bento/dashboard-intelligence"
+import { useTranslations } from 'next-intl'
 import type { ComponentType } from "react"
 
 interface BentoCardProps {
@@ -44,35 +47,37 @@ const BentoCard = ({ title, description, Component }: BentoCardProps) => (
 )
 
 export function BentoSection() {
+  const t = useTranslations('landing.bento')
+  
   const cards = [
     {
-      title: "Création de factures simplifiée.",
-      description: "Créez des factures professionnelles en quelques clics.",
+      title: t('invoiceCreation.title'),
+      description: t('invoiceCreation.description'),
       Component: InvoiceCreation,
     },
     {
-      title: "Envoi par email automatique",
-      description: "Envoyez vos factures directement par email à vos clients.",
+      title: t('emailSending.title'),
+      description: t('emailSending.description'),
       Component: EmailSending,
     },
     {
-      title: "Suivi des paiements en temps réel",
-      description: "Visualisez l'état de vos factures et paiements en direct.",
+      title: t('paymentTracking.title'),
+      description: t('paymentTracking.description'),
       Component: PaymentTracking,
     },
     {
-      title: "Gestion de clients et produits",
-      description: "Organisez vos contacts et produits pour facturer plus vite.",
+      title: t('clientManagement.title'),
+      description: t('clientManagement.description'),
       Component: ClientManagement,
     },
     {
-      title: "Paiement en ligne sécurisé",
-      description: "Permettez à vos clients de payer directement en ligne.",
+      title: t('onlinePayment.title'),
+      description: t('onlinePayment.description'),
       Component: OnlinePayment,
     },
     {
-      title: "Tableau de bord intelligent",
-      description: "Suivez vos revenus et statistiques en un coup d'œil.",
+      title: t('dashboardIntelligence.title'),
+      description: t('dashboardIntelligence.description'),
       Component: DashboardIntelligence,
     },
   ]
@@ -84,10 +89,10 @@ export function BentoSection() {
         <div className="self-stretch py-8 md:py-14 flex flex-col justify-center items-center gap-2 z-10">
           <div className="flex flex-col justify-start items-center gap-4">
             <h2 className="w-full max-w-[655px] text-center text-foreground text-4xl md:text-6xl font-semibold leading-tight md:leading-[66px]">
-              Simplifiez votre gestion de factures
+              {t('title')}
             </h2>
             <p className="w-full max-w-[600px] text-center text-muted-foreground text-lg md:text-xl font-medium leading-relaxed">
-              Toutes les fonctionnalités dont vous avez besoin pour créer, envoyer et suivre vos factures efficacement.
+              {t('subtitle')}
             </p>
           </div>
         </div>

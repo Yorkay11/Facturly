@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,18 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useRejectPublicInvoiceMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
-
-const rejectSchema = z.object({
-  comment: z
-    .string()
-    .min(10, "Le commentaire doit contenir au moins 10 caractères")
-    .max(1000, "Le commentaire ne doit pas dépasser 1000 caractères"),
-  reason: z
-    .enum(["none", "amount_discrepancy", "wrong_items", "wrong_client", "other"])
-    .optional(),
-});
-
-type RejectFormValues = z.infer<typeof rejectSchema>;
+import { useTranslations } from 'next-intl';
 
 interface RejectInvoiceModalProps {
   open: boolean;
@@ -45,35 +34,52 @@ interface RejectInvoiceModalProps {
   token: string;
 }
 
-const rejectionReasonOptions = [
-  {
-    value: "amount_discrepancy",
-    label: "Différence de montant",
-    description: "Le montant ne correspond pas à l'accord",
-  },
-  {
-    value: "wrong_items",
-    label: "Articles incorrects",
-    description: "Les articles facturés ne correspondent pas",
-  },
-  {
-    value: "wrong_client",
-    label: "Mauvais client",
-    description: "La facture a été émise pour le mauvais client",
-  },
-  {
-    value: "other",
-    label: "Autre raison",
-    description: "Autre raison non listée",
-  },
-];
-
 export const RejectInvoiceModal = ({
   open,
   onClose,
   onSuccess,
   token,
 }: RejectInvoiceModalProps) => {
+  const t = useTranslations('invoices.rejectModal');
+  const commonT = useTranslations('common');
+  
+  // Créer le schéma de validation avec les traductions
+  const rejectSchema = useMemo(() => z.object({
+    comment: z
+      .string()
+      .min(10, t('validation.commentMin'))
+      .max(1000, t('validation.commentMax')),
+    reason: z
+      .enum(["none", "amount_discrepancy", "wrong_items", "wrong_client", "other"])
+      .optional(),
+  }), [t]);
+
+  type RejectFormValues = z.infer<typeof rejectSchema>;
+
+  // Options de raisons de refus traduites
+  const rejectionReasonOptions = useMemo(() => [
+    {
+      value: "amount_discrepancy",
+      label: t('reasons.amount_discrepancy.label'),
+      description: t('reasons.amount_discrepancy.description'),
+    },
+    {
+      value: "wrong_items",
+      label: t('reasons.wrong_items.label'),
+      description: t('reasons.wrong_items.description'),
+    },
+    {
+      value: "wrong_client",
+      label: t('reasons.wrong_client.label'),
+      description: t('reasons.wrong_client.description'),
+    },
+    {
+      value: "other",
+      label: t('reasons.other.label'),
+      description: t('reasons.other.description'),
+    },
+  ], [t]);
+
   const [rejectInvoice, { isLoading, isSuccess, isError, error }] =
     useRejectPublicInvoiceMutation();
 
@@ -97,19 +103,19 @@ export const RejectInvoiceModal = ({
       const errorMessage =
         error && "data" in error
           ? (error.data as { message?: string })?.message ??
-            "Une erreur est survenue lors du refus de la facture."
-          : "Une erreur est survenue. Veuillez réessayer plus tard.";
+            t('errors.rejectError')
+          : t('errors.genericError');
 
-      toast.error("Erreur", {
+      toast.error(commonT('error'), {
         description: errorMessage,
       });
     }
-  }, [error, isError]);
+  }, [error, isError, t, commonT]);
 
   const onSubmit = async (values: RejectFormValues) => {
     if (!token) {
-      toast.error("Erreur", {
-        description: "Token invalide. Veuillez rafraîchir la page.",
+      toast.error(commonT('error'), {
+        description: t('errors.invalidToken'),
       });
       return;
     }
@@ -143,17 +149,16 @@ export const RejectInvoiceModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <XCircle className="h-5 w-5 text-destructive" />
-            Refuser la facture
+            {t('title')}
           </DialogTitle>
           <DialogDescription>
-            Veuillez indiquer la raison de votre refus. Un commentaire est obligatoire pour
-            permettre à l&apos;émetteur de comprendre votre décision.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="reason">
-              Raison du refus <span className="text-muted-foreground">(optionnel)</span>
+              {t('fields.reason.label')} <span className="text-muted-foreground">{t('fields.reason.optional')}</span>
             </Label>
             <Controller
               name="reason"
@@ -161,10 +166,10 @@ export const RejectInvoiceModal = ({
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
                   <SelectTrigger id="reason">
-                    <SelectValue placeholder="Sélectionnez une raison (optionnel)" />
+                    <SelectValue placeholder={t('fields.reason.placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Aucune raison spécifique</SelectItem>
+                    <SelectItem value="none">{t('fields.reason.none')}</SelectItem>
                     {rejectionReasonOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         <div className="flex flex-col">
@@ -186,11 +191,11 @@ export const RejectInvoiceModal = ({
 
           <div className="space-y-2">
             <Label htmlFor="comment">
-              Commentaire <span className="text-destructive">*</span>
+              {t('fields.comment.label')} <span className="text-destructive">*</span>
             </Label>
             <Textarea
               id="comment"
-              placeholder="Veuillez expliquer la raison de votre refus (minimum 10 caractères)..."
+              placeholder={t('fields.comment.placeholder')}
               {...form.register("comment")}
               disabled={isLoading}
               rows={6}
@@ -208,7 +213,7 @@ export const RejectInvoiceModal = ({
                   commentLength < 10 ? "text-destructive" : "text-muted-foreground"
                 }`}
               >
-                {commentLength} / 1000 caractères (minimum 10)
+                {t('fields.comment.counter', { count: commentLength })}
               </p>
             </div>
           </div>
@@ -217,10 +222,9 @@ export const RejectInvoiceModal = ({
             <div className="flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-yellow-700 mt-0.5" />
               <div className="flex-1 space-y-1">
-                <p className="text-sm font-semibold text-yellow-700">Important</p>
+                <p className="text-sm font-semibold text-yellow-700">{t('alert.title')}</p>
                 <p className="text-xs text-yellow-600">
-                  Le refus de cette facture la marquera comme annulée. L&apos;émetteur pourra
-                  modifier la facture et vous la renvoyer si nécessaire.
+                  {t('alert.description')}
                 </p>
               </div>
             </div>
@@ -228,7 +232,7 @@ export const RejectInvoiceModal = ({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Annuler
+              {t('buttons.cancel')}
             </Button>
             <Button
               type="submit"
@@ -238,12 +242,12 @@ export const RejectInvoiceModal = ({
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Traitement...
+                  {t('buttons.processing')}
                 </>
               ) : (
                 <>
                   <XCircle className="h-4 w-4 mr-2" />
-                  Confirmer le refus
+                  {t('buttons.confirm')}
                 </>
               )}
             </Button>

@@ -4,8 +4,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InvoiceLimit } from "@/services/facturlyApi";
 import { AlertTriangle, X, Infinity } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from '@/i18n/routing';
 import { useState } from "react";
+import { useTranslations } from 'next-intl';
 
 interface InvoiceLimitBannerProps {
   invoiceLimit?: InvoiceLimit;
@@ -14,6 +15,8 @@ interface InvoiceLimitBannerProps {
 
 export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
+  const t = useTranslations('invoiceLimit');
+  const tDashboard = useTranslations('dashboard');
 
   // Ne pas afficher si :
   // - Pas de limite (plan illimité)
@@ -41,7 +44,7 @@ export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBanne
         className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 text-white"
       >
         <X className="h-4 w-4" />
-        <span className="sr-only">Fermer</span>
+        <span className="sr-only">{t('close')}</span>
       </button>
 
       <div className="flex items-start gap-4 pr-8">
@@ -49,27 +52,26 @@ export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBanne
         <div className="flex-1 space-y-2">
           <AlertTitle className="text-base text-white">
             {isLimitReached
-              ? "Limite de factures atteinte"
+              ? t('limitReached')
               : isNearLimit
-              ? "Limite de factures proche"
-              : "Plan gratuit - Limite de factures"}
+              ? t('nearLimit')
+              : t('freePlan')}
           </AlertTitle>
           <AlertDescription className="space-y-3 text-white/90">
             <p>
               {isLimitReached ? (
                 <>
-                  Vous avez atteint votre limite de <strong className="text-white">{invoiceLimit.effective} factures</strong> pour cette
-                  période. Passez au plan Pro pour créer des factures illimitées.
+                  Vous avez atteint votre limite de <strong className="text-white">{invoiceLimit.effective ?? 0}</strong> factures pour cette période. Passez au plan Pro pour créer des factures illimitées.
                 </>
               ) : isNearLimit ? (
                 <>
                   Vous avez utilisé <strong className="text-white">{percentage}%</strong> de votre limite. Il vous reste{" "}
-                  <strong className="text-white">{remaining} facture{remaining !== 1 ? "s" : ""}</strong> pour cette période.
+                  <strong className="text-white">{remaining}</strong> {remaining !== 1 ? tDashboard('invoices') : tDashboard('invoice')} pour cette période.
                 </>
               ) : (
                 <>
-                  Vous avez utilisé <strong className="text-white">{invoiceLimit.used}</strong> sur <strong className="text-white">{invoiceLimit.effective}</strong>{" "}
-                  factures disponibles ce mois. Il vous reste <strong className="text-white">{remaining} facture{remaining !== 1 ? "s" : ""}</strong>.
+                  Vous avez utilisé <strong className="text-white">{invoiceLimit.used}</strong> sur <strong className="text-white">{invoiceLimit.effective ?? 0}</strong>{" "}
+                  factures disponibles ce mois. Il vous reste <strong className="text-white">{remaining}</strong> {remaining !== 1 ? tDashboard('invoices') : tDashboard('invoice')}.
                 </>
               )}
             </p>
@@ -78,7 +80,7 @@ export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBanne
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-white/80">
-                  {invoiceLimit.used} / {invoiceLimit.effective} factures
+                  {t('progress', { used: invoiceLimit.used, effective: invoiceLimit.effective ?? 0 })}
                 </span>
                 <span className="font-medium text-white">{percentage}%</span>
               </div>
@@ -105,7 +107,7 @@ export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBanne
                 }
               >
                 <Link href="/settings?tab=subscription">
-                  {isLimitReached ? "Passer au plan Pro" : "Voir les plans"}
+                  {isLimitReached ? t('upgradeToPro') : t('viewPlans')}
                 </Link>
               </Button>
               {!isLimitReached && (
@@ -114,7 +116,7 @@ export function InvoiceLimitBanner({ invoiceLimit, planCode }: InvoiceLimitBanne
                   size="sm" 
                   className="bg-white text-purple-900 hover:bg-white/95 hover:shadow-lg hover:scale-[1.02] border-white shadow-md transition-all duration-200 font-semibold"
                 >
-                  <Link href="/settings?tab=subscription">Upgrade maintenant</Link>
+                  <Link href="/settings?tab=subscription">{t('upgradeNow')}</Link>
                 </Button>
               )}
             </div>

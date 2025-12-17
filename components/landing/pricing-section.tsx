@@ -3,73 +3,75 @@
 import { useState } from "react"
 import { Check, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { Link, useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
+import { useTranslations } from 'next-intl'
 
 export function PricingSection() {
   const router = useRouter()
   const [isAnnual, setIsAnnual] = useState(true)
   const { isAuthenticated } = useAuth()
+  const t = useTranslations('landing.pricing')
+  const tPlans = useTranslations('landing.pricing.plans')
 
   const pricingPlans = [
     {
-      name: "Gratuit",
+      name: tPlans('free.name'),
       monthlyPrice: "0",
       annualPrice: "0",
-      description: "Parfait pour démarrer votre activité.",
+      description: tPlans('free.description'),
       features: [
-        "Jusqu'à 10 factures par mois",
-        "Gestion de clients illimitée",
-        "Envoi par email",
-        "Tableau de bord de base",
-        "Support par email",
+        tPlans('free.features.invoices'),
+        tPlans('free.features.clients'),
+        tPlans('free.features.email'),
+        tPlans('free.features.dashboard'),
+        tPlans('free.features.support'),
       ],
-      buttonText: "Commencer gratuitement",
+      buttonText: tPlans('free.cta'),
       buttonHref: "/login",
-      authenticatedText: "Accéder au tableau de bord",
+      authenticatedText: t('ctaAuthenticated'),
       authenticatedHref: "/dashboard",
       popular: false,
     },
     {
-      name: "Pro",
+      name: tPlans('pro.name'),
       monthlyPrice: "5",
       annualPrice: "48",
-      description: "Idéal pour les professionnels indépendants.",
-      savings: "Économisez 20%",
+      description: tPlans('pro.description'),
+      savings: t('save', { percent: 20 }),
       features: [
-        "100 factures par mois",
-        "Paiement en ligne intégré",
-        "Rappels automatiques",
-        "Statistiques avancées",
-        "Personnalisation de factures",
-        "Export PDF illimité",
-        "Support prioritaire",
+        tPlans('pro.features.invoices'),
+        tPlans('pro.features.onlinePayment'),
+        tPlans('pro.features.reminders'),
+        tPlans('pro.features.statistics'),
+        tPlans('pro.features.customization'),
+        tPlans('pro.features.pdfExport'),
+        tPlans('pro.features.support'),
       ],
-      buttonText: "Essayer Pro",
+      buttonText: tPlans('pro.cta'),
       buttonHref: "/login",
-      authenticatedText: "Accéder au tableau de bord",
+      authenticatedText: t('ctaAuthenticated'),
       authenticatedHref: "/dashboard",
       popular: true,
     },
     {
-      name: "Entreprise",
+      name: tPlans('enterprise.name'),
       monthlyPrice: "20",
       annualPrice: "192",
-      description: "Solutions sur mesure pour les équipes.",
-      savings: "Économisez 20%",
+      description: tPlans('enterprise.description'),
+      savings: t('save', { percent: 20 }),
       features: [
-        "Tout du plan Pro",
-        "Support dédié",
-        "Formation de l'équipe",
-        "API personnalisée",
-        "Sécurité renforcée",
-        "SLA garanti",
-        "Intégrations personnalisées",
+        tPlans('enterprise.features.invoices'),
+        tPlans('enterprise.features.team'),
+        tPlans('enterprise.features.api'),
+        tPlans('enterprise.features.customBranding'),
+        tPlans('enterprise.features.dedicatedSupport'),
+        tPlans('enterprise.features.advancedAnalytics'),
+        tPlans('enterprise.features.sla'),
       ],
-      buttonText: "Nous contacter",
+      buttonText: tPlans('enterprise.cta'),
       buttonHref: "/contact",
-      authenticatedText: "Accéder au tableau de bord",
+      authenticatedText: t('ctaAuthenticated'),
       authenticatedHref: "/dashboard",
       popular: false,
     },
@@ -80,10 +82,10 @@ export function PricingSection() {
       <div className="self-stretch relative flex flex-col justify-center items-center gap-2 py-0">
         <div className="flex flex-col justify-start items-center gap-4">
           <h2 className="text-center text-foreground text-4xl font-semibold leading-tight">
-            Tarifs adaptés à votre entreprise
+            {t('title')}
           </h2>
           <p className="self-stretch text-center text-muted-foreground text-sm font-medium leading-[18.20px] max-w-2xl">
-            Choisissez un plan qui correspond à vos besoins, des freelances aux entreprises en pleine croissance.
+            {t('subtitle')}
           </p>
         </div>
         <div className="py-8">
@@ -96,7 +98,7 @@ export function PricingSection() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <span className="text-sm font-medium">Annuel</span>
+              <span className="text-sm font-medium">{t('annual')}</span>
               {isAnnual && (
                 <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg">
                   -20%
@@ -111,7 +113,7 @@ export function PricingSection() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <span className="text-sm font-medium">Mensuel</span>
+              <span className="text-sm font-medium">{t('monthly')}</span>
             </button>
           </div>
         </div>
@@ -132,7 +134,7 @@ export function PricingSection() {
             >
               {plan.popular && (
                 <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-4 py-1.5 rounded-bl-2xl">
-                  <span className="text-xs font-bold">POPULAIRE</span>
+                  <span className="text-xs font-bold">{t('popular')}</span>
                 </div>
               )}
               
@@ -155,7 +157,7 @@ export function PricingSection() {
                       {price}€
                     </span>
                     <span className={`text-sm ${plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                      /mois
+                      {t('perMonth')}
                     </span>
                   </div>
                   {isAnnual && plan.savings && (
@@ -170,7 +172,7 @@ export function PricingSection() {
                   )}
                   {!isAnnual && plan.savings && (
                     <p className="text-xs text-muted-foreground">
-                      {monthlyEquivalent}€/mois en paiement annuel
+                      {t('monthlyEquivalent', { price: monthlyEquivalent })}
                     </p>
                   )}
                 </div>
@@ -195,7 +197,7 @@ export function PricingSection() {
                         : "bg-primary text-primary-foreground hover:bg-primary/90"
                     }`}
                   >
-                    {isAuthenticated ? (plan.authenticatedText || "Accéder au tableau de bord") : plan.buttonText}
+                    {isAuthenticated ? plan.authenticatedText : plan.buttonText}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -203,7 +205,7 @@ export function PricingSection() {
                 {/* Fonctionnalités */}
                 <div className="flex flex-col gap-4 pt-2">
                   <div className={`text-xs font-semibold ${plan.popular ? "text-primary-foreground" : "text-foreground"}`}>
-                    {plan.name === "Gratuit" ? "Inclus :" : "Tout du plan Gratuit +"}
+                    {plan.name === tPlans('free.name') ? t('included') : t('includesFree')}
                   </div>
                   <div className="flex flex-col gap-3">
                     {plan.features.map((feature, index) => (

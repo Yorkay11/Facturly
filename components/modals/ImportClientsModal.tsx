@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useBulkImportClientsMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTranslations } from 'next-intl';
 
 interface ImportClientsModalProps {
   open: boolean;
@@ -41,6 +42,9 @@ interface ImportResult {
 const ITEMS_PER_PAGE = 10;
 
 export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsModalProps) => {
+  const t = useTranslations('clients.import');
+  const commonT = useTranslations('common');
+  
   const [file, setFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<EditableCSVRow[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,16 +121,16 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
         const parsed = parseCSV(text);
 
         if (parsed.length === 0) {
-          toast.error("Fichier vide", {
-            description: "Le fichier CSV ne contient aucune donnée valide.",
+          toast.error(t('errors.emptyFile'), {
+            description: t('errors.emptyFileDescription'),
           });
           setFile(null);
           return;
         }
 
         if (parsed.length > 1000) {
-          toast.error("Limite dépassée", {
-            description: "Le fichier contient plus de 1000 clients. Veuillez diviser votre fichier en plusieurs parties.",
+          toast.error(t('errors.limitExceeded'), {
+            description: t('errors.limitExceededDescription'),
           });
           setFile(null);
           return;
@@ -135,14 +139,14 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
         setPreviewData(parsed);
         setShowPreview(true);
       } catch (error) {
-        toast.error("Erreur", {
-          description: "Une erreur est survenue lors de la lecture du fichier.",
+        toast.error(t('errors.readError'), {
+          description: t('errors.readErrorDescription'),
         });
         setFile(null);
       }
     } else {
-      toast.error("Format invalide", {
-        description: "Veuillez sélectionner un fichier CSV.",
+      toast.error(t('errors.invalidFormat'), {
+        description: t('errors.invalidFormatDescription'),
       });
     }
   };
@@ -161,16 +165,16 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
         const parsed = parseCSV(text);
 
         if (parsed.length === 0) {
-          toast.error("Fichier vide", {
-            description: "Le fichier CSV ne contient aucune donnée valide.",
+          toast.error(t('errors.emptyFile'), {
+            description: t('errors.emptyFileDescription'),
           });
           setFile(null);
           return;
         }
 
         if (parsed.length > 1000) {
-          toast.error("Limite dépassée", {
-            description: "Le fichier contient plus de 1000 clients. Veuillez diviser votre fichier en plusieurs parties.",
+          toast.error(t('errors.limitExceeded'), {
+            description: t('errors.limitExceededDescription'),
           });
           setFile(null);
           return;
@@ -179,14 +183,14 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
         setPreviewData(parsed);
         setShowPreview(true);
       } catch (error) {
-        toast.error("Erreur", {
-          description: "Une erreur est survenue lors de la lecture du fichier.",
+        toast.error(t('errors.readError'), {
+          description: t('errors.readErrorDescription'),
         });
         setFile(null);
       }
     } else {
-      toast.error("Format invalide", {
-        description: "Veuillez déposer un fichier CSV.",
+      toast.error(t('errors.invalidFormat'), {
+        description: t('errors.invalidFormatDrop'),
       });
     }
   };
@@ -244,24 +248,28 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
       setShowPreview(false);
 
       if (result.successCount > 0) {
-        toast.success("Import terminé", {
-          description: `${result.successCount} client(s) importé(s) avec succès${result.failedCount > 0 ? `, ${result.failedCount} erreur(s)` : ""}.`,
+        toast.success(t('success.importCompleted'), {
+          description: t('success.importCompletedDescription', { 
+            successCount: result.successCount, 
+            failedCount: result.failedCount,
+            errors: result.failedCount
+          }),
         });
         if (onSuccess) {
           onSuccess();
         }
       } else {
-        toast.error("Import échoué", {
-          description: "Aucun client n'a pu être importé.",
+        toast.error(t('errors.importFailed'), {
+          description: t('errors.importFailedDescription'),
         });
       }
     } catch (error) {
-      let errorMessage = "Une erreur est survenue lors de l'import.";
+      let errorMessage = t('errors.importError');
       if (error && typeof error === "object" && "data" in error) {
         const errorData = error.data as { message?: string };
         errorMessage = errorData?.message ?? errorMessage;
       }
-      toast.error("Erreur", {
+      toast.error(commonT('error'), {
         description: errorMessage,
       });
     } finally {
@@ -304,9 +312,9 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Importer des clients depuis un CSV</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Téléchargez un fichier CSV avec les informations de vos clients. Le nom est obligatoire, les autres champs sont optionnels.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -330,10 +338,10 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
               />
               <IoCloudUploadOutline className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-sm font-medium text-foreground mb-2">
-                Cliquez pour sélectionner ou glissez-déposez un fichier CSV
+                {t('dropZone.title')}
               </p>
               <p className="text-xs text-muted-foreground">
-                Format attendu : Nom, Email, Téléphone, Adresse, Ville, Pays, etc.
+                {t('dropZone.format')}
               </p>
             </div>
           ) : showPreview ? (
@@ -344,7 +352,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                   <div>
                     <p className="text-sm font-medium">{file.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {previewData.length} client(s) détecté(s) • {(file.size / 1024).toFixed(2)} KB
+                      {t('fileInfo.clientsDetected', { count: previewData.length })} • {t('fileInfo.fileSize', { size: (file.size / 1024).toFixed(2) })}
                     </p>
                   </div>
                 </div>
@@ -371,15 +379,15 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                   <Table>
                     <TableHeader className="bg-primary/5 sticky top-0">
                       <TableRow>
-                        <TableHead className="min-w-[150px]">Nom *</TableHead>
-                        <TableHead className="min-w-[180px]">Email</TableHead>
-                        <TableHead className="min-w-[120px]">Téléphone</TableHead>
-                        <TableHead className="min-w-[150px]">Adresse</TableHead>
-                        <TableHead className="min-w-[100px]">Code postal</TableHead>
-                        <TableHead className="min-w-[120px]">Ville</TableHead>
-                        <TableHead className="min-w-[100px]">Pays</TableHead>
-                        <TableHead className="min-w-[120px]">SIRET/TVA</TableHead>
-                        <TableHead className="min-w-[150px]">Notes</TableHead>
+                        <TableHead className="min-w-[150px]">{t('table.name')}</TableHead>
+                        <TableHead className="min-w-[180px]">{t('table.email')}</TableHead>
+                        <TableHead className="min-w-[120px]">{t('table.phone')}</TableHead>
+                        <TableHead className="min-w-[150px]">{t('table.address')}</TableHead>
+                        <TableHead className="min-w-[100px]">{t('table.postalCode')}</TableHead>
+                        <TableHead className="min-w-[120px]">{t('table.city')}</TableHead>
+                        <TableHead className="min-w-[100px]">{t('table.country')}</TableHead>
+                        <TableHead className="min-w-[120px]">{t('table.taxId')}</TableHead>
+                        <TableHead className="min-w-[150px]">{t('table.notes')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -390,7 +398,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.name}
                               onChange={(e) => handleFieldChange(row.id, "name", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Nom *"
+                              placeholder={t('table.name')}
                             />
                           </TableCell>
                           <TableCell>
@@ -399,7 +407,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               onChange={(e) => handleFieldChange(row.id, "email", e.target.value)}
                               className="h-8 text-sm"
                               type="email"
-                              placeholder="Email"
+                              placeholder={t('table.email')}
                             />
                           </TableCell>
                           <TableCell>
@@ -407,7 +415,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.phone}
                               onChange={(e) => handleFieldChange(row.id, "phone", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Téléphone"
+                              placeholder={t('table.phone')}
                             />
                           </TableCell>
                           <TableCell>
@@ -415,7 +423,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.addressLine1}
                               onChange={(e) => handleFieldChange(row.id, "addressLine1", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Adresse"
+                              placeholder={t('table.address')}
                             />
                           </TableCell>
                           <TableCell>
@@ -423,7 +431,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.postalCode}
                               onChange={(e) => handleFieldChange(row.id, "postalCode", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Code postal"
+                              placeholder={t('table.postalCode')}
                             />
                           </TableCell>
                           <TableCell>
@@ -431,7 +439,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.city}
                               onChange={(e) => handleFieldChange(row.id, "city", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Ville"
+                              placeholder={t('table.city')}
                             />
                           </TableCell>
                           <TableCell>
@@ -439,7 +447,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.country}
                               onChange={(e) => handleFieldChange(row.id, "country", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Pays"
+                              placeholder={t('table.country')}
                             />
                           </TableCell>
                           <TableCell>
@@ -447,7 +455,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.taxId}
                               onChange={(e) => handleFieldChange(row.id, "taxId", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="SIRET/TVA"
+                              placeholder={t('table.taxId')}
                             />
                           </TableCell>
                           <TableCell>
@@ -455,7 +463,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               value={row.notes}
                               onChange={(e) => handleFieldChange(row.id, "notes", e.target.value)}
                               className="h-8 text-sm"
-                              placeholder="Notes"
+                              placeholder={t('table.notes')}
                             />
                           </TableCell>
                         </TableRow>
@@ -467,7 +475,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between border-t px-4 py-3">
                     <div className="text-sm text-muted-foreground">
-                      Page {currentPage} sur {totalPages} • {previewData.length} client(s) au total
+                      {t('pagination.pageInfo', { current: currentPage, total: totalPages, count: previewData.length })}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -528,13 +536,13 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                     {importResult.successCount > 0 && (
                       <div className="flex items-center gap-2 text-primary">
                         <IoCheckmarkCircleOutline className="h-4 w-4" />
-                        <span>{importResult.successCount} client(s) importé(s)</span>
+                        <span>{t('success.clientsImported', { count: importResult.successCount })}</span>
                       </div>
                     )}
                     {importResult.failedCount > 0 && (
                       <div className="flex items-center gap-2 text-destructive">
                         <IoAlertCircleOutline className="h-4 w-4" />
-                        <span>{importResult.failedCount} erreur(s)</span>
+                        <span>{t('success.errors', { count: importResult.failedCount })}</span>
                       </div>
                     )}
                   </div>
@@ -542,7 +550,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                     <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
                       {importResult.failed.map((error, index) => (
                         <p key={index} className="text-xs text-destructive">
-                          Ligne {error.line}: {error.error}
+                          {t('success.lineError', { line: error.line, error: error.error })}
                         </p>
                       ))}
                     </div>
@@ -553,29 +561,29 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
           )}
 
           <div className="p-4 bg-muted/50 rounded-lg">
-            <p className="text-xs font-medium mb-2">Format CSV attendu :</p>
+            <p className="text-xs font-medium mb-2">{t('format.title')}</p>
             <div className="text-xs text-muted-foreground space-y-1">
-              <p>• Colonnes possibles : Nom, Email, Téléphone, Adresse, Code postal, Ville, Pays, SIRET/TVA, Notes</p>
-              <p>• Le nom est obligatoire, les autres champs sont optionnels</p>
-              <p>• La première ligne doit contenir les en-têtes</p>
-              <p>• Séparateur : virgule (,) ou point-virgule (;)</p>
+              <p>• {t('format.columns')}</p>
+              <p>• {t('format.nameRequired')}</p>
+              <p>• {t('format.headersRequired')}</p>
+              <p>• {t('format.separator')}</p>
             </div>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose} disabled={isProcessing || isImporting}>
-            {importResult ? "Fermer" : "Annuler"}
+            {importResult ? t('buttons.close') : t('buttons.cancel')}
           </Button>
           {showPreview && !importResult && (
             <Button onClick={handleImport} disabled={isProcessing || isImporting || previewData.length === 0}>
               {isProcessing || isImporting ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Import en cours...
+                  {t('buttons.importing')}
                 </div>
               ) : (
-                `Valider et importer (${previewData.length})`
+                t('buttons.import', { count: previewData.length })
               )}
             </Button>
           )}

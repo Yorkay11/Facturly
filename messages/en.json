@@ -1,0 +1,1835 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "submit": "Submit",
+    "reset": "Reset",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "amount": "Amount",
+    "total": "Total"
+  },
+  "beta": {
+    "badge": "Beta",
+    "message": "Facturly is currently in beta version. Thank you for your patience as we improve the platform."
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "loginSuccess": "Login successful",
+    "loginError": "Login failed",
+    "registerSuccess": "Registration successful",
+    "registerError": "Registration failed",
+    "invalidEmail": "Invalid email address",
+    "passwordTooShort": "Password too short",
+    "passwordRequired": "Password is required",
+    "emailRequired": "Email is required",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "companyName": "Company name",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "welcomeBack": "Welcome back!",
+    "createAccount": "Create account"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Get a quick overview of your revenue and actions to follow.",
+    "overview": "Overview",
+    "clients": "Clients",
+    "items": "Items",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "reminders": "Reminders",
+    "bills": "Received invoices",
+    "revenue": "Revenue",
+    "pending": "Pending",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "recentActivity": "Recent activity",
+    "quickActions": "Quick actions",
+    "quickActionsDescription": "Three key shortcuts to speed up your routine.",
+    "createInvoice": "Create invoice",
+    "createInvoiceDescription": "Draft in 5 steps, preview and send.",
+    "remindPayment": "Remind Payment",
+    "remindPaymentDescription": "Choose a client and send a reminder.",
+    "addClient": "Add client",
+    "addClientDescription": "Add a contact from your address book.",
+    "addItem": "Add item",
+    "monthlyRevenue": "Monthly Revenue",
+    "invoicesSent": "Invoices Sent",
+    "totalPaid": "Total Paid",
+    "unpaid": "Unpaid",
+    "revenueTrends": "Revenue Trends",
+    "revenueTrendsDescription": "Evolution over the last 4 months",
+    "noDataAvailable": "No data available",
+    "noDataDescription": "Create your first invoices to see trends",
+    "totalPaidLabel": "Total Paid",
+    "pendingLabel": "Pending",
+    "activityDescription": "Latest actions on your account.",
+    "noRecentActivity": "No recent activity",
+    "toWatch": "To Watch",
+    "toWatchDescription": "Overdue invoices, sensitive clients, unpaid target.",
+    "noAlert": "No alert",
+    "allGood": "All is well",
+    "overdueMoreThan7Days": "Overdue > 7 days",
+    "clientToRemind": "Client to remind",
+    "invoice": "invoice",
+    "unpaidRate": "Unpaid Rate",
+    "unpaidRateGoal": "Target < 10%",
+    "unpaidInvoice": "unpaid",
+    "unpaidInvoices": "unpaid",
+    "quickSummary": "Quick Summary",
+    "invoicesThisMonth": "Invoices this month",
+    "paymentRate": "Payment Rate",
+    "averageRevenue": "Average Revenue",
+    "quickNavigation": "Quick Navigation",
+    "allInvoices": "All Invoices",
+    "viewAndManage": "View and manage",
+    "myClients": "My Clients",
+    "manageAddressBook": "Manage address book",
+    "products": "Services",
+    "catalogAndPricing": "Catalog and pricing",
+    "configuration": "Configuration",
+    "resources": "Resources",
+    "documentation": "Documentation",
+    "support": "Support",
+    "new": "New",
+    "automatedRemindersAvailable": "Automated reminders available",
+    "open": "Open",
+    "launch": "Launch"
+  },
+  "invoiceLimit": {
+    "close": "Close",
+    "limitReached": "Invoice limit reached",
+    "nearLimit": "Invoice limit near",
+    "freePlan": "Free plan - Invoice limit",
+    "limitReachedMessage": "You have reached your limit of {count} invoices for this period. Upgrade to Pro plan to create unlimited invoices.",
+    "nearLimitMessage": "You have used {percentage}% of your limit. You have {remaining} invoice{remaining, plural, one { } other {s}} remaining for this period.",
+    "freePlanMessage": "You have used {used} out of {effective} invoices available this month. You have {remaining} invoice{remaining, plural, one { } other {s}} remaining.",
+    "progress": "{used} / {effective} invoices",
+    "upgradeToPro": "Upgrade to Pro plan",
+    "viewPlans": "View plans",
+    "upgradeNow": "Upgrade now"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "invoices": "Invoices",
+    "invoicesCreated": "Created Invoices",
+    "invoicesReceived": "Received Bills",
+    "newInvoice": "New Invoice",
+    "clients": "Clients",
+    "items": "Services",
+    "reminders": "Reminders",
+    "settings": "Settings",
+    "profile": "Profile",
+    "help": "Help",
+    "notifications": "Notifications",
+    "dashboardDescription": "Overview of your key metrics",
+    "invoicesDescription": "Track, create and send your invoices",
+    "invoicesCreatedDescription": "View your created invoices",
+    "invoicesReceivedDescription": "View and manage received invoices",
+    "newInvoiceDescription": "Build an invoice document",
+    "clientsDescription": "Address book and history",
+    "itemsDescription": "Services catalog and pricing",
+    "remindersDescription": "Unpaid statistics and reminder tracking",
+    "settingsDescription": "Configuration, legal notices and branding",
+    "mainNavigation": "Main navigation",
+    "openNavigation": "Open navigation",
+    "openUserProfile": "Open user profile",
+    "support": "Support",
+    "new": "New"
+  },
+  "topbar": {
+    "user": "User",
+    "noPlan": "No plan",
+    "planFree": "Free",
+    "planPro": "Pro",
+    "planEnterprise": "Enterprise",
+    "userProfile": "User Profile",
+    "accountInfo": "Your account information",
+    "company": "Company",
+    "preferences": "Preferences",
+    "preferencesDescription": "Notifications, legal notices, branding",
+    "manageAccount": "Manage my account",
+    "logout": "Logout",
+    "loggingOut": "Logging out...",
+    "logoutSuccess": "Logout successful",
+    "logoutSuccessDescription": "You have been successfully logged out.",
+    "logoutError": "Logout error",
+    "logoutErrorDescription": "You have been logged out locally."
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "Track your drafts, sent invoices and received payments.",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "invoices": "Invoices"
+    },
+    "create": "Create invoice",
+    "edit": "Edit invoice",
+    "view": "View invoice",
+    "delete": "Delete invoice",
+    "send": "Send",
+    "download": "Download",
+    "export": "Export",
+    "print": "Print",
+    "status": "Status",
+    "draft": "Draft",
+    "sent": "Sent",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "cancelled": "Cancelled",
+    "number": "Number",
+    "date": "Issue date",
+    "dueDate": "Due date",
+    "client": "Client",
+    "total": "Total",
+    "amount": "Amount",
+    "actions": "Actions",
+    "searchPlaceholder": "Search (client, number...)",
+    "filterPlaceholder": "Status",
+    "allStatuses": "All statuses",
+    "displayed": "{count} invoice{plural} displayed{plural}",
+    "loading": "Loading...",
+    "errors": {
+      "loadingError": "Error loading invoices. Check the API."
+    },
+    "table": {
+      "number": "Number",
+      "client": "Client",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "status": "Status",
+      "amount": "Amount",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No invoices yet",
+      "description": "Create your first invoice to send professional documents and track your payments."
+    },
+    "new": {
+      "label": "New invoice",
+      "breadcrumb": {
+        "dashboard": "Dashboard",
+        "invoices": "Invoices",
+        "newInvoice": "New invoice"
+      },
+      "title": "Create invoice",
+      "description": "Complete the information and view the rendering in real time.",
+      "toasts": {
+        "itemUpdated": "Item updated",
+        "itemUpdatedDescription": "{description} has been modified.",
+        "itemAdded": "Item added",
+        "itemAddedDescription": "{description} has been added.",
+        "draftSaved": "Draft saved",
+        "draftSavedDescription": "Your mock invoice has been saved."
+      }
+    },
+    "form": {
+      "validation": {
+        "receiverRequired": "Receiver is required",
+        "subjectRequired": "Subject is required",
+        "issueDateRequired": "Issue date is required",
+        "dueDateRequired": "Due date is required",
+        "currencyRequired": "Currency is required"
+      },
+      "loading": {
+        "sending": "Sending invoice...",
+        "updating": "Updating invoice...",
+        "creating": "Creating invoice..."
+      },
+      "sections": {
+        "invoiceInfo": {
+          "title": "Invoice information",
+          "description": "Recipient, subject, issue date and due date."
+        },
+        "invoiceLines": {
+          "title": "Invoice lines",
+          "description": "Add your services, quantities and rates.",
+          "empty": {
+            "title": "No lines yet",
+            "description": "Add your first service by clicking the button above."
+          }
+        },
+        "discount": {
+          "title": "Add discount",
+          "comingSoon": "Coming soon",
+          "description": "Advanced discounts and VAT calculations will be integrated in a future version."
+        }
+      },
+      "fields": {
+        "receiver": {
+          "label": "Recipient",
+          "placeholder": "Select a client",
+          "searchPlaceholder": "Search for a client...",
+          "loading": "Loading clients...",
+          "empty": "No client found.",
+          "noClients": "No clients available. Create a client from the Clients page.",
+          "createNew": "Create a new client"
+        },
+        "subject": {
+          "label": "Subject",
+          "placeholder": "Web project, advance payment..."
+        },
+        "issueDate": {
+          "label": "Issue date",
+          "placeholder": "Choose date"
+        },
+        "dueDate": {
+          "label": "Due date",
+          "placeholder": "Choose date"
+        },
+        "currency": {
+          "label": "Currency",
+          "placeholder": "Select currency",
+          "searchPlaceholder": "Search...",
+          "empty": "No currency found"
+        },
+        "notes": {
+          "label": "Internal notes",
+          "placeholder": "Internal mention or payment terms"
+        }
+      },
+      "lines": {
+        "add": "Add line",
+        "edit": "Edit line {description}",
+        "delete": "Delete line {description}",
+        "unitPrice": "Unit price",
+        "quantity": "Quantity",
+        "vat": "VAT",
+        "lineTotal": "Line total"
+      },
+      "addItemModal": {
+        "title": {
+          "create": "Add item to invoice",
+          "edit": "Edit line"
+        },
+        "description": {
+          "create": "Select an existing product or enter information manually.",
+          "edit": "Modify the invoice line information."
+        },
+        "tabs": {
+          "select": "Select",
+          "manual": "Manual entry"
+        },
+        "fields": {
+          "product": "Product/Service",
+          "selectProduct": "Select a product",
+          "searchPlaceholder": "Search by name, description or SKU...",
+          "loading": "Loading products...",
+          "noResults": "No product found.",
+          "noProducts": {
+            "title": "No products available",
+            "description": "Switch to manual entry to add an item."
+          },
+          "clearSelection": "Clear selection",
+          "selectedProduct": "Selected product",
+          "modified": "Modified",
+          "restore": "Restore",
+          "productDetails": {
+            "name": "Name",
+            "description": "Description",
+            "price": "Price",
+            "vat": "VAT"
+          },
+          "selectProductMessage": "Select a product to continue, or switch to manual entry.",
+          "manualEntry": {
+            "title": "Manual entry",
+            "description": "Add an item directly to the invoice. You can choose to save it to the catalog after validation."
+          },
+          "itemDetails": "Item details",
+          "description": {
+            "label": "Description",
+            "placeholder": "Product or service name"
+          },
+          "quantity": {
+            "label": "Quantity"
+          },
+          "unitPrice": {
+            "label": "Unit price",
+            "placeholder": "0.00"
+          },
+          "vatRate": {
+            "label": "VAT rate",
+            "placeholder": "Select VAT rate"
+          }
+        },
+        "types": {
+          "service": "Service",
+          "product": "Product"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "add": "Add item",
+          "update": "Update"
+        },
+        "saveDialog": {
+          "title": "Save to catalog?",
+          "description": "Do you want to save this item to your product catalog? It can be reused for other invoices.",
+          "fields": {
+            "type": {
+              "label": "Type",
+              "placeholder": "Select a type",
+              "service": "Service",
+              "product": "Product"
+            },
+            "currency": {
+              "label": "Currency",
+              "placeholder": "Currency"
+            },
+            "summary": {
+              "title": "Summary",
+              "name": "Name",
+              "price": "Price",
+              "vat": "VAT",
+              "type": "Type"
+            }
+          },
+          "buttons": {
+            "addOnly": "No, add only",
+            "saveAndAdd": "Yes, save and add"
+          }
+        },
+        "toasts": {
+          "productSelected": "Product selected",
+          "productSelectedDescription": "{name} has been added. Complete the quantity below.",
+          "valuesRestored": "Values restored",
+          "valuesRestoredDescription": "Product values have been restored.",
+          "productCreated": "Product created and item added",
+          "productCreatedDescription": "{name} has been saved to the catalog and added to the invoice.",
+          "createError": "An error occurred while creating the product."
+        }
+      },
+      "buttons": {
+        "saveDraft": "Save draft",
+        "updateDraft": "Update draft",
+        "saving": "Saving...",
+        "updating": "Updating...",
+        "send": "Send invoice",
+        "sending": "Sending..."
+      },
+      "errors": {
+        "clientMissing": "Missing client",
+        "clientMissingDescription": "Please select a client before {action}.",
+        "datesMissing": "Missing dates",
+        "datesMissingDescription": "Please set issue and due dates before {action}.",
+        "noItems": "No items",
+        "noItemsDescription": "Please add at least one item to the invoice before {action}.",
+        "currencyMissing": "Missing currency",
+        "currencyMissingDescription": "Please select a currency before {action}.",
+        "updateError": "An error occurred while updating the invoice.",
+        "createError": "An error occurred while creating the invoice.",
+        "sendError": "An error occurred while sending the invoice.",
+        "prepareError": "An error occurred while preparing the send.",
+        "saveError": "An error occurred while saving the draft.",
+        "idMissing": "Invoice was created but ID was not returned.",
+        "idMissingRedirect": "Invoice was saved but ID was not returned. Redirecting to invoice list."
+      },
+      "success": {
+        "clientCreated": "Client created and selected",
+        "clientCreatedDescription": "{name} has been created and selected as recipient.",
+        "invoiceSent": "Invoice sent",
+        "invoiceSentDescription": "Invoice {number} has been sent successfully{email}.",
+        "draftUpdated": "Draft updated",
+        "draftUpdatedDescription": "Invoice {number} has been updated successfully.",
+        "draftSaved": "Draft saved",
+        "draftSavedDescription": "Invoice {number} has been saved successfully."
+      },
+      "actions": {
+        "send": "sending the invoice",
+        "save": "saving the draft"
+      }
+    },
+    "preview": {
+      "title": "Preview",
+      "description": "Synchronized with entered information.",
+      "fullscreen": "Fullscreen preview",
+      "fullscreenTitle": "Invoice preview",
+      "templateSelector": {
+        "placeholder": "Select a template"
+      },
+      "pdf": {
+        "generate": "Generate PDF",
+        "generating": "Generating...",
+        "success": "PDF generated",
+        "successDescription": "PDF has been downloaded successfully.",
+        "errors": {
+          "notSaved": "Invoice must be saved before generating PDF.",
+          "notLoggedIn": "You must be logged in to generate PDF.",
+          "proOnly": "PDF generation is reserved for Pro or Enterprise plans.",
+          "generic": "Error generating PDF",
+          "retry": "Unable to generate PDF. Please try again."
+        },
+        "restricted": {
+          "title": "PDF generation restricted",
+          "description": "PDF generation is available only with Pro or Enterprise plans.",
+          "upgrade": "Upgrade to Pro plan"
+        }
+      }
+    },
+    "deleteDialog": {
+      "deleteTitle": "Delete invoice?",
+      "cancelTitle": "Cancel invoice?",
+      "deleteDescription": "Are you sure you want to delete invoice {number}? This action is irreversible.",
+      "cancelDescription": "Are you sure you want to cancel invoice {number}? This action will change the invoice status.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "cancelAction": "Cancel",
+      "processing": "Processing...",
+      "deleteSuccess": "Invoice deleted",
+      "deleteSuccessDescription": "Invoice {number} has been successfully deleted.",
+      "cancelSuccess": "Invoice cancelled",
+      "cancelSuccessDescription": "Invoice {number} has been successfully cancelled.",
+      "error": "An error occurred while deleting."
+    },
+    "rejectModal": {
+      "title": "Reject invoice",
+      "description": "Please indicate the reason for your rejection. A comment is required to help the issuer understand your decision.",
+      "fields": {
+        "reason": {
+          "label": "Rejection reason",
+          "optional": "(optional)",
+          "placeholder": "Select a reason (optional)",
+          "none": "No specific reason"
+        },
+        "comment": {
+          "label": "Comment",
+          "placeholder": "Please explain the reason for your rejection (minimum 10 characters)...",
+          "counter": "{count} / 1000 characters (minimum 10)"
+        }
+      },
+      "reasons": {
+        "amount_discrepancy": {
+          "label": "Amount discrepancy",
+          "description": "The amount does not match the agreement"
+        },
+        "wrong_items": {
+          "label": "Incorrect items",
+          "description": "The invoiced items do not match"
+        },
+        "wrong_client": {
+          "label": "Wrong client",
+          "description": "The invoice was issued for the wrong client"
+        },
+        "other": {
+          "label": "Other reason",
+          "description": "Other reason not listed"
+        }
+      },
+      "validation": {
+        "commentMin": "Comment must contain at least 10 characters",
+        "commentMax": "Comment must not exceed 1000 characters"
+      },
+      "alert": {
+        "title": "Important",
+        "description": "Rejecting this invoice will mark it as cancelled. The issuer will be able to modify the invoice and resend it if necessary."
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Confirm rejection",
+        "processing": "Processing..."
+      },
+      "errors": {
+        "invalidToken": "Invalid token. Please refresh the page.",
+        "rejectError": "An error occurred while rejecting the invoice.",
+        "genericError": "An error occurred. Please try again later."
+      }
+    },
+    "detail": {
+      "breadcrumb": {
+        "details": "Details"
+      },
+      "errors": {
+        "invalidId": "Invalid invoice ID",
+        "invalidIdDescription": "The invoice identifier is missing or invalid.",
+        "loadingError": "Unable to load invoice",
+        "loadingErrorDescription": "The requested invoice does not exist or an error occurred.",
+        "backToList": "Back to invoice list"
+      },
+      "title": {
+        "description": "Invoice for {clientName}. Total due: {amount}."
+      },
+      "buttons": {
+        "edit": "Edit",
+        "copyPublicLink": "Copy public link",
+        "copyPaymentLink": "Copy payment link",
+        "sendReminder": "Send reminder",
+        "markAsPaid": "Mark as paid",
+        "delete": "Delete",
+        "cancel": "Cancel"
+      },
+      "summary": {
+        "title": "Summary",
+        "description": "Main invoice details.",
+        "client": "Client",
+        "emailNotAvailable": "Email not available",
+        "amount": "Amount",
+        "taxIncluded": "VAT included ({taxAmount})",
+        "issueDate": "Issue date",
+        "dueDate": "Due date"
+      },
+      "items": {
+        "description": "Description",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "total": "Total",
+        "empty": "No items in this invoice"
+      },
+      "timeline": {
+        "title": "Timeline",
+        "description": "Invoice events tracking.",
+        "created": "Invoice created",
+        "createdDescription": "Document generated and saved in Facturly.",
+        "sent": "Sent to client",
+        "sentDescription": "Email sent to {email}.",
+        "draft": "Draft",
+        "draftDescription": "Invoice in draft, not sent.",
+        "viewed": "Viewed by client",
+        "viewedDescription": "Client opened the invoice.",
+        "rejected": "Invoice rejected",
+        "rejectedDescription": "Invoice was rejected by the client.",
+        "rejectedWithComment": "Rejected: {comment}",
+        "rejectedWithReason": "Reason: {reason}",
+        "paymentReceived": "Payment received",
+        "paymentReceivedAmount": "Payment received - {amount}",
+        "paymentReceivedDescription": "Payment confirmed and reconciled.",
+        "paymentReceivedWithMethod": "Payment by {method}{notes}.",
+        "paymentReceivedWithNotes": " - {notes}",
+        "dueDate": "Due date",
+        "dueDateOverdue": "Due date overdue",
+        "dueDateDescription": "Due date: {date}. Remaining amount: {remaining}.",
+        "dueDateOverdueDescription": "Due date overdue. Remaining amount: {remaining}.",
+        "cancelled": "Invoice cancelled",
+        "cancelledDescription": "Invoice has been cancelled."
+      },
+      "reminders": {
+        "title": "Reminder History",
+        "description": "{count} reminder{plural} sent{plural}",
+        "reminderNumber": "Reminder #{number}",
+        "manual": "Manual",
+        "automatic": "Automatic",
+        "sentOn": "Sent on {date} • {days} day{plural} after due date",
+        "recipient": "Recipient: {email}"
+      },
+      "notes": {
+        "title": "Notes",
+        "description": "Notes associated with this invoice."
+      },
+      "payments": {
+        "title": "Payments",
+        "description": "Payment history for this invoice.",
+        "date": "Date: {date}",
+        "method": "Method: {method}",
+        "notes": "Notes: {notes}",
+        "completed": "Completed"
+      },
+      "markPaidDialog": {
+        "title": "Mark as paid",
+        "description": "Record a payment received for invoice {invoiceNumber}.",
+        "amountLabel": "Amount *",
+        "remaining": "Remaining to pay: {amount}",
+        "dateLabel": "Payment date *",
+        "methodLabel": "Payment method *",
+        "notesLabel": "Notes (optional)",
+        "notesPlaceholder": "Add payment notes...",
+        "cancel": "Cancel",
+        "save": "Record payment",
+        "processing": "Processing...",
+        "success": "Invoice marked as paid",
+        "successDescription": "Payment of {amount} has been recorded.",
+        "error": "An error occurred while recording the payment.",
+        "errorAmountExceeded": "Amount cannot exceed {amount}."
+      },
+      "paymentMethods": {
+        "bank_transfer": "Bank transfer",
+        "check": "Check",
+        "cash": "Cash",
+        "online_payment": "Online payment",
+        "card": "Card"
+      },
+      "deleteDialog": {
+        "deleteTitle": "Delete invoice?",
+        "cancelTitle": "Cancel invoice?",
+        "deleteDescription": "Are you sure you want to delete invoice {number}? This action is irreversible.",
+        "cancelDescription": "Are you sure you want to cancel invoice {number}? This action will change the invoice status.",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "cancelAction": "Cancel",
+        "processing": "Processing...",
+        "deleteSuccess": "Invoice deleted",
+        "deleteSuccessDescription": "Invoice {number} has been successfully deleted.",
+        "cancelSuccess": "Invoice cancelled",
+        "cancelSuccessDescription": "Invoice {number} has been successfully cancelled.",
+        "error": "An error occurred while deleting."
+      },
+      "toasts": {
+        "linkCopied": "Link copied",
+        "paymentLinkCopied": "Payment link has been copied to clipboard.",
+        "publicLinkCopied": "Public viewing link has been copied to clipboard."
+      }
+    }
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Manage your address book, view invoice history and prepare your reminders.",
+    "new": "New Client",
+    "add": "Add Client",
+    "edit": "Edit Client",
+    "delete": "Delete Client",
+    "deleteTitle": "Delete Client?",
+    "deleteDescription": "Are you sure you want to delete client {name}? This action is irreversible and will also delete all associated data.",
+    "deleteSuccess": "Client deleted",
+    "deleteSuccessDescription": "Client {name} has been successfully deleted.",
+    "deleteError": "An error occurred while deleting.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "noClients": "No clients registered",
+    "noClientsDescription": "Create your first client to build your address book and prepare sending personalized invoices.",
+    "activeClients": "Active Clients",
+    "cumulativeInvoices": "Cumulative Invoices",
+    "lastAdded": "Last Added",
+    "lastAddedDescription": "Creation date of the last client",
+    "directory": "Directory",
+    "directoryDescription": "Search your clients, filter by name, email or city.",
+    "searchPlaceholder": "Search by name, email...",
+    "client": "Client",
+    "addDate": "Add Date",
+    "actions": "Actions",
+    "deleteAction": "Delete",
+    "processing": "Processing...",
+    "importCSV": "Import CSV",
+    "importSuccess": "Import successful",
+    "importSuccessDescription": "Clients have been successfully imported.",
+    "createSuccess": "Client created",
+    "createSuccessDescription": "The client has been successfully created.",
+    "loadError": "Error loading clients. Check the API.",
+    "pageInfo": "Page {current} of {total} • {count} client(s) total",
+    "previous": "Previous",
+    "next": "Next",
+    "modal": {
+      "addTitle": "Add Client",
+      "editTitle": "Edit Client",
+      "description": "Fill in the client information by sections. Fields marked with an asterisk (*) are required.",
+      "tabs": {
+        "informations": "Information",
+        "adresse": "Address",
+        "complementaires": "Additional"
+      },
+      "fields": {
+        "fullName": "Full Name",
+        "fullNamePlaceholder": "Contact name",
+        "email": "Email",
+        "emailPlaceholder": "email@example.com",
+        "phone": "Phone",
+        "phonePlaceholder": "+1 ...",
+        "addressLine1": "Address Line 1",
+        "addressLine1Placeholder": "12 Innovation Street",
+        "addressLine2": "Address Line 2",
+        "addressLine2Placeholder": "Address complement (optional)",
+        "postalCode": "Postal Code",
+        "postalCodePlaceholder": "10001",
+        "city": "City",
+        "cityPlaceholder": "New York",
+        "country": "Country",
+        "countryPlaceholder": "United States",
+        "taxId": "Tax Identification Number",
+        "taxIdPlaceholder": "EIN, VAT, etc.",
+        "notes": "Notes",
+        "notesPlaceholder": "Additional notes (optional)"
+      },
+      "validation": {
+        "nameMinLength": "Name must contain at least 2 characters",
+        "invalidEmail": "Invalid email address",
+        "createError": "An error occurred while creating the client.",
+        "createErrorGeneric": "Check your information or try again later."
+      },
+      "buttons": {
+        "previous": "Previous",
+        "next": "Next",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving..."
+      }
+    },
+    "import": {
+      "title": "Import clients from CSV",
+      "description": "Upload a CSV file with your clients' information. Name is required, other fields are optional.",
+      "dropZone": {
+        "title": "Click to select or drag and drop a CSV file",
+        "format": "Expected format: Name, Email, Phone, Address, City, Country, etc."
+      },
+      "fileInfo": {
+        "clientsDetected": "{count} client(s) detected",
+        "fileSize": "{size} KB"
+      },
+      "table": {
+        "name": "Name *",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "postalCode": "Postal Code",
+        "city": "City",
+        "country": "Country",
+        "taxId": "Tax ID/VAT",
+        "notes": "Notes"
+      },
+      "errors": {
+        "emptyFile": "Empty file",
+        "emptyFileDescription": "The CSV file contains no valid data.",
+        "limitExceeded": "Limit exceeded",
+        "limitExceededDescription": "The file contains more than 1000 clients. Please split your file into multiple parts.",
+        "invalidFormat": "Invalid format",
+        "invalidFormatDescription": "Please select a CSV file.",
+        "invalidFormatDrop": "Please drop a CSV file.",
+        "readError": "Error",
+        "readErrorDescription": "An error occurred while reading the file.",
+        "importError": "An error occurred during import.",
+        "importFailed": "Import failed",
+        "importFailedDescription": "No clients could be imported."
+      },
+      "success": {
+        "importCompleted": "Import completed",
+        "importCompletedDescription": "{successCount} client(s) imported successfully{errors, plural, =0 {} other {, {failedCount} error(s)}}.",
+        "clientsImported": "{count} client(s) imported",
+        "errors": "{count} error(s)",
+        "lineError": "Line {line}: {error}"
+      },
+      "pagination": {
+        "pageInfo": "Page {current} of {total} • {count} client(s) total"
+      },
+      "format": {
+        "title": "Expected CSV format:",
+        "columns": "Possible columns: Name, Email, Phone, Address, Postal Code, City, Country, Tax ID/VAT, Notes",
+        "nameRequired": "Name is required, other fields are optional",
+        "headersRequired": "The first line must contain headers",
+        "separator": "Separator: comma (,) or semicolon (;)"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "close": "Close",
+        "import": "Validate and import ({count})",
+        "importing": "Importing..."
+      }
+    },
+    "detail": {
+      "title": "Client Details",
+      "subtitle": "Detailed client information. View contact details and invoice history.",
+      "breadcrumb": {
+        "dashboard": "Dashboard",
+        "clients": "Clients",
+        "details": "Details"
+      },
+      "errors": {
+        "missingId": "Missing client ID",
+        "missingIdDescription": "The client identifier could not be retrieved from the URL.",
+        "notFound": "Client not found or API error.",
+        "missingIdError": "Missing client ID.",
+        "deleteConfirm": "Are you sure you want to delete this client? This action is irreversible.",
+        "deleteError": "An error occurred while deleting the client.",
+        "deleteErrorGeneric": "Check your information or try again later."
+      },
+      "buttons": {
+        "backToList": "Back to clients list",
+        "delete": "Delete",
+        "createInvoice": "Create invoice"
+      },
+      "contactInfo": {
+        "title": "Contact Information",
+        "description": "Client contact details and address",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "taxId": "Tax Identification Number"
+      },
+      "recentInvoices": {
+        "title": "Recent Invoices",
+        "description": "Latest client invoices",
+        "viewAll": "View all invoices ({count})",
+        "noInvoices": "No invoices for this client"
+      },
+      "notes": {
+        "title": "Notes",
+        "description": "Additional information"
+      },
+      "statistics": {
+        "title": "Statistics",
+        "description": "Invoice summary",
+        "totalInvoices": "Total invoices",
+        "totalAmount": "Total amount",
+        "addedDate": "Added date"
+      },
+      "monthlyRevenue": {
+        "title": "Monthly Revenue",
+        "description": "Evolution over the last 6 months",
+        "invoicesSent": "{count} invoice{count, plural, one { } other {s}} sent",
+        "invoicesPaid": "{paid} paid"
+      }
+    }
+  },
+  "items": {
+    "title": "Services",
+    "subtitle": "Centralize your services to speed up invoice and quote creation.",
+    "new": "New service",
+    "add": "Add service",
+    "edit": "Edit Service",
+    "delete": "Delete Service",
+    "name": "Name",
+    "description": "Description",
+    "price": "Price",
+    "unit": "Unit",
+    "noItems": "No services registered",
+    "noItemsDescription": "Add your services to pre-fill your invoices in a few clicks.",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "items": "Services"
+    },
+    "stats": {
+      "available": "Available services",
+      "averagePrice": "Average price",
+      "averagePriceDescription": "Average price of services",
+      "lastUpdate": "Last update",
+      "lastUpdateDescription": "Last modification"
+    },
+    "catalog": {
+      "title": "Catalog",
+      "description": "List of your available services.",
+      "searchPlaceholder": "Search for a service"
+    },
+    "table": {
+      "reference": "Reference",
+      "name": "Name",
+      "priceHT": "Price excl. tax",
+      "defaultVAT": "Default VAT",
+      "actions": "Actions"
+    },
+    "buttons": {
+      "importCsv": "Import CSV",
+      "new": "New service",
+      "add": "Add service",
+      "delete": "Delete",
+      "previous": "Previous",
+      "next": "Next",
+      "processing": "Processing..."
+    },
+    "pagination": {
+      "pageInfo": "Page {current} of {total} • {count} service(s) total"
+    },
+    "errors": {
+      "loadingError": "Error loading services. Check the API.",
+      "deleteError": "An error occurred during deletion.",
+      "deleteErrorGeneric": "Check your information or try again later."
+    },
+    "success": {
+      "deleteSuccess": "Service deleted",
+      "deleteSuccessDescription": "Service {name} has been successfully deleted.",
+      "createSuccess": "Service created",
+      "createSuccessDescription": "The service has been successfully created.",
+      "importSuccess": "Import successful",
+      "importSuccessDescription": "Services have been successfully imported."
+    },
+    "deleteDialog": {
+      "title": "Delete service?",
+      "description": "Are you sure you want to delete service {name}? This action is irreversible.",
+      "cancel": "Cancel"
+    },
+    "modal": {
+      "addTitle": "Add Service",
+      "editTitle": "Edit Service",
+      "description": "Fill in the service information by sections. Fields marked with an asterisk (*) are required.",
+      "tabs": {
+        "informations": "Information",
+        "tarification": "Pricing",
+        "complementaires": "Additional"
+      },
+      "fields": {
+        "type": "Type",
+        "typePlaceholder": "Select a type",
+        "typeService": "Service",
+        "typeProduct": "Product",
+        "name": "Name",
+        "namePlaceholder": "Service name",
+        "description": "Description",
+        "descriptionPlaceholder": "Short description (optional)",
+        "priceHT": "Price excl. tax",
+        "pricePlaceholder": "0.00",
+        "taxRate": "VAT Rate",
+        "taxRatePlaceholder": "VAT",
+        "currency": "Currency",
+        "currencyPlaceholder": "Currency",
+        "unit": "Unit",
+        "unitPlaceholder": "hour, unit, etc. (optional)",
+        "sku": "Reference (SKU)",
+        "skuPlaceholder": "Product reference (optional)"
+      },
+      "validation": {
+        "nameMinLength": "Name must contain at least 2 characters",
+        "typeRequired": "Type is required",
+        "priceRequired": "Price is required",
+        "pricePositive": "Price must be a positive number",
+        "priceValid": "Price must be a valid positive number.",
+        "currencyRequired": "Currency is required",
+        "taxRateRequired": "VAT rate is required",
+        "createError": "An error occurred while creating the service.",
+        "createErrorGeneric": "Check your information or try again later."
+      },
+      "buttons": {
+        "previous": "Previous",
+        "next": "Next",
+        "cancel": "Cancel",
+        "create": "Create service",
+        "creating": "Creating..."
+      }
+    },
+    "import": {
+      "title": "Import services from CSV",
+      "description": "Upload a CSV file with your services' information. Name and price are required, other fields are optional.",
+      "dropZone": {
+        "title": "Click to select or drag and drop a CSV file",
+        "format": "Expected format: Name, Price, Type, Description, VAT, Currency, etc."
+      },
+      "fileInfo": {
+        "productsDetected": "{count} service(s) detected",
+        "fileSize": "{size} KB"
+      },
+      "table": {
+        "name": "Name *",
+        "description": "Description",
+        "type": "Type",
+        "price": "Price *",
+        "currency": "Currency",
+        "taxRate": "VAT",
+        "unit": "Unit",
+        "reference": "Reference"
+      },
+      "errors": {
+        "emptyFile": "Empty file",
+        "emptyFileDescription": "The CSV file contains no valid data.",
+        "limitExceeded": "Limit exceeded",
+        "limitExceededDescription": "The file contains more than 1000 services. Please split your file into multiple parts.",
+        "invalidFormat": "Invalid format",
+        "invalidFormatDescription": "Please select a CSV file.",
+        "invalidFormatDrop": "Please drop a CSV file.",
+        "readError": "Error",
+        "readErrorDescription": "An error occurred while reading the file.",
+        "importError": "An error occurred during import.",
+        "importFailed": "Import failed",
+        "importFailedDescription": "No services could be imported."
+      },
+      "success": {
+        "importCompleted": "Import completed",
+        "importCompletedDescription": "{successCount} service(s) imported successfully{errors, plural, =0 {} other {, {failedCount} error(s)}}.",
+        "productsImported": "{count} service(s) imported",
+        "errors": "{count} error(s)",
+        "lineError": "Line {line}: {error}"
+      },
+      "pagination": {
+        "pageInfo": "Page {current} of {total} • {count} service(s) total"
+      },
+      "format": {
+        "title": "Expected CSV format:",
+        "columns": "Possible columns: Name, Price, Type, Description, VAT, Currency, Unit, Reference (SKU)",
+        "requiredFields": "Name and price are required, other fields are optional",
+        "headersRequired": "The first line must contain headers",
+        "separator": "Separator: comma (,) or semicolon (;)",
+        "typeInfo": "Type: \"service\" or \"product\" (default: service)"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "close": "Close",
+        "import": "Validate and import ({count})",
+        "importing": "Importing..."
+      }
+    },
+    "detail": {
+      "title": "Service Details",
+      "subtitle": "Detailed service information. View details and usage history.",
+      "breadcrumb": {
+        "dashboard": "Dashboard",
+        "items": "Services",
+        "details": "Details"
+      },
+      "errors": {
+        "missingId": "Missing service ID",
+        "missingIdDescription": "The service identifier could not be retrieved from the URL.",
+        "notFound": "Service not found or API error.",
+        "deleteError": "An error occurred during deletion.",
+        "deleteErrorGeneric": "Check your information or try again later."
+      },
+      "buttons": {
+        "backToList": "Back to services list",
+        "delete": "Delete",
+        "processing": "Processing..."
+      },
+      "summary": {
+        "title": "Summary",
+        "description": "Service information #{id}.",
+        "priceHT": "Price excl. tax",
+        "defaultVAT": "Default VAT: {rate}%",
+        "lastUpdate": "Last update"
+      },
+      "description": {
+        "title": "Description",
+        "description": "Detailed service information",
+        "noDescription": "No description available.",
+        "type": "Type:",
+        "unit": "Unit:",
+        "reference": "Reference:"
+      },
+      "invoiceHistory": {
+        "title": "Invoice History",
+        "description": "Latest invoices containing this service.",
+        "viewAll": "View all invoices ({count})",
+        "noInvoices": "No associated invoices",
+        "client": "Client:",
+        "amount": "Amount:",
+        "status": "Status:"
+      },
+      "deleteDialog": {
+        "title": "Delete service?",
+        "description": "Are you sure you want to delete service {name}? This action is irreversible.",
+        "cancel": "Cancel"
+      }
+    }
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Connection error",
+    "unauthorized": "You are not authorized",
+    "notFound": "Resource not found",
+    "serverError": "Server error",
+    "tryAgain": "Please try again later",
+    "invalidCredentials": "Invalid credentials",
+    "sessionExpired": "Your session has expired"
+  },
+  "landing": {
+    "hero": {
+      "title": "Simple & Smart Invoicing",
+      "subtitle": "Create, send and manage your invoices with ease. Automate your accounting and track your payments in real-time.",
+      "ctaAuthenticated": "Access dashboard",
+      "ctaGuest": "Get started for free"
+    },
+    "header": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "testimonials": "Testimonials",
+      "tryFree": "Try for free",
+      "dashboard": "Dashboard",
+      "navigation": "Navigation"
+    },
+    "bento": {
+      "title": "Simplify your invoice management",
+      "subtitle": "All the features you need to create, send and track your invoices efficiently.",
+      "invoiceCreation": {
+        "title": "Simplified invoice creation.",
+        "description": "Create professional invoices in just a few clicks."
+      },
+      "emailSending": {
+        "title": "Automatic email sending",
+        "description": "Send your invoices directly by email to your clients."
+      },
+      "paymentTracking": {
+        "title": "Real-time payment tracking",
+        "description": "View the status of your invoices and payments in real-time."
+      },
+      "clientManagement": {
+        "title": "Client and service management",
+        "description": "Organize your contacts and services to invoice faster."
+      },
+      "onlinePayment": {
+        "title": "Secure online payment",
+        "description": "Allow your clients to pay directly online."
+      },
+      "dashboardIntelligence": {
+        "title": "Smart dashboard",
+        "description": "Track your revenue and statistics at a glance."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about Facturly and how it can transform your invoice management",
+      "items": {
+        "whatIs": {
+          "question": "What is Facturly and who is it for?",
+          "answer": "Facturly is an invoice management platform designed for freelancers, small businesses and professionals who want to simplify their invoicing. It's perfect for independents who want to save time and teams looking for a professional invoice management solution."
+        },
+        "emailSending": {
+          "question": "How does email invoice sending work?",
+          "answer": "When you create an invoice, you can send it directly by email to your client. They will receive a secure link to view, accept and pay the invoice online. The system automatically tracks the invoice status and notifies you of payments."
+        },
+        "integrations": {
+          "question": "Can I integrate Facturly with my existing tools?",
+          "answer": "Yes! Facturly offers integrations with the most popular accounting tools. Our API also allows you to connect Facturly to your existing system."
+        },
+        "freePlan": {
+          "question": "What does the free plan include?",
+          "answer": "The free plan includes up to 10 invoices per month, unlimited client management, email sending, basic dashboard and email support. It's perfect for getting started and testing the platform."
+        },
+        "onlinePayment": {
+          "question": "How does online payment work?",
+          "answer": "When a client accepts an invoice, they can pay it directly online via a secure link. Payments are processed securely and you are notified instantly. The invoice is automatically marked as paid in your dashboard."
+        },
+        "security": {
+          "question": "Is my data secure with Facturly?",
+          "answer": "Absolutely. We use enterprise-level security measures including end-to-end encryption, secure data transmission and compliance with industry standards. Your financial data is protected and never shared without your explicit authorization."
+        }
+      }
+    },
+    "cta": {
+      "title": "Simplify your invoicing today",
+      "subtitle": "Join thousands of professionals who trust Facturly to manage their invoices efficiently and improve their cash flow",
+      "betaFull": "Beta full ({current}/{max} users)",
+      "betaAvailable": "{remaining} spot{plural} available ({current}/{max})",
+      "ctaAuthenticated": "Access dashboard",
+      "ctaGuest": "Get started for free"
+    },
+    "pricing": {
+      "title": "Pricing tailored to your business",
+      "subtitle": "Choose a plan that fits your needs, from freelancers to growing businesses.",
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "save": "Save {percent}%",
+      "popular": "POPULAR",
+      "included": "Included:",
+      "includesFree": "Everything in Free plan +",
+      "ctaAuthenticated": "Access dashboard",
+      "perMonth": "/month",
+      "monthlyEquivalent": "{price}€/month with annual payment",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "description": "Perfect for getting started.",
+          "cta": "Get started for free",
+          "features": {
+            "invoices": "Up to 10 invoices per month",
+            "clients": "Unlimited client management",
+            "email": "Email sending",
+            "dashboard": "Basic dashboard",
+            "support": "Email support"
+          }
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Ideal for independent professionals.",
+          "cta": "Try Pro",
+          "features": {
+            "invoices": "100 invoices per month",
+            "onlinePayment": "Integrated online payment",
+            "reminders": "Automatic reminders",
+            "statistics": "Advanced statistics",
+            "customization": "Invoice customization",
+            "pdfExport": "Unlimited PDF export",
+            "support": "Priority support"
+          }
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "For growing teams and businesses.",
+          "cta": "Contact us",
+          "features": {
+            "invoices": "Unlimited invoices",
+            "team": "Team management",
+            "api": "Full API",
+            "customBranding": "Custom branding",
+            "dedicatedSupport": "Dedicated support",
+            "advancedAnalytics": "Advanced analytics",
+            "sla": "Guaranteed SLA"
+          }
+        }
+      }
+    },
+    "socialProof": {
+      "title": "Used by growing businesses"
+    },
+    "testimonials": {
+      "title": "Simplified invoicing",
+      "subtitle": "Discover how our clients save time, improve their cash flow",
+      "subtitle2": "and professionalize their management with Facturly",
+      "large": {
+        "quote": "Facturly has transformed our invoice management. What used to take hours now takes just a few minutes. A significant time saver for our team.",
+        "name": "Marie Dubois",
+        "role": "Director, TechStart"
+      },
+      "items": [
+        {
+          "quote": "Facturly has completely transformed how we manage invoices. Automatic email sending and real-time tracking save us hours every week. A truly professional solution.",
+          "name": "Sophie Martin",
+          "company": "Web Agency"
+        },
+        {
+          "quote": "The online payment integration has significantly accelerated our collections. Our clients appreciate the simplicity.",
+          "name": "Thomas Bernard",
+          "company": "Consulting"
+        },
+        {
+          "quote": "The dashboard gives us a clear view of our business. Real-time statistics are essential for our management.",
+          "name": "Julie Lefebvre",
+          "company": "Freelance"
+        },
+        {
+          "quote": "No more juggling between multiple tools. Facturly centralizes everything: clients, services, invoices and payments. A huge time saver.",
+          "name": "Marc Dubois",
+          "company": "Tech Startup"
+        },
+        {
+          "quote": "We started with the free plan to test, and within a week we upgraded to Pro. Now we can't do without it.",
+          "name": "Claire Moreau",
+          "company": "Design Studio"
+        },
+        {
+          "quote": "Creating invoices has become child's play. In just a few clicks, I have a professional invoice ready to send.",
+          "name": "Pierre Rousseau",
+          "company": "Architect"
+        },
+        {
+          "quote": "Automatic reminders have allowed us to drastically reduce payment delays. A feature that changes everything for our cash flow.",
+          "name": "Laure Petit",
+          "company": "Marketing Agency"
+        }
+      ]
+    },
+    "footer": {
+      "tagline": "Simple & Smart Invoicing",
+      "product": "Service",
+      "legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    }
+  },
+  "reminders": {
+    "title": "Reminders & Reports",
+    "subtitle": "View overdue invoices, schedule reminders and manage your cash flow.",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "reminders": "Reminders"
+    },
+    "buttons": {
+      "create": "Create reminder",
+      "remind": "Remind"
+    },
+    "stats": {
+      "active": "Active reminders",
+      "activeDescription": "Invoices requiring action",
+      "overdueAmount": "Overdue amount"
+    },
+    "table": {
+      "title": "Pending reminders",
+      "description": "List of invoices to remind.",
+      "searchPlaceholder": "Search for a client or invoice",
+      "invoice": "Invoice",
+      "client": "Client",
+      "dueDate": "Due date",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions",
+      "overdue": "Overdue"
+    },
+    "errors": {
+      "loadingError": "Error loading reminders."
+    },
+    "empty": {
+      "noReminders": "No reminders to display."
+    },
+    "modal": {
+      "title": "Create reminder",
+      "description": "Select an overdue invoice and send a reminder to the client.",
+      "fields": {
+        "invoice": "Invoice",
+        "invoicePlaceholder": "Select an overdue invoice",
+        "client": "Client:",
+        "email": "Email:",
+        "amount": "Amount:",
+        "dueDate": "Due date:"
+      },
+      "empty": {
+        "noInvoices": "No overdue invoices available"
+      },
+      "validation": {
+        "invoiceRequired": "Please select an invoice",
+        "invoiceNotFound": "Invoice not found.",
+        "selectInvoice": "Please select an invoice."
+      },
+      "success": {
+        "sent": "Reminder sent",
+        "sentDescription": "The reminder has been sent successfully.",
+        "sentWithNumber": "Reminder #{number} sent successfully."
+      },
+      "errors": {
+        "sendError": "An error occurred while sending the reminder.",
+        "genericError": "Check your information or try again later."
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "send": "Send reminder",
+        "sending": "Sending..."
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your account, customize your documents and manage your preferences.",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "settings": "Settings"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "company": "Company",
+      "billing": "Billing",
+      "subscription": "Subscription"
+    },
+    "profile": {
+      "title": "Personal Information",
+      "description": "Update your personal information and password.",
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "password": "New password",
+        "passwordPlaceholder": "Leave empty to keep unchanged",
+        "emailCannotBeChanged": "Email cannot be changed here.",
+        "passwordHint": "Leave empty if you don't want to change the password."
+      },
+      "validation": {
+        "firstNameMin": "First name must contain at least 2 characters",
+        "lastNameMin": "Last name must contain at least 2 characters",
+        "passwordMin": "Password must contain at least 8 characters"
+      },
+      "success": {
+        "updated": "Profile updated",
+        "updatedDescription": "Your personal information has been updated successfully."
+      },
+      "errors": {
+        "updateError": "An error occurred while updating the profile.",
+        "genericError": "Check your information or try again later."
+      },
+      "buttons": {
+        "update": "Update profile"
+      }
+    },
+    "company": {
+      "title": "Company & Legal",
+      "description": "Configure your company information for invoices.",
+      "fields": {
+        "name": "Company name",
+        "legalName": "Legal name",
+        "defaultCurrency": "Default currency",
+        "taxId": "Tax identification number",
+        "taxIdPlaceholder": "EIN, SIRET, etc.",
+        "vatNumber": "VAT number",
+        "addressLine1": "Address line 1",
+        "addressLine2": "Address line 2",
+        "postalCode": "Postal code",
+        "city": "City",
+        "country": "Country",
+        "countryPlaceholder": "United States"
+      },
+      "validation": {
+        "nameMin": "Name must contain at least 2 characters",
+        "currencyRequired": "Currency is required"
+      },
+      "success": {
+        "updated": "Company updated",
+        "updatedDescription": "Company information has been updated successfully."
+      },
+      "errors": {
+        "updateError": "An error occurred while updating the company.",
+        "genericError": "Check your information or try again later."
+      },
+      "buttons": {
+        "update": "Update company"
+      }
+    },
+    "billing": {
+      "title": "Billing Settings",
+      "description": "Configure default settings for your invoices. These values will be used for all your new invoices.",
+      "fields": {
+        "language": "Language",
+        "timezone": "Timezone",
+        "invoicePrefix": "Invoice prefix",
+        "invoicePrefixExample": "Example: FAC-2024-001, INV-2024-001",
+        "dateFormat": "Date format",
+        "currency": "Currency",
+        "taxRate": "VAT rate (%)",
+        "paymentTerms": "Payment terms",
+        "paymentTermsHint": "In days (e.g., 30 = 30 days)"
+      },
+      "sections": {
+        "localization": "Localization",
+        "format": "Invoice format",
+        "financial": "Financial Settings"
+      },
+      "validation": {
+        "languageRequired": "Language is required",
+        "timezoneRequired": "Timezone is required",
+        "invoicePrefixRequired": "Prefix is required",
+        "dateFormatRequired": "Date format is required",
+        "currencyRequired": "Currency is required",
+        "taxRateRequired": "VAT rate is required",
+        "paymentTermsPositive": "Payment terms must be positive"
+      },
+      "sequence": {
+        "title": "Current sequence",
+        "subtitle": "Next invoice number",
+        "current": "Current number",
+        "next": "Next invoice",
+        "description": "The sequence number is automatically incremented for each new invoice created."
+      },
+      "success": {
+        "updated": "Settings updated",
+        "updatedDescription": "Billing settings have been updated successfully."
+      },
+      "errors": {
+        "updateError": "An error occurred while updating settings.",
+        "genericError": "Check your information or try again later."
+      },
+      "buttons": {
+        "save": "Save settings",
+        "saving": "Saving..."
+      }
+    },
+    "subscription": {
+      "currentPlan": {
+        "title": "Current Plan",
+        "free": "Free plan with invoice limit",
+        "monthly": "Monthly billing",
+        "yearly": "Yearly billing",
+        "perMonth": "/ month",
+        "perYear": "/ year"
+      },
+      "availablePlans": {
+        "title": "Available Plans",
+        "description": "Choose the plan that best fits your needs.",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "save20": "-20%",
+        "current": "Current plan",
+        "free": "Free",
+        "unlimited": "Unlimited",
+        "limit": "Limit",
+        "invoicesPerMonth": "invoices/month",
+        "invoicesPerYear": "invoices/year",
+        "sameMonthlyYearly": "Same for monthly and yearly",
+        "subscribe": "Subscribe",
+        "changePlan": "Change plan",
+        "processing": "Processing...",
+        "backToFree": "Back to free plan",
+        "backToFreeInfo": "To return to the free plan, you must cancel your active subscription via the Stripe portal."
+      },
+      "cancelDialog": {
+        "title": "Cancel subscription",
+        "description": "Are you sure you want to cancel your subscription?",
+        "important": "Important",
+        "activeUntil": "Your subscription will remain active until the end of the current period ({date}). After this date, your account will switch to the free plan with its limitations.",
+        "limitAfterCancel": "Limit after cancellation",
+        "freePlanLimit": "Free plan: {count} invoices per month",
+        "keep": "Keep my subscription",
+        "confirm": "Confirm cancellation",
+        "canceling": "Canceling..."
+      },
+      "plans": {
+        "free": "Free",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      },
+      "features": {
+        "free": [
+          "Up to 10 invoices per month",
+          "Unlimited client management",
+          "Email sending",
+          "Basic dashboard",
+          "Email support"
+        ],
+        "pro": [
+          "100 invoices per month",
+          "Integrated online payment",
+          "Automatic reminders",
+          "Advanced statistics",
+          "Invoice customization",
+          "Unlimited PDF export",
+          "Priority support"
+        ],
+        "enterprise": [
+          "Everything from Pro plan",
+          "Dedicated support",
+          "Team training",
+          "Custom API",
+          "Enhanced security",
+          "Guaranteed SLA",
+          "Custom integrations"
+        ]
+      }
+    }
+  },
+  "bills": {
+    "title": "Received Bills",
+    "subtitle": "View and manage bills you have received from your suppliers.",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "bills": "Received Bills"
+    },
+    "stats": {
+      "total": "Total bills",
+      "pending": "Pending",
+      "paid": "Paid"
+    },
+    "list": {
+      "title": "Received Bills List",
+      "description": "{count} bill{plural} received{plural}",
+      "searchPlaceholder": "Search by number or supplier...",
+      "filterPlaceholder": "Filter by status",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "received": "Received",
+      "viewed": "Viewed",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "number": "Number",
+      "supplier": "Supplier",
+      "issueDate": "Issue date",
+      "dueDate": "Due date",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View"
+    },
+    "errors": {
+      "loadingError": "Loading error",
+      "loadingErrorDescription": "Unable to load received bills. Please try again later."
+    },
+    "empty": {
+      "title": "No bills received",
+      "noResults": "No bills match your search.",
+      "noBills": "You haven't received any bills yet."
+    },
+    "detail": {
+      "breadcrumb": {
+        "details": "Details"
+      },
+      "errors": {
+        "invalidId": "Invalid bill ID",
+        "invalidIdDescription": "The bill identifier is missing or invalid.",
+        "loadingError": "Unable to load bill",
+        "loadingErrorDescription": "The requested bill does not exist or an error occurred.",
+        "backToList": "Back to list"
+      },
+      "title": {
+        "description": "Bill from {supplier}. Total due: {amount}."
+      },
+      "buttons": {
+        "back": "Back"
+      },
+      "summary": {
+        "title": "Summary",
+        "description": "Main invoice details.",
+        "supplier": "Supplier",
+        "amount": "Amount",
+        "paid": "Paid: {amount}",
+        "issueDate": "Issue date",
+        "dueDate": "Due date"
+      },
+      "items": {
+        "description": "Description",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "total": "Total",
+        "empty": "No items in this bill"
+      },
+      "payment": {
+        "title": "Payment",
+        "paidDescription": "This bill has been paid.",
+        "unpaidDescription": "Mark this bill as paid.",
+        "paid": "Bill paid",
+        "method": "Method: {method}",
+        "date": "Date: {date}",
+        "amount": "Amount: {amount}",
+        "methodLabel": "Payment method",
+        "notesLabel": "Notes (optional)",
+        "notesPlaceholder": "Add payment notes...",
+        "markAsPaid": "Mark as paid",
+        "processing": "Processing...",
+        "success": "Bill paid",
+        "successDescription": "Bill {invoiceNumber} has been marked as paid.",
+        "error": "An error occurred during payment."
+      },
+      "paymentMethods": {
+        "bank_transfer": "Bank transfer",
+        "check": "Check",
+        "cash": "Cash",
+        "online_payment": "Online payment"
+      },
+      "notes": {
+        "title": "Notes"
+      }
+    }
+  },
+  "public": {
+    "invoice": {
+      "errors": {
+        "invalidToken": "Invalid token",
+        "invalidTokenDescription": "The invoice link is invalid or missing.",
+        "error": "Error",
+        "loadError": "Unable to load invoice.",
+        "notFound": "The requested invoice does not exist or the link has expired."
+      },
+      "labels": {
+        "issuer": "Issuer",
+        "recipient": "Recipient",
+        "information": "Information",
+        "number": "Number",
+        "issuedOn": "Issued on",
+        "dueDate": "Due date",
+        "description": "Description",
+        "quantity": "Quantity",
+        "unitPrice": "Unit price",
+        "total": "Total",
+        "subtotalHT": "Subtotal ex. VAT",
+        "vat": "VAT",
+        "amountPaid": "Amount paid",
+        "remaining": "Remaining to pay",
+        "totalTTC": "Total inc. VAT",
+        "notes": "Notes",
+        "siret": "SIRET",
+        "vatNumber": "VAT"
+      },
+      "empty": {
+        "noItems": "No items in this invoice"
+      },
+      "status": {
+        "paid": "Paid",
+        "rejected": "Rejected"
+      },
+      "actions": {
+        "title": "Actions",
+        "paidDescription": "This invoice has been paid.",
+        "rejectedDescription": "This invoice has been rejected.",
+        "canAcceptDescription": "Accept or reject this invoice.",
+        "noActionDescription": "No action available at the moment.",
+        "accept": "Accept invoice",
+        "accepting": "Processing...",
+        "reject": "Reject invoice",
+        "payNow": "Pay now",
+        "maximize": "Maximize invoice",
+        "unavailable": "Action unavailable",
+        "unavailableDescription": "This invoice cannot be accepted or paid at the moment. Please contact the issuer."
+      },
+      "paid": {
+        "title": "Invoice paid",
+        "description": "Payment of {amount} has been successfully processed.",
+        "rejectedTitle": "Invoice rejected",
+        "rejectedOn": "Rejected on {date}",
+        "comment": "Comment",
+        "reason": "Reason"
+      },
+      "rejection": {
+        "title": "Rejection information",
+        "reasonLabel": "Reason"
+      },
+      "toasts": {
+        "accepted": "Invoice accepted",
+        "acceptedDescription": "You will be redirected to the payment page.",
+        "rejected": "Invoice rejected",
+        "rejectedDescription": "The invoice has been successfully rejected.",
+        "acceptError": "An error occurred while accepting the invoice."
+      }
+    },
+    "pay": {
+      "errors": {
+        "invalidToken": "Invalid token",
+        "invalidTokenDescription": "The payment link is invalid or missing.",
+        "error": "Error",
+        "loadError": "Unable to load invoice.",
+        "notFound": "The requested invoice does not exist or the link has expired."
+      },
+      "title": "Invoice {number}",
+      "status": {
+        "paid": "Invoice paid"
+      },
+      "details": {
+        "title": "Invoice details",
+        "description": "Information about the invoice to pay.",
+        "issuer": "Issuer",
+        "totalAmount": "Total amount",
+        "remaining": "Remaining to pay: {amount}",
+        "issueDate": "Issue date",
+        "dueDate": "Due date",
+        "quantity": "Quantity",
+        "unitPrice": "U.P.",
+        "total": "Total",
+        "noItems": "No items in this invoice"
+      },
+      "payment": {
+        "title": "Payment",
+        "canPayDescription": "Process payment for this invoice.",
+        "cannotPayDescription": "This invoice cannot be paid at the moment.",
+        "method": "Payment method",
+        "methods": {
+          "online": "Online payment",
+          "bankTransfer": "Bank transfer",
+          "check": "Check",
+          "cash": "Cash"
+        },
+        "email": "Email (optional)",
+        "emailPlaceholder": "your@email.com",
+        "notes": "Notes (optional)",
+        "notesPlaceholder": "Add notes about the payment...",
+        "amountToPay": "Amount to pay",
+        "payNow": "Pay now",
+        "processing": "Processing payment...",
+        "paidTitle": "Invoice paid",
+        "paidDescription": "Payment of {amount} has been successfully processed.",
+        "unavailable": "Payment unavailable",
+        "unavailableDescription": "This invoice cannot be paid at the moment. Please contact the issuer."
+      },
+      "notes": {
+        "title": "Notes"
+      },
+      "toasts": {
+        "success": "Payment processed",
+        "successDescription": "Payment of {amount} has been successfully processed.",
+        "error": "An error occurred while processing the payment."
+      }
+    }
+  },
+  "metadata": {
+    "title": "Facturly - Simple & Smart Invoicing",
+    "description": "Create, send and manage your invoices with ease. Automate your accounting and track your payments in real-time with Facturly.",
+    "landingTitle": "Simple & Smart Invoicing for Your Business",
+    "landingDescription": "Create, send and manage your invoices with ease. Automate your accounting and track your payments in real-time. Join thousands of professionals who trust Facturly.",
+    "home": "Home",
+    "organizationDescription": "Simple and smart invoice management platform"
+  }
+}

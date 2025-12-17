@@ -14,24 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCreateClientMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-const clientSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.union([
-    z.string().email("Adresse email invalide"),
-    z.literal(""),
-  ]).optional(),
-  phone: z.string().optional(),
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  postalCode: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
-  taxId: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type ClientFormValues = z.infer<typeof clientSchema>;
+import { useTranslations } from 'next-intl';
 
 interface ClientModalProps {
   open: boolean;
@@ -40,8 +23,31 @@ interface ClientModalProps {
 }
 
 export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
+  const t = useTranslations('clients.modal');
+  const tValidation = useTranslations('clients.modal.validation');
+  const tClients = useTranslations('clients');
+  const commonT = useTranslations('common');
+  
   const [createClient, { isLoading, isSuccess, isError, error }] = useCreateClientMutation();
   const [activeTab, setActiveTab] = useState("informations");
+
+  const clientSchema = z.object({
+    name: z.string().min(2, tValidation('nameMinLength')),
+    email: z.union([
+      z.string().email(tValidation('invalidEmail')),
+      z.literal(""),
+    ]).optional(),
+    phone: z.string().optional(),
+    addressLine1: z.string().optional(),
+    addressLine2: z.string().optional(),
+    postalCode: z.string().optional(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    taxId: z.string().optional(),
+    notes: z.string().optional(),
+  });
+
+  type ClientFormValues = z.infer<typeof clientSchema>;
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -64,27 +70,27 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
   // (compatibilité avec l'ancien comportement)
   useEffect(() => {
     if (isSuccess && !onSuccess) {
-      toast.success("Client créé", {
-        description: "Le client a été créé avec succès.",
+      toast.success(tClients('createSuccess'), {
+        description: tClients('createSuccessDescription'),
       });
       form.reset();
       setActiveTab("informations");
       onClose();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess]);
+  }, [isSuccess, tClients, onSuccess, onClose]);
 
   useEffect(() => {
     if (isError && error) {
       const errorMessage = error && "data" in error
-        ? (error.data as { message?: string })?.message ?? "Une erreur est survenue lors de la création du client."
-        : "Vérifiez vos informations ou réessayez plus tard.";
+        ? (error.data as { message?: string })?.message ?? tValidation('createError')
+        : tValidation('createErrorGeneric');
       
-      toast.error("Erreur", {
+      toast.error(commonT('error'), {
         description: errorMessage,
       });
     }
-  }, [error, isError]);
+  }, [error, isError, tValidation, commonT]);
 
   const onSubmit = async (values: ClientFormValues) => {
     // S'assurer qu'on est sur la dernière étape avant de soumettre
@@ -114,8 +120,8 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
         onSuccess({ id: newClient.id, name: newClient.name });
       } else if (!onSuccess) {
         // Sinon, afficher le toast et fermer le modal (comportement par défaut)
-        toast.success("Client créé", {
-          description: "Le client a été créé avec succès.",
+        toast.success(tClients('createSuccess'), {
+          description: tClients('createSuccessDescription'),
         });
         form.reset();
         setActiveTab("informations");
@@ -142,9 +148,9 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
   }, [open]);
 
   const tabs = [
-    { id: "informations", label: "Informations" },
-    { id: "adresse", label: "Adresse" },
-    { id: "complementaires", label: "Complémentaires" },
+    { id: "informations", label: t('tabs.informations') },
+    { id: "adresse", label: t('tabs.adresse') },
+    { id: "complementaires", label: t('tabs.complementaires') },
   ];
 
   const handleNext = (e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -171,9 +177,9 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Ajouter un client</DialogTitle>
+          <DialogTitle>{t('addTitle')}</DialogTitle>
           <DialogDescription>
-            Remplissez les informations du client par sections. Les champs marqués d&apos;un astérisque (*) sont obligatoires.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -223,11 +229,11 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="client-name">
-                    Nom complet <span className="text-destructive">*</span>
+                    {t('fields.fullName')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="client-name"
-                    placeholder="Nom du contact"
+                    placeholder={t('fields.fullNamePlaceholder')}
                     {...form.register("name")}
                     disabled={isLoading}
                     className={form.formState.errors.name ? "border-destructive" : ""}
@@ -238,11 +244,11 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="client-email">Email</Label>
+                    <Label htmlFor="client-email">{t('fields.email')}</Label>
                     <Input
                       id="client-email"
                       type="email"
-                      placeholder="email@exemple.com"
+                      placeholder={t('fields.emailPlaceholder')}
                       {...form.register("email")}
                       disabled={isLoading}
                       className={form.formState.errors.email ? "border-destructive" : ""}
@@ -252,10 +258,10 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="client-phone">Téléphone</Label>
+                    <Label htmlFor="client-phone">{t('fields.phone')}</Label>
                     <Input
                       id="client-phone"
-                      placeholder="+228 ..."
+                      placeholder={t('fields.phonePlaceholder')}
                       {...form.register("phone")}
                       disabled={isLoading}
                     />
@@ -268,47 +274,47 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
             <TabsContent value="adresse" className="space-y-4 mt-0">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="client-addressLine1">Adresse ligne 1</Label>
+                  <Label htmlFor="client-addressLine1">{t('fields.addressLine1')}</Label>
                   <Input
                     id="client-addressLine1"
-                    placeholder="12 rue de l'innovation"
+                    placeholder={t('fields.addressLine1Placeholder')}
                     {...form.register("addressLine1")}
                     disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="client-addressLine2">Adresse ligne 2</Label>
+                  <Label htmlFor="client-addressLine2">{t('fields.addressLine2')}</Label>
                   <Input
                     id="client-addressLine2"
-                    placeholder="Complément d'adresse (optionnel)"
+                    placeholder={t('fields.addressLine2Placeholder')}
                     {...form.register("addressLine2")}
                     disabled={isLoading}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="client-postalCode">Code postal</Label>
+                    <Label htmlFor="client-postalCode">{t('fields.postalCode')}</Label>
                     <Input
                       id="client-postalCode"
-                      placeholder="75001"
+                      placeholder={t('fields.postalCodePlaceholder')}
                       {...form.register("postalCode")}
                       disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="client-city">Ville</Label>
+                    <Label htmlFor="client-city">{t('fields.city')}</Label>
                     <Input
                       id="client-city"
-                      placeholder="Paris"
+                      placeholder={t('fields.cityPlaceholder')}
                       {...form.register("city")}
                       disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="client-country">Pays</Label>
+                    <Label htmlFor="client-country">{t('fields.country')}</Label>
                     <Input
                       id="client-country"
-                      placeholder="France"
+                      placeholder={t('fields.countryPlaceholder')}
                       {...form.register("country")}
                       disabled={isLoading}
                     />
@@ -321,19 +327,19 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
             <TabsContent value="complementaires" className="space-y-4 mt-0">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="client-taxId">Numéro d&apos;identification fiscale</Label>
+                  <Label htmlFor="client-taxId">{t('fields.taxId')}</Label>
                   <Input
                     id="client-taxId"
-                    placeholder="SIRET, TVA, etc."
+                    placeholder={t('fields.taxIdPlaceholder')}
                     {...form.register("taxId")}
                     disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="client-notes">Notes</Label>
+                  <Label htmlFor="client-notes">{t('fields.notes')}</Label>
                   <Input
                     id="client-notes"
-                    placeholder="Notes supplémentaires (optionnel)"
+                    placeholder={t('fields.notesPlaceholder')}
                     {...form.register("notes")}
                     disabled={isLoading}
                   />
@@ -355,7 +361,7 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
                   className="gap-2"
                 >
                   <IoChevronBackOutline className="h-4 w-4" />
-                  Précédent
+                  {t('buttons.previous')}
                 </Button>
               )}
             </div>
@@ -366,7 +372,7 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
                 onClick={handleClose}
                 disabled={isLoading}
               >
-                Annuler
+                {t('buttons.cancel')}
               </Button>
               {!isLastTab ? (
                 <Button
@@ -375,7 +381,7 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
                   disabled={isLoading}
                   className="gap-2"
                 >
-                  Suivant
+                  {t('buttons.next')}
                   <IoChevronForwardOutline className="h-4 w-4" />
                 </Button>
               ) : (
@@ -383,10 +389,10 @@ export const ClientModal = ({ open, onClose, onSuccess }: ClientModalProps) => {
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Enregistrement...
+                      {t('buttons.saving')}
                     </div>
                   ) : (
-                    "Enregistrer"
+                    t('buttons.save')
                   )}
                 </Button>
               )}

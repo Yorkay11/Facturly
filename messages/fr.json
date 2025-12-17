@@ -1,0 +1,1836 @@
+{
+  "common": {
+    "welcome": "Bienvenue",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "submit": "Envoyer",
+    "reset": "Réinitialiser",
+    "actions": "Actions",
+    "status": "Statut",
+    "date": "Date",
+    "amount": "Montant",
+    "total": "Total"
+  },
+  "beta": {
+    "badge": "Bêta",
+    "message": "Facturly est actuellement en version bêta. Merci de votre patience pendant que nous améliorons la plateforme."
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "loginSuccess": "Connexion réussie",
+    "loginError": "Échec de la connexion",
+    "registerSuccess": "Inscription réussie",
+    "registerError": "Échec de l'inscription",
+    "invalidEmail": "Adresse email invalide",
+    "passwordTooShort": "Mot de passe trop court",
+    "passwordRequired": "Le mot de passe est requis",
+    "emailRequired": "L'email est requis",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "companyName": "Nom de l'entreprise",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "dontHaveAccount": "Vous n'avez pas de compte ?",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "welcomeBack": "Bon retour !",
+    "createAccount": "Créer un compte"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Retrouvez un aperçu rapide de vos revenus et des actions à suivre.",
+    "overview": "Vue d'ensemble",
+    "invoices": "Factures",
+    "clients": "Clients",
+    "items": "Articles",
+    "settings": "Paramètres",
+    "notifications": "Notifications",
+    "reminders": "Relances",
+    "bills": "Factures reçues",
+    "revenue": "Revenus",
+    "pending": "En attente",
+    "paid": "Payé",
+    "overdue": "En retard",
+    "recentActivity": "Activité récente",
+    "quickActions": "Actions rapides",
+    "quickActionsDescription": "Trois raccourcis clés pour accélérer votre routine.",
+    "createInvoice": "Créer une facture",
+    "createInvoiceDescription": "Brouillon en 5 étapes, preview et envoi.",
+    "remindPayment": "Relancer un paiement",
+    "remindPaymentDescription": "Choisissez un client et envoyez un rappel.",
+    "addClient": "Ajouter un client",
+    "addClientDescription": "Ajoutez un contact depuis votre carnet.",
+    "addItem": "Ajouter un article",
+    "monthlyRevenue": "Revenus du mois",
+    "invoicesSent": "Factures envoyées",
+    "totalPaid": "Total payé",
+    "unpaid": "Impayés",
+    "revenueTrends": "Tendances des revenus",
+    "revenueTrendsDescription": "Évolution sur les 4 derniers mois",
+    "noDataAvailable": "Aucune donnée disponible",
+    "noDataDescription": "Créez vos premières factures pour voir les tendances",
+    "totalPaidLabel": "Total payé",
+    "pendingLabel": "En attente",
+    "activityDescription": "Dernières actions sur votre compte.",
+    "noRecentActivity": "Aucune activité récente",
+    "toWatch": "À surveiller",
+    "toWatchDescription": "Factures en retard, clients sensibles, objectif impayés.",
+    "noAlert": "Aucune alerte",
+    "allGood": "Tout est en ordre",
+    "overdueMoreThan7Days": "En retard > 7 jours",
+    "clientToRemind": "Client à relancer",
+    "invoice": "facture",
+    "unpaidRate": "Tx d'impayés",
+    "unpaidRateGoal": "Objectif < 10%",
+    "unpaidInvoice": "impayée",
+    "unpaidInvoices": "impayées",
+    "quickSummary": "Résumé rapide",
+    "invoicesThisMonth": "Factures ce mois",
+    "paymentRate": "Taux de paiement",
+    "averageRevenue": "Revenus moyens",
+    "quickNavigation": "Navigation rapide",
+    "allInvoices": "Toutes les factures",
+    "viewAndManage": "Voir et gérer",
+    "myClients": "Mes clients",
+    "manageAddressBook": "Gérer le carnet",
+    "products": "Prestations",
+    "catalogAndPricing": "Catalogue et tarifs",
+    "configuration": "Configuration",
+    "resources": "Ressources",
+    "documentation": "Documentation",
+    "support": "Support",
+    "new": "Nouveau",
+    "automatedRemindersAvailable": "Relances automatisées disponibles",
+    "open": "Ouvrir",
+    "launch": "Lancer"
+  },
+  "invoiceLimit": {
+    "close": "Fermer",
+    "limitReached": "Limite de factures atteinte",
+    "nearLimit": "Limite de factures proche",
+    "freePlan": "Plan gratuit - Limite de factures",
+    "limitReachedMessage": "Vous avez atteint votre limite de {count} factures pour cette période. Passez au plan Pro pour créer des factures illimitées.",
+    "nearLimitMessage": "Vous avez utilisé {percentage}% de votre limite. Il vous reste {remaining} facture{remaining, plural, one { } other {s}} pour cette période.",
+    "freePlanMessage": "Vous avez utilisé {used} sur {effective} factures disponibles ce mois. Il vous reste {remaining} facture{remaining, plural, one { } other {s}}.",
+    "progress": "{used} / {effective} factures",
+    "upgradeToPro": "Passer au plan Pro",
+    "viewPlans": "Voir les plans",
+    "upgradeNow": "Upgrade maintenant"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "invoices": "Factures",
+    "invoicesCreated": "Factures créées",
+    "invoicesReceived": "Factures reçues",
+    "newInvoice": "Nouvelle facture",
+    "clients": "Clients",
+    "items": "Prestations",
+    "reminders": "Relances",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "help": "Aide",
+    "notifications": "Notifications",
+    "dashboardDescription": "Vue d'ensemble de vos indicateurs",
+    "invoicesDescription": "Suivre, créer et envoyer vos factures",
+    "invoicesCreatedDescription": "Consultez vos factures créées",
+    "invoicesReceivedDescription": "Consultez et gérez les factures reçues",
+    "newInvoiceDescription": "Construisez un document de facturation",
+    "clientsDescription": "Carnet d'adresses et historique",
+    "itemsDescription": "Catalogue de prestations et tarifs",
+    "remindersDescription": "Statistiques impayés et suivi des relances",
+    "settingsDescription": "Configuration, mentions et branding",
+    "mainNavigation": "Navigation principale",
+    "openNavigation": "Ouvrir la navigation",
+    "openUserProfile": "Ouvrir le profil utilisateur",
+    "support": "Support",
+    "new": "Nouveau"
+  },
+  "topbar": {
+    "user": "Utilisateur",
+    "noPlan": "Aucun plan",
+    "planFree": "Gratuit",
+    "planPro": "Pro",
+    "planEnterprise": "Enterprise",
+    "userProfile": "Profil utilisateur",
+    "accountInfo": "Informations de votre compte",
+    "company": "Entreprise",
+    "preferences": "Préférences",
+    "preferencesDescription": "Notifications, mentions légales, branding",
+    "manageAccount": "Gérer mon compte",
+    "logout": "Déconnexion",
+    "loggingOut": "Déconnexion...",
+    "logoutSuccess": "Déconnexion réussie",
+    "logoutSuccessDescription": "Vous avez été déconnecté avec succès.",
+    "logoutError": "Erreur lors de la déconnexion",
+    "logoutErrorDescription": "Vous avez été déconnecté localement."
+  },
+  "invoices": {
+    "title": "Factures",
+    "subtitle": "Suivez vos brouillons, factures envoyées et paiements reçus.",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "invoices": "Factures"
+    },
+    "create": "Créer une facture",
+    "edit": "Modifier la facture",
+    "view": "Voir la facture",
+    "delete": "Supprimer la facture",
+    "send": "Envoyer",
+    "download": "Télécharger",
+    "export": "Exporter",
+    "print": "Imprimer",
+    "status": "Statut",
+    "draft": "Brouillon",
+    "sent": "Envoyée",
+    "paid": "Payée",
+    "overdue": "En retard",
+    "cancelled": "Annulée",
+    "number": "Numéro",
+    "date": "Date d'émission",
+    "dueDate": "Date d'échéance",
+    "client": "Client",
+    "total": "Total",
+    "amount": "Montant",
+    "actions": "Actions",
+    "searchPlaceholder": "Rechercher (client, numéro...)",
+    "filterPlaceholder": "Statut",
+    "allStatuses": "Tous les statuts",
+    "displayed": "{count} facture{plural} affichée{plural}",
+    "loading": "Chargement...",
+    "errors": {
+      "loadingError": "Erreur lors du chargement des factures. Vérifiez l'API."
+    },
+    "table": {
+      "number": "Numéro",
+      "client": "Client",
+      "issueDate": "Date émission",
+      "dueDate": "Date échéance",
+      "status": "Statut",
+      "amount": "Montant",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "Aucune facture pour le moment",
+      "description": "Créez votre première facture pour expédier des documents professionnels et suivre vos paiements."
+    },
+    "new": {
+      "label": "Nouvelle facture",
+      "breadcrumb": {
+        "dashboard": "Tableau de bord",
+        "invoices": "Factures",
+        "newInvoice": "Nouvelle facture"
+      },
+      "title": "Créer une facture",
+      "description": "Complétez les informations et visualisez le rendu en temps réel.",
+      "toasts": {
+        "itemUpdated": "Ligne mise à jour",
+        "itemUpdatedDescription": "{description} a été modifiée.",
+        "itemAdded": "Ligne ajoutée",
+        "itemAddedDescription": "{description} a été ajoutée.",
+        "draftSaved": "Brouillon enregistré",
+        "draftSavedDescription": "Votre facture mock a bien été sauvegardée."
+      }
+    },
+    "form": {
+      "validation": {
+        "receiverRequired": "Le destinataire est requis",
+        "subjectRequired": "L'objet est requis",
+        "issueDateRequired": "La date d'émission est requise",
+        "dueDateRequired": "La date d'échéance est requise",
+        "currencyRequired": "La devise est obligatoire"
+      },
+      "loading": {
+        "sending": "Envoi de la facture...",
+        "updating": "Mise à jour de la facture...",
+        "creating": "Création de la facture..."
+      },
+      "sections": {
+        "invoiceInfo": {
+          "title": "Informations facture",
+          "description": "Destinataire, objet, date d'émission et échéance."
+        },
+        "invoiceLines": {
+          "title": "Lignes de facture",
+          "description": "Ajoutez vos prestations, quantités et tarifs.",
+          "empty": {
+            "title": "Aucune ligne pour le moment",
+            "description": "Ajoutez votre première prestation en cliquant sur le bouton ci-dessus."
+          }
+        },
+        "discount": {
+          "title": "Ajouter une remise",
+          "comingSoon": "À venir",
+          "description": "Les remises avancées et calculs TVA seront intégrés dans une prochaine version."
+        }
+      },
+      "fields": {
+        "receiver": {
+          "label": "Destinataire",
+          "placeholder": "Sélectionnez un client",
+          "searchPlaceholder": "Rechercher un client...",
+          "loading": "Chargement des clients...",
+          "empty": "Aucun client trouvé.",
+          "noClients": "Aucun client disponible. Créez un client depuis la page Clients.",
+          "createNew": "Créer un nouveau client"
+        },
+        "subject": {
+          "label": "Objet",
+          "placeholder": "Projet web, acompte..."
+        },
+        "issueDate": {
+          "label": "Date d'émission",
+          "placeholder": "Choisir la date"
+        },
+        "dueDate": {
+          "label": "Date d'échéance",
+          "placeholder": "Choisir la date"
+        },
+        "currency": {
+          "label": "Devise",
+          "placeholder": "Sélectionnez la devise",
+          "searchPlaceholder": "Rechercher...",
+          "empty": "Aucune devise trouvée"
+        },
+        "notes": {
+          "label": "Notes internes",
+          "placeholder": "Mention interne ou conditions de paiement"
+        }
+      },
+      "lines": {
+        "add": "Ajouter une ligne",
+        "edit": "Modifier la ligne {description}",
+        "delete": "Supprimer la ligne {description}",
+        "unitPrice": "Prix unitaire",
+        "quantity": "Quantité",
+        "vat": "TVA",
+        "lineTotal": "Total ligne"
+      },
+      "addItemModal": {
+        "title": {
+          "create": "Ajouter un article à la facture",
+          "edit": "Modifier la ligne"
+        },
+        "description": {
+          "create": "Sélectionnez un produit existant ou saisissez manuellement les informations.",
+          "edit": "Modifiez les informations de la ligne de facture."
+        },
+        "tabs": {
+          "select": "Sélectionner",
+          "manual": "Saisie manuelle"
+        },
+        "fields": {
+          "product": "Produit/Prestation",
+          "selectProduct": "Sélectionner un produit",
+          "searchPlaceholder": "Rechercher par nom, description ou SKU...",
+          "loading": "Chargement des produits...",
+          "noResults": "Aucun produit trouvé.",
+          "noProducts": {
+            "title": "Aucun produit disponible",
+            "description": "Passez à la saisie manuelle pour ajouter un article."
+          },
+          "clearSelection": "Effacer la sélection",
+          "selectedProduct": "Produit sélectionné",
+          "modified": "Modifié",
+          "restore": "Restaurer",
+          "productDetails": {
+            "name": "Nom",
+            "description": "Description",
+            "price": "Prix",
+            "vat": "TVA"
+          },
+          "selectProductMessage": "Sélectionnez un produit pour continuer, ou passez à la saisie manuelle.",
+          "manualEntry": {
+            "title": "Saisie manuelle",
+            "description": "Ajoutez un article directement à la facture. Vous pourrez choisir de le sauvegarder dans le catalogue après validation."
+          },
+          "itemDetails": "Détails de l'article",
+          "description": {
+            "label": "Description",
+            "placeholder": "Nom du produit ou de la prestation"
+          },
+          "quantity": {
+            "label": "Quantité"
+          },
+          "unitPrice": {
+            "label": "Prix unitaire",
+            "placeholder": "0.00"
+          },
+          "vatRate": {
+            "label": "Taux de TVA",
+            "placeholder": "Sélectionnez le taux de TVA"
+          }
+        },
+        "types": {
+          "service": "Prestation",
+          "product": "Produit"
+        },
+        "buttons": {
+          "cancel": "Annuler",
+          "add": "Ajouter l'article",
+          "update": "Mettre à jour"
+        },
+        "saveDialog": {
+          "title": "Sauvegarder dans le catalogue ?",
+          "description": "Voulez-vous sauvegarder cet article dans votre catalogue de produits ? Il pourra être réutilisé pour d'autres factures.",
+          "fields": {
+            "type": {
+              "label": "Type",
+              "placeholder": "Sélectionner un type",
+              "service": "Service",
+              "product": "Produit"
+            },
+            "currency": {
+              "label": "Devise",
+              "placeholder": "Devise"
+            },
+            "summary": {
+              "title": "Résumé",
+              "name": "Nom",
+              "price": "Prix",
+              "vat": "TVA",
+              "type": "Type"
+            }
+          },
+          "buttons": {
+            "addOnly": "Non, ajouter uniquement",
+            "saveAndAdd": "Oui, sauvegarder et ajouter"
+          }
+        },
+        "toasts": {
+          "productSelected": "Produit sélectionné",
+          "productSelectedDescription": "{name} a été ajouté. Complétez la quantité ci-dessous.",
+          "valuesRestored": "Valeurs restaurées",
+          "valuesRestoredDescription": "Les valeurs du produit ont été restaurées.",
+          "productCreated": "Produit créé et article ajouté",
+          "productCreatedDescription": "{name} a été sauvegardé dans le catalogue et ajouté à la facture.",
+          "createError": "Une erreur est survenue lors de la création du produit."
+        }
+      },
+      "buttons": {
+        "saveDraft": "Enregistrer le brouillon",
+        "updateDraft": "Mettre à jour le brouillon",
+        "saving": "Enregistrement...",
+        "updating": "Mise à jour...",
+        "send": "Envoyer la facture",
+        "sending": "Envoi en cours..."
+      },
+      "errors": {
+        "clientMissing": "Client manquant",
+        "clientMissingDescription": "Veuillez sélectionner un client avant {action}.",
+        "datesMissing": "Dates manquantes",
+        "datesMissingDescription": "Veuillez définir les dates d'émission et d'échéance avant {action}.",
+        "noItems": "Aucun article",
+        "noItemsDescription": "Veuillez ajouter au moins un article à la facture avant {action}.",
+        "currencyMissing": "Devise manquante",
+        "currencyMissingDescription": "Veuillez sélectionner une devise avant {action}.",
+        "updateError": "Une erreur est survenue lors de la mise à jour de la facture.",
+        "createError": "Une erreur est survenue lors de la création de la facture.",
+        "sendError": "Une erreur est survenue lors de l'envoi de la facture.",
+        "prepareError": "Une erreur est survenue lors de la préparation de l'envoi.",
+        "saveError": "Une erreur est survenue lors de la sauvegarde du brouillon.",
+        "idMissing": "La facture a été créée mais l'ID n'a pas été retourné.",
+        "idMissingRedirect": "La facture a été sauvegardée mais l'ID n'a pas été retourné. Redirection vers la liste des factures."
+      },
+      "success": {
+        "clientCreated": "Client créé et sélectionné",
+        "clientCreatedDescription": "{name} a été créé et sélectionné comme destinataire.",
+        "invoiceSent": "Facture envoyée",
+        "invoiceSentDescription": "La facture {number} a été envoyée avec succès{email}.",
+        "draftUpdated": "Brouillon mis à jour",
+        "draftUpdatedDescription": "La facture {number} a été mise à jour avec succès.",
+        "draftSaved": "Brouillon enregistré",
+        "draftSavedDescription": "La facture {number} a été sauvegardée avec succès."
+      },
+      "actions": {
+        "send": "d'envoyer la facture",
+        "save": "de sauvegarder le brouillon"
+      }
+    },
+    "preview": {
+      "title": "Aperçu",
+      "description": "Synchronisé avec les informations saisies.",
+      "fullscreen": "Aperçu grand écran",
+      "fullscreenTitle": "Aperçu de la facture",
+      "templateSelector": {
+        "placeholder": "Sélectionner un template"
+      },
+      "pdf": {
+        "generate": "Générer PDF",
+        "generating": "Génération...",
+        "success": "PDF généré",
+        "successDescription": "Le PDF a été téléchargé avec succès.",
+        "errors": {
+          "notSaved": "La facture doit être sauvegardée avant de générer le PDF.",
+          "notLoggedIn": "Vous devez être connecté pour générer le PDF.",
+          "proOnly": "La génération de PDF est réservée aux plans Pro ou Entreprise.",
+          "generic": "Erreur lors de la génération du PDF",
+          "retry": "Impossible de générer le PDF. Veuillez réessayer."
+        },
+        "restricted": {
+          "title": "Génération PDF réservée",
+          "description": "La génération de PDF est disponible uniquement avec les plans Pro ou Entreprise.",
+          "upgrade": "Passer au plan Pro"
+        }
+      }
+    },
+    "deleteDialog": {
+      "deleteTitle": "Supprimer la facture ?",
+      "cancelTitle": "Annuler la facture ?",
+      "deleteDescription": "Êtes-vous sûr de vouloir supprimer la facture {number} ? Cette action est irréversible.",
+      "cancelDescription": "Êtes-vous sûr de vouloir annuler la facture {number} ? Cette action changera le statut de la facture.",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "cancelAction": "Annuler",
+      "processing": "Traitement...",
+      "deleteSuccess": "Facture supprimée",
+      "deleteSuccessDescription": "La facture {number} a été supprimée avec succès.",
+      "cancelSuccess": "Facture annulée",
+      "cancelSuccessDescription": "La facture {number} a été annulée avec succès.",
+      "error": "Une erreur est survenue lors de la suppression."
+    },
+    "rejectModal": {
+      "title": "Refuser la facture",
+      "description": "Veuillez indiquer la raison de votre refus. Un commentaire est obligatoire pour permettre à l'émetteur de comprendre votre décision.",
+      "fields": {
+        "reason": {
+          "label": "Raison du refus",
+          "optional": "(optionnel)",
+          "placeholder": "Sélectionnez une raison (optionnel)",
+          "none": "Aucune raison spécifique"
+        },
+        "comment": {
+          "label": "Commentaire",
+          "placeholder": "Veuillez expliquer la raison de votre refus (minimum 10 caractères)...",
+          "counter": "{count} / 1000 caractères (minimum 10)"
+        }
+      },
+      "reasons": {
+        "amount_discrepancy": {
+          "label": "Différence de montant",
+          "description": "Le montant ne correspond pas à l'accord"
+        },
+        "wrong_items": {
+          "label": "Articles incorrects",
+          "description": "Les articles facturés ne correspondent pas"
+        },
+        "wrong_client": {
+          "label": "Mauvais client",
+          "description": "La facture a été émise pour le mauvais client"
+        },
+        "other": {
+          "label": "Autre raison",
+          "description": "Autre raison non listée"
+        }
+      },
+      "validation": {
+        "commentMin": "Le commentaire doit contenir au moins 10 caractères",
+        "commentMax": "Le commentaire ne doit pas dépasser 1000 caractères"
+      },
+      "alert": {
+        "title": "Important",
+        "description": "Le refus de cette facture la marquera comme annulée. L'émetteur pourra modifier la facture et vous la renvoyer si nécessaire."
+      },
+      "buttons": {
+        "cancel": "Annuler",
+        "confirm": "Confirmer le refus",
+        "processing": "Traitement..."
+      },
+      "errors": {
+        "invalidToken": "Token invalide. Veuillez rafraîchir la page.",
+        "rejectError": "Une erreur est survenue lors du refus de la facture.",
+        "genericError": "Une erreur est survenue. Veuillez réessayer plus tard."
+      }
+    },
+    "detail": {
+      "breadcrumb": {
+        "details": "Détails"
+      },
+      "errors": {
+        "invalidId": "ID de facture invalide",
+        "invalidIdDescription": "L'identifiant de la facture est manquant ou invalide.",
+        "loadingError": "Impossible de charger la facture",
+        "loadingErrorDescription": "La facture demandée n'existe pas ou une erreur est survenue.",
+        "backToList": "Retour à la liste des factures"
+      },
+      "title": {
+        "description": "Facture destinée à {clientName}. Total dû : {amount}."
+      },
+      "buttons": {
+        "edit": "Modifier",
+        "copyPublicLink": "Copier le lien public",
+        "copyPaymentLink": "Copier le lien de paiement",
+        "sendReminder": "Envoyer un rappel",
+        "markAsPaid": "Marquer comme payé",
+        "delete": "Supprimer",
+        "cancel": "Annuler"
+      },
+      "summary": {
+        "title": "Résumé",
+        "description": "Détails principaux de la facture.",
+        "client": "Client",
+        "emailNotAvailable": "Email non disponible",
+        "amount": "Montant",
+        "taxIncluded": "TVA incluse ({taxAmount})",
+        "issueDate": "Date d'émission",
+        "dueDate": "Échéance"
+      },
+      "items": {
+        "description": "Description",
+        "quantity": "Quantité",
+        "unitPrice": "P.U.",
+        "total": "Total",
+        "empty": "Aucun item dans cette facture"
+      },
+      "timeline": {
+        "title": "Timeline",
+        "description": "Suivi des événements de la facture.",
+        "created": "Facture créée",
+        "createdDescription": "Document généré et enregistré dans Facturly.",
+        "sent": "Envoyée au client",
+        "sentDescription": "Email envoyé à {email}.",
+        "draft": "Brouillon",
+        "draftDescription": "Facture en brouillon, non envoyée.",
+        "viewed": "Visualisée par le client",
+        "viewedDescription": "Le client a ouvert la facture.",
+        "rejected": "Facture rejetée",
+        "rejectedDescription": "La facture a été rejetée par le client.",
+        "rejectedWithComment": "Rejetée : {comment}",
+        "rejectedWithReason": "Raison : {reason}",
+        "paymentReceived": "Paiement reçu",
+        "paymentReceivedAmount": "Paiement reçu - {amount}",
+        "paymentReceivedDescription": "Paiement confirmé et rapproché.",
+        "paymentReceivedWithMethod": "Paiement par {method}{notes}.",
+        "paymentReceivedWithNotes": " - {notes}",
+        "dueDate": "Échéance",
+        "dueDateOverdue": "Échéance dépassée",
+        "dueDateDescription": "Date d'échéance : {date}. Montant restant : {remaining}.",
+        "dueDateOverdueDescription": "Échéance dépassée. Montant restant : {remaining}.",
+        "cancelled": "Facture annulée",
+        "cancelledDescription": "La facture a été annulée."
+      },
+      "reminders": {
+        "title": "Historique des relances",
+        "description": "{count} relance{plural} envoyée{plural}",
+        "reminderNumber": "Relance n°{number}",
+        "manual": "Manuelle",
+        "automatic": "Automatique",
+        "sentOn": "Envoyée le {date} • {days} jour{plural} après échéance",
+        "recipient": "Destinataire: {email}"
+      },
+      "notes": {
+        "title": "Notes",
+        "description": "Notes associées à cette facture."
+      },
+      "payments": {
+        "title": "Paiements",
+        "description": "Historique des paiements reçus pour cette facture.",
+        "date": "Date : {date}",
+        "method": "Méthode : {method}",
+        "notes": "Notes : {notes}",
+        "completed": "Complété"
+      },
+      "markPaidDialog": {
+        "title": "Marquer comme payé",
+        "description": "Enregistrez un paiement reçu pour la facture {invoiceNumber}.",
+        "amountLabel": "Montant *",
+        "remaining": "Restant à payer : {amount}",
+        "dateLabel": "Date de paiement *",
+        "methodLabel": "Méthode de paiement *",
+        "notesLabel": "Notes (optionnel)",
+        "notesPlaceholder": "Ajouter des notes sur le paiement...",
+        "cancel": "Annuler",
+        "save": "Enregistrer le paiement",
+        "processing": "Traitement...",
+        "success": "Facture marquée comme payée",
+        "successDescription": "Le paiement de {amount} a été enregistré.",
+        "error": "Une erreur est survenue lors de l'enregistrement du paiement.",
+        "errorAmountExceeded": "Le montant ne peut pas dépasser {amount}."
+      },
+      "paymentMethods": {
+        "bank_transfer": "Virement bancaire",
+        "check": "Chèque",
+        "cash": "Espèces",
+        "online_payment": "Paiement en ligne",
+        "card": "Carte bancaire"
+      },
+      "deleteDialog": {
+        "deleteTitle": "Supprimer la facture ?",
+        "cancelTitle": "Annuler la facture ?",
+        "deleteDescription": "Êtes-vous sûr de vouloir supprimer la facture {number} ? Cette action est irréversible.",
+        "cancelDescription": "Êtes-vous sûr de vouloir annuler la facture {number} ? Cette action changera le statut de la facture.",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "cancelAction": "Annuler",
+        "processing": "Traitement...",
+        "deleteSuccess": "Facture supprimée",
+        "deleteSuccessDescription": "La facture {number} a été supprimée avec succès.",
+        "cancelSuccess": "Facture annulée",
+        "cancelSuccessDescription": "La facture {number} a été annulée avec succès.",
+        "error": "Une erreur est survenue lors de la suppression."
+      },
+      "toasts": {
+        "linkCopied": "Lien copié",
+        "paymentLinkCopied": "Le lien de paiement a été copié dans le presse-papiers.",
+        "publicLinkCopied": "Le lien public de visualisation a été copié dans le presse-papiers."
+      }
+    }
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Gérez votre carnet d'adresses, consultez l'historique des factures et préparez vos relances.",
+    "new": "Nouveau client",
+    "add": "Ajouter un client",
+    "edit": "Modifier le client",
+    "delete": "Supprimer le client",
+    "deleteTitle": "Supprimer le client ?",
+    "deleteDescription": "Êtes-vous sûr de vouloir supprimer le client {name} ? Cette action est irréversible et supprimera également toutes les données associées.",
+    "deleteSuccess": "Client supprimé",
+    "deleteSuccessDescription": "Le client {name} a été supprimé avec succès.",
+    "deleteError": "Une erreur est survenue lors de la suppression.",
+    "name": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "city": "Ville",
+    "country": "Pays",
+    "noClients": "Aucun client enregistré",
+    "noClientsDescription": "Créez votre premier client pour constituer votre carnet d'adresses et préparer l'envoi de factures personnalisées.",
+    "activeClients": "Clients actifs",
+    "cumulativeInvoices": "Factures cumulées",
+    "lastAdded": "Dernier ajout",
+    "lastAddedDescription": "Date de création du dernier client",
+    "directory": "Répertoire",
+    "directoryDescription": "Recherchez vos clients, filtrez par nom, email ou ville.",
+    "searchPlaceholder": "Rechercher par nom, email...",
+    "client": "Client",
+    "addDate": "Date d'ajout",
+    "actions": "Actions",
+    "deleteAction": "Supprimer",
+    "processing": "Traitement...",
+    "importCSV": "Importer CSV",
+    "importSuccess": "Import réussi",
+    "importSuccessDescription": "Les clients ont été importés avec succès.",
+    "createSuccess": "Client créé",
+    "createSuccessDescription": "Le client a été créé avec succès.",
+    "loadError": "Erreur lors du chargement des clients. Vérifiez l'API.",
+    "pageInfo": "Page {current} sur {total} • {count} client(s) au total",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "modal": {
+      "addTitle": "Ajouter un client",
+      "editTitle": "Modifier le client",
+      "description": "Remplissez les informations du client par sections. Les champs marqués d'un astérisque (*) sont obligatoires.",
+      "tabs": {
+        "informations": "Informations",
+        "adresse": "Adresse",
+        "complementaires": "Complémentaires"
+      },
+      "fields": {
+        "fullName": "Nom complet",
+        "fullNamePlaceholder": "Nom du contact",
+        "email": "Email",
+        "emailPlaceholder": "email@exemple.com",
+        "phone": "Téléphone",
+        "phonePlaceholder": "+228 ...",
+        "addressLine1": "Adresse ligne 1",
+        "addressLine1Placeholder": "12 rue de l'innovation",
+        "addressLine2": "Adresse ligne 2",
+        "addressLine2Placeholder": "Complément d'adresse (optionnel)",
+        "postalCode": "Code postal",
+        "postalCodePlaceholder": "75001",
+        "city": "Ville",
+        "cityPlaceholder": "Paris",
+        "country": "Pays",
+        "countryPlaceholder": "France",
+        "taxId": "Numéro d'identification fiscale",
+        "taxIdPlaceholder": "SIRET, TVA, etc.",
+        "notes": "Notes",
+        "notesPlaceholder": "Notes supplémentaires (optionnel)"
+      },
+      "validation": {
+        "nameMinLength": "Le nom doit contenir au moins 2 caractères",
+        "invalidEmail": "Adresse email invalide",
+        "createError": "Une erreur est survenue lors de la création du client.",
+        "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "previous": "Précédent",
+        "next": "Suivant",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "saving": "Enregistrement..."
+      }
+    },
+    "import": {
+      "title": "Importer des clients depuis un CSV",
+      "description": "Téléchargez un fichier CSV avec les informations de vos clients. Le nom est obligatoire, les autres champs sont optionnels.",
+      "dropZone": {
+        "title": "Cliquez pour sélectionner ou glissez-déposez un fichier CSV",
+        "format": "Format attendu : Nom, Email, Téléphone, Adresse, Ville, Pays, etc."
+      },
+      "fileInfo": {
+        "clientsDetected": "{count} client(s) détecté(s)",
+        "fileSize": "{size} KB"
+      },
+      "table": {
+        "name": "Nom *",
+        "email": "Email",
+        "phone": "Téléphone",
+        "address": "Adresse",
+        "postalCode": "Code postal",
+        "city": "Ville",
+        "country": "Pays",
+        "taxId": "SIRET/TVA",
+        "notes": "Notes"
+      },
+      "errors": {
+        "emptyFile": "Fichier vide",
+        "emptyFileDescription": "Le fichier CSV ne contient aucune donnée valide.",
+        "limitExceeded": "Limite dépassée",
+        "limitExceededDescription": "Le fichier contient plus de 1000 clients. Veuillez diviser votre fichier en plusieurs parties.",
+        "invalidFormat": "Format invalide",
+        "invalidFormatDescription": "Veuillez sélectionner un fichier CSV.",
+        "invalidFormatDrop": "Veuillez déposer un fichier CSV.",
+        "readError": "Erreur",
+        "readErrorDescription": "Une erreur est survenue lors de la lecture du fichier.",
+        "importError": "Une erreur est survenue lors de l'import.",
+        "importFailed": "Import échoué",
+        "importFailedDescription": "Aucun client n'a pu être importé."
+      },
+      "success": {
+        "importCompleted": "Import terminé",
+        "importCompletedDescription": "{successCount} client(s) importé(s) avec succès{errors, plural, =0 {} other {, {failedCount} erreur(s)}}.",
+        "clientsImported": "{count} client(s) importé(s)",
+        "errors": "{count} erreur(s)",
+        "lineError": "Ligne {line}: {error}"
+      },
+      "pagination": {
+        "pageInfo": "Page {current} sur {total} • {count} client(s) au total"
+      },
+      "format": {
+        "title": "Format CSV attendu :",
+        "columns": "Colonnes possibles : Nom, Email, Téléphone, Adresse, Code postal, Ville, Pays, SIRET/TVA, Notes",
+        "nameRequired": "Le nom est obligatoire, les autres champs sont optionnels",
+        "headersRequired": "La première ligne doit contenir les en-têtes",
+        "separator": "Séparateur : virgule (,) ou point-virgule (;)"
+      },
+      "buttons": {
+        "cancel": "Annuler",
+        "close": "Fermer",
+        "import": "Valider et importer ({count})",
+        "importing": "Import en cours..."
+      }
+    },
+    "detail": {
+      "title": "Détails du client",
+      "subtitle": "Fiche détaillée du client. Consultez les informations et l'historique des factures.",
+      "breadcrumb": {
+        "dashboard": "Tableau de bord",
+        "clients": "Clients",
+        "details": "Détails"
+      },
+      "errors": {
+        "missingId": "ID client manquant",
+        "missingIdDescription": "L'identifiant du client n'a pas pu être récupéré depuis l'URL.",
+        "notFound": "Client introuvable ou erreur API.",
+        "missingIdError": "ID client manquant.",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.",
+        "deleteError": "Une erreur est survenue lors de la suppression du client.",
+        "deleteErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "backToList": "Retour à la liste des clients",
+        "delete": "Supprimer",
+        "createInvoice": "Créer une facture"
+      },
+      "contactInfo": {
+        "title": "Informations de contact",
+        "description": "Coordonnées et adresse du client",
+        "email": "Email",
+        "phone": "Téléphone",
+        "address": "Adresse",
+        "taxId": "Numéro d'identification fiscale"
+      },
+      "recentInvoices": {
+        "title": "Factures récentes",
+        "description": "Dernières factures du client",
+        "viewAll": "Voir toutes les factures ({count})",
+        "noInvoices": "Aucune facture pour ce client"
+      },
+      "notes": {
+        "title": "Notes",
+        "description": "Informations complémentaires"
+      },
+      "statistics": {
+        "title": "Statistiques",
+        "description": "Résumé des factures",
+        "totalInvoices": "Total des factures",
+        "totalAmount": "Montant total",
+        "addedDate": "Date d'ajout"
+      },
+      "monthlyRevenue": {
+        "title": "Revenus mensuels",
+        "description": "Évolution sur les 6 derniers mois",
+        "invoicesSent": "{count} facture{count, plural, one { } other {s}} envoyée{count, plural, one { } other {s}}",
+        "invoicesPaid": "{paid} payée{paid, plural, one { } other {s}}"
+      }
+    }
+  },
+  "items": {
+    "title": "Prestations",
+    "subtitle": "Centralisez vos prestations pour accélérer la création de factures et de devis.",
+    "new": "Nouvelle prestation",
+    "add": "Ajouter une prestation",
+    "edit": "Modifier la prestation",
+    "delete": "Supprimer la prestation",
+    "name": "Nom",
+    "description": "Description",
+    "price": "Prix",
+    "unit": "Unité",
+    "noItems": "Aucune prestation enregistrée",
+    "noItemsDescription": "Ajoutez vos prestations pour pré-remplir vos factures en quelques clics.",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "items": "Prestations"
+    },
+    "stats": {
+      "available": "Prestations disponibles",
+      "averagePrice": "Prix moyen",
+      "averagePriceDescription": "Prix moyen des prestations",
+      "lastUpdate": "Dernière mise à jour",
+      "lastUpdateDescription": "Dernière modification"
+    },
+    "catalog": {
+      "title": "Catalogue",
+      "description": "Liste de vos prestations disponibles.",
+      "searchPlaceholder": "Rechercher une prestation"
+    },
+    "table": {
+      "reference": "Référence",
+      "name": "Nom",
+      "priceHT": "Tarif HT",
+      "defaultVAT": "TVA par défaut",
+      "actions": "Actions"
+    },
+    "buttons": {
+      "importCsv": "Importer CSV",
+      "new": "Nouvelle prestation",
+      "add": "Ajouter une prestation",
+      "delete": "Supprimer",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "processing": "Traitement..."
+    },
+    "pagination": {
+      "pageInfo": "Page {current} sur {total} • {count} prestation(s) au total"
+    },
+    "errors": {
+      "loadingError": "Erreur lors du chargement des prestations. Vérifiez l'API.",
+      "deleteError": "Une erreur est survenue lors de la suppression.",
+      "deleteErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+    },
+    "success": {
+      "deleteSuccess": "Prestation supprimée",
+      "deleteSuccessDescription": "La prestation {name} a été supprimée avec succès.",
+      "createSuccess": "Prestation créée",
+      "createSuccessDescription": "La prestation a été créée avec succès.",
+      "importSuccess": "Import réussi",
+      "importSuccessDescription": "Les prestations ont été importées avec succès."
+    },
+    "deleteDialog": {
+      "title": "Supprimer la prestation ?",
+      "description": "Êtes-vous sûr de vouloir supprimer la prestation {name} ? Cette action est irréversible.",
+      "cancel": "Annuler"
+    },
+    "modal": {
+      "addTitle": "Ajouter une prestation",
+      "editTitle": "Modifier la prestation",
+      "description": "Remplissez les informations de la prestation par sections. Les champs marqués d'un astérisque (*) sont obligatoires.",
+      "tabs": {
+        "informations": "Informations",
+        "tarification": "Tarification",
+        "complementaires": "Complémentaires"
+      },
+      "fields": {
+        "type": "Type",
+        "typePlaceholder": "Sélectionner un type",
+        "typeService": "Service",
+        "typeProduct": "Produit",
+        "name": "Nom",
+        "namePlaceholder": "Nom de la prestation",
+        "description": "Description",
+        "descriptionPlaceholder": "Description courte (optionnel)",
+        "priceHT": "Tarif HT",
+        "pricePlaceholder": "0.00",
+        "taxRate": "Taux de TVA",
+        "taxRatePlaceholder": "TVA",
+        "currency": "Devise",
+        "currencyPlaceholder": "Devise",
+        "unit": "Unité",
+        "unitPlaceholder": "heure, unité, etc. (optionnel)",
+        "sku": "Référence (SKU)",
+        "skuPlaceholder": "Référence produit (optionnel)"
+      },
+      "validation": {
+        "nameMinLength": "Le nom doit contenir au moins 2 caractères",
+        "typeRequired": "Le type est obligatoire",
+        "priceRequired": "Le prix est obligatoire",
+        "pricePositive": "Le prix doit être un nombre positif",
+        "priceValid": "Le prix doit être un nombre valide et positif.",
+        "currencyRequired": "La devise est obligatoire",
+        "taxRateRequired": "Le taux de TVA est obligatoire",
+        "createError": "Une erreur est survenue lors de la création de la prestation.",
+        "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "previous": "Précédent",
+        "next": "Suivant",
+        "cancel": "Annuler",
+        "create": "Créer la prestation",
+        "creating": "Création..."
+      }
+    },
+    "import": {
+      "title": "Importer des prestations depuis un CSV",
+      "description": "Téléchargez un fichier CSV avec les informations de vos prestations. Le nom et le prix sont obligatoires, les autres champs sont optionnels.",
+      "dropZone": {
+        "title": "Cliquez pour sélectionner ou glissez-déposez un fichier CSV",
+        "format": "Format attendu : Nom, Prix, Type, Description, TVA, Devise, etc."
+      },
+      "fileInfo": {
+        "productsDetected": "{count} prestation(s) détectée(s)",
+        "fileSize": "{size} KB"
+      },
+      "table": {
+        "name": "Nom *",
+        "description": "Description",
+        "type": "Type",
+        "price": "Prix *",
+        "currency": "Devise",
+        "taxRate": "TVA",
+        "unit": "Unité",
+        "reference": "Référence"
+      },
+      "errors": {
+        "emptyFile": "Fichier vide",
+        "emptyFileDescription": "Le fichier CSV ne contient aucune donnée valide.",
+        "limitExceeded": "Limite dépassée",
+        "limitExceededDescription": "Le fichier contient plus de 1000 prestations. Veuillez diviser votre fichier en plusieurs parties.",
+        "invalidFormat": "Format invalide",
+        "invalidFormatDescription": "Veuillez sélectionner un fichier CSV.",
+        "invalidFormatDrop": "Veuillez déposer un fichier CSV.",
+        "readError": "Erreur",
+        "readErrorDescription": "Une erreur est survenue lors de la lecture du fichier.",
+        "importError": "Une erreur est survenue lors de l'import.",
+        "importFailed": "Import échoué",
+        "importFailedDescription": "Aucune prestation n'a pu être importée."
+      },
+      "success": {
+        "importCompleted": "Import terminé",
+        "importCompletedDescription": "{successCount} prestation(s) importée(s) avec succès{errors, plural, =0 {} other {, {failedCount} erreur(s)}}.",
+        "productsImported": "{count} prestation(s) importée(s)",
+        "errors": "{count} erreur(s)",
+        "lineError": "Ligne {line}: {error}"
+      },
+      "pagination": {
+        "pageInfo": "Page {current} sur {total} • {count} prestation(s) au total"
+      },
+      "format": {
+        "title": "Format CSV attendu :",
+        "columns": "Colonnes possibles : Nom, Prix, Type, Description, TVA, Devise, Unité, Référence (SKU)",
+        "requiredFields": "Le nom et le prix sont obligatoires, les autres champs sont optionnels",
+        "headersRequired": "La première ligne doit contenir les en-têtes",
+        "separator": "Séparateur : virgule (,) ou point-virgule (;)",
+        "typeInfo": "Type : \"service\" ou \"product\" (par défaut : service)"
+      },
+      "buttons": {
+        "cancel": "Annuler",
+        "close": "Fermer",
+        "import": "Valider et importer ({count})",
+        "importing": "Import en cours..."
+      }
+    },
+    "detail": {
+      "title": "Détails de la prestation",
+      "subtitle": "Fiche détaillée de la prestation. Consultez les informations et l'historique d'utilisation.",
+      "breadcrumb": {
+        "dashboard": "Tableau de bord",
+        "items": "Prestations",
+        "details": "Détails"
+      },
+      "errors": {
+        "missingId": "ID prestation manquant",
+        "missingIdDescription": "L'identifiant de la prestation n'a pas pu être récupéré depuis l'URL.",
+        "notFound": "Prestation introuvable ou erreur API.",
+        "deleteError": "Une erreur est survenue lors de la suppression.",
+        "deleteErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "backToList": "Retour à la liste des prestations",
+        "delete": "Supprimer",
+        "processing": "Traitement..."
+      },
+      "summary": {
+        "title": "Résumé",
+        "description": "Informations de la prestation #{id}.",
+        "priceHT": "Tarif HT",
+        "defaultVAT": "TVA par défaut : {rate}%",
+        "lastUpdate": "Dernière mise à jour"
+      },
+      "description": {
+        "title": "Description",
+        "description": "Informations détaillées de la prestation",
+        "noDescription": "Aucune description disponible.",
+        "type": "Type :",
+        "unit": "Unité :",
+        "reference": "Référence :"
+      },
+      "invoiceHistory": {
+        "title": "Historique factures",
+        "description": "Dernières factures contenant cette prestation.",
+        "viewAll": "Voir toutes les factures ({count})",
+        "noInvoices": "Aucune facture associée",
+        "client": "Client :",
+        "amount": "Montant :",
+        "status": "Statut :"
+      },
+      "deleteDialog": {
+        "title": "Supprimer la prestation ?",
+        "description": "Êtes-vous sûr de vouloir supprimer la prestation {name} ? Cette action est irréversible.",
+        "cancel": "Annuler"
+      }
+    }
+  },
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "network": "Erreur de connexion",
+    "unauthorized": "Vous n'êtes pas autorisé",
+    "notFound": "Ressource non trouvée",
+    "serverError": "Erreur serveur",
+    "tryAgain": "Réessayez plus tard",
+    "invalidCredentials": "Identifiants incorrects",
+    "sessionExpired": "Votre session a expiré"
+  },
+  "landing": {
+    "hero": {
+      "title": "Facturation simple & intelligente",
+      "subtitle": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.",
+      "ctaAuthenticated": "Accéder au tableau de bord",
+      "ctaGuest": "Commencer gratuitement"
+    },
+    "header": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "testimonials": "Témoignages",
+      "tryFree": "Essayer gratuitement",
+      "dashboard": "Tableau de bord",
+      "navigation": "Navigation"
+    },
+    "bento": {
+      "title": "Simplifiez votre gestion de factures",
+      "subtitle": "Toutes les fonctionnalités dont vous avez besoin pour créer, envoyer et suivre vos factures efficacement.",
+      "invoiceCreation": {
+        "title": "Création de factures simplifiée.",
+        "description": "Créez des factures professionnelles en quelques clics."
+      },
+      "emailSending": {
+        "title": "Envoi par email automatique",
+        "description": "Envoyez vos factures directement par email à vos clients."
+      },
+      "paymentTracking": {
+        "title": "Suivi des paiements en temps réel",
+        "description": "Visualisez l'état de vos factures et paiements en direct."
+      },
+      "clientManagement": {
+        "title": "Gestion de clients et prestations",
+        "description": "Organisez vos contacts et prestations pour facturer plus vite."
+      },
+      "onlinePayment": {
+        "title": "Paiement en ligne sécurisé",
+        "description": "Permettez à vos clients de payer directement en ligne."
+      },
+      "dashboardIntelligence": {
+        "title": "Tableau de bord intelligent",
+        "description": "Suivez vos revenus et statistiques en un coup d'œil."
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "subtitle": "Tout ce que vous devez savoir sur Facturly et comment cela peut transformer votre gestion de facturation",
+      "items": {
+        "whatIs": {
+          "question": "Qu'est-ce que Facturly et pour qui est-ce fait ?",
+          "answer": "Facturly est une plateforme de gestion de facturation conçue pour les freelances, les petites entreprises et les professionnels qui souhaitent simplifier leur facturation. C'est parfait pour les indépendants qui veulent gagner du temps et les équipes qui cherchent une solution professionnelle de gestion de factures."
+        },
+        "emailSending": {
+          "question": "Comment fonctionne l'envoi de factures par email ?",
+          "answer": "Lorsque vous créez une facture, vous pouvez l'envoyer directement par email à votre client. Il recevra un lien sécurisé pour visualiser la facture, l'accepter et la payer en ligne. Le système suit automatiquement l'état de la facture et vous notifie des paiements."
+        },
+        "integrations": {
+          "question": "Puis-je intégrer Facturly avec mes outils existants ?",
+          "answer": "Oui ! Facturly offre des intégrations avec les outils comptables les plus populaires. Notre API permet également de connecter Facturly à votre système existant."
+        },
+        "freePlan": {
+          "question": "Que comprend le plan gratuit ?",
+          "answer": "Le plan gratuit comprend jusqu'à 10 factures par mois, une gestion illimitée de clients, l'envoi par email, un tableau de bord de base et le support par email. C'est parfait pour démarrer et tester la plateforme."
+        },
+        "onlinePayment": {
+          "question": "Comment fonctionne le paiement en ligne ?",
+          "answer": "Lorsqu'un client accepte une facture, il peut la payer directement en ligne via un lien sécurisé. Les paiements sont traités de manière sécurisée et vous êtes notifié instantanément. La facture est automatiquement marquée comme payée dans votre tableau de bord."
+        },
+        "security": {
+          "question": "Mes données sont-elles sécurisées avec Facturly ?",
+          "answer": "Absolument. Nous utilisons des mesures de sécurité de niveau entreprise incluant le chiffrement de bout en bout, la transmission sécurisée des données et la conformité aux standards de l'industrie. Vos données financières sont protégées et ne sont jamais partagées sans votre autorisation explicite."
+        }
+      }
+    },
+    "cta": {
+      "title": "Simplifiez votre facturation dès aujourd'hui",
+      "subtitle": "Rejoignez les milliers de professionnels qui font confiance à Facturly pour gérer leurs factures efficacement et améliorer leur trésorerie",
+      "betaFull": "Bêta complète ({current}/{max} utilisateurs)",
+      "betaAvailable": "{remaining} place{plural} disponible{plural} ({current}/{max})",
+      "ctaAuthenticated": "Accéder au tableau de bord",
+      "ctaGuest": "Commencer gratuitement"
+    },
+    "pricing": {
+      "title": "Tarifs adaptés à votre entreprise",
+      "subtitle": "Choisissez un plan qui correspond à vos besoins, des freelances aux entreprises en pleine croissance.",
+      "monthly": "Mensuel",
+      "annual": "Annuel",
+      "save": "Économisez {percent}%",
+      "popular": "POPULAIRE",
+      "included": "Inclus :",
+      "includesFree": "Tout du plan Gratuit +",
+      "ctaAuthenticated": "Accéder au tableau de bord",
+      "perMonth": "/mois",
+      "monthlyEquivalent": "{price}€/mois en paiement annuel",
+      "plans": {
+        "free": {
+          "name": "Gratuit",
+          "description": "Parfait pour démarrer votre activité.",
+          "cta": "Commencer gratuitement",
+          "features": {
+            "invoices": "Jusqu'à 10 factures par mois",
+            "clients": "Gestion de clients illimitée",
+            "email": "Envoi par email",
+            "dashboard": "Tableau de bord de base",
+            "support": "Support par email"
+          }
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Idéal pour les professionnels indépendants.",
+          "cta": "Essayer Pro",
+          "features": {
+            "invoices": "100 factures par mois",
+            "onlinePayment": "Paiement en ligne intégré",
+            "reminders": "Rappels automatiques",
+            "statistics": "Statistiques avancées",
+            "customization": "Personnalisation de factures",
+            "pdfExport": "Export PDF illimité",
+            "support": "Support prioritaire"
+          }
+        },
+        "enterprise": {
+          "name": "Entreprise",
+          "description": "Pour les équipes et entreprises en croissance.",
+          "cta": "Nous contacter",
+          "features": {
+            "invoices": "Factures illimitées",
+            "team": "Gestion d'équipe",
+            "api": "API complète",
+            "customBranding": "Branding personnalisé",
+            "dedicatedSupport": "Support dédié",
+            "advancedAnalytics": "Analyses avancées",
+            "sla": "SLA garanti"
+          }
+        }
+      }
+    },
+    "socialProof": {
+      "title": "Utilisé par des entreprises en pleine croissance"
+    },
+    "testimonials": {
+      "title": "Facturation simplifiée",
+      "subtitle": "Découvrez comment nos clients gagnent du temps, améliorent leur trésorerie",
+      "subtitle2": "et professionnalisent leur gestion avec Facturly",
+      "large": {
+        "quote": "Facturly a transformé notre gestion de facturation. Ce qui prenait des heures se fait maintenant en quelques minutes. Un gain de temps considérable pour notre équipe.",
+        "name": "Marie Dubois",
+        "role": "Directrice, TechStart"
+      },
+      "items": [
+        {
+          "quote": "Facturly a complètement transformé notre façon de gérer les factures. L'envoi par email automatique et le suivi en temps réel nous font gagner des heures chaque semaine. Une solution vraiment professionnelle.",
+          "name": "Sophie Martin",
+          "company": "Agence Web"
+        },
+        {
+          "quote": "L'intégration du paiement en ligne a considérablement accéléré nos encaissements. Nos clients apprécient la simplicité.",
+          "name": "Thomas Bernard",
+          "company": "Consulting"
+        },
+        {
+          "quote": "Le tableau de bord nous donne une vision claire de notre activité. Les statistiques en temps réel sont essentielles pour notre gestion.",
+          "name": "Julie Lefebvre",
+          "company": "Freelance"
+        },
+        {
+          "quote": "Plus besoin de jongler entre plusieurs outils. Facturly centralise tout : clients, prestations, factures et paiements. Un gain de temps énorme.",
+          "name": "Marc Dubois",
+          "company": "Startup Tech"
+        },
+        {
+          "quote": "Nous avons commencé avec le plan gratuit pour tester, et en une semaine nous sommes passés au Pro. Maintenant, on ne peut plus s'en passer.",
+          "name": "Claire Moreau",
+          "company": "Design Studio"
+        },
+        {
+          "quote": "La création de factures est devenue un jeu d'enfant. En quelques clics, j'ai une facture professionnelle prête à envoyer.",
+          "name": "Pierre Rousseau",
+          "company": "Architecte"
+        },
+        {
+          "quote": "Les rappels automatiques nous ont permis de réduire drastiquement les retards de paiement. Une fonctionnalité qui change tout pour notre trésorerie.",
+          "name": "Laure Petit",
+          "company": "Agence Marketing"
+        }
+      ]
+    },
+    "footer": {
+      "tagline": "Facturation simple & intelligente",
+      "product": "Prestation",
+      "legal": "Légal",
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité"
+    }
+  },
+  "reminders": {
+    "title": "Relances & Rapports",
+    "subtitle": "Visualisez les factures en retard, planifiez vos relances et pilotez votre trésorerie.",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "reminders": "Relances"
+    },
+    "buttons": {
+      "create": "Créer une relance",
+      "remind": "Relancer"
+    },
+    "stats": {
+      "active": "Relances actives",
+      "activeDescription": "Factures nécessitant une action",
+      "overdueAmount": "Montant en retard"
+    },
+    "table": {
+      "title": "Relances en cours",
+      "description": "Liste des factures à relancer.",
+      "searchPlaceholder": "Rechercher un client ou une facture",
+      "invoice": "Facture",
+      "client": "Client",
+      "dueDate": "Date échéance",
+      "amount": "Montant",
+      "status": "Statut",
+      "actions": "Actions",
+      "overdue": "En retard"
+    },
+    "errors": {
+      "loadingError": "Erreur lors du chargement des relances."
+    },
+    "empty": {
+      "noReminders": "Aucune relance à afficher."
+    },
+    "modal": {
+      "title": "Créer une relance",
+      "description": "Sélectionnez une facture en retard et envoyez une relance au client.",
+      "fields": {
+        "invoice": "Facture",
+        "invoicePlaceholder": "Sélectionnez une facture en retard",
+        "client": "Client:",
+        "email": "Email:",
+        "amount": "Montant:",
+        "dueDate": "Date d'échéance:"
+      },
+      "empty": {
+        "noInvoices": "Aucune facture en retard disponible"
+      },
+      "validation": {
+        "invoiceRequired": "Veuillez sélectionner une facture",
+        "invoiceNotFound": "Facture introuvable.",
+        "selectInvoice": "Veuillez sélectionner une facture."
+      },
+      "success": {
+        "sent": "Relance envoyée",
+        "sentDescription": "La relance a été envoyée avec succès.",
+        "sentWithNumber": "Relance n°{number} envoyée avec succès."
+      },
+      "errors": {
+        "sendError": "Une erreur est survenue lors de l'envoi de la relance.",
+        "genericError": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "cancel": "Annuler",
+        "send": "Envoyer la relance",
+        "sending": "Envoi en cours..."
+      }
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Configurez votre compte, personnalisez vos documents et gérez vos préférences.",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "settings": "Paramètres"
+    },
+    "tabs": {
+      "profile": "Profil",
+      "company": "Entreprise",
+      "billing": "Facturation",
+      "subscription": "Abonnement"
+    },
+    "profile": {
+      "title": "Informations personnelles",
+      "description": "Modifiez vos informations personnelles et votre mot de passe.",
+      "fields": {
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "password": "Nouveau mot de passe",
+        "passwordPlaceholder": "Laisser vide pour ne pas changer",
+        "emailCannotBeChanged": "L'email ne peut pas être modifié ici.",
+        "passwordHint": "Laissez vide si vous ne souhaitez pas changer le mot de passe."
+      },
+      "validation": {
+        "firstNameMin": "Le prénom doit contenir au moins 2 caractères",
+        "lastNameMin": "Le nom doit contenir au moins 2 caractères",
+        "passwordMin": "Le mot de passe doit contenir au moins 8 caractères"
+      },
+      "success": {
+        "updated": "Profil mis à jour",
+        "updatedDescription": "Vos informations personnelles ont été mises à jour avec succès."
+      },
+      "errors": {
+        "updateError": "Une erreur est survenue lors de la mise à jour du profil.",
+        "genericError": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "update": "Mettre à jour le profil"
+      }
+    },
+    "company": {
+      "title": "Entreprise & Mentions",
+      "description": "Configurez les informations de votre entreprise pour les factures.",
+      "fields": {
+        "name": "Nom de l'entreprise",
+        "legalName": "Raison sociale",
+        "defaultCurrency": "Devise par défaut",
+        "taxId": "Numéro d'identification fiscale",
+        "taxIdPlaceholder": "SIRET, etc.",
+        "vatNumber": "Numéro de TVA",
+        "addressLine1": "Adresse ligne 1",
+        "addressLine2": "Adresse ligne 2",
+        "postalCode": "Code postal",
+        "city": "Ville",
+        "country": "Pays",
+        "countryPlaceholder": "France"
+      },
+      "validation": {
+        "nameMin": "Le nom doit contenir au moins 2 caractères",
+        "currencyRequired": "La devise est obligatoire"
+      },
+      "success": {
+        "updated": "Entreprise mise à jour",
+        "updatedDescription": "Les informations de l'entreprise ont été mises à jour avec succès."
+      },
+      "errors": {
+        "updateError": "Une erreur est survenue lors de la mise à jour de l'entreprise.",
+        "genericError": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "update": "Mettre à jour l'entreprise"
+      }
+    },
+    "billing": {
+      "title": "Paramètres de facturation",
+      "description": "Configurez les paramètres par défaut pour vos factures. Ces valeurs seront utilisées pour toutes vos nouvelles factures.",
+      "fields": {
+        "language": "Langue",
+        "timezone": "Fuseau horaire",
+        "invoicePrefix": "Préfixe facture",
+        "invoicePrefixExample": "Exemple : FAC-2024-001, INV-2024-001",
+        "dateFormat": "Format de date",
+        "currency": "Devise",
+        "taxRate": "Taux de TVA (%)",
+        "paymentTerms": "Délai de paiement",
+        "paymentTermsHint": "En jours (ex: 30 = 30 jours)"
+      },
+      "sections": {
+        "localization": "Localisation",
+        "format": "Format des factures",
+        "financial": "Paramètres financiers"
+      },
+      "validation": {
+        "languageRequired": "La langue est obligatoire",
+        "timezoneRequired": "Le fuseau horaire est obligatoire",
+        "invoicePrefixRequired": "Le préfixe est obligatoire",
+        "dateFormatRequired": "Le format de date est obligatoire",
+        "currencyRequired": "La devise est obligatoire",
+        "taxRateRequired": "Le taux de TVA est obligatoire",
+        "paymentTermsPositive": "Les termes de paiement doivent être positifs"
+      },
+      "sequence": {
+        "title": "Séquence actuelle",
+        "subtitle": "Numéro de la prochaine facture",
+        "current": "Numéro actuel",
+        "next": "Prochaine facture",
+        "description": "Le numéro de séquence est automatiquement incrémenté à chaque nouvelle facture créée."
+      },
+      "success": {
+        "updated": "Paramètres mis à jour",
+        "updatedDescription": "Les paramètres de facturation ont été mis à jour avec succès."
+      },
+      "errors": {
+        "updateError": "Une erreur est survenue lors de la mise à jour des paramètres.",
+        "genericError": "Vérifiez vos informations ou réessayez plus tard."
+      },
+      "buttons": {
+        "save": "Enregistrer les paramètres",
+        "saving": "Enregistrement..."
+      }
+    },
+    "subscription": {
+      "currentPlan": {
+        "title": "Plan actuel",
+        "free": "Plan gratuit avec limite de factures",
+        "monthly": "Facturation mensuelle",
+        "yearly": "Facturation annuelle",
+        "perMonth": "/ mois",
+        "perYear": "/ an"
+      },
+      "availablePlans": {
+        "title": "Plans disponibles",
+        "description": "Choisissez le plan qui correspond le mieux à vos besoins.",
+        "monthly": "Mensuel",
+        "yearly": "Annuel",
+        "save20": "-20%",
+        "current": "Plan actuel",
+        "free": "Gratuit",
+        "unlimited": "Illimité",
+        "limit": "Limite",
+        "invoicesPerMonth": "factures/mois",
+        "invoicesPerYear": "factures/an",
+        "sameMonthlyYearly": "Identique en mensuel et annuel",
+        "subscribe": "S'abonner",
+        "changePlan": "Changer de plan",
+        "processing": "Traitement...",
+        "backToFree": "Revenir au plan gratuit",
+        "backToFreeInfo": "Pour revenir au plan gratuit, vous devez annuler votre abonnement actif via le portail Stripe."
+      },
+      "cancelDialog": {
+        "title": "Annuler l'abonnement",
+        "description": "Êtes-vous sûr de vouloir annuler votre abonnement ?",
+        "important": "Important",
+        "activeUntil": "Votre abonnement restera actif jusqu'à la fin de la période en cours ({date}). Après cette date, votre compte passera au plan gratuit avec ses limitations.",
+        "limitAfterCancel": "Limite après annulation",
+        "freePlanLimit": "Plan gratuit : {count} factures par mois",
+        "keep": "Conserver mon abonnement",
+        "confirm": "Confirmer l'annulation",
+        "canceling": "Annulation..."
+      },
+      "plans": {
+        "free": "Gratuit",
+        "pro": "Pro",
+        "enterprise": "Enterprise"
+      },
+      "features": {
+        "free": [
+          "Jusqu'à 10 factures par mois",
+          "Gestion de clients illimitée",
+          "Envoi par email",
+          "Tableau de bord de base",
+          "Support par email"
+        ],
+        "pro": [
+          "100 factures par mois",
+          "Paiement en ligne intégré",
+          "Rappels automatiques",
+          "Statistiques avancées",
+          "Personnalisation de factures",
+          "Export PDF illimité",
+          "Support prioritaire"
+        ],
+        "enterprise": [
+          "Tout du plan Pro",
+          "Support dédié",
+          "Formation de l'équipe",
+          "API personnalisée",
+          "Sécurité renforcée",
+          "SLA garanti",
+          "Intégrations personnalisées"
+        ]
+      }
+    }
+  },
+  "bills": {
+    "title": "Factures reçues",
+    "subtitle": "Consultez et gérez les factures que vous avez reçues de vos fournisseurs.",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "bills": "Factures reçues"
+    },
+    "stats": {
+      "total": "Total factures",
+      "pending": "En attente",
+      "paid": "Payées"
+    },
+    "list": {
+      "title": "Liste des factures reçues",
+      "description": "{count} facture{plural} reçue{plural}",
+      "searchPlaceholder": "Rechercher par numéro ou fournisseur...",
+      "filterPlaceholder": "Filtrer par statut",
+      "allStatuses": "Tous les statuts"
+    },
+    "status": {
+      "received": "Reçue",
+      "viewed": "Consultée",
+      "paid": "Payée",
+      "overdue": "En retard",
+      "cancelled": "Annulée"
+    },
+    "table": {
+      "number": "Numéro",
+      "supplier": "Fournisseur",
+      "issueDate": "Date d'émission",
+      "dueDate": "Échéance",
+      "amount": "Montant",
+      "status": "Statut",
+      "actions": "Actions",
+      "view": "Voir"
+    },
+    "errors": {
+      "loadingError": "Erreur de chargement",
+      "loadingErrorDescription": "Impossible de charger les factures reçues. Veuillez réessayer plus tard."
+    },
+    "empty": {
+      "title": "Aucune facture reçue",
+      "noResults": "Aucune facture ne correspond à votre recherche.",
+      "noBills": "Vous n'avez pas encore reçu de factures."
+    },
+    "detail": {
+      "breadcrumb": {
+        "details": "Détails"
+      },
+      "errors": {
+        "invalidId": "ID de facture invalide",
+        "invalidIdDescription": "L'identifiant de la facture est manquant ou invalide.",
+        "loadingError": "Impossible de charger la facture",
+        "loadingErrorDescription": "La facture demandée n'existe pas ou une erreur est survenue.",
+        "backToList": "Retour à la liste"
+      },
+      "title": {
+        "description": "Facture de {supplier}. Total dû : {amount}."
+      },
+      "buttons": {
+        "back": "Retour"
+      },
+      "summary": {
+        "title": "Résumé",
+        "description": "Détails principaux de la facture.",
+        "supplier": "Fournisseur",
+        "amount": "Montant",
+        "paid": "Payé : {amount}",
+        "issueDate": "Date d'émission",
+        "dueDate": "Échéance"
+      },
+      "items": {
+        "description": "Description",
+        "quantity": "Quantité",
+        "unitPrice": "P.U.",
+        "total": "Total",
+        "empty": "Aucun item dans cette facture"
+      },
+      "payment": {
+        "title": "Paiement",
+        "paidDescription": "Cette facture a été payée.",
+        "unpaidDescription": "Marquer cette facture comme payée.",
+        "paid": "Facture payée",
+        "method": "Méthode : {method}",
+        "date": "Date : {date}",
+        "amount": "Montant : {amount}",
+        "methodLabel": "Méthode de paiement",
+        "notesLabel": "Notes (optionnel)",
+        "notesPlaceholder": "Ajouter des notes sur le paiement...",
+        "markAsPaid": "Marquer comme payé",
+        "processing": "Traitement...",
+        "success": "Facture payée",
+        "successDescription": "La facture {invoiceNumber} a été marquée comme payée.",
+        "error": "Une erreur est survenue lors du paiement."
+      },
+      "paymentMethods": {
+        "bank_transfer": "Virement bancaire",
+        "check": "Chèque",
+        "cash": "Espèces",
+        "online_payment": "Paiement en ligne"
+      },
+      "notes": {
+        "title": "Notes"
+      }
+    }
+  },
+  "public": {
+    "invoice": {
+      "errors": {
+        "invalidToken": "Token invalide",
+        "invalidTokenDescription": "Le lien de la facture est invalide ou manquant.",
+        "error": "Erreur",
+        "loadError": "Impossible de charger la facture.",
+        "notFound": "La facture demandée n'existe pas ou le lien a expiré."
+      },
+      "labels": {
+        "issuer": "Émetteur",
+        "recipient": "Destinataire",
+        "information": "Informations",
+        "number": "Numéro",
+        "issuedOn": "Émise le",
+        "dueDate": "Échéance",
+        "description": "Description",
+        "quantity": "Quantité",
+        "unitPrice": "Prix unitaire",
+        "total": "Total",
+        "subtotalHT": "Sous-total HT",
+        "vat": "TVA",
+        "amountPaid": "Montant payé",
+        "remaining": "Restant à payer",
+        "totalTTC": "Total TTC",
+        "notes": "Notes",
+        "siret": "SIRET",
+        "vatNumber": "TVA"
+      },
+      "empty": {
+        "noItems": "Aucun article dans cette facture"
+      },
+      "status": {
+        "paid": "Payée",
+        "rejected": "Refusée"
+      },
+      "actions": {
+        "title": "Actions",
+        "paidDescription": "Cette facture a été payée.",
+        "rejectedDescription": "Cette facture a été refusée.",
+        "canAcceptDescription": "Acceptez ou refusez cette facture.",
+        "noActionDescription": "Aucune action disponible pour le moment.",
+        "accept": "Accepter la facture",
+        "accepting": "Traitement...",
+        "reject": "Refuser la facture",
+        "payNow": "Payer maintenant",
+        "maximize": "Agrandir la facture",
+        "unavailable": "Action indisponible",
+        "unavailableDescription": "Cette facture ne peut pas être acceptée ou payée pour le moment. Veuillez contacter l'émetteur."
+      },
+      "paid": {
+        "title": "Facture payée",
+        "description": "Le paiement de {amount} a été effectué avec succès.",
+        "rejectedTitle": "Facture refusée",
+        "rejectedOn": "Refusée le {date}",
+        "comment": "Commentaire",
+        "reason": "Raison"
+      },
+      "rejection": {
+        "title": "Information de refus",
+        "reasonLabel": "Raison"
+      },
+      "toasts": {
+        "accepted": "Facture acceptée",
+        "acceptedDescription": "Vous allez être redirigé vers la page de paiement.",
+        "rejected": "Facture refusée",
+        "rejectedDescription": "La facture a été refusée avec succès.",
+        "acceptError": "Une erreur est survenue lors de l'acceptation de la facture."
+      }
+    },
+    "pay": {
+      "errors": {
+        "invalidToken": "Token invalide",
+        "invalidTokenDescription": "Le lien de paiement est invalide ou manquant.",
+        "error": "Erreur",
+        "loadError": "Impossible de charger la facture.",
+        "notFound": "La facture demandée n'existe pas ou le lien a expiré."
+      },
+      "title": "Facture {number}",
+      "status": {
+        "paid": "Facture payée"
+      },
+      "details": {
+        "title": "Détails de la facture",
+        "description": "Informations sur la facture à payer.",
+        "issuer": "Émetteur",
+        "totalAmount": "Montant total",
+        "remaining": "Restant à payer : {amount}",
+        "issueDate": "Date d'émission",
+        "dueDate": "Échéance",
+        "quantity": "Quantité",
+        "unitPrice": "P.U.",
+        "total": "Total",
+        "noItems": "Aucun item dans cette facture"
+      },
+      "payment": {
+        "title": "Paiement",
+        "canPayDescription": "Effectuez le paiement de cette facture.",
+        "cannotPayDescription": "Cette facture ne peut pas être payée pour le moment.",
+        "method": "Méthode de paiement",
+        "methods": {
+          "online": "Paiement en ligne",
+          "bankTransfer": "Virement bancaire",
+          "check": "Chèque",
+          "cash": "Espèces"
+        },
+        "email": "Email (optionnel)",
+        "emailPlaceholder": "votre@email.com",
+        "notes": "Notes (optionnel)",
+        "notesPlaceholder": "Ajouter des notes sur le paiement...",
+        "amountToPay": "Montant à payer",
+        "payNow": "Payer maintenant",
+        "processing": "Traitement du paiement...",
+        "paidTitle": "Facture payée",
+        "paidDescription": "Le paiement de {amount} a été effectué avec succès.",
+        "unavailable": "Paiement indisponible",
+        "unavailableDescription": "Cette facture ne peut pas être payée pour le moment. Veuillez contacter l'émetteur."
+      },
+      "notes": {
+        "title": "Notes"
+      },
+      "toasts": {
+        "success": "Paiement effectué",
+        "successDescription": "Le paiement de {amount} a été effectué avec succès.",
+        "error": "Une erreur est survenue lors du paiement."
+      }
+    }
+  },
+  "metadata": {
+    "title": "Facturly - Facturation simple & intelligente",
+    "description": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel avec Facturly.",
+    "landingTitle": "Facturation simple & intelligente pour votre entreprise",
+    "landingDescription": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel. Rejoignez des milliers de professionnels qui font confiance à Facturly.",
+    "home": "Accueil",
+    "organizationDescription": "Plateforme de gestion de facturation simple et intelligente"
+  }
+}

@@ -24,14 +24,26 @@ export function getBackendTemplateName(templateId: string): string {
 
 /**
  * Obtient le template frontend à partir du nom du template backend
- * @param backendTemplateName - Nom du template backend
+ * @param backendTemplateName - Nom du template backend (ex: "invoice", "invoice-modern", "invoice-classic")
  * @returns Template frontend ou le template par défaut
  */
 export function getFrontendTemplateFromBackend(backendTemplateName: string): InvoiceTemplateMeta {
+  // Chercher d'abord par backendTemplateName exact
   const template = invoiceTemplates.find(
-    (t) => t.backendTemplateName === backendTemplateName || (backendTemplateName === "invoice" && t.id === "invoice")
+    (t) => t.backendTemplateName === backendTemplateName
   );
-  return template || invoiceTemplates[0]; // Retourne le premier template par défaut
+  
+  if (template) {
+    return template;
+  }
+  
+  // Si pas trouvé et que c'est "invoice", retourner le template par défaut
+  if (backendTemplateName === "invoice") {
+    return invoiceTemplates.find((t) => t.id === "invoice") || invoiceTemplates[0];
+  }
+  
+  // Sinon, retourner le premier template par défaut
+  return invoiceTemplates[0];
 }
 
 export const invoiceTemplates: InvoiceTemplateMeta[] = [

@@ -249,7 +249,7 @@ export interface InvoiceItem {
   product?: {
     id: string;
     name: string;
-  };
+  } | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -257,7 +257,9 @@ export interface InvoiceItem {
 export interface InvoicePayment {
   id: string;
   amount: string;
-  paymentDate: string;
+  currency?: string;
+  paymentDate?: string;
+  paidAt?: string; // Pour les paiements publics (format ISO)
   method: string;
   status: string;
   notes?: string;
@@ -292,6 +294,7 @@ export interface Invoice {
   totalAmount: string;
   amountPaid: string;
   notes?: string;
+  templateName?: string; // Nom du template backend (ex: "invoice", "invoice-modern", "invoice-classic")
   viewedAt?: string | null;
   rejectedAt?: string | null;
   rejectionComment?: string | null;
@@ -331,16 +334,18 @@ export interface InvoiceSummary {
 export interface CreateInvoicePayload {
   clientId: string;
   issueDate: string;
-  dueDate: string;
-  currency: string;
+  dueDate?: string; // OPTIONNEL - Date d'échéance (format: YYYY-MM-DD)
+  currency?: string; // OPTIONNEL - Devise (EUR, USD, XOF). Par défaut: devise de l'entreprise
   items: {
-    productId?: string;
-    description: string;
-    quantity: string;
-    unitPrice: string;
+    productId?: string; // OPTIONNEL - UUID du produit (peut être null)
+    description: string; // REQUIS
+    quantity: string; // REQUIS - Quantité (string)
+    unitPrice: string; // REQUIS - Prix unitaire (string)
   }[];
-  notes?: string;
-  recipientEmail?: string;
+  notes?: string; // OPTIONNEL - Notes libres
+  recipientEmail?: string; // OPTIONNEL - Email du destinataire
+  sendEmail?: boolean; // OPTIONNEL - Envoyer l'email automatiquement (boolean)
+  templateName?: string; // OPTIONNEL - Nom du template (voir liste ci-dessous)
 }
 
 export interface UpdateInvoicePayload {
@@ -456,6 +461,7 @@ export interface PublicInvoice {
   amountPaid: string;
   remainingAmount: string;
   notes?: string;
+  templateName?: string; // "invoice" | "invoice-modern" | "invoice-classic" | ...
   viewedAt?: string | null;
   rejectedAt?: string | null;
   rejectionComment?: string | null;
@@ -481,7 +487,7 @@ export interface PublicInvoice {
     addressLine1?: string;
     city?: string;
     country?: string;
-  };
+  } | null;
   payments: InvoicePayment[];
 }
 
@@ -826,12 +832,20 @@ const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
   prepareHeaders: (headers) => {
     if (typeof window !== "undefined") {
+      // Ajouter le token d'authentification
       const cookies = document.cookie.split("; ");
       const tokenCookie = cookies.find((cookie) => cookie.startsWith("facturly_access_token="));
       if (tokenCookie) {
         const token = tokenCookie.split("=")[1];
         headers.set("authorization", `Bearer ${token}`);
       }
+
+      // Ajouter la locale depuis l'URL
+      // La locale est le premier segment du chemin (ex: /fr/dashboard ou /en/dashboard)
+      const pathname = window.location.pathname;
+      const localeMatch = pathname.match(/^\/(fr|en)(\/|$)/);
+      const locale = localeMatch ? localeMatch[1] : 'fr'; // Par défaut 'fr' si non trouvé
+      headers.set("x-locale", locale);
     }
     return headers;
   },

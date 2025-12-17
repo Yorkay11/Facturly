@@ -1,63 +1,7 @@
-import Image from "next/image"
+"use client"
 
-const testimonials = [
-  {
-    quote:
-      "Facturly a complètement transformé notre façon de gérer les factures. L'envoi par email automatique et le suivi en temps réel nous font gagner des heures chaque semaine. Une solution vraiment professionnelle.",
-    name: "Sophie Martin",
-    company: "Agence Web",
-    avatar: "/images/avatars/annette-black.png",
-    type: "large-teal",
-  },
-  {
-    quote:
-      "L'intégration du paiement en ligne a considérablement accéléré nos encaissements. Nos clients apprécient la simplicité.",
-    name: "Thomas Bernard",
-    company: "Consulting",
-    avatar: "/images/avatars/dianne-russell.png",
-    type: "small-dark",
-  },
-  {
-    quote:
-      "Le tableau de bord nous donne une vision claire de notre activité. Les statistiques en temps réel sont essentielles pour notre gestion.",
-    name: "Julie Lefebvre",
-    company: "Freelance",
-    avatar: "/images/avatars/cameron-williamson.png",
-    type: "small-dark",
-  },
-  {
-    quote:
-      "Plus besoin de jongler entre plusieurs outils. Facturly centralise tout : clients, produits, factures et paiements. Un gain de temps énorme.",
-    name: "Marc Dubois",
-    company: "Startup Tech",
-    avatar: "/images/avatars/robert-fox.png",
-    type: "small-dark",
-  },
-  {
-    quote:
-      "Nous avons commencé avec le plan gratuit pour tester, et en une semaine nous sommes passés au Pro. Maintenant, on ne peut plus s'en passer.",
-    name: "Claire Moreau",
-    company: "Design Studio",
-    avatar: "/images/avatars/darlene-robertson.png",
-    type: "small-dark",
-  },
-  {
-    quote:
-      "La création de factures est devenue un jeu d'enfant. En quelques clics, j'ai une facture professionnelle prête à envoyer.",
-    name: "Pierre Rousseau",
-    company: "Architecte",
-    avatar: "/images/avatars/cody-fisher.png",
-    type: "small-dark",
-  },
-  {
-    quote:
-      "Les rappels automatiques nous ont permis de réduire drastiquement les retards de paiement. Une fonctionnalité qui change tout pour notre trésorerie.",
-    name: "Laure Petit",
-    company: "Agence Marketing",
-    avatar: "/images/avatars/albert-flores.png",
-    type: "large-light",
-  },
-]
+import Image from "next/image"
+import { useTranslations, useMessages } from 'next-intl'
 
 interface TestimonialCardProps {
   quote: string
@@ -136,16 +80,40 @@ const TestimonialCard = ({ quote, name, company, avatar, type }: TestimonialCard
 }
 
 export function TestimonialGridSection() {
+  const t = useTranslations('landing.testimonials')
+  const messages = useMessages()
+  const testimonialsData = (messages.landing?.testimonials?.items as any[]) || []
+  
+  const avatars = [
+    "/images/avatars/annette-black.png",
+    "/images/avatars/dianne-russell.png",
+    "/images/avatars/cameron-williamson.png",
+    "/images/avatars/robert-fox.png",
+    "/images/avatars/darlene-robertson.png",
+    "/images/avatars/cody-fisher.png",
+    "/images/avatars/albert-flores.png",
+  ]
+  
+  const types = ["large-teal", "small-dark", "small-dark", "small-dark", "small-dark", "small-dark", "large-light"]
+  
+  const testimonials = testimonialsData.map((item, index) => ({
+    quote: item.quote,
+    name: item.name,
+    company: item.company,
+    avatar: avatars[index] || "/placeholder.svg",
+    type: types[index] || "small-dark",
+  }))
+  
   return (
     <section className="w-full px-5 overflow-hidden flex flex-col justify-start py-6 md:py-8 lg:py-14">
       <div className="self-stretch py-6 md:py-8 lg:py-14 flex flex-col justify-center items-center gap-2">
         <div className="flex flex-col justify-start items-center gap-4">
           <h2 className="text-center text-foreground text-3xl md:text-4xl lg:text-[40px] font-semibold leading-tight md:leading-tight lg:leading-[40px]">
-            Facturation simplifiée
+            {t('title')}
           </h2>
           <p className="self-stretch text-center text-muted-foreground text-sm md:text-sm lg:text-base font-medium leading-[18.20px] md:leading-relaxed lg:leading-relaxed">
-            {"Découvrez comment nos clients gagnent du temps, améliorent leur trésorerie"} <br />{" "}
-            {"et professionnalisent leur gestion avec Facturly"}
+            {t('subtitle')} <br />{" "}
+            {t('subtitle2')}
           </p>
         </div>
       </div>

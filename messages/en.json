@@ -31,7 +31,6 @@
   },
   "auth": {
     "login": "Login",
-    "register": "Register",
     "logout": "Logout",
     "email": "Email",
     "password": "Password",
@@ -53,7 +52,81 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "welcomeBack": "Welcome back!",
-    "createAccount": "Create account"
+    "createAccount": "Create account",
+    "heroTitle": "Simple & Smart Invoicing",
+    "heroDescription": "Create, send and manage your invoices with ease",
+    "register": {
+      "heroTitle": "Join Facturly",
+      "heroDescription": "Create your account and start managing your invoices with ease",
+      "cardTitle": "Create a Facturly account",
+      "cardDescription": "Sign up to start managing your invoices with ease.",
+      "steps": {
+        "personalInfo": "Personal information",
+        "security": "Security"
+      },
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email address",
+        "companyName": "Company name",
+        "password": "Password",
+        "confirmPassword": "Confirm password"
+      },
+      "placeholders": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "you@company.com",
+        "companyName": "My Company Inc",
+        "password": "••••••••",
+        "confirmPassword": "••••••••"
+      },
+      "passwordHint": "Password must be between 8 and 128 characters, with at least one uppercase letter, one lowercase letter, and one number.",
+      "buttons": {
+        "previous": "Previous",
+        "next": "Next",
+        "creating": "Creating...",
+        "createAccount": "Create my account"
+      },
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "terms": "By creating an account, you agree to our terms of use and privacy policy.",
+      "ariaLabels": {
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "showConfirmPassword": "Show password confirmation",
+        "hideConfirmPassword": "Hide password confirmation"
+      },
+      "validation": {
+        "firstNameMinLength": "First name must contain at least 2 characters",
+        "lastNameMinLength": "Last name must contain at least 2 characters",
+        "invalidEmail": "Invalid email address",
+        "passwordMinLength": "Password must contain at least 8 characters",
+        "passwordMaxLength": "Password must not exceed 128 characters",
+        "passwordUppercase": "Password must contain at least one uppercase letter",
+        "passwordLowercase": "Password must contain at least one lowercase letter",
+        "passwordNumber": "Password must contain at least one number",
+        "confirmPasswordRequired": "Please confirm your password",
+        "passwordsMismatch": "Passwords do not match",
+        "companyNameMinLength": "Company name must contain at least 2 characters"
+      },
+      "toasts": {
+        "success": "Registration successful",
+        "successDescription": "Welcome {name}, your account has been created successfully!",
+        "error": "Registration failed",
+        "betaFull": "Beta full",
+        "betaFullDescription": "The beta is full. Registrations are temporarily closed.",
+        "validationError": "Validation error",
+        "fillAllFields": "Please fill in all required fields",
+        "correctErrors": "Please correct the errors before submitting"
+      },
+      "errors": {
+        "emailExists": "This email is already in use. Please sign in or use another email.",
+        "unauthorized": "Error during registration. Please try again.",
+        "tokenExpired": "Your session has expired. Please try again.",
+        "tokenInvalid": "Invalid session. Please try again.",
+        "default": "An error occurred during registration."
+      }
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1149,27 +1222,141 @@
       "subtitle": "All the features you need to create, send and track your invoices efficiently.",
       "invoiceCreation": {
         "title": "Simplified invoice creation.",
-        "description": "Create professional invoices in just a few clicks."
+        "description": "Create professional invoices in just a few clicks.",
+        "form": {
+          "invoiceInfo": "Invoice information",
+          "recipient": "Recipient",
+          "subject": "Subject",
+          "subjectPlaceholder": "Website development",
+          "invoiceLines": "Invoice lines",
+          "add": "Add"
+        },
+        "preview": {
+          "templateName": "FACTURLY — TEMPLATE CLASSIC",
+          "myCompany": "My Company",
+          "parisFrance": "Paris, France",
+          "recipient": "RECIPIENT",
+          "lyonFrance": "Lyon, France",
+          "info": "INFORMATION",
+          "subject": "Subject: Web project",
+          "issuedOn": "Issued on: 04/01/2024",
+          "dueDate": "Due date: 04/30/2024",
+          "table": {
+            "description": "Description",
+            "quantity": "Qty",
+            "unitPrice": "U.P.",
+            "vat": "VAT",
+            "total": "Total"
+          },
+          "items": {
+            "frontendDev": "Frontend development",
+            "apiIntegration": "API integration"
+          },
+          "footer": {
+            "subtotal": "Subtotal",
+            "estimatedVat": "Estimated VAT",
+            "totalIncludingVat": "Total including VAT"
+          }
+        }
       },
       "emailSending": {
         "title": "Automatic email sending",
-        "description": "Send your invoices directly by email to your clients."
+        "description": "Send your invoices directly by email to your clients.",
+        "invoice": {
+          "companyName": "My Company",
+          "item": "Development"
+        },
+        "form": {
+          "title": "Send invoice",
+          "recipient": "Recipient",
+          "subject": "Subject",
+          "subjectText": "Invoice FAC-001 - €1,050",
+          "preview": "Preview",
+          "greeting": "Hello Acme Corp,",
+          "message": "Please find attached your invoice FAC-001 for €1,050.",
+          "viewInvoice": "View invoice",
+          "send": "Send"
+        },
+        "sent": {
+          "title": "Email sent",
+          "from": "From: facturly@example.com",
+          "to": "To: contact@acmecorp.com",
+          "timeAgo": "2 minutes ago"
+        }
       },
       "paymentTracking": {
         "title": "Real-time payment tracking",
-        "description": "View the status of your invoices and payments in real-time."
+        "description": "View the status of your invoices and payments in real-time.",
+        "header": {
+          "title": "Payment tracking",
+          "subtitle": "Invoice status",
+          "paidThisMonth": "Paid this month"
+        },
+        "status": {
+          "paid": "Paid",
+          "sent": "Sent",
+          "overdue": "Overdue",
+          "paidShort": "Paid",
+          "overdueShort": "Overdue"
+        },
+        "chart": {
+          "title": "Payment evolution",
+          "months": {
+            "jan": "Jan",
+            "feb": "Feb",
+            "mar": "Mar",
+            "apr": "Apr"
+          }
+        }
       },
       "clientManagement": {
         "title": "Client and service management",
-        "description": "Organize your contacts and services to invoice faster."
+        "description": "Organize your contacts and services to invoice faster.",
+        "header": {
+          "title": "Client management",
+          "activeClients": "24 active clients",
+          "new": "New"
+        },
+        "form": {
+          "title": "New client",
+          "name": "Name",
+          "namePlaceholder": "Company name",
+          "email": "Email",
+          "save": "Save"
+        }
       },
       "onlinePayment": {
         "title": "Secure online payment",
-        "description": "Allow your clients to pay directly online."
+        "description": "Allow your clients to pay directly online.",
+        "form": {
+          "title": "Online payment",
+          "amountToPay": "Amount to pay",
+          "email": "Email",
+          "method": "Method",
+          "creditCard": "Credit card",
+          "payNow": "Pay now",
+          "securePayment": "SSL secure payment"
+        },
+        "confirmation": {
+          "title": "Payment completed",
+          "amountPaid": "€1,050 paid",
+          "timeAgo": "2 minutes ago"
+        }
       },
       "dashboardIntelligence": {
         "title": "Smart dashboard",
-        "description": "Track your revenue and statistics at a glance."
+        "description": "Track your revenue and statistics at a glance.",
+        "revenueTrends": "Revenue trends",
+        "stats": {
+          "totalPaid": "Total paid",
+          "pending": "Pending"
+        },
+        "months": {
+          "jan": "Jan",
+          "feb": "Feb",
+          "mar": "Mar",
+          "apr": "Apr"
+        }
       }
     },
     "faq": {

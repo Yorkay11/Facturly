@@ -31,7 +31,6 @@
   },
   "auth": {
     "login": "Connexion",
-    "register": "Inscription",
     "logout": "Déconnexion",
     "email": "Email",
     "password": "Mot de passe",
@@ -53,7 +52,81 @@
     "signIn": "Se connecter",
     "signUp": "S'inscrire",
     "welcomeBack": "Bon retour !",
-    "createAccount": "Créer un compte"
+    "createAccount": "Créer un compte",
+    "heroTitle": "Facturation simple & intelligente",
+    "heroDescription": "Créez, envoyez et gérez vos factures en toute simplicité",
+    "register": {
+      "heroTitle": "Rejoignez Facturly",
+      "heroDescription": "Créez votre compte et commencez à gérer vos factures en toute simplicité",
+      "cardTitle": "Créer un compte Facturly",
+      "cardDescription": "Inscrivez-vous pour commencer à gérer vos factures en toute simplicité.",
+      "steps": {
+        "personalInfo": "Informations personnelles",
+        "security": "Sécurité"
+      },
+      "fields": {
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Adresse email",
+        "companyName": "Nom de l'entreprise",
+        "password": "Mot de passe",
+        "confirmPassword": "Confirmer le mot de passe"
+      },
+      "placeholders": {
+        "firstName": "York",
+        "lastName": "Wona",
+        "email": "vous@entreprise.com",
+        "companyName": "Mon Entreprise SAS",
+        "password": "••••••••",
+        "confirmPassword": "••••••••"
+      },
+      "passwordHint": "Le mot de passe doit contenir entre 8 et 128 caractères, avec au moins une majuscule, une minuscule et un chiffre.",
+      "buttons": {
+        "previous": "Précédent",
+        "next": "Suivant",
+        "creating": "Création...",
+        "createAccount": "Créer mon compte"
+      },
+      "alreadyHaveAccount": "Vous avez déjà un compte ?",
+      "signInLink": "Se connecter",
+      "terms": "En créant un compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
+      "ariaLabels": {
+        "showPassword": "Afficher le mot de passe",
+        "hidePassword": "Masquer le mot de passe",
+        "showConfirmPassword": "Afficher la confirmation du mot de passe",
+        "hideConfirmPassword": "Masquer la confirmation du mot de passe"
+      },
+      "validation": {
+        "firstNameMinLength": "Le prénom doit contenir au moins 2 caractères",
+        "lastNameMinLength": "Le nom doit contenir au moins 2 caractères",
+        "invalidEmail": "Adresse email invalide",
+        "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères",
+        "passwordMaxLength": "Le mot de passe ne doit pas dépasser 128 caractères",
+        "passwordUppercase": "Le mot de passe doit contenir au moins une majuscule",
+        "passwordLowercase": "Le mot de passe doit contenir au moins une minuscule",
+        "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
+        "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+        "passwordsMismatch": "Les mots de passe ne correspondent pas",
+        "companyNameMinLength": "Le nom de l'entreprise doit contenir au moins 2 caractères"
+      },
+      "toasts": {
+        "success": "Inscription réussie",
+        "successDescription": "Bienvenue {name}, votre compte a été créé avec succès !",
+        "error": "Échec de l'inscription",
+        "betaFull": "Bêta complète",
+        "betaFullDescription": "La bêta est complète. Les inscriptions sont temporairement fermées.",
+        "validationError": "Erreur de validation",
+        "fillAllFields": "Veuillez remplir tous les champs obligatoires",
+        "correctErrors": "Veuillez corriger les erreurs avant de soumettre"
+      },
+      "errors": {
+        "emailExists": "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.",
+        "unauthorized": "Erreur lors de l'inscription. Veuillez réessayer.",
+        "tokenExpired": "Votre session a expiré. Veuillez réessayer.",
+        "tokenInvalid": "Session invalide. Veuillez réessayer.",
+        "default": "Une erreur est survenue lors de l'inscription."
+      }
+    }
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -1150,27 +1223,141 @@
       "subtitle": "Toutes les fonctionnalités dont vous avez besoin pour créer, envoyer et suivre vos factures efficacement.",
       "invoiceCreation": {
         "title": "Création de factures simplifiée.",
-        "description": "Créez des factures professionnelles en quelques clics."
+        "description": "Créez des factures professionnelles en quelques clics.",
+        "form": {
+          "invoiceInfo": "Informations facture",
+          "recipient": "Destinataire",
+          "subject": "Objet",
+          "subjectPlaceholder": "Développement site web",
+          "invoiceLines": "Lignes de facture",
+          "add": "Ajouter"
+        },
+        "preview": {
+          "templateName": "FACTURLY — TEMPLATE CLASSIC",
+          "myCompany": "Ma Société",
+          "parisFrance": "Paris, France",
+          "recipient": "DESTINATAIRE",
+          "lyonFrance": "Lyon, France",
+          "info": "INFORMATIONS",
+          "subject": "Objet : Projet web",
+          "issuedOn": "Émise le : 01/04/2024",
+          "dueDate": "Échéance : 30/04/2024",
+          "table": {
+            "description": "Description",
+            "quantity": "Qté",
+            "unitPrice": "P.U.",
+            "vat": "TVA",
+            "total": "Total"
+          },
+          "items": {
+            "frontendDev": "Développement frontend",
+            "apiIntegration": "Intégration API"
+          },
+          "footer": {
+            "subtotal": "Sous-total",
+            "estimatedVat": "TVA estimée",
+            "totalIncludingVat": "Total TTC"
+          }
+        }
       },
       "emailSending": {
         "title": "Envoi par email automatique",
-        "description": "Envoyez vos factures directement par email à vos clients."
+        "description": "Envoyez vos factures directement par email à vos clients.",
+        "invoice": {
+          "companyName": "Ma Société",
+          "item": "Développement"
+        },
+        "form": {
+          "title": "Envoyer la facture",
+          "recipient": "Destinataire",
+          "subject": "Objet",
+          "subjectText": "Facture FAC-001 - 1 050€",
+          "preview": "Aperçu",
+          "greeting": "Bonjour Acme Corp,",
+          "message": "Veuillez trouver ci-joint votre facture FAC-001 d'un montant de 1 050€.",
+          "viewInvoice": "Voir la facture",
+          "send": "Envoyer"
+        },
+        "sent": {
+          "title": "Email envoyé",
+          "from": "De: facturly@example.com",
+          "to": "À: contact@acmecorp.com",
+          "timeAgo": "Il y a 2 minutes"
+        }
       },
       "paymentTracking": {
         "title": "Suivi des paiements en temps réel",
-        "description": "Visualisez l'état de vos factures et paiements en direct."
+        "description": "Visualisez l'état de vos factures et paiements en direct.",
+        "header": {
+          "title": "Suivi des paiements",
+          "subtitle": "Statut des factures",
+          "paidThisMonth": "Payé ce mois"
+        },
+        "status": {
+          "paid": "Payée",
+          "sent": "Envoyée",
+          "overdue": "En retard",
+          "paidShort": "Payé",
+          "overdueShort": "Retard"
+        },
+        "chart": {
+          "title": "Évolution des paiements",
+          "months": {
+            "jan": "Jan",
+            "feb": "Fév",
+            "mar": "Mar",
+            "apr": "Avr"
+          }
+        }
       },
       "clientManagement": {
         "title": "Gestion de clients et prestations",
-        "description": "Organisez vos contacts et prestations pour facturer plus vite."
+        "description": "Organisez vos contacts et prestations pour facturer plus vite.",
+        "header": {
+          "title": "Gestion clients",
+          "activeClients": "24 clients actifs",
+          "new": "Nouveau"
+        },
+        "form": {
+          "title": "Nouveau client",
+          "name": "Nom",
+          "namePlaceholder": "Nom de l'entreprise",
+          "email": "Email",
+          "save": "Enregistrer"
+        }
       },
       "onlinePayment": {
         "title": "Paiement en ligne sécurisé",
-        "description": "Permettez à vos clients de payer directement en ligne."
+        "description": "Permettez à vos clients de payer directement en ligne.",
+        "form": {
+          "title": "Paiement en ligne",
+          "amountToPay": "Montant à payer",
+          "email": "Email",
+          "method": "Méthode",
+          "creditCard": "Carte bancaire",
+          "payNow": "Payer maintenant",
+          "securePayment": "Paiement sécurisé SSL"
+        },
+        "confirmation": {
+          "title": "Paiement effectué",
+          "amountPaid": "1 050€ payé",
+          "timeAgo": "Il y a 2 minutes"
+        }
       },
       "dashboardIntelligence": {
         "title": "Tableau de bord intelligent",
-        "description": "Suivez vos revenus et statistiques en un coup d'œil."
+        "description": "Suivez vos revenus et statistiques en un coup d'œil.",
+        "revenueTrends": "Tendances des revenus",
+        "stats": {
+          "totalPaid": "Total payé",
+          "pending": "En attente"
+        },
+        "months": {
+          "jan": "Jan",
+          "feb": "Fév",
+          "mar": "Mar",
+          "apr": "Avr"
+        }
       }
     },
     "faq": {

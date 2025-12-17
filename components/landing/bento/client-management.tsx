@@ -2,22 +2,16 @@
 
 import React from "react"
 import { Plus, Mail, Phone, MapPin, User } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 const ClientManagement: React.FC = () => {
+  const t = useTranslations('landing.bento.clientManagement')
   const clients = [
-    { id: 1, name: "Acme Corp", email: "contact@acme.com", city: "Paris", initial: "AC" },
+    { id: 1, name: "Fidelize", email: "contact@fidelize.com", city: "Paris", initial: "FI" },
     { id: 2, name: "Tech Solutions", email: "info@techsol.fr", city: "Lyon", initial: "TS" },
     { id: 3, name: "Design Studio", email: "hello@design.fr", city: "Marseille", initial: "DS" },
   ]
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
 
   return (
     <div className="w-full h-full flex items-center justify-center p-1.5 bg-white relative overflow-hidden">
@@ -25,12 +19,12 @@ const ClientManagement: React.FC = () => {
         {/* Header avec stats */}
         <div className="absolute top-1 left-1 right-1 flex items-center justify-between mb-1 z-10">
           <div>
-            <p className="text-[10px] font-semibold text-slate-900">Gestion clients</p>
-            <p className="text-[8px] text-slate-500">24 clients actifs</p>
+            <p className="text-[10px] font-semibold text-slate-900">{t('header.title')}</p>
+            <p className="text-[8px] text-slate-500">{t('header.activeClients')}</p>
           </div>
           <div className="h-5 px-1.5 rounded border border-primary/20 bg-primary/5 flex items-center gap-1 pointer-events-none">
             <Plus className="h-2.5 w-2.5 text-primary" />
-            <span className="text-[8px] font-medium text-primary">Nouveau</span>
+            <span className="text-[8px] font-medium text-primary">{t('header.new')}</span>
           </div>
         </div>
 
@@ -67,17 +61,17 @@ const ClientManagement: React.FC = () => {
              style={{ transform: 'scale(0.95)' }}>
           <div className="flex items-center gap-1 mb-1 pb-1 border-b border-slate-200">
             <User className="h-3 w-3 text-primary" />
-            <p className="text-[9px] font-semibold text-slate-900">Nouveau client</p>
+            <p className="text-[9px] font-semibold text-slate-900">{t('form.title')}</p>
           </div>
           <div className="space-y-1">
             <div>
-              <label className="text-[7px] text-slate-600 block mb-0.5">Nom</label>
+              <label className="text-[7px] text-slate-600 block mb-0.5">{t('form.name')}</label>
               <div className="h-3 w-full rounded border border-slate-300 bg-white px-1 text-[8px] pointer-events-none">
-                Nom de l'entreprise
+                {t('form.namePlaceholder')}
               </div>
             </div>
             <div>
-              <label className="text-[7px] text-slate-600 block mb-0.5">Email</label>
+              <label className="text-[7px] text-slate-600 block mb-0.5">{t('form.email')}</label>
               <div className="h-3 w-full rounded border border-slate-300 bg-white px-1 text-[8px] pointer-events-none flex items-center gap-0.5">
                 <Mail className="h-2 w-2 text-slate-400" />
                 <span>contact@example.com</span>
@@ -85,7 +79,7 @@ const ClientManagement: React.FC = () => {
             </div>
             <div className="pt-0.5">
               <div className="h-3 w-full rounded bg-primary flex items-center justify-center pointer-events-none">
-                <span className="text-[8px] font-medium text-primary-foreground">Enregistrer</span>
+                <span className="text-[8px] font-medium text-primary-foreground">{t('form.save')}</span>
               </div>
             </div>
           </div>

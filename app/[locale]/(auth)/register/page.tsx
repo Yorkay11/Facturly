@@ -17,41 +17,46 @@ import { Separator } from "@/components/ui/separator";
 import { useRegisterMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-const registerSchema = z.object({
-  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Adresse email invalide"),
-  password: z
-    .string()
-    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
-    .max(128, "Le mot de passe ne doit pas dépasser 128 caractères")
-    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une majuscule")
-    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une minuscule")
-    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre"),
-  confirmPassword: z.string().min(1, "Veuillez confirmer votre mot de passe"),
-  companyName: z.string().min(2, "Le nom de l'entreprise doit contenir au moins 2 caractères"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-});
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTranslations('auth.register');
+  const tCommon = useTranslations('common');
   const [register, { isLoading, isSuccess, isError, error, data }] = useRegisterMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
+  // Créer le schéma de validation avec les traductions dynamiques
+  const registerSchema = useMemo(() => z.object({
+    firstName: z.string().min(2, t('validation.firstNameMinLength')),
+    lastName: z.string().min(2, t('validation.lastNameMinLength')),
+    email: z.string().email(t('validation.invalidEmail')),
+    password: z
+      .string()
+      .min(8, t('validation.passwordMinLength'))
+      .max(128, t('validation.passwordMaxLength'))
+      .regex(/[A-Z]/, t('validation.passwordUppercase'))
+      .regex(/[a-z]/, t('validation.passwordLowercase'))
+      .regex(/[0-9]/, t('validation.passwordNumber')),
+    confirmPassword: z.string().min(1, t('validation.confirmPasswordRequired')),
+    companyName: z.string().min(2, t('validation.companyNameMinLength')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('validation.passwordsMismatch'),
+    path: ["confirmPassword"],
+  }), [t]);
+
+  type RegisterFormValues = z.infer<typeof registerSchema>;
+
   const steps = [
-    { id: 1, label: "Informations personnelles" },
-    { id: 2, label: "Sécurité" },
+    { id: 1, label: t('steps.personalInfo') },
+    { id: 2, label: t('steps.security') },
   ];
 
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema as any),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -72,8 +77,8 @@ export default function RegisterPage() {
         ? `${data.firstName} ${data.lastName}` 
         : data.email;
 
-      toast.success("Inscription réussie", {
-        description: `Bienvenue ${userName}, votre compte a été créé avec succès !`,
+      toast.success(t('toasts.success'), {
+        description: t('toasts.successDescription', { name: userName }),
       });
 
       router.push("/dashboard");
@@ -90,30 +95,30 @@ export default function RegisterPage() {
       // Récupérer le code d'erreur et le message depuis l'erreur RTK Query
       const errorData = error && "data" in error ? (error.data as { code?: string; message?: string }) : null;
       const errorCode = errorData?.code;
-      const errorMessage = errorData?.message || "Une erreur est survenue lors de l'inscription.";
+      const errorMessage = errorData?.message || t('errors.default');
       
       // Vérifier si c'est une erreur 403 (bêta complète)
       const errorStatus = error && "status" in error ? error.status : null;
       if (errorStatus === 403) {
-        toast.error("Bêta complète", {
-          description: errorMessage || "La bêta est complète. Les inscriptions sont temporairement fermées.",
+        toast.error(t('toasts.betaFull'), {
+          description: errorMessage || t('toasts.betaFullDescription'),
         });
         return;
       }
       
       // Messages d'erreur spécifiques selon le code
       const errorMessages: Record<string, string> = {
-        CONFLICT_EMAIL_EXISTS: "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.",
-        AUTH_UNAUTHORIZED: "Erreur lors de l'inscription. Veuillez réessayer.",
-        AUTH_TOKEN_EXPIRED: "Votre session a expiré. Veuillez réessayer.",
-        AUTH_TOKEN_INVALID: "Session invalide. Veuillez réessayer.",
+        CONFLICT_EMAIL_EXISTS: t('errors.emailExists'),
+        AUTH_UNAUTHORIZED: t('errors.unauthorized'),
+        AUTH_TOKEN_EXPIRED: t('errors.tokenExpired'),
+        AUTH_TOKEN_INVALID: t('errors.tokenInvalid'),
       };
       
       const displayMessage = errorCode && errorMessages[errorCode] 
         ? errorMessages[errorCode] 
         : errorMessage;
       
-      toast.error("Échec de l'inscription", {
+      toast.error(t('toasts.error'), {
         description: displayMessage,
       });
     }
@@ -176,7 +181,7 @@ export default function RegisterPage() {
       // Valider tous les champs avant de soumettre
       const isValid = await form.trigger();
       if (!isValid) {
-        toast.error("Veuillez corriger les erreurs avant de soumettre");
+        toast.error(t('toasts.correctErrors'));
         return;
       }
 
@@ -208,10 +213,10 @@ export default function RegisterPage() {
           />
           <div className="space-y-3">
             <h2 className="text-3xl font-bold text-white">
-              Rejoignez Facturly
+              {t('heroTitle')}
             </h2>
             <p className="text-white/80 text-lg">
-              Créez votre compte et commencez à gérer vos factures en toute simplicité
+              {t('heroDescription')}
             </p>
           </div>
         </div>
@@ -226,9 +231,9 @@ export default function RegisterPage() {
                 <User className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-semibold text-primary">Créer un compte Facturly</CardTitle>
+                <CardTitle className="text-2xl font-semibold text-primary">{t('cardTitle')}</CardTitle>
                 <CardDescription className="text-foreground/60">
-                  Inscrivez-vous pour commencer à gérer vos factures en toute simplicité.
+                  {t('cardDescription')}
                 </CardDescription>
               </div>
             </CardHeader>
@@ -270,13 +275,13 @@ export default function RegisterPage() {
                   <div className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">Prénom</Label>
+                        <Label htmlFor="firstName">{t('fields.firstName')}</Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
                           <Input
                             id="firstName"
                             type="text"
-                            placeholder="York"
+                            placeholder={t('placeholders.firstName')}
                             className="pl-9"
                             {...form.register("firstName")}
                           />
@@ -286,13 +291,13 @@ export default function RegisterPage() {
                         ) : null}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Nom</Label>
+                        <Label htmlFor="lastName">{t('fields.lastName')}</Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
                           <Input
                             id="lastName"
                             type="text"
-                            placeholder="Wona"
+                            placeholder={t('placeholders.lastName')}
                             className="pl-9"
                             {...form.register("lastName")}
                           />
@@ -303,13 +308,13 @@ export default function RegisterPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Adresse email</Label>
+                      <Label htmlFor="email">{t('fields.email')}</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
                         <Input
                           id="email"
                           type="email"
-                          placeholder="vous@entreprise.com"
+                          placeholder={t('placeholders.email')}
                           className="pl-9"
                           {...form.register("email")}
                         />
@@ -319,13 +324,13 @@ export default function RegisterPage() {
                       ) : null}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="companyName">Nom de l&apos;entreprise</Label>
+                      <Label htmlFor="companyName">{t('fields.companyName')}</Label>
                       <div className="relative">
                         <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
                         <Input
                           id="companyName"
                           type="text"
-                          placeholder="Mon Entreprise SAS"
+                          placeholder={t('placeholders.companyName')}
                           className="pl-9"
                           {...form.register("companyName")}
                         />
@@ -341,13 +346,13 @@ export default function RegisterPage() {
                 {currentStep === 2 && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="password">Mot de passe</Label>
+                      <Label htmlFor="password">{t('fields.password')}</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
+                          placeholder={t('placeholders.password')}
                           className="pl-9 pr-9"
                           {...form.register("password")}
                         />
@@ -355,7 +360,7 @@ export default function RegisterPage() {
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
-                          aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                          aria-label={showPassword ? t('ariaLabels.hidePassword') : t('ariaLabels.showPassword')}
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -368,17 +373,17 @@ export default function RegisterPage() {
                         <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
                       ) : null}
                       <p className="text-xs text-foreground/50">
-                        Le mot de passe doit contenir entre 8 et 128 caractères, avec au moins une majuscule, une minuscule et un chiffre.
+                        {t('passwordHint')}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                      <Label htmlFor="confirmPassword">{t('fields.confirmPassword')}</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
                         <Input
                           id="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="••••••••"
+                          placeholder={t('placeholders.confirmPassword')}
                           className="pl-9 pr-9"
                           {...form.register("confirmPassword")}
                         />
@@ -386,7 +391,7 @@ export default function RegisterPage() {
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
-                          aria-label={showConfirmPassword ? "Masquer la confirmation du mot de passe" : "Afficher la confirmation du mot de passe"}
+                          aria-label={showConfirmPassword ? t('ariaLabels.hideConfirmPassword') : t('ariaLabels.showConfirmPassword')}
                         >
                           {showConfirmPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -413,7 +418,7 @@ export default function RegisterPage() {
                       disabled={isLoading}
                     >
                       <ChevronLeft className="h-4 w-4 mr-2" />
-                      Précédent
+                      {t('buttons.previous')}
                     </Button>
                   )}
                   <Button
@@ -425,13 +430,13 @@ export default function RegisterPage() {
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Création...
+                        {t('buttons.creating')}
                       </>
                     ) : isLastStep ? (
-                      "Créer mon compte"
+                      t('buttons.createAccount')
                     ) : (
                       <>
-                        Suivant
+                        {t('buttons.next')}
                         <ChevronRight className="h-4 w-4" />
                       </>
                     )}
@@ -442,16 +447,16 @@ export default function RegisterPage() {
               <div className="space-y-3 text-center text-sm text-foreground/60">
                 <Separator />
                 <p>
-                  Vous avez déjà un compte ? {" "}
+                  {t('alreadyHaveAccount')} {" "}
                   <Link href="/login" className="text-primary hover:underline">
-                    Se connecter
+                    {t('signInLink')}
                   </Link>
                 </p>
               </div>
             </CardContent>
           </Card>
           <p className="mt-6 text-center text-xs text-foreground/50">
-            En créant un compte, vous acceptez nos conditions d&apos;utilisation et notre politique de confidentialité.
+            {t('terms')}
           </p>
         </div>
       </div>

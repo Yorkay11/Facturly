@@ -2,24 +2,26 @@
 
 import React from "react"
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts"
-
-// Données mockées pour le graphique (4 derniers mois avec tendance croissante)
-const mockRevenueData = [
-  { name: "Jan", revenus: 3200 },
-  { name: "Fév", revenus: 5800 },
-  { name: "Mar", revenus: 4500 },
-  { name: "Avr", revenus: 6200 },
-]
+import { useTranslations } from 'next-intl'
 
 const primaryColor = "rgb(120, 53, 239)"
 
 const DashboardIntelligence: React.FC = () => {
+  const t = useTranslations('landing.bento.dashboardIntelligence')
+  
+  // Données mockées pour le graphique (4 derniers mois avec tendance croissante)
+  const mockRevenueData = [
+    { name: t('months.jan'), revenus: 3200 },
+    { name: t('months.feb'), revenus: 5800 },
+    { name: t('months.mar'), revenus: 4500 },
+    { name: t('months.apr'), revenus: 6200 },
+  ]
   return (
     <div className="w-full h-full flex items-center justify-center p-3 bg-gradient-to-br from-primary/5 via-transparent to-transparent">
       <div className="w-full h-full flex flex-col gap-1.5">
         {/* Header compact */}
         <div className="px-1">
-          <h3 className="text-[11px] font-semibold text-foreground leading-tight">Tendances des revenus</h3>
+          <h3 className="text-[11px] font-semibold text-foreground leading-tight">{t('revenueTrends')}</h3>
         </div>
         
         {/* Chart compact */}
@@ -64,11 +66,11 @@ const DashboardIntelligence: React.FC = () => {
         {/* Stats summary compact */}
         <div className="grid grid-cols-2 gap-1.5 px-1">
           <div className="rounded border border-primary/10 bg-primary/5 px-2 py-1.5">
-            <p className="text-[9px] text-muted-foreground leading-tight">Total payé</p>
+            <p className="text-[9px] text-muted-foreground leading-tight">{t('stats.totalPaid')}</p>
             <p className="text-xs font-semibold text-primary leading-tight mt-0.5">15.4k€</p>
           </div>
           <div className="rounded border border-primary/10 bg-primary/5 px-2 py-1.5">
-            <p className="text-[9px] text-muted-foreground leading-tight">En attente</p>
+            <p className="text-[9px] text-muted-foreground leading-tight">{t('stats.pending')}</p>
             <p className="text-xs font-semibold text-foreground/80 leading-tight mt-0.5">2.8k€</p>
           </div>
         </div>

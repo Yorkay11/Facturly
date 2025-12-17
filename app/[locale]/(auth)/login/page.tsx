@@ -111,10 +111,10 @@ function LoginForm() {
           />
           <div className="space-y-3">
             <h2 className="text-3xl font-bold text-white">
-              Facturation simple & intelligente
+              {t('heroTitle')}
             </h2>
             <p className="text-white/80 text-lg">
-              Créez, envoyez et gérez vos factures en toute simplicité
+              {t('heroDescription')}
             </p>
           </div>
         </div>

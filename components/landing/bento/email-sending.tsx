@@ -2,8 +2,10 @@
 
 import React from "react"
 import { Mail, Check } from "lucide-react"
+import { useTranslations } from 'next-intl'
 
 const EmailSending: React.FC = () => {
+  const t = useTranslations('landing.bento.emailSending')
   return (
     <div className="w-full h-full flex items-center justify-center p-1.5 bg-white relative overflow-hidden">
       <div className="w-full h-full relative overflow-hidden">
@@ -14,7 +16,7 @@ const EmailSending: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[7px] font-semibold text-primary mb-0.5">FACTURLY</p>
-                  <p className="text-[8px] text-slate-700">Ma Société</p>
+                  <p className="text-[8px] text-slate-700">{t('invoice.companyName')}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[8px] text-slate-900 font-medium">FAC-001</p>
@@ -24,7 +26,7 @@ const EmailSending: React.FC = () => {
               <div className="h-px bg-slate-200 my-0.5" />
               <div className="space-y-0.5">
                 <div className="grid grid-cols-4 gap-0.5 text-[6px] text-slate-600">
-                  <div>Développement</div>
+                  <div>{t('invoice.item')}</div>
                   <div className="text-right">5</div>
                   <div className="text-right">120€</div>
                   <div className="text-right font-medium text-primary">600€</div>
@@ -46,33 +48,33 @@ const EmailSending: React.FC = () => {
             {/* Header */}
             <div className="flex items-center gap-1.5 pb-1 border-b border-slate-200">
               <Mail className="h-3 w-3 text-primary" />
-              <p className="text-[10px] font-medium text-slate-900">Envoyer la facture</p>
+              <p className="text-[10px] font-medium text-slate-900">{t('form.title')}</p>
             </div>
             
             {/* Formulaire */}
             <div className="space-y-1">
               <div>
-                <label className="text-[8px] text-slate-600 block mb-0.5">Destinataire</label>
+                <label className="text-[8px] text-slate-600 block mb-0.5">{t('form.recipient')}</label>
                 <div className="h-4 w-full rounded border border-slate-300 bg-white px-1.5 text-[9px] pointer-events-none flex items-center gap-1">
                   <span className="text-slate-700">contact@acmecorp.com</span>
                 </div>
               </div>
               
               <div>
-                <label className="text-[8px] text-slate-600 block mb-0.5">Objet</label>
+                <label className="text-[8px] text-slate-600 block mb-0.5">{t('form.subject')}</label>
                 <div className="h-4 w-full rounded border border-slate-300 bg-white px-1.5 text-[9px] pointer-events-none">
-                  <span className="text-slate-700">Facture FAC-001 - 1 050€</span>
+                  <span className="text-slate-700">{t('form.subjectText')}</span>
                 </div>
               </div>
               
               {/* Aperçu email */}
               <div className="rounded border border-primary/20 bg-primary/5 p-1.5 mt-1">
-                <p className="text-[7px] font-medium text-primary mb-0.5">Aperçu</p>
+                <p className="text-[7px] font-medium text-primary mb-0.5">{t('form.preview')}</p>
                 <div className="space-y-0.5 text-[8px] text-slate-600">
-                  <p>Bonjour Acme Corp,</p>
-                  <p>Veuillez trouver ci-joint votre facture FAC-001 d'un montant de 1 050€.</p>
+                  <p>{t('form.greeting')}</p>
+                  <p>{t('form.message')}</p>
                   <div className="mt-0.5 pt-0.5 border-t border-primary/20">
-                    <p className="text-primary font-medium">Voir la facture</p>
+                    <p className="text-primary font-medium">{t('form.viewInvoice')}</p>
                   </div>
                 </div>
               </div>
@@ -82,7 +84,7 @@ const EmailSending: React.FC = () => {
             <div className="pt-1 border-t border-slate-200">
               <div className="h-5 w-full rounded bg-primary flex items-center justify-center gap-1.5 pointer-events-none">
                 <Mail className="h-2.5 w-2.5 text-primary-foreground" />
-                <span className="text-[9px] font-medium text-primary-foreground">Envoyer</span>
+                <span className="text-[9px] font-medium text-primary-foreground">{t('form.send')}</span>
               </div>
             </div>
             
@@ -97,13 +99,13 @@ const EmailSending: React.FC = () => {
         <div className="absolute bottom-2 left-2 w-[45%] rounded border border-primary/20 bg-white shadow-md pointer-events-none z-20 p-1.5">
           <div className="flex items-center gap-1 mb-0.5">
             <Mail className="h-2.5 w-2.5 text-primary" />
-            <p className="text-[8px] font-medium text-slate-900">Email envoyé</p>
+            <p className="text-[8px] font-medium text-slate-900">{t('sent.title')}</p>
             <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
           </div>
           <div className="space-y-0.5 text-[7px] text-slate-600">
-            <p>De: facturly@example.com</p>
-            <p>À: contact@acmecorp.com</p>
-            <p className="text-[6px] text-slate-500 mt-0.5">Il y a 2 minutes</p>
+            <p>{t('sent.from')}</p>
+            <p>{t('sent.to')}</p>
+            <p className="text-[6px] text-slate-500 mt-0.5">{t('sent.timeAgo')}</p>
           </div>
         </div>
       </div>

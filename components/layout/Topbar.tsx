@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Link, usePathname, useRouter } from '@/i18n/routing';
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
 import { IoHelpCircleOutline, IoNotificationsOutline, IoMenuOutline, IoAddOutline, IoLogOutOutline, IoSettingsOutline, IoPersonOutline } from "react-icons/io5";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -35,61 +35,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useBetaBanner } from "@/hooks/useBetaBanner";
-
-const navItems: Array<{
-  label: string;
-  href: string;
-  description?: string;
-  children?: Array<{ label: string; href: string; description?: string }>;
-}> = [
-  {
-    label: "Tableau de bord",
-    href: "/dashboard",
-    description: "Vue d'ensemble de vos indicateurs",
-  },
-  {
-    label: "Factures",
-    href: "/invoices",
-    description: "Suivre, créer et envoyer vos factures",
-    children: [
-      {
-        label: "Factures créées",
-        href: "/invoices",
-        description: "Consultez vos factures créées",
-      },
-      {
-        label: "Factures reçues",
-        href: "/bills",
-        description: "Consultez et gérez les factures reçues",
-      },
-      {
-        label: "Nouvelle facture",
-        href: "/invoices/new",
-        description: "Construisez un document de facturation",
-      },
-    ],
-  },
-  {
-    label: "Clients",
-    href: "/clients",
-    description: "Carnet d'adresses et historique",
-  },
-  {
-    label: "Produits",
-    href: "/items",
-    description: "Catalogue de prestations et tarifs",
-  },
-  {
-    label: "Relances",
-    href: "/reminders",
-    description: "Statistiques impayés et suivi des relances",
-  },
-  {
-    label: "Paramètres",
-    href: "/settings",
-    description: "Configuration, mentions et branding",
-  },
-];
+import { useTranslations } from 'next-intl';
 
 export const Topbar = () => {
   const pathname = usePathname();
@@ -97,6 +43,9 @@ export const Topbar = () => {
   const [isProfileOpen, setProfileOpen] = useState(false);
   const { handleNavigation } = useNavigationBlock();
   const router = useRouter();
+  const t = useTranslations('navigation');
+  const tTopbar = useTranslations('topbar');
+  const commonT = useTranslations('common');
   
   // Fetch user data from API
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
@@ -114,22 +63,77 @@ export const Topbar = () => {
   
   // Get user display name
   const getUserDisplayName = () => {
-    if (!user) return "Utilisateur";
+    if (!user) return tTopbar('user');
     const parts = [user.firstName, user.lastName].filter(Boolean);
     return parts.length > 0 ? parts.join(" ") : user.email;
   };
   
   // Get subscription plan name
   const getSubscriptionPlanName = () => {
-    if (!subscription) return "Aucun plan";
-    // Nouveau format : plan est une string
+    if (!subscription) return tTopbar('noPlan');
     const planNames: Record<"free" | "pro" | "enterprise", string> = {
-      free: "Gratuit",
-      pro: "Pro",
-      enterprise: "Enterprise"
+      free: tTopbar('planFree'),
+      pro: tTopbar('planPro'),
+      enterprise: tTopbar('planEnterprise')
     };
-    return planNames[subscription.plan] || "Aucun plan";
+    return planNames[subscription.plan] || tTopbar('noPlan');
   };
+  
+  // Navigation items with translations
+  const navItems: Array<{
+    label: string;
+    href: string;
+    description?: string;
+    children?: Array<{ label: string; href: string; description?: string }>;
+  }> = [
+    {
+      label: t('dashboard'),
+      href: "/dashboard",
+      description: t('dashboardDescription'),
+    },
+    {
+      label: t('invoices'),
+      href: "/invoices",
+      description: t('invoicesDescription'),
+      children: [
+        {
+          label: t('invoicesCreated'),
+          href: "/invoices",
+          description: t('invoicesCreatedDescription'),
+        },
+        {
+          label: t('invoicesReceived'),
+          href: "/bills",
+          description: t('invoicesReceivedDescription'),
+        },
+        {
+          label: t('newInvoice'),
+          href: "/invoices/new",
+          description: t('newInvoiceDescription'),
+        },
+      ],
+    },
+    {
+      label: t('clients'),
+      href: "/clients",
+      description: t('clientsDescription'),
+    },
+    {
+      label: t('items'),
+      href: "/items",
+      description: t('itemsDescription'),
+    },
+    {
+      label: t('reminders'),
+      href: "/reminders",
+      description: t('remindersDescription'),
+    },
+    {
+      label: t('settings'),
+      href: "/settings",
+      description: t('settingsDescription'),
+    },
+  ];
   
   // Get company location string
   const getCompanyLocation = () => {
@@ -162,6 +166,7 @@ export const Topbar = () => {
             />
           </Link>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Button 
               variant="outline" 
               size="sm" 
@@ -172,14 +177,14 @@ export const Topbar = () => {
               }}
             >
               <IoAddOutline className="h-4 w-4" />
-              <span className="hidden xs:inline">Nouveau</span>
+              <span className="hidden xs:inline">{t('new')}</span>
             </Button>
             <NotificationDropdown />
             <button
               type="button"
               onClick={() => setProfileOpen(true)}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition hover:bg-primary/20 flex-shrink-0"
-              aria-label="Ouvrir le profil utilisateur"
+              aria-label={t('openUserProfile')}
             >
               <Avatar className="h-6 w-6">
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
@@ -191,13 +196,13 @@ export const Topbar = () => {
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="h-8 w-8">
                   <IoMenuOutline className="h-5 w-5" />
-                  <span className="sr-only">Ouvrir la navigation</span>
+                  <span className="sr-only">{t('openNavigation')}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side={isMobile ? "left" : "right"} className="w-full max-w-xs space-y-6">
               <SheetHeader className="space-y-1">
                 <SheetTitle>Facturly</SheetTitle>
-                <SheetDescription>Navigation principale</SheetDescription>
+                <SheetDescription>{t('mainNavigation')}</SheetDescription>
               </SheetHeader>
               <nav className="space-y-4 text-sm">
                 {navItems.map((item) => {
@@ -350,9 +355,11 @@ export const Topbar = () => {
         </div>
 
         <div className="hidden md:flex flex-wrap items-center gap-3 text-sm">
+          <LanguageSwitcher />
+          <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center gap-2 text-foreground/70">
             <IoHelpCircleOutline className="h-4 w-4 text-primary" />
-            <span>Support</span>
+            <span>{t('support')}</span>
           </div>
           <Separator orientation="vertical" className="h-6" />
           <Button 
@@ -365,14 +372,14 @@ export const Topbar = () => {
             }}
           >
             <IoAddOutline className="h-4 w-4" />
-            Nouvelle facture
+            {t('newInvoice')}
           </Button>
           <NotificationDropdown />
           <button
             type="button"
             onClick={() => setProfileOpen(true)}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition hover:bg-primary/20"
-            aria-label="Ouvrir le profil utilisateur"
+            aria-label={t('openUserProfile')}
           >
             <Avatar className="h-7 w-7">
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">
@@ -385,9 +392,9 @@ export const Topbar = () => {
       <Sheet open={isProfileOpen} onOpenChange={setProfileOpen}>
         <SheetContent side="right" className="w-full max-w-sm space-y-6">
           <SheetHeader>
-            <SheetTitle>Profil utilisateur</SheetTitle>
+            <SheetTitle>{tTopbar('userProfile')}</SheetTitle>
             <SheetDescription>
-              {isLoadingUser || isLoadingCompany ? "Chargement..." : "Informations de votre compte"}
+              {isLoadingUser || isLoadingCompany ? commonT('loading') : tTopbar('accountInfo')}
             </SheetDescription>
           </SheetHeader>
           {isLoadingUser || isLoadingCompany ? (
@@ -411,7 +418,7 @@ export const Topbar = () => {
                   <p className="text-sm text-foreground/60">{user?.email}</p>
                 </div>
                 <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  {isLoadingSubscription ? "Chargement..." : getSubscriptionPlanName()}
+                  {isLoadingSubscription ? commonT('loading') : getSubscriptionPlanName()}
                 </span>
               </div>
               <div className="space-y-3 text-sm text-foreground/70">
@@ -419,7 +426,7 @@ export const Topbar = () => {
                   <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <IoPersonOutline className="h-4 w-4 text-primary" />
                     <div>
-                      <p className="font-medium text-foreground">Entreprise</p>
+                      <p className="font-medium text-foreground">{tTopbar('company')}</p>
                       <p className="text-xs">
                         {getCompanyLocation() || company.name}
                       </p>
@@ -429,8 +436,8 @@ export const Topbar = () => {
                 <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
                   <IoSettingsOutline className="h-4 w-4 text-primary" />
                   <div>
-                    <p className="font-medium text-foreground">Préférences</p>
-                    <p className="text-xs">Notifications, mentions légales, branding</p>
+                    <p className="font-medium text-foreground">{tTopbar('preferences')}</p>
+                    <p className="text-xs">{tTopbar('preferencesDescription')}</p>
                   </div>
                 </div>
               </div>
@@ -445,7 +452,7 @@ export const Topbar = () => {
                 handleNavigation("/settings?tab=profile");
               }}
             >
-              Gérer mon compte
+              {tTopbar('manageAccount')}
             </Button>
  
             <Button 
@@ -464,8 +471,8 @@ export const Topbar = () => {
                   }
                   
                   // Afficher un message de succès
-                  toast.success("Déconnexion réussie", {
-                    description: "Vous avez été déconnecté avec succès.",
+                  toast.success(tTopbar('logoutSuccess'), {
+                    description: tTopbar('logoutSuccessDescription'),
                   });
                   
                   // Fermer le sheet de profil
@@ -480,8 +487,8 @@ export const Topbar = () => {
                     document.cookie = "facturly_refresh_token=; path=/; max-age=0";
                   }
                   
-                  toast.error("Erreur lors de la déconnexion", {
-                    description: "Vous avez été déconnecté localement.",
+                  toast.error(tTopbar('logoutError'), {
+                    description: tTopbar('logoutErrorDescription'),
                   });
                   
                   setProfileOpen(false);
@@ -493,12 +500,12 @@ export const Topbar = () => {
               {isLoggingOut ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Déconnexion...
+                  {tTopbar('loggingOut')}
                 </>
               ) : (
                 <>
                   <IoLogOutOutline className="h-4 w-4" />
-                  Déconnexion
+                  {tTopbar('logout')}
                 </>
               )}
             </Button>

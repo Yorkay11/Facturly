@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,13 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useTranslations } from 'next-intl';
 
 export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'create' }: ItemModalProps) {
+  const t = useTranslations('invoices.addItemModal');
+  const commonT = useTranslations('common');
+  const itemsModalT = useTranslations('items.modal');
+  
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unitPrice, setUnitPrice] = useState('');
@@ -105,8 +110,8 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
       setIsManualEntry(false);
       setActiveTab('select'); // S'assurer qu'on est dans l'onglet select après sélection
       
-      toast.success("Produit sélectionné", {
-        description: `${product.name} a été ajouté. Complétez la quantité ci-dessous.`,
+      toast.success(t('toasts.productSelected'), {
+        description: t('toasts.productSelectedDescription', { name: product.name }),
       });
     }
   };
@@ -131,8 +136,8 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
       setUnitPrice(originalProductValues.unitPrice);
       setVatRate(originalProductValues.vatRate);
       setHasModifiedFields(false);
-      toast.info("Valeurs restaurées", {
-        description: "Les valeurs du produit ont été restaurées.",
+      toast.info(t('toasts.valuesRestored'), {
+        description: t('toasts.valuesRestoredDescription'),
       });
     }
   };
@@ -182,12 +187,12 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
       setShowSaveProductDialog(false);
       onClose();
       
-      toast.success("Produit créé et article ajouté", {
-        description: `${description} a été sauvegardé dans le catalogue et ajouté à la facture.`,
+      toast.success(t('toasts.productCreated'), {
+        description: t('toasts.productCreatedDescription', { name: description }),
       });
     } catch (error: any) {
-      const errorMessage = error?.data?.message || error?.message || "Une erreur est survenue lors de la création du produit.";
-      toast.error("Erreur", {
+      const errorMessage = error?.data?.message || error?.message || t('toasts.createError');
+      toast.error(commonT('error'), {
         description: errorMessage,
       });
     }
@@ -210,11 +215,11 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{mode === 'edit' ? 'Modifier la ligne' : 'Ajouter un article à la facture'}</DialogTitle>
+            <DialogTitle>{mode === 'edit' ? t('title.edit') : t('title.create')}</DialogTitle>
             <DialogDescription>
               {mode === 'create' 
-                ? 'Sélectionnez un produit existant ou saisissez manuellement les informations.'
-                : 'Modifiez les informations de la ligne de facture.'}
+                ? t('description.create')
+                : t('description.edit')}
             </DialogDescription>
           </DialogHeader>
           
@@ -234,18 +239,18 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="select" className="flex items-center gap-2">
                   <Search className="h-4 w-4" />
-                  Sélectionner
+                  {t('tabs.select')}
                 </TabsTrigger>
                 <TabsTrigger value="manual" className="flex items-center gap-2">
                   <Package className="h-4 w-4" />
-                  Saisie manuelle
+                  {t('tabs.manual')}
                 </TabsTrigger>
               </TabsList>
               
               <TabsContent value="select" className="space-y-4 mt-4">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Produit/Prestation</Label>
+                    <Label>{t('fields.product')}</Label>
                     <Popover open={productOpen} onOpenChange={setProductOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -270,12 +275,12 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                 <span className="font-medium">{selectedProduct.name}</span>
                                 {hasModifiedFields && (
                                   <Badge variant="outline" className="text-xs">
-                                    Modifié
+                                    {t('fields.modified')}
                                   </Badge>
                                 )}
                               </>
                             ) : (
-                              <span >Sélectionner un produit</span>
+                              <span>{t('fields.selectProduct')}</span>
                             )}
                           </div>
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -284,20 +289,20 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                         <Command shouldFilter={true}>
                           <CommandInput 
-                            placeholder="Rechercher par nom, description ou SKU..." 
+                            placeholder={t('fields.searchPlaceholder')} 
                             className="h-9" 
                           />
                           <CommandList>
                             {isLoadingProducts ? (
                               <div className="py-6 text-center text-sm text-muted-foreground">
                                 <Loader2 className="mx-auto h-4 w-4 animate-spin mb-2" />
-                                Chargement des produits...
+                                {t('fields.loading')}
                               </div>
                             ) : (
                               <>
                                 <CommandEmpty>
                                   <div className="py-4 text-center">
-                                    <p className="text-sm text-muted-foreground mb-2">Aucun produit trouvé.</p>
+                                    <p className="text-sm text-muted-foreground mb-2">{t('fields.noResults')}</p>
                                   </div>
                                 </CommandEmpty>
                                 <CommandGroup>
@@ -308,10 +313,10 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                       </div>
                                       <div>
                                         <p className="text-sm font-medium text-foreground mb-1">
-                                          Aucun produit disponible
+                                          {t('fields.noProducts.title')}
                                         </p>
                                         <p className="text-xs text-muted-foreground mb-3">
-                                          Passez à la saisie manuelle pour ajouter un article.
+                                          {t('fields.noProducts.description')}
                                         </p>
                                       </div>
                                     </div>
@@ -338,7 +343,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                                 variant="secondary" 
                                                 className="text-xs shrink-0 text-bg"
                                               >
-                                                {product.type === 'service' ? 'Prestation' : 'Produit'}
+                                                {product.type === 'service' ? t('types.service') : t('types.product')}
                                               </Badge>
                                             </div>
                                             {product.description && (
@@ -351,7 +356,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                                 {parseFloat(product.unitPrice || product.price || '0').toFixed(2)} {product.currency}
                                               </span>
                                               <span className="text-muted-foreground">
-                                                TVA: {product.taxRate}%
+                                                {t('fields.productDetails.vat')}: {product.taxRate}%
                                               </span>
                                               {product.sku && (
                                                 <span className="text-muted-foreground">
@@ -391,7 +396,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                           setProductOpen(false);
                                         }}
                                       >
-                                        Effacer la sélection
+                                        {t('fields.clearSelection')}
                                       </Button>
                                     </div>
                                   </CommandGroup>
@@ -410,7 +415,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                           <div className="flex items-center gap-2">
                             <Sparkles className="h-4 w-4 text-primary" />
                             <span className="text-sm font-medium text-foreground">
-                              Produit sélectionné
+                              {t('fields.selectedProduct')}
                             </span>
                           </div>
                           {hasModifiedFields && (
@@ -422,25 +427,25 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                               className="h-7 text-xs gap-1"
                             >
                               <RotateCcw className="h-3 w-3" />
-                              Restaurer
+                              {t('fields.restore')}
                             </Button>
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground space-y-1">
                           <p>
-                            <span className="font-medium">Nom:</span> {selectedProduct.name}
+                            <span className="font-medium">{t('fields.productDetails.name')}:</span> {selectedProduct.name}
                           </p>
                           {selectedProduct.description && (
                             <p>
-                              <span className="font-medium">Description:</span> {selectedProduct.description}
+                              <span className="font-medium">{t('fields.productDetails.description')}:</span> {selectedProduct.description}
                             </p>
                           )}
                           <div className="flex items-center gap-4">
                             <span>
-                              <span className="font-medium">Prix:</span> {parseFloat(selectedProduct.unitPrice || selectedProduct.price || '0').toFixed(2)} {selectedProduct.currency}
+                              <span className="font-medium">{t('fields.productDetails.price')}:</span> {parseFloat(selectedProduct.unitPrice || selectedProduct.price || '0').toFixed(2)} {selectedProduct.currency}
                             </span>
                             <span>
-                              <span className="font-medium">TVA:</span> {selectedProduct.taxRate}%
+                              <span className="font-medium">{t('fields.productDetails.vat')}:</span> {selectedProduct.taxRate}%
                             </span>
                           </div>
                         </div>
@@ -452,7 +457,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                   {!selectedProductId && (
                     <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">
                       <p className="text-sm text-muted-foreground mb-2">
-                        Sélectionnez un produit pour continuer, ou passez à la saisie manuelle.
+                        {t('fields.selectProductMessage')}
                       </p>
                     </div>
                   )}
@@ -464,11 +469,11 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                   <div className="flex items-center gap-2 mb-2">
                     <Package className="h-5 w-5 text-primary" />
                     <span className="text-sm font-medium text-foreground">
-                      Saisie manuelle
+                      {t('fields.manualEntry.title')}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Ajoutez un article directement à la facture. Vous pourrez choisir de le sauvegarder dans le catalogue après validation.
+                    {t('fields.manualEntry.description')}
                   </p>
                 </div>
               </TabsContent>
@@ -482,14 +487,14 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="h-px flex-1 bg-border"></div>
-                  <span className="text-sm font-medium text-muted-foreground">Détails de l&apos;article</span>
+                  <span className="text-sm font-medium text-muted-foreground">{t('fields.itemDetails')}</span>
                   <div className="h-px flex-1 bg-border"></div>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="description">
-                        Description <span className="text-destructive">*</span>
+                        {t('fields.description.label')} <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="description"
@@ -511,12 +516,12 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                           }
                         }}
                         required
-                        placeholder="Nom du produit ou de la prestation"
+                        placeholder={t('fields.description.placeholder')}
                         disabled={!!selectedProductId && !isManualEntry && !hasModifiedFields && activeTab === 'select'}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="quantity">Quantité</Label>
+                      <Label htmlFor="quantity">{t('fields.quantity.label')}</Label>
                       <Input
                         id="quantity"
                         type="number"
@@ -528,7 +533,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="unitPrice">
-                        Prix unitaire <span className="text-destructive">*</span>
+                        {t('fields.unitPrice.label')} <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         id="unitPrice"
@@ -558,13 +563,13 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                           }
                         }}
                         required
-                        placeholder="0.00"
+                        placeholder={t('fields.unitPrice.placeholder')}
                         disabled={!!selectedProductId && !isManualEntry && !hasModifiedFields && activeTab === 'select'}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="vatRate">
-                        Taux de TVA <span className="text-destructive">*</span>
+                        {t('fields.vatRate.label')} <span className="text-destructive">*</span>
                       </Label>
                       <Select 
                         value={vatRate} 
@@ -585,7 +590,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                         disabled={!!selectedProductId && !isManualEntry && !hasModifiedFields && activeTab === 'select'}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Sélectionnez le taux de TVA" />
+                          <SelectValue placeholder={t('fields.vatRate.placeholder')} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="0">0%</SelectItem>
@@ -598,9 +603,9 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                   </div>
                   <DialogFooter className="mt-4">
                     <Button type="button" variant="outline" onClick={onClose}>
-                      Annuler
+                      {t('buttons.cancel')}
                     </Button>
-                    <Button type="submit">{mode === 'edit' ? 'Mettre à jour' : "Ajouter l'article"}</Button>
+                    <Button type="submit">{mode === 'edit' ? t('buttons.update') : t('buttons.add')}</Button>
                   </DialogFooter>
                 </form>
               </div>
@@ -615,34 +620,34 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Save className="h-5 w-5 text-primary" />
-              Sauvegarder dans le catalogue ?
+              {t('saveDialog.title')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Voulez-vous sauvegarder cet article dans votre catalogue de produits ? Il pourra être réutilisé pour d&apos;autres factures.
+              {t('saveDialog.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="save-product-type">
-                Type <span className="text-destructive">*</span>
+                {t('saveDialog.fields.type.label')} <span className="text-destructive">*</span>
               </Label>
               <Select value={productType} onValueChange={(value) => setProductType(value as 'service' | 'product')}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un type" />
+                  <SelectValue placeholder={t('saveDialog.fields.type.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="service">Service</SelectItem>
-                  <SelectItem value="product">Produit</SelectItem>
+                  <SelectItem value="service">{itemsModalT('fields.typeService')}</SelectItem>
+                  <SelectItem value="product">{itemsModalT('fields.typeProduct')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="save-product-currency">
-                Devise <span className="text-destructive">*</span>
+                {t('saveDialog.fields.currency.label')} <span className="text-destructive">*</span>
               </Label>
               <Select value={productCurrency} onValueChange={setProductCurrency}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Devise" />
+                  <SelectValue placeholder={t('saveDialog.fields.currency.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EUR">EUR (€)</SelectItem>
@@ -652,22 +657,22 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
               </Select>
             </div>
             <div className="rounded-lg border border-muted-foreground/20 bg-muted/30 p-3 space-y-1">
-              <p className="text-sm font-medium">Résumé</p>
+              <p className="text-sm font-medium">{t('saveDialog.fields.summary.title')}</p>
               <div className="text-xs text-muted-foreground space-y-1">
-                <p><span className="font-medium">Nom:</span> {description}</p>
-                <p><span className="font-medium">Prix:</span> {unitPrice} {productCurrency}</p>
-                <p><span className="font-medium">TVA:</span> {vatRate}%</p>
-                <p><span className="font-medium">Type:</span> {productType === 'service' ? 'Service' : 'Produit'}</p>
+                <p><span className="font-medium">{t('saveDialog.fields.summary.name')}:</span> {description}</p>
+                <p><span className="font-medium">{t('saveDialog.fields.summary.price')}:</span> {unitPrice} {productCurrency}</p>
+                <p><span className="font-medium">{t('saveDialog.fields.summary.vat')}:</span> {vatRate}%</p>
+                <p><span className="font-medium">{t('saveDialog.fields.summary.type')}:</span> {productType === 'service' ? t('types.service') : t('types.product')}</p>
               </div>
             </div>
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleAddWithoutSaving}>
-              Non, ajouter uniquement
+              {t('saveDialog.buttons.addOnly')}
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleSaveProductAndAdd} disabled={isCreatingProduct}>
               {isCreatingProduct && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Oui, sauvegarder et ajouter
+              {t('saveDialog.buttons.saveAndAdd')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

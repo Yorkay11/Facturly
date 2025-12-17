@@ -5,21 +5,24 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { IoMenuOutline } from "react-icons/io5"
-import Link from "next/link"
+import { Link } from '@/i18n/routing'
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 
 export function Header() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
-  const buttonText = isAuthenticated ? "Tableau de bord" : "Essayer gratuitement"
+  const t = useTranslations('landing.header')
+  const buttonText = isAuthenticated ? t('dashboard') : t('tryFree')
   const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
   const navItems = [
-    { name: "Fonctionnalités", href: "#features-section" },
-    { name: "Tarifs", href: "#pricing-section" },
-    { name: "Témoignages", href: "#testimonials-section" },
+    { name: t('features'), href: "#features-section" },
+    { name: t('pricing'), href: "#pricing-section" },
+    { name: t('testimonials'), href: "#testimonials-section" },
   ]
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -66,6 +69,7 @@ export function Header() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           <Link href={buttonHref} onClick={handleCTAClick} className="hidden md:block">
             <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-2 rounded-full font-medium shadow-sm">
               {buttonText}
@@ -80,7 +84,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="bottom" className="bg-background border-t border-border text-foreground">
               <SheetHeader>
-                <SheetTitle className="text-left text-xl font-semibold text-foreground">Navigation</SheetTitle>
+                <SheetTitle className="text-left text-xl font-semibold text-foreground">{t('navigation')}</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-4 mt-6">
                 {navItems.map((item) => (

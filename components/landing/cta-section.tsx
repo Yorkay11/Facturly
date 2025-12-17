@@ -1,17 +1,19 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { Link } from '@/i18n/routing'
+import { useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
 import { useGetBetaAccessInfoQuery } from "@/services/facturlyApi"
+import { useTranslations } from 'next-intl'
 import { Users } from "lucide-react"
 
 export function CTASection() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
   const { data: betaInfo } = useGetBetaAccessInfoQuery()
-  const buttonText = isAuthenticated ? "Accéder au tableau de bord" : "Commencer gratuitement"
+  const t = useTranslations('landing.cta')
+  const buttonText = isAuthenticated ? t('ctaAuthenticated') : t('ctaGuest')
   const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -123,11 +125,10 @@ export function CTASection() {
       <div className="relative z-10 flex flex-col justify-start items-center gap-9 max-w-4xl mx-auto">
         <div className="flex flex-col justify-start items-center gap-4 text-center">
           <h2 className="text-foreground text-4xl md:text-5xl lg:text-[68px] font-semibold leading-tight md:leading-tight lg:leading-[76px] break-words max-w-[435px]">
-            Simplifiez votre facturation dès aujourd'hui
+            {t('title')}
           </h2>
           <p className="text-muted-foreground text-sm md:text-base font-medium leading-[18.20px] md:leading-relaxed break-words max-w-2xl">
-            Rejoignez les milliers de professionnels qui font confiance à Facturly pour gérer leurs factures efficacement
-            et améliorer leur trésorerie
+            {t('subtitle')}
           </p>
         </div>
         
@@ -137,9 +138,14 @@ export function CTASection() {
             <Users className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">
               {betaInfo.isFull ? (
-                <>Bêta complète ({betaInfo.currentUsers}/{betaInfo.maxUsers} utilisateurs)</>
+                t('betaFull', { current: betaInfo.currentUsers, max: betaInfo.maxUsers ?? 0 })
               ) : (
-                <>{betaInfo.remaining} place{betaInfo.remaining !== 1 ? "s" : ""} disponible{betaInfo.remaining !== 1 ? "s" : ""} ({betaInfo.currentUsers}/{betaInfo.maxUsers})</>
+                t('betaAvailable', { 
+                  remaining: betaInfo.remaining ?? 0, 
+                  plural: (betaInfo.remaining ?? 0) !== 1 ? 's' : '',
+                  current: betaInfo.currentUsers, 
+                  max: betaInfo.maxUsers ?? 0 
+                })
               )}
             </span>
           </div>
@@ -151,7 +157,7 @@ export function CTASection() {
             size="lg"
             disabled={betaInfo?.isFull && !isAuthenticated}
           >
-            {betaInfo?.isFull && !isAuthenticated ? "Bêta complète" : buttonText}
+            {betaInfo?.isFull && !isAuthenticated ? t('betaFull', { current: betaInfo.currentUsers, max: betaInfo.maxUsers ?? 0 }) : buttonText}
           </Button>
         </Link>
       </div>

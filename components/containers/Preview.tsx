@@ -23,9 +23,6 @@ import { useGetCompanyQuery, useGetClientByIdQuery, useGetSubscriptionQuery } fr
 import { getBackendTemplateName } from "@/types/invoiceTemplate";
 import Skeleton from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Lock, ArrowRight } from "lucide-react";
-import Link from "next/link";
 import {
   Select,
   SelectContent,
@@ -39,7 +36,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Maximize2, FileDown } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Maximize2 } from "lucide-react";
+import { useTranslations, useLocale } from 'next-intl';
 
 const templateRegistry: Record<string, React.ComponentType<InvoiceTemplateProps>> = {
   invoice: TemplateInvoice,
@@ -59,10 +63,11 @@ const TemplateSelector = ({
   activeTemplate: string;
   onChange: (templateId: string) => void;
 }) => {
+  const t = useTranslations('invoices.preview');
   return (
     <Select value={activeTemplate} onValueChange={onChange}>
       <SelectTrigger className="w-full sm:w-[200px] border-primary/40">
-        <SelectValue placeholder="Sélectionner un template" />
+        <SelectValue placeholder={t('templateSelector.placeholder')} />
       </SelectTrigger>
       <SelectContent>
         {invoiceTemplates.map((template) => (
@@ -80,23 +85,46 @@ interface PreviewProps {
 }
 
 const Preview = ({ invoiceId }: PreviewProps = {}) => {
+  const t = useTranslations('invoices.preview');
+  const locale = useLocale();
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const { items } = useItemsStore();
   const metadataStore = useInvoiceMetadata();
-  const [activeTemplate, setActiveTemplate] = useState(invoiceTemplates[0].id);
+  // Utiliser le template depuis le store, avec fallback sur le template par défaut
+  const [activeTemplate, setActiveTemplate] = useState(metadataStore.templateId || invoiceTemplates[0].id);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Récupérer les données de l'entreprise, du client et de la subscription
+  // Synchroniser le template avec le store quand il change
+  useEffect(() => {
+    if (activeTemplate !== metadataStore.templateId) {
+      metadataStore.setMetadata({ templateId: activeTemplate });
+    }
+  }, [activeTemplate]);
+
+  // Synchroniser le state local avec le store si le template change depuis l'extérieur
+  useEffect(() => {
+    if (metadataStore.templateId && metadataStore.templateId !== activeTemplate) {
+      setActiveTemplate(metadataStore.templateId);
+    }
+  }, [metadataStore.templateId]);
+
+  // Détecter si on est sur un grand écran (lg et plus)
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.matchMedia("(min-width: 1024px)").matches);
+    };
+    
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
+  // Récupérer les données de l'entreprise et du client
   const { data: company } = useGetCompanyQuery();
   const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
     skip: !metadataStore.clientId,
   });
-  const { data: subscription } = useGetSubscriptionQuery();
-  
-  // Vérifier si l'utilisateur peut générer des PDF (Pro ou Enterprise uniquement)
-  const canGeneratePDF = subscription?.plan === "pro" || subscription?.plan === "enterprise";
-  const isFreePlan = subscription?.plan === "free";
 
   const currentTemplate = invoiceTemplates.find((tpl) => tpl.id === activeTemplate) ?? invoiceTemplates[0];
   const metadata = {
@@ -125,94 +153,22 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
   const currencyCode = metadataStore.currency ? metadataStore.currency.toUpperCase() : "EUR";
   const amountFormatter = useMemo(
     () =>
-      new Intl.NumberFormat("fr-FR", {
+      new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
         style: "currency",
         currency: currencyCode,
         maximumFractionDigits: 2,
       }),
-    [currencyCode]
+    [currencyCode, locale]
   );
 
-  const formatDate = (date?: Date) => (date ? format(date, "dd/MM/yyyy") : "--/--/----");
-
-  const handleGeneratePDF = async () => {
-    if (!invoiceId) {
-      toast.error("Erreur", {
-        description: "La facture doit être sauvegardée avant de générer le PDF.",
-      });
-      return;
-    }
-
-    setIsGeneratingPDF(true);
-    try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://facturlybackend-production.up.railway.app";
-      
-      // Obtenir le token d'authentification
-      const cookies = document.cookie.split("; ");
-      const tokenCookie = cookies.find((cookie) => cookie.startsWith("facturly_access_token="));
-      const token = tokenCookie ? tokenCookie.split("=")[1] : null;
-
-      if (!token) {
-        toast.error("Erreur", {
-          description: "Vous devez être connecté pour générer le PDF.",
-        });
-        setIsGeneratingPDF(false);
-        return;
-      }
-
-      // Mapper le template frontend au nom backend
-      const backendTemplateName = getBackendTemplateName(activeTemplate);
-      
-      // Construire l'URL avec le paramètre template optionnel
-      const pdfUrl = `${BASE_URL}/invoices/${invoiceId}/pdf${backendTemplateName ? `?template=${backendTemplateName}` : ""}`;
-
-      // Créer un lien temporaire pour télécharger le PDF
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = `facture-${invoiceId}.pdf`;
-      
-      // Ajouter le token dans les headers via fetch puis créer un blob
-      const response = await fetch(pdfUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 403) {
-          throw new Error("La génération de PDF est réservée aux plans Pro ou Entreprise.");
-        }
-        throw new Error("Erreur lors de la génération du PDF");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      link.href = url;
-      link.click();
-      
-      // Nettoyer
-      window.URL.revokeObjectURL(url);
-      
-      toast.success("PDF généré", {
-        description: "Le PDF a été téléchargé avec succès.",
-      });
-    } catch (error: any) {
-      console.error("Erreur lors de la génération du PDF:", error);
-      toast.error("Erreur", {
-        description: error?.message || "Impossible de générer le PDF. Veuillez réessayer.",
-      });
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
+  const formatDate = (date?: Date) => (date ? format(date, locale === 'fr' ? "dd/MM/yyyy" : "MM/dd/yyyy") : "--/--/----");
 
   return (
     <Card className="w-full flex-1 space-y-6 border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <p className="text-lg font-semibold text-slate-900">Aperçu</p>
-          <p className="text-xs text-slate-500">Synchronisé avec les informations saisies.</p>
+          <p className="text-lg font-semibold text-slate-900">{t('title')}</p>
+          <p className="text-xs text-slate-500">{t('description')}</p>
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
@@ -223,7 +179,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
             onClick={() => setIsFullscreenOpen(true)}
           >
             <Maximize2 className="h-4 w-4" />
-            Aperçu grand écran
+            {t('fullscreen')}
           </Button>
         </div>
       </div>
@@ -251,69 +207,82 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
         </div>
       )}
 
-      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-        {isFreePlan && (
-          <Alert className="mb-2 border-amber-200 bg-amber-50">
-            <Lock className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-800">Génération PDF réservée</AlertTitle>
-            <AlertDescription className="text-amber-700">
-              La génération de PDF est disponible uniquement avec les plans Pro ou Entreprise.
-              <Link 
-                href="/settings?tab=subscription" 
-                className="ml-1 inline-flex items-center gap-1 font-semibold text-amber-800 hover:text-amber-900 underline"
-              >
-                Passer au plan Pro
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </AlertDescription>
-          </Alert>
-        )}
-        <Button 
-          variant="default" 
-          size="sm" 
-          className="w-full sm:w-auto gap-2"
-          onClick={handleGeneratePDF}
-          disabled={!isHydrated || !company || !client || !invoiceId || isGeneratingPDF || !canGeneratePDF}
-        >
-          <FileDown className={`h-4 w-4 ${isGeneratingPDF ? "animate-spin" : ""}`} />
-          {isGeneratingPDF ? "Génération..." : "Générer PDF"}
-        </Button>
-      </div>
 
-      <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-6 overflow-y-auto translate-x-[-50%] translate-y-[-50%] left-[50%] top-[50%]">
-          <DialogHeader>
-            <DialogTitle>Aperçu de la facture</DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            <div className="flex flex-col gap-4 mb-6">
-              <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
+      {/* Dialog pour petits écrans */}
+      {!isLargeScreen && (
+        <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-6 overflow-y-auto translate-x-[-50%] translate-y-[-50%] left-[50%] top-[50%]">
+            <DialogHeader>
+              <DialogTitle>{t('fullscreenTitle')}</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              <div className="flex flex-col gap-4 mb-6">
+                <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
+              </div>
+              {isHydrated ? (
+                <div className="bg-white p-8 rounded-lg shadow-sm">
+                  <TemplateComponent
+                    metadata={metadata}
+                    company={company}
+                    client={client}
+                    items={items}
+                    subtotal={subtotal}
+                    vatAmount={vatAmount}
+                    totalAmount={totalAmount}
+                    formatAmount={(value) => amountFormatter.format(value)}
+                    formatDate={formatDate}
+                    template={currentTemplate}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-[280px] rounded-xl" />
+                </div>
+              )}
             </div>
-            {isHydrated ? (
-              <div className="bg-white p-8 rounded-lg shadow-sm">
-                <TemplateComponent
-                  metadata={metadata}
-                  company={company}
-                  client={client}
-                  items={items}
-                  subtotal={subtotal}
-                  vatAmount={vatAmount}
-                  totalAmount={totalAmount}
-                  formatAmount={(value) => amountFormatter.format(value)}
-                  formatDate={formatDate}
-                  template={currentTemplate}
-                />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Sheet pour grands écrans */}
+      {isLargeScreen && (
+        <Sheet open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-y-auto p-6">
+            <SheetHeader>
+              <SheetTitle>{t('fullscreenTitle')}</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <div className="flex flex-col gap-4 mb-6">
+                <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
               </div>
-            ) : (
-              <div className="space-y-4">
-                <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-[280px] rounded-xl" />
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+              {isHydrated ? (
+                <div className="bg-white p-8 rounded-lg shadow-sm max-w-5xl mx-auto">
+                  <TemplateComponent
+                    metadata={metadata}
+                    company={company}
+                    client={client}
+                    items={items}
+                    subtotal={subtotal}
+                    vatAmount={vatAmount}
+                    totalAmount={totalAmount}
+                    formatAmount={(value) => amountFormatter.format(value)}
+                    formatDate={formatDate}
+                    template={currentTemplate}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-[280px] rounded-xl" />
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
     </Card>
   );
 };

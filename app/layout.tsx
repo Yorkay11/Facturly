@@ -1,17 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Nunito } from 'next/font/google'
-import Providers from "./providers";
-import { Toaster } from "sonner";
-import { GoogleTagManager, GoogleTagManagerNoscript } from "@/components/analytics/GoogleTagManager";
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { BetaBanner } from "@/components/layout/BetaBanner";
+import { Nunito } from 'next/font/google';
 
-
-
-const inter = Nunito({ subsets: ['latin'] })
-
+const inter = Nunito({ subsets: ['latin'] });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
 
 export const metadata: Metadata = {
@@ -86,10 +77,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-
   return (
-    <html lang="fr">
+    <html suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
@@ -139,25 +128,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${inter.className}`}
-      >
-      <BetaBanner />
-        {process.env.NEXT_PUBLIC_GTM_ID && (
-          <>
-            <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
-            <GoogleTagManagerNoscript gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
-          </>
-        )}
-        <Providers>
-          {children}
-          <Toaster 
-            position="top-right"
-            closeButton
-          />
-        </Providers>
-        <Analytics />
-        <SpeedInsights />
+      <body className={inter.className} suppressHydrationWarning>
+        {children}
       </body>
     </html>
   );

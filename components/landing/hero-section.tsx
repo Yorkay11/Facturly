@@ -3,17 +3,18 @@
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { Header } from "./header"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { Link, useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
 import { useBetaBanner } from "@/hooks/useBetaBanner"
+import { useTranslations } from 'next-intl'
 import { cn } from "@/lib/utils"
 
 export function HeroSection() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
   const isBetaBannerVisible = useBetaBanner()
-  const buttonText = isAuthenticated ? "Accéder au tableau de bord" : "Commencer gratuitement"
+  const t = useTranslations('landing.hero')
+  const buttonText = isAuthenticated ? t('ctaAuthenticated') : t('ctaGuest')
   const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -462,10 +463,10 @@ export function HeroSection() {
           : "mt-24 md:mt-[120px] lg:mt-[160px]"
       )}>
         <h1 className="text-foreground text-3xl md:text-4xl lg:text-6xl font-semibold leading-tight">
-          Facturation simple & intelligente
+          {t('title')}
         </h1>
         <p className="text-muted-foreground text-base md:text-base lg:text-lg font-medium leading-relaxed max-w-lg mx-auto">
-          Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.
+          {t('subtitle')}
         </p>
       </div>
 

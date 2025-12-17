@@ -10,6 +10,7 @@ export interface InvoiceMetadataState {
   dueDate?: Date;
   currency: string;
   notes?: string;
+  templateId?: string; // ID du template sélectionné (ex: "invoice", "modern", "professional")
 }
 
 interface InvoiceMetadataStore extends InvoiceMetadataState {
@@ -25,6 +26,7 @@ const initialState: InvoiceMetadataState = {
   dueDate: undefined,
   currency: "",
   notes: "",
+  templateId: "invoice", // Template par défaut
 };
 
 export const useInvoiceMetadata = create<InvoiceMetadataStore>((set) => ({

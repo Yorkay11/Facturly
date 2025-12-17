@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { useTranslations } from 'next-intl';
 
 interface QuickActionCardProps {
   icon: ReactNode;
@@ -56,6 +57,7 @@ export const QuickActionCard = ({
   variant = "default",
   color = "primary",
 }: QuickActionCardProps) => {
+  const t = useTranslations('dashboard');
   const colors = colorClasses[color];
   
   return (
@@ -100,7 +102,7 @@ export const QuickActionCard = ({
             onClick?.();
           }}
         >
-          {variant === "outline" ? "Ouvrir" : "Lancer"}
+          {variant === "outline" ? t('open') : t('launch')}
         </Button>
       </div>
     </div>

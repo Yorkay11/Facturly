@@ -11,12 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGetInvoicesQuery, useSendReminderMutation, type InvoiceSummary } from "@/services/facturlyApi";
 import { toast } from "sonner";
+import { useTranslations, useLocale } from 'next-intl';
 
-const reminderSchema = z.object({
-  invoiceId: z.string().min(1, "Veuillez sélectionner une facture"),
-});
-
-type ReminderFormValues = z.infer<typeof reminderSchema>;
+type ReminderFormValues = {
+  invoiceId: string;
+};
 
 interface ReminderModalProps {
   open: boolean;
@@ -24,23 +23,31 @@ interface ReminderModalProps {
   preselectedInvoiceId?: string;
 }
 
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
-const formatCurrency = (value: string | number, currency: string) => {
-  const numValue = typeof value === "string" ? parseFloat(value) : value;
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(numValue);
-};
-
 export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderModalProps) => {
+  const t = useTranslations('reminders.modal');
+  const commonT = useTranslations('common');
+  const locale = useLocale();
+
+  const formatDate = (value: string) =>
+    new Date(value).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  const formatCurrency = (value: string | number, currency: string) => {
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+    return new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(numValue);
+  };
+
+  // Créer le schéma de validation avec les traductions
+  const reminderSchema = z.object({
+    invoiceId: z.string().min(1, t('validation.invoiceRequired')),
+  });
   const [sendReminder, { isLoading, isSuccess, isError, error }] = useSendReminderMutation();
   
   // Récupérer les factures en retard et envoyées
@@ -88,8 +95,8 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
 
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Relance envoyée", {
-        description: "La relance a été envoyée avec succès.",
+      toast.success(t('success.sent'), {
+        description: t('success.sentDescription'),
       });
       form.reset();
       onClose();
@@ -100,35 +107,35 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
   useEffect(() => {
     if (isError && error) {
       const errorMessage = error && "data" in error
-        ? (error.data as { message?: string })?.message ?? "Une erreur est survenue lors de l'envoi de la relance."
-        : "Vérifiez vos informations ou réessayez plus tard.";
+        ? (error.data as { message?: string })?.message ?? t('errors.sendError')
+        : t('errors.genericError');
       
-      toast.error("Erreur", {
+      toast.error(commonT('error'), {
         description: errorMessage,
       });
     }
-  }, [error, isError]);
+  }, [error, isError, t, commonT]);
 
   const onSubmit = async (values: ReminderFormValues) => {
     if (!values.invoiceId) {
-      toast.error("Erreur", {
-        description: "Veuillez sélectionner une facture.",
+      toast.error(commonT('error'), {
+        description: t('validation.selectInvoice'),
       });
       return;
     }
 
     const invoice = availableInvoices.find((inv) => inv.id === values.invoiceId);
     if (!invoice) {
-      toast.error("Erreur", {
-        description: "Facture introuvable.",
+      toast.error(commonT('error'), {
+        description: t('validation.invoiceNotFound'),
       });
       return;
     }
 
     try {
       const response = await sendReminder(values.invoiceId).unwrap();
-      toast.success("Relance envoyée", {
-        description: `Relance n°${response.reminderNumber} envoyée avec succès.`,
+      toast.success(t('success.sent'), {
+        description: t('success.sentWithNumber', { number: response.reminderNumber }),
       });
       form.reset();
       onClose();
@@ -150,16 +157,16 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5 text-primary" />
-            Créer une relance
+            {t('title')}
           </DialogTitle>
           <DialogDescription>
-            Sélectionnez une facture en retard et envoyez une relance au client.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="invoice">
-              Facture <span className="text-destructive">*</span>
+              {t('fields.invoice')} <span className="text-destructive">*</span>
             </Label>
             <Controller
               name="invoiceId"
@@ -171,12 +178,12 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
                   disabled={isLoading || !!preselectedInvoiceId}
                 >
                   <SelectTrigger id="invoice" className={form.formState.errors.invoiceId ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Sélectionnez une facture en retard" />
+                    <SelectValue placeholder={t('fields.invoicePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {availableInvoices.length === 0 ? (
                       <div className="px-2 py-6 text-center text-sm text-foreground/60">
-                        Aucune facture en retard disponible
+                        {t('empty.noInvoices')}
                       </div>
                     ) : (
                       availableInvoices.map((invoice) => (
@@ -184,7 +191,7 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
                           <div className="flex flex-col">
                             <span className="font-semibold">{invoice.invoiceNumber}</span>
                             <span className="text-xs text-foreground/60">
-                              {invoice.client.name} • {formatCurrency(invoice.totalAmount, invoice.currency)} • Échéance: {formatDate(invoice.dueDate)}
+                              {invoice.client.name} • {formatCurrency(invoice.totalAmount, invoice.currency)} • {t('fields.dueDate')} {formatDate(invoice.dueDate)}
                             </span>
                           </div>
                         </SelectItem>
@@ -206,7 +213,7 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-semibold text-primary">{selectedInvoice.invoiceNumber}</p>
                   <p className="text-xs text-foreground/70">
-                    Client: {selectedInvoice.client.name}
+                    {t('fields.client')} {selectedInvoice.client.name}
                   </p>
                   {(() => {
                     // InvoiceSummary retourné par useGetInvoicesQuery n'a pas recipientEmail
@@ -220,15 +227,15 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
                     }
                     return clientEmail ? (
                       <p className="text-xs text-foreground/70">
-                        Email: {clientEmail}
+                        {t('fields.email')} {clientEmail}
                       </p>
                     ) : null;
                   })()}
                   <p className="text-xs text-foreground/70">
-                    Montant: {formatCurrency(selectedInvoice.totalAmount, selectedInvoice.currency)}
+                    {t('fields.amount')} {formatCurrency(selectedInvoice.totalAmount, selectedInvoice.currency)}
                   </p>
                   <p className="text-xs text-foreground/70">
-                    Date d&apos;échéance: {formatDate(selectedInvoice.dueDate)}
+                    {t('fields.dueDate')} {formatDate(selectedInvoice.dueDate)}
                   </p>
                 </div>
               </div>
@@ -237,18 +244,18 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              Annuler
+              {t('buttons.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading || availableInvoices.length === 0}>
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Envoi en cours...
+                  {t('buttons.sending')}
                 </>
               ) : (
                 <>
                   <Mail className="h-4 w-4" />
-                  Envoyer la relance
+                  {t('buttons.send')}
                 </>
               )}
             </Button>

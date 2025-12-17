@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2 } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2, FileDown, Lock, ArrowRight } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import {
@@ -62,25 +62,17 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetSubscriptionQuery, useGetCompanyQuery, type Invoice } from "@/services/facturlyApi"
+import { invoiceTemplates } from "@/types/invoiceTemplate"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useLoading } from "@/contexts/LoadingContext"
 import { Loader } from "@/components/ui/loader"
-
-const FormSchema = z.object({
-    receiver: z.string().min(1, "Le destinataire est requis"),
-    subject: z.string().min(1, "L'objet est requis"),
-    issueDate: z.date({
-        required_error: "La date d'émission est requise",
-    }),
-    dueDate: z.date({
-        required_error: "La date d'échéance est requise",
-    }),
-    currency: z.string().min(1, "La devise est obligatoire"),
-    notes: z.string().optional(),
-})
+import { useTranslations, useLocale } from 'next-intl'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import Link from "next/link"
+import { getBackendTemplateName, getFrontendTemplateFromBackend } from "@/types/invoiceTemplate"
 
 interface InvoiceDetailsProps {
     invoiceId?: string;
@@ -89,6 +81,9 @@ interface InvoiceDetailsProps {
 }
 
 const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: InvoiceDetailsProps = {}) => {
+    const t = useTranslations('invoices.form');
+    const previewT = useTranslations('invoices.preview');
+    const locale = useLocale();
     const searchParams = useSearchParams();
     const clientIdFromUrl = searchParams ? searchParams.get("clientId") || undefined : undefined;
     const router = useRouter();
@@ -98,8 +93,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
     const { items, setItems, removeItem, clearItems } = useItemsStore();
     const metadataStore = useInvoiceMetadata();
-    const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes } = metadataStore;
+    const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
     const [value, setValue] = useState(storedCurrency ?? "");
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const { openCreate, openEdit } = useItemModalControls();
     const { data: clientsResponse, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsQuery({ page: 1, limit: 100 });
     const { data: clientFromUrl, isLoading: isLoadingClientFromUrl } = useGetClientByIdQuery(clientIdFromUrl || "", {
@@ -109,6 +105,17 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
     const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
+    
+    // Récupérer les données de l'entreprise et de la subscription pour le PDF
+    const { data: company } = useGetCompanyQuery();
+    const { data: subscription } = useGetSubscriptionQuery();
+    const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
+        skip: !metadataStore.clientId,
+    });
+    
+    // Vérifier si l'utilisateur peut générer des PDF (Pro ou Enterprise uniquement)
+    const canGeneratePDF = subscription?.plan === "pro" || subscription?.plan === "enterprise";
+    const isFreePlan = subscription?.plan === "free";
     
     // Charger les données de la facture si on est en mode édition
     const { data: existingInvoice, isLoading: isLoadingInvoice } = useGetInvoiceByIdQuery(
@@ -122,18 +129,35 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     // Utiliser le contexte de loading global pour griser la page
     const { setLoading } = useLoading();
     
+    // Récupérer le template depuis le store, avec fallback sur le template par défaut
+    const activeTemplate = metadataStore.templateId || invoiceTemplates[0].id;
+
+    // Créer le schéma de validation avec les traductions
+    const FormSchema = useMemo(() => z.object({
+        receiver: z.string().min(1, t('validation.receiverRequired')),
+        subject: z.string().min(1, t('validation.subjectRequired')),
+        issueDate: z.date({
+            required_error: t('validation.issueDateRequired'),
+        }),
+        dueDate: z.date({
+            required_error: t('validation.dueDateRequired'),
+        }),
+        currency: z.string().min(1, t('validation.currencyRequired')),
+        notes: z.string().optional(),
+    }), [t]);
+    
     // Mettre à jour le loader global lors des mutations
     useEffect(() => {
         if (isCreatingInvoice || isUpdatingInvoice || isSendingInvoice) {
             if (isSendingInvoice) {
-                setLoading(true, "Envoi de la facture...");
+                setLoading(true, t('loading.sending'));
             } else {
-                setLoading(true, isEditMode ? "Mise à jour de la facture..." : "Création de la facture...");
+                setLoading(true, isEditMode ? t('loading.updating') : t('loading.creating'));
             }
         } else {
             setLoading(false);
         }
-    }, [isCreatingInvoice, isUpdatingInvoice, isSendingInvoice, isEditMode, setLoading]);
+    }, [isCreatingInvoice, isUpdatingInvoice, isSendingInvoice, isEditMode, setLoading, t]);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -160,8 +184,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 clientId: newClient.id,
             });
             // Afficher un toast de confirmation
-            toast.success("Client créé et sélectionné", {
-                description: `${newClient.name} a été créé et sélectionné comme destinataire.`,
+            toast.success(t('success.clientCreated'), {
+                description: t('success.clientCreatedDescription', { name: newClient.name }),
             });
         });
         // Fermer le modal
@@ -210,6 +234,13 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             form.setValue("currency", existingInvoice.currency);
             form.setValue("notes", existingInvoice.notes || "");
             
+            // Obtenir le template frontend à partir du templateName backend
+            let templateId = invoiceTemplates[0].id; // Par défaut
+            if (existingInvoice.templateName) {
+                const frontendTemplate = getFrontendTemplateFromBackend(existingInvoice.templateName);
+                templateId = frontendTemplate.id;
+            }
+            
             // Mettre à jour le store de métadonnées
             setMetadata({
                 receiver: existingInvoice.client.name,
@@ -219,6 +250,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 dueDate: new Date(existingInvoice.dueDate),
                 currency: existingInvoice.currency,
                 notes: existingInvoice.notes || "",
+                templateId: templateId,
             });
             
             // Charger les items dans le store
@@ -242,32 +274,32 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             // Valider que le client est sélectionné
             const clientId = storedClientId || clientIdFromUrl;
             if (!clientId) {
-                toast.error("Client manquant", {
-                    description: "Veuillez sélectionner un client avant d'envoyer la facture.",
+                toast.error(t('errors.clientMissing'), {
+                    description: t('errors.clientMissingDescription', { action: t('actions.send') }),
                 });
                 return;
             }
             
             // Valider que les dates sont définies
             if (!issueDate || !dueDate) {
-                toast.error("Dates manquantes", {
-                    description: "Veuillez définir les dates d'émission et d'échéance avant d'envoyer la facture.",
+                toast.error(t('errors.datesMissing'), {
+                    description: t('errors.datesMissingDescription', { action: t('actions.send') }),
                 });
                 return;
             }
             
             // Valider qu'il y a au moins un article
             if (!items || items.length === 0) {
-                toast.error("Aucun article", {
-                    description: "Veuillez ajouter au moins un article à la facture avant de l'envoyer.",
+                toast.error(t('errors.noItems'), {
+                    description: t('errors.noItemsDescription', { action: t('actions.send') }),
                 });
                 return;
             }
             
             // Valider que la devise est définie
             if (!storedCurrency) {
-                toast.error("Devise manquante", {
-                    description: "Veuillez sélectionner une devise avant d'envoyer la facture.",
+                toast.error(t('errors.currencyMissing'), {
+                    description: t('errors.currencyMissingDescription', { action: t('actions.send') }),
                 });
                 return;
             }
@@ -291,8 +323,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     
                     invoiceIdToSend = invoiceId;
                 } catch (updateError: any) {
-                    const errorMessage = updateError?.data?.message || updateError?.message || "Une erreur est survenue lors de la mise à jour de la facture.";
-                    toast.error("Erreur", {
+                    const errorMessage = updateError?.data?.message || updateError?.message || t('errors.updateError');
+                    toast.error(t('errors.updateError'), {
                         description: errorMessage,
                     });
                     return;
@@ -306,36 +338,59 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 }));
                 
                 try {
+                    // Obtenir le nom du template backend à partir de l'ID frontend
+                    const backendTemplateName = getBackendTemplateName(activeTemplate);
+                    
+                    // Trouver le client pour obtenir son email
+                    const selectedClient = clients.find((c) => c.id === clientId) || clientFromUrl;
+                    
                     const response = await createInvoice({
                         clientId: clientId,
                         issueDate: issueDate.toISOString().split('T')[0],
-                        dueDate: dueDate.toISOString().split('T')[0],
-                        currency: storedCurrency,
+                        dueDate: dueDate ? dueDate.toISOString().split('T')[0] : undefined,
+                        currency: storedCurrency || undefined,
                         items: invoiceItems,
                         notes: notes || undefined,
+                        recipientEmail: selectedClient?.email || undefined,
+                        sendEmail: true, // Envoyer l'email automatiquement lors de la création
+                        templateName: backendTemplateName,
                     }).unwrap();
                     
                     const invoiceData = response as Invoice;
                     const newInvoiceId = invoiceData?.id;
                     
                     if (!newInvoiceId || typeof newInvoiceId !== 'string' || newInvoiceId === 'undefined' || newInvoiceId.trim() === '') {
-                        toast.error("Erreur", {
-                            description: "La facture a été créée mais l'ID n'a pas été retourné.",
+                        toast.error(t('errors.idMissing'), {
+                            description: t('errors.idMissing'),
                         });
                         return;
                     }
                     
-                    invoiceIdToSend = newInvoiceId;
+                    // La facture a été créée et envoyée directement (sendEmail: true dans le payload)
+                    toast.success(t('success.invoiceSent'), {
+                        description: t('success.invoiceSentDescription', { 
+                            number: invoiceData.invoiceNumber || newInvoiceId,
+                            email: invoiceData.recipientEmail ? ` à ${invoiceData.recipientEmail}` : ""
+                        }),
+                    });
+
+                    // Réinitialiser les stores
+                    resetMetadata();
+                    clearItems();
+
+                    // Rediriger vers la page de détails de la facture
+                    router.replace(`/invoices/${newInvoiceId}`);
+                    return;
                 } catch (createError: any) {
-                    const errorMessage = createError?.data?.message || createError?.message || "Une erreur est survenue lors de la création de la facture.";
-                    toast.error("Erreur", {
+                    const errorMessage = createError?.data?.message || createError?.message || t('errors.createError');
+                    toast.error(t('errors.createError'), {
                         description: errorMessage,
                     });
                     return;
                 }
             }
 
-            // Trouver le client pour obtenir son email
+            // Mode édition: envoyer la facture après mise à jour
             const selectedClient = clients.find((c) => c.id === clientId) || clientFromUrl;
 
             // Envoyer la facture
@@ -348,8 +403,11 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     },
                 }).unwrap();
 
-                toast.success("Facture envoyée", {
-                    description: `La facture ${sentInvoice.invoiceNumber || invoiceIdToSend} a été envoyée avec succès${sentInvoice.recipientEmail ? ` à ${sentInvoice.recipientEmail}` : ""}.`,
+                toast.success(t('success.invoiceSent'), {
+                    description: t('success.invoiceSentDescription', { 
+                        number: sentInvoice.invoiceNumber || invoiceIdToSend,
+                        email: sentInvoice.recipientEmail ? ` à ${sentInvoice.recipientEmail}` : ""
+                    }),
                 });
 
                 // Réinitialiser les stores
@@ -359,14 +417,14 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 // Rediriger vers la page de détails de la facture
                 router.replace(`/invoices/${invoiceIdToSend}`);
             } catch (sendError: any) {
-                const errorMessage = sendError?.data?.message || sendError?.message || "Une erreur est survenue lors de l'envoi de la facture.";
-                toast.error("Erreur", {
+                const errorMessage = sendError?.data?.message || sendError?.message || t('errors.sendError');
+                toast.error(t('errors.sendError'), {
                     description: errorMessage,
                 });
             }
         } catch (error: any) {
-            const errorMessage = error?.data?.message || error?.message || "Une erreur est survenue lors de la préparation de l'envoi.";
-            toast.error("Erreur", {
+            const errorMessage = error?.data?.message || error?.message || t('errors.prepareError');
+            toast.error(t('errors.prepareError'), {
                 description: errorMessage,
             });
         }
@@ -378,32 +436,32 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             // Valider que le client est sélectionné
             const clientId = storedClientId || clientIdFromUrl;
             if (!clientId) {
-                toast.error("Client manquant", {
-                    description: "Veuillez sélectionner un client avant de sauvegarder le brouillon.",
+                toast.error(t('errors.clientMissing'), {
+                    description: t('errors.clientMissingDescription', { action: t('actions.save') }),
                 });
                 return;
             }
             
             // Valider que les dates sont définies
             if (!issueDate || !dueDate) {
-                toast.error("Dates manquantes", {
-                    description: "Veuillez définir les dates d'émission et d'échéance avant de sauvegarder le brouillon.",
+                toast.error(t('errors.datesMissing'), {
+                    description: t('errors.datesMissingDescription', { action: t('actions.save') }),
                 });
                 return;
             }
             
             // Valider qu'il y a au moins un article
             if (!items || items.length === 0) {
-                toast.error("Aucun article", {
-                    description: "Veuillez ajouter au moins un article à la facture avant de sauvegarder le brouillon.",
+                toast.error(t('errors.noItems'), {
+                    description: t('errors.noItemsDescription', { action: t('actions.save') }),
                 });
                 return;
             }
             
             // Valider que la devise est définie
             if (!storedCurrency) {
-                toast.error("Devise manquante", {
-                    description: "Veuillez sélectionner une devise avant de sauvegarder le brouillon.",
+                toast.error(t('errors.currencyMissing'), {
+                    description: t('errors.currencyMissingDescription', { action: t('actions.save') }),
                 });
                 return;
             }
@@ -430,8 +488,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     console.log("✅ Invoice updated successfully:", response);
                     
                     // Afficher un toast de succès
-                    toast.success("Brouillon mis à jour", {
-                        description: `La facture ${response?.invoiceNumber || invoiceId} a été mise à jour avec succès.`,
+                    toast.success(t('success.draftUpdated'), {
+                        description: t('success.draftUpdatedDescription', { number: response?.invoiceNumber || invoiceId }),
                     });
                     
                     // Rediriger vers la page de détails de la facture seulement si skipRedirect est false
@@ -453,13 +511,18 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 }));
                 
                 try {
+                    // Obtenir le nom du template backend à partir de l'ID frontend
+                    const backendTemplateName = getBackendTemplateName(activeTemplate);
+                    
                     const response = await createInvoice({
                         clientId: clientId,
                         issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
-                        dueDate: dueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
-                        currency: storedCurrency,
+                        dueDate: dueDate ? dueDate.toISOString().split('T')[0] : undefined, // Format YYYY-MM-DD (optionnel)
+                        currency: storedCurrency || undefined, // Optionnel, utilise la devise de l'entreprise par défaut
                         items: invoiceItems,
                         notes: notes || undefined,
+                        templateName: backendTemplateName,
+                        // Note: sendEmail n'est pas inclus ici car c'est juste une sauvegarde de brouillon
                     }).unwrap();
                     
                     // RTK Query retourne directement les données de l'API
@@ -485,8 +548,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             allKeys: invoiceData ? Object.keys(invoiceData) : [],
                         });
                         
-                        toast.warning("Brouillon enregistré", {
-                            description: "La facture a été sauvegardée mais l'ID n'a pas été retourné. Redirection vers la liste des factures.",
+                        toast.warning(t('success.draftSaved'), {
+                            description: t('errors.idMissingRedirect'),
                         });
                         
                         // Rediriger vers la liste des factures au lieu de la page de détails
@@ -499,8 +562,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     console.log("✅ Invoice created successfully with ID:", newInvoiceId);
                     
                     // Afficher un toast de succès
-                    toast.success("Brouillon enregistré", {
-                        description: `La facture ${invoiceData?.invoiceNumber || newInvoiceId} a été sauvegardée avec succès.`,
+                    toast.success(t('success.draftSaved'), {
+                        description: t('success.draftSavedDescription', { number: invoiceData?.invoiceNumber || newInvoiceId }),
                     });
                     
                     // Réinitialiser les stores après la création réussie seulement si skipRedirect est false
@@ -521,8 +584,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             }
         } catch (error: any) {
             // Afficher un toast d'erreur
-            const errorMessage = error?.data?.message || error?.message || "Une erreur est survenue lors de la sauvegarde du brouillon.";
-            toast.error("Erreur", {
+            const errorMessage = error?.data?.message || error?.message || t('errors.saveError');
+            toast.error(t('errors.saveError'), {
                 description: errorMessage,
             });
         }
@@ -534,6 +597,79 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             onSaveDraftReady(handleSaveDraft);
         }
     }, [onSaveDraftReady, isEditMode]); // Note: handleSaveDraft n'est pas dans les dépendances pour éviter les re-renders infinis
+
+    // Fonction pour générer le PDF
+    const handleGeneratePDF = async () => {
+        if (!invoiceId) {
+            toast.error(previewT('pdf.errors.notSaved'), {
+                description: previewT('pdf.errors.notSaved'),
+            });
+            return;
+        }
+
+        setIsGeneratingPDF(true);
+        try {
+            const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://facturlybackend-production.up.railway.app";
+            
+            // Obtenir le token d'authentification
+            const cookies = document.cookie.split("; ");
+            const tokenCookie = cookies.find((cookie) => cookie.startsWith("facturly_access_token="));
+            const token = tokenCookie ? tokenCookie.split("=")[1] : null;
+
+            if (!token) {
+                toast.error(previewT('pdf.errors.notLoggedIn'), {
+                    description: previewT('pdf.errors.notLoggedIn'),
+                });
+                setIsGeneratingPDF(false);
+                return;
+            }
+
+            // Mapper le template frontend au nom backend
+            const backendTemplateName = getBackendTemplateName(activeTemplate);
+            
+            // Construire l'URL avec le paramètre template optionnel
+            const pdfUrl = `${BASE_URL}/invoices/${invoiceId}/pdf${backendTemplateName ? `?template=${backendTemplateName}` : ""}`;
+
+            // Créer un lien temporaire pour télécharger le PDF
+            const link = document.createElement("a");
+            link.href = pdfUrl;
+            link.download = `facture-${invoiceId}.pdf`;
+            
+            // Ajouter le token dans les headers via fetch puis créer un blob
+            const response = await fetch(pdfUrl, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                if (response.status === 403) {
+                    throw new Error(previewT('pdf.errors.proOnly'));
+                }
+                throw new Error(previewT('pdf.errors.generic'));
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            link.href = url;
+            link.click();
+            
+            // Nettoyer
+            window.URL.revokeObjectURL(url);
+            
+            toast.success(previewT('pdf.success'), {
+                description: previewT('pdf.successDescription'),
+            });
+        } catch (error: any) {
+            console.error("Erreur lors de la génération du PDF:", error);
+            toast.error(previewT('pdf.errors.generic'), {
+                description: error?.message || previewT('pdf.errors.retry'),
+            });
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
 
     // Détecter les modifications non sauvegardées
     useEffect(() => {
@@ -594,10 +730,10 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-6">
-                <section className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <div>
-                        <p className="text-lg font-semibold text-slate-900">Informations facture</p>
-                        <p className="text-sm text-slate-500">Destinataire, objet, date d&apos;émission et échéance.</p>
+                        <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceInfo.title')}</p>
+                        <p className="text-sm text-slate-500">{t('sections.invoiceInfo.description')}</p>
                     </div>
                     <div className="grid gap-5 md:grid-cols-2">
                         <FormField
@@ -605,7 +741,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             name="receiver"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col justify-end">
-                                    <FormLabel>Destinataire</FormLabel>
+                                    <FormLabel>{t('fields.receiver.label')}</FormLabel>
                                     <Popover open={clientOpen} onOpenChange={setClientOpen}>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -622,26 +758,26 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                         ? (clients.find((client) => client.name === field.value)?.name || 
                                                            clientFromUrl?.name || 
                                                            field.value)
-                                                        : "Sélectionnez un client"}
+                                                        : t('fields.receiver.placeholder')}
                                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                                             <Command shouldFilter={true}>
-                                                <CommandInput placeholder="Rechercher un client..." className="h-9" />
+                                                <CommandInput placeholder={t('fields.receiver.searchPlaceholder')} className="h-9" />
                                                 <CommandList>
                                                     {isLoadingClients ? (
                                                         <div className="py-6 text-center text-sm text-muted-foreground">
-                                                            Chargement des clients...
+                                                            {t('fields.receiver.loading')}
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <CommandEmpty>Aucun client trouvé.</CommandEmpty>
+                                                            <CommandEmpty>{t('fields.receiver.empty')}</CommandEmpty>
                                                             <CommandGroup>
                                                                 {clients.length === 0 ? (
                                                                     <div className="py-6 text-center text-sm text-muted-foreground">
-                                                                        Aucun client disponible. Créez un client depuis la page Clients.
+                                                                        {t('fields.receiver.noClients')}
                                                                     </div>
                                                                 ) : (
                                                                     clients.map((client) => (
@@ -691,7 +827,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                                         }}
                                                                     >
                                                                         <PlusIcon className="h-4 w-4" />
-                                                                        Créer un nouveau client
+                                                                        {t('fields.receiver.createNew')}
                                                                     </Button>
                                                                 </div>
                                                             </CommandGroup>
@@ -710,9 +846,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             name="subject"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Objet</FormLabel>
+                                    <FormLabel>{t('fields.subject.label')}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Projet web, acompte..." className="w-full" {...field} />
+                                        <Input placeholder={t('fields.subject.placeholder')} className="w-full" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -723,7 +859,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             name="issueDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
-                                    <FormLabel>Date d&apos;émission</FormLabel>
+                                    <FormLabel>{t('fields.issueDate.label')}</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -735,9 +871,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                     )}
                                                 >
                                                     {field.value ? (
-                                                        format(field.value, "dd/MM/yyyy")
+                                                        format(field.value, locale === 'fr' ? "dd/MM/yyyy" : "MM/dd/yyyy")
                                                     ) : (
-                                                        <span>Choisir la date</span>
+                                                        <span>{t('fields.issueDate.placeholder')}</span>
                                                     )}
                                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                                 </Button>
@@ -762,7 +898,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             name="dueDate"
                             render={({ field }) => (
                                 <FormItem className="flex flex-col">
-                                    <FormLabel>Date d&apos;échéance</FormLabel>
+                                    <FormLabel>{t('fields.dueDate.label')}</FormLabel>
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -774,9 +910,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                     )}
                                                 >
                                                     {field.value ? (
-                                                        format(field.value, "dd/MM/yyyy")
+                                                        format(field.value, locale === 'fr' ? "dd/MM/yyyy" : "MM/dd/yyyy")
                                                     ) : (
-                                                        <span>Choisir la date</span>
+                                                        <span>{t('fields.dueDate.placeholder')}</span>
                                                     )}
                                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                                 </Button>
@@ -801,7 +937,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             name="currency"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Devise</FormLabel>
+                                    <FormLabel>{t('fields.currency.label')}</FormLabel>
                                     <Popover open={open} onOpenChange={setOpen}>
                                         <PopoverTrigger asChild>
                                             <FormControl>
@@ -813,16 +949,16 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                 >
                                                     {value
                                                         ? devises.find((devise) => devise.value === value)?.label
-                                                        : "Sélectionnez la devise"}
+                                                        : t('fields.currency.placeholder')}
                                                     <ChevronsUpDown className="h-4 w-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-[320px] p-0">
                                             <Command>
-                                                <CommandInput placeholder="Rechercher..." className="h-9" />
+                                                <CommandInput placeholder={t('fields.currency.searchPlaceholder')} className="h-9" />
                                                 <CommandList>
-                                                    <CommandEmpty>Aucune devise trouvée</CommandEmpty>
+                                                    <CommandEmpty>{t('fields.currency.empty')}</CommandEmpty>
                                                     <CommandGroup>
                                                         {devises.map((devise) => (
                                                             <CommandItem
@@ -858,9 +994,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             name="notes"
                             render={({ field }) => (
                                 <FormItem className="md:col-span-2">
-                                    <FormLabel>Notes internes</FormLabel>
+                                    <FormLabel>{t('fields.notes.label')}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Mention interne ou conditions de paiement" {...field} />
+                                        <Input placeholder={t('fields.notes.placeholder')} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -869,15 +1005,15 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     </div>
                 </section>
 
-                <section className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div>
-                            <p className="text-lg font-semibold text-slate-900">Lignes de facture</p>
-                            <p className="text-sm text-slate-500">Ajoutez vos prestations, quantités et tarifs.</p>
+                            <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
+                            <p className="text-sm text-slate-500">{t('sections.invoiceLines.description')}</p>
                         </div>
                         <Button type="button" size="sm" className="gap-2" onClick={openCreate}>
                             <PlusIcon className="h-4 w-4" />
-                            Ajouter une ligne
+                            {t('lines.add')}
                         </Button>
                     </div>
 
@@ -896,29 +1032,29 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                         <p className="text-xs text-slate-500">{item.quantity} × {item.unitPrice} {form.getValues("currency") || ""}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <Button variant="ghost" size="icon" onClick={() => openEdit(item)} aria-label={`Modifier la ligne ${item.description}`}>
+                                                        <Button variant="ghost" size="icon" onClick={() => openEdit(item)} aria-label={t('lines.edit', { description: item.description })}>
                                                             <Edit className="h-4 w-4" />
                                                         </Button>
-                                                        <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)} aria-label={`Supprimer la ligne ${item.description}`}>
+                                                        <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)} aria-label={t('lines.delete', { description: item.description })}>
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 md:grid-cols-4">
                                                     <div>
-                                                        <p className="font-medium text-slate-700">Prix unitaire</p>
+                                                        <p className="font-medium text-slate-700">{t('lines.unitPrice')}</p>
                                                         <p>{item.unitPrice}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-slate-700">Quantité</p>
+                                                        <p className="font-medium text-slate-700">{t('lines.quantity')}</p>
                                                         <p>{item.quantity}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-slate-700">TVA</p>
+                                                        <p className="font-medium text-slate-700">{t('lines.vat')}</p>
                                                         <p>{item.vatRate}%</p>
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-slate-700">Total ligne</p>
+                                                        <p className="font-medium text-slate-700">{t('lines.lineTotal')}</p>
                                                         <p>{(item.unitPrice * item.quantity).toFixed(2)}</p>
                                                     </div>
                                                 </div>
@@ -930,17 +1066,17 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         </DndContext>
                     ) : (
                         <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-12 text-center">
-                            <p className="text-lg font-semibold text-slate-600">Aucune ligne pour le moment</p>
-                            <p className="text-sm text-slate-500">Ajoutez votre première prestation en cliquant sur le bouton ci-dessus.</p>
+                            <p className="text-lg font-semibold text-slate-600">{t('sections.invoiceLines.empty.title')}</p>
+                            <p className="text-sm text-slate-500">{t('sections.invoiceLines.empty.description')}</p>
                             <Button variant="outline" size="sm" className="gap-2" onClick={openCreate}>
                                 <PlusIcon className="h-4 w-4" />
-                                Ajouter une ligne
+                                {t('lines.add')}
                             </Button>
                         </div>
                     )}
                 </section>
 
-                <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-2">
                             <Checkbox id="discount" />
@@ -948,12 +1084,12 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                 htmlFor="discount"
                                 className="text-sm font-medium leading-none"
                             >
-                                Ajouter une remise
+                                {t('sections.discount.title')}
                             </label>
                         </div>
                         <Select disabled>
                             <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder="À venir" />
+                                <SelectValue placeholder={t('sections.discount.comingSoon')} />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
@@ -964,23 +1100,56 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     </div>
                     <Separator />
                     <div className="flex flex-col gap-2 text-sm text-slate-500">
-                        <p>Les remises avancées et calculs TVA seront intégrés dans une prochaine version.</p>
+                        <p>{t('sections.discount.description')}</p>
                     </div>
                 </section>
 
-                <div className="flex items-center justify-end gap-3">
-                    <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="w-full sm:w-auto"
-                        onClick={() => handleSaveDraft(false)}
-                        disabled={isSaving || isLoadingInvoice}
-                    >
-                        {isSaving ? (isEditMode ? "Mise à jour..." : "Enregistrement...") : (isEditMode ? "Mettre à jour le brouillon" : "Enregistrer le brouillon")}
-                    </Button>
-                    <Button type="submit" className="w-full sm:w-auto" disabled={isSaving}>
-                        {isSaving && isSendingInvoice ? "Envoi en cours..." : "Envoyer la facture"}
-                    </Button>
+                <div className="flex flex-col gap-3">
+                    {isEditMode && invoiceId && (
+                        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                            {isFreePlan && (
+                                <Alert className="mb-2 border-amber-200 bg-amber-50">
+                                    <Lock className="h-4 w-4 text-amber-600" />
+                                    <AlertTitle className="text-amber-800">{previewT('pdf.restricted.title')}</AlertTitle>
+                                    <AlertDescription className="text-amber-700">
+                                        {previewT('pdf.restricted.description')}
+                                        <Link 
+                                            href="/settings?tab=subscription" 
+                                            className="ml-1 inline-flex items-center gap-1 font-semibold text-amber-800 hover:text-amber-900 underline"
+                                        >
+                                            {previewT('pdf.restricted.upgrade')}
+                                            <ArrowRight className="h-3 w-3" />
+                                        </Link>
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                            <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm" 
+                                className="w-full sm:w-auto gap-2"
+                                onClick={handleGeneratePDF}
+                                disabled={!company || !client || isGeneratingPDF || !canGeneratePDF}
+                            >
+                                <FileDown className={`h-4 w-4 ${isGeneratingPDF ? "animate-spin" : ""}`} />
+                                {isGeneratingPDF ? previewT('pdf.generating') : previewT('pdf.generate')}
+                            </Button>
+                        </div>
+                    )}
+                    <div className="flex items-center justify-end gap-3">
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full sm:w-auto"
+                            onClick={() => handleSaveDraft(false)}
+                            disabled={isSaving || isLoadingInvoice}
+                        >
+                            {isSaving ? (isEditMode ? t('buttons.updating') : t('buttons.saving')) : (isEditMode ? t('buttons.updateDraft') : t('buttons.saveDraft'))}
+                        </Button>
+                        <Button type="submit" className="w-full sm:w-auto" disabled={isSaving}>
+                            {isSaving && isSendingInvoice ? t('buttons.sending') : t('buttons.send')}
+                        </Button>
+                    </div>
                 </div>
             </form>
             <ClientModal

@@ -15,31 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCreateProductMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-const productSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  description: z.string().optional(),
-  type: z.enum(["product", "service"], {
-    required_error: "Le type est obligatoire",
-  }),
-  price: z.string()
-    .min(1, "Le prix est obligatoire")
-    .refine(
-      (val) => {
-        const trimmed = val.trim();
-        if (!trimmed) return false;
-        const num = parseFloat(trimmed);
-        return !isNaN(num) && isFinite(num) && num >= 0;
-      },
-      "Le prix doit être un nombre positif"
-    ),
-  currency: z.string().min(1, "La devise est obligatoire"),
-  taxRate: z.string().min(1, "Le taux de TVA est obligatoire"),
-  unitOfMeasure: z.string().optional(),
-  sku: z.string().optional(),
-});
-
-type ProductFormValues = z.infer<typeof productSchema>;
+import { useTranslations } from 'next-intl';
 
 interface ProductModalProps {
   open: boolean;
@@ -48,8 +24,38 @@ interface ProductModalProps {
 }
 
 export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) => {
+  const t = useTranslations('items.modal');
+  const tValidation = useTranslations('items.modal.validation');
+  const itemsT = useTranslations('items');
+  const commonT = useTranslations('common');
+  
   const [createProduct, { isLoading, isSuccess, isError, error, data }] = useCreateProductMutation();
   const [activeTab, setActiveTab] = useState("informations");
+
+  const productSchema = z.object({
+    name: z.string().min(2, tValidation('nameMinLength')),
+    description: z.string().optional(),
+    type: z.enum(["product", "service"], {
+      required_error: tValidation('typeRequired'),
+    }),
+    price: z.string()
+      .min(1, tValidation('priceRequired'))
+      .refine(
+        (val) => {
+          const trimmed = val.trim();
+          if (!trimmed) return false;
+          const num = parseFloat(trimmed);
+          return !isNaN(num) && isFinite(num) && num >= 0;
+        },
+        tValidation('pricePositive')
+      ),
+    currency: z.string().min(1, tValidation('currencyRequired')),
+    taxRate: z.string().min(1, tValidation('taxRateRequired')),
+    unitOfMeasure: z.string().optional(),
+    sku: z.string().optional(),
+  });
+
+  type ProductFormValues = z.infer<typeof productSchema>;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -82,8 +88,8 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
         setActiveTab("informations");
       } else {
         // Sinon, comportement par défaut
-        toast.success("Prestation créée", {
-          description: "La prestation a été créée avec succès.",
+        toast.success(itemsT('success.createSuccess'), {
+          description: itemsT('success.createSuccessDescription'),
         });
         form.reset();
         setActiveTab("informations");
@@ -91,19 +97,19 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, data]);
+  }, [isSuccess, data, itemsT, onSuccess, onClose]);
 
   useEffect(() => {
     if (isError && error) {
       const errorMessage = error && "data" in error
-        ? (error.data as { message?: string })?.message ?? "Une erreur est survenue lors de la création de la prestation."
-        : "Vérifiez vos informations ou réessayez plus tard.";
+        ? (error.data as { message?: string })?.message ?? tValidation('createError')
+        : tValidation('createErrorGeneric');
       
-      toast.error("Erreur", {
+      toast.error(commonT('error'), {
         description: errorMessage,
       });
     }
-  }, [error, isError]);
+  }, [error, isError, tValidation, commonT]);
 
   const onSubmit = async (values: ProductFormValues) => {
     // S'assurer qu'on est sur la dernière étape avant de soumettre
@@ -115,30 +121,30 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
     // S'assurer que le prix est bien une string valide
     const priceValue = values.price?.trim() || "";
     if (!priceValue || isNaN(parseFloat(priceValue)) || parseFloat(priceValue) < 0) {
-      toast.error("Erreur", {
-        description: "Le prix doit être un nombre valide et positif.",
+      toast.error(commonT('error'), {
+        description: tValidation('priceValid'),
       });
-      form.setError("price", { message: "Le prix est obligatoire" });
+      form.setError("price", { message: tValidation('priceRequired') });
       return;
     }
 
     // S'assurer que la TVA est bien définie
     const taxRateValue = values.taxRate || form.getValues("taxRate") || "20";
     if (!taxRateValue || taxRateValue.trim() === "") {
-      toast.error("Erreur", {
-        description: "Le taux de TVA est obligatoire.",
+      toast.error(commonT('error'), {
+        description: tValidation('taxRateRequired'),
       });
-      form.setError("taxRate", { message: "Le taux de TVA est obligatoire" });
+      form.setError("taxRate", { message: tValidation('taxRateRequired') });
       return;
     }
 
     // S'assurer que la devise est bien définie
     const currencyValue = values.currency || form.getValues("currency") || "EUR";
     if (!currencyValue || currencyValue.trim() === "") {
-      toast.error("Erreur", {
-        description: "La devise est obligatoire.",
+      toast.error(commonT('error'), {
+        description: tValidation('currencyRequired'),
       });
-      form.setError("currency", { message: "La devise est obligatoire" });
+      form.setError("currency", { message: tValidation('currencyRequired') });
       return;
     }
 
@@ -186,9 +192,9 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
   }, [open, form]);
 
   const tabs = [
-    { id: "informations", label: "Informations" },
-    { id: "tarification", label: "Tarification" },
-    { id: "complementaires", label: "Complémentaires" },
+    { id: "informations", label: t('tabs.informations') },
+    { id: "tarification", label: t('tabs.tarification') },
+    { id: "complementaires", label: t('tabs.complementaires') },
   ];
 
   const handleNext = (e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -215,9 +221,9 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Ajouter une prestation</DialogTitle>
+          <DialogTitle>{t('addTitle')}</DialogTitle>
           <DialogDescription>
-            Remplissez les informations de la prestation par sections. Les champs marqués d&apos;un astérisque (*) sont obligatoires.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -266,12 +272,35 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
             <TabsContent value="informations" className="space-y-4 mt-0">
               <div className="space-y-4">
                 <div className="space-y-2">
+                  <Label>
+                    {t('fields.type')} <span className="text-destructive">*</span>
+                  </Label>
+                  <Controller
+                    name="type"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
+                        <SelectTrigger className={form.formState.errors.type ? "border-destructive" : ""}>
+                          <SelectValue placeholder={t('fields.typePlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="service">{t('fields.typeService')}</SelectItem>
+                          <SelectItem value="product">{t('fields.typeProduct')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {form.formState.errors.type && (
+                    <p className="text-xs text-destructive">{form.formState.errors.type.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="product-name">
-                    Nom <span className="text-destructive">*</span>
+                    {t('fields.name')} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="product-name"
-                    placeholder="Nom de la prestation"
+                    placeholder={t('fields.namePlaceholder')}
                     {...form.register("name")}
                     disabled={isLoading}
                     className={form.formState.errors.name ? "border-destructive" : ""}
@@ -281,36 +310,13 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="product-description">Description</Label>
+                  <Label htmlFor="product-description">{t('fields.description')}</Label>
                   <Input
                     id="product-description"
-                    placeholder="Description courte (optionnel)"
+                    placeholder={t('fields.descriptionPlaceholder')}
                     {...form.register("description")}
                     disabled={isLoading}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>
-                    Type <span className="text-destructive">*</span>
-                  </Label>
-                  <Controller
-                    name="type"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
-                        <SelectTrigger className={form.formState.errors.type ? "border-destructive" : ""}>
-                          <SelectValue placeholder="Sélectionner un type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="service">Service</SelectItem>
-                          <SelectItem value="product">Produit</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {form.formState.errors.type && (
-                    <p className="text-xs text-destructive">{form.formState.errors.type.message}</p>
-                  )}
                 </div>
               </div>
             </TabsContent>
@@ -321,14 +327,14 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="product-price">
-                      Tarif HT <span className="text-destructive">*</span>
+                      {t('fields.priceHT')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="product-price"
                       type="number"
                       step="0.01"
                       min="0"
-                      placeholder="0.00"
+                      placeholder={t('fields.pricePlaceholder')}
                       {...form.register("price", {
                         setValueAs: (value) => {
                           // Convertir en string et nettoyer
@@ -346,7 +352,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                   </div>
                   <div className="space-y-2">
                     <Label>
-                      Taux de TVA <span className="text-destructive">*</span>
+                      {t('fields.taxRate')} <span className="text-destructive">*</span>
                     </Label>
                     <Controller
                       name="taxRate"
@@ -354,7 +360,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
                           <SelectTrigger className={form.formState.errors.taxRate ? "border-destructive" : ""}>
-                            <SelectValue placeholder="TVA" />
+                            <SelectValue placeholder={t('fields.taxRatePlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="0">0%</SelectItem>
@@ -372,7 +378,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="product-currency">
-                    Devise <span className="text-destructive">*</span>
+                    {t('fields.currency')} <span className="text-destructive">*</span>
                   </Label>
                   <Controller
                     name="currency"
@@ -380,7 +386,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
                         <SelectTrigger className={form.formState.errors.currency ? "border-destructive" : ""}>
-                          <SelectValue placeholder="Devise" />
+                          <SelectValue placeholder={t('fields.currencyPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="EUR">EUR (€)</SelectItem>
@@ -401,19 +407,19 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
             <TabsContent value="complementaires" className="space-y-4 mt-0">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="product-unitOfMeasure">Unité</Label>
+                  <Label htmlFor="product-unitOfMeasure">{t('fields.unit')}</Label>
                   <Input
                     id="product-unitOfMeasure"
-                    placeholder="heure, unité, etc. (optionnel)"
+                    placeholder={t('fields.unitPlaceholder')}
                     {...form.register("unitOfMeasure")}
                     disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="product-sku">Référence (SKU)</Label>
+                  <Label htmlFor="product-sku">{t('fields.sku')}</Label>
                   <Input
                     id="product-sku"
-                    placeholder="Référence produit (optionnel)"
+                    placeholder={t('fields.skuPlaceholder')}
                     {...form.register("sku")}
                     disabled={isLoading}
                   />
@@ -435,7 +441,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                   className="gap-2"
                 >
                   <IoChevronBackOutline className="h-4 w-4" />
-                  Précédent
+                  {t('buttons.previous')}
                 </Button>
               )}
             </div>
@@ -446,7 +452,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                 onClick={handleClose}
                 disabled={isLoading}
               >
-                Annuler
+                {t('buttons.cancel')}
               </Button>
               {!isLastTab ? (
                 <Button
@@ -455,7 +461,7 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                   disabled={isLoading}
                   className="gap-2"
                 >
-                  Suivant
+                  {t('buttons.next')}
                   <IoChevronForwardOutline className="h-4 w-4" />
                 </Button>
               ) : (
@@ -463,10 +469,10 @@ export const ProductModal = ({ open, onClose, onSuccess }: ProductModalProps) =>
                   {isLoading ? (
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Création...
+                      {t('buttons.creating')}
                     </div>
                   ) : (
-                    "Créer la prestation"
+                    t('buttons.create')
                   )}
                 </Button>
               )}

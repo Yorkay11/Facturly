@@ -157,7 +157,7 @@ export function PricingSection() {
                       {price}€
                     </span>
                     <span className={`text-sm ${plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                      {t('perMonth')}
+                      {isAnnual ? t('perYear') : t('perMonth')}
                     </span>
                   </div>
                   {isAnnual && plan.savings && (
@@ -166,15 +166,15 @@ export function PricingSection() {
                         {plan.savings}
                       </span>
                       <span className="text-xs text-muted-foreground line-through">
-                        {plan.monthlyPrice}€/mois
+                        {parseFloat(plan.monthlyPrice) * 12}€/an
                       </span>
                     </div>
                   )}
-                  {!isAnnual && plan.savings && (
+                  {/* {!isAnnual && plan.savings && (
                     <p className="text-xs text-muted-foreground">
                       {t('monthlyEquivalent', { price: monthlyEquivalent })}
                     </p>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Bouton */}

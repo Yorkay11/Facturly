@@ -859,6 +859,13 @@ const baseQueryWithAuth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
   
+  // Traiter les réponses 204 (No Content) comme des succès
+  // Vérifier à la fois dans meta.response et dans error (car fetchBaseQuery peut créer une erreur pour 204)
+  const responseStatus = result.meta?.response?.status || (result.error as any)?.status;
+  if (responseStatus === 204) {
+    return { data: undefined };
+  }
+  
   // Gérer les erreurs d'authentification
   if (result.error && result.error.status === 401) {
     const errorData = result.error.data as { code?: string; message?: string };

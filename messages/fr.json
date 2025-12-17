@@ -1409,6 +1409,7 @@
       "includesFree": "Tout du plan Gratuit +",
       "ctaAuthenticated": "Accéder au tableau de bord",
       "perMonth": "/mois",
+      "perYear": "/an",
       "monthlyEquivalent": "{price}€/mois en paiement annuel",
       "plans": {
         "free": {
@@ -1462,8 +1463,8 @@
       "subtitle2": "et professionnalisent leur gestion avec Facturly",
       "large": {
         "quote": "Facturly a transformé notre gestion de facturation. Ce qui prenait des heures se fait maintenant en quelques minutes. Un gain de temps considérable pour notre équipe.",
-        "name": "Marie Dubois",
-        "role": "Directrice, TechStart"
+        "name": "Bruce Lens",
+        "role": "Directeur, TechStart"
       },
       "items": [
         {

@@ -63,9 +63,7 @@ export function LanguageSwitcher() {
     <Select value={locale} onValueChange={handleLanguageChange}>
       <SelectTrigger className="w-[140px]">
         <div className="flex items-center gap-2 w-full">
-          <Globe className="h-4 w-4 text-muted-foreground" />
           <CurrentFlag />
-          <span className="text-sm font-medium">{currentLanguage.label}</span>
           <SelectValue className="sr-only" aria-label={currentLanguage.label} />
         </div>
       </SelectTrigger>

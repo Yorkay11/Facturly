@@ -457,7 +457,7 @@ export function HeroSection() {
       </div>
 
       <div className={cn(
-        "relative z-10 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4",
+        "relative z-10 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4 mx-auto",
         isBetaBannerVisible 
           ? "mt-36 md:mt-[120px] lg:mt-[160px]" 
           : "mt-32 md:mt-[120px] lg:mt-[160px]"

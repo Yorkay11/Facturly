@@ -5,6 +5,7 @@ import { Nunito } from 'next/font/google';
 const inter = Nunito({ subsets: ['latin'] });
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
 
+// Métadonnées par défaut (français) - Les pages dans [locale] peuvent les surcharger avec generateMetadata
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -45,6 +46,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Facturly - Facturation simple & intelligente",
+        type: "image/png",
       },
     ],
   },
@@ -52,8 +54,24 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Facturly - Facturation simple & intelligente",
     description: "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.",
-    images: [`${siteUrl}/icon.png`],
+    images: [
+      {
+        url: `${siteUrl}/icon.png`,
+        width: 1200,
+        height: 630,
+        alt: "Facturly - Facturation simple & intelligente",
+      },
+    ],
     creator: "@facturly",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   robots: {
     index: true,
@@ -83,6 +101,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link
           rel="icon"

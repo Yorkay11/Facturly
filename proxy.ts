@@ -26,14 +26,16 @@ const intlMiddleware = createMiddleware(routing);
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip proxy pour les fichiers statiques, API routes, etc.
+  // Skip proxy pour les fichiers statiques, API routes, sitemap, robots, etc.
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/favicon.ico") ||
     pathname.startsWith("/assets") ||
     pathname.startsWith("/public") ||
-    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp)$/)
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt" ||
+    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|xml|txt)$/)
   ) {
     return NextResponse.next();
   }

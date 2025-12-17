@@ -57,13 +57,11 @@ export function LanguageSwitcher() {
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0];
 
 
-  const CurrentFlag = currentLanguage.Flag;
 
   return (
     <Select value={locale} onValueChange={handleLanguageChange}>
       <SelectTrigger className="w-[140px]">
         <div className="flex items-center gap-2 w-full">
-          <CurrentFlag />
           <SelectValue className="sr-only" aria-label={currentLanguage.label} />
         </div>
       </SelectTrigger>

@@ -635,11 +635,13 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             link.href = pdfUrl;
             link.download = `facture-${invoiceId}.pdf`;
             
-            // Ajouter le token dans les headers via fetch puis créer un blob
+            // Ajouter le token et la locale dans les headers via fetch puis créer un blob
+            const currentLocale = locale || 'fr'; // Fallback sur 'fr' si locale n'est pas disponible
             const response = await fetch(pdfUrl, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`,
+                    'x-locale': currentLocale,
                 },
             });
 

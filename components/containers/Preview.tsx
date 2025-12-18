@@ -127,11 +127,24 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
   });
 
   const currentTemplate = invoiceTemplates.find((tpl) => tpl.id === activeTemplate) ?? invoiceTemplates[0];
+  
+  // S'assurer que les dates sont bien des objets Date
+  const issueDate = metadataStore.issueDate instanceof Date 
+    ? metadataStore.issueDate 
+    : metadataStore.issueDate 
+      ? new Date(metadataStore.issueDate) 
+      : undefined;
+  const dueDate = metadataStore.dueDate instanceof Date 
+    ? metadataStore.dueDate 
+    : metadataStore.dueDate 
+      ? new Date(metadataStore.dueDate) 
+      : undefined;
+  
   const metadata = {
     receiver: metadataStore.receiver,
     subject: metadataStore.subject,
-    issueDate: metadataStore.issueDate,
-    dueDate: metadataStore.dueDate,
+    issueDate: issueDate,
+    dueDate: dueDate,
     notes: metadataStore.notes,
   };
   const TemplateComponent = templateRegistry[currentTemplate.id] ?? TemplateInvoice;
@@ -161,7 +174,13 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
     [currencyCode, locale]
   );
 
-  const formatDate = (date?: Date) => (date ? format(date, locale === 'fr' ? "dd/MM/yyyy" : "MM/dd/yyyy") : "--/--/----");
+  const formatDate = (date?: Date) => {
+    if (!date) return "--/--/----";
+    // S'assurer que c'est bien un objet Date
+    const dateObj = date instanceof Date ? date : new Date(date);
+    if (isNaN(dateObj.getTime())) return "--/--/----";
+    return format(dateObj, locale === 'fr' ? "dd/MM/yyyy" : "MM/dd/yyyy");
+  };
 
   return (
     <Card className="w-full flex-1 space-y-6 border border-slate-200 bg-white p-6 shadow-sm">

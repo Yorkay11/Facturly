@@ -155,7 +155,7 @@ export default function PublicPayPage() {
   const canPay = invoiceData.canPay && !isPaid;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4 py-8 mt-6 md:mt-0">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header avec logo et sélecteur de langue */}
         <div className="flex justify-between items-start mb-6">

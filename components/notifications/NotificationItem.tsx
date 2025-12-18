@@ -6,7 +6,8 @@ import { Info, CheckCircle2, AlertTriangle, XCircle, X, Clock } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -46,6 +47,8 @@ export function NotificationItem({
   onMarkAsRead,
   onDelete,
 }: NotificationItemProps) {
+  const t = useTranslations('notifications.item');
+  const locale = useLocale();
   const [isDeleting, setIsDeleting] = useState(false);
   const config = priorityConfig[notification.priority];
   const Icon = config.icon;
@@ -65,7 +68,7 @@ export function NotificationItem({
 
   const timeAgo = formatDistanceToNow(new Date(notification.createdAt), {
     addSuffix: true,
-    locale: fr,
+    locale: locale === 'fr' ? fr : enUS,
   });
 
   return (
@@ -114,7 +117,7 @@ export function NotificationItem({
                 "hover:bg-destructive/10"
               )}
               onClick={handleDelete}
-              aria-label="Supprimer la notification"
+              aria-label={t('delete')}
             >
               <X className="h-3.5 w-3.5" />
             </Button>

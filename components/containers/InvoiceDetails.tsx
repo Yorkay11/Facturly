@@ -130,7 +130,15 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const { setLoading } = useLoading();
     
     // Récupérer le template depuis le store, avec fallback sur le template par défaut
-    const activeTemplate = metadataStore.templateId || invoiceTemplates[0].id;
+    // Utiliser useMemo pour que activeTemplate soit réactif aux changements de templateId
+    const activeTemplate = useMemo(() => {
+        const templateId = metadataStore.templateId || invoiceTemplates[0].id;
+        // S'assurer que le templateId est toujours dans le store
+        if (!metadataStore.templateId) {
+            metadataStore.setMetadata({ templateId: templateId });
+        }
+        return templateId;
+    }, [metadataStore.templateId]);
 
     // Créer le schéma de validation avec les traductions
     const FormSchema = useMemo(() => z.object({
@@ -339,11 +347,17 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 
                 try {
                     // Obtenir le nom du template backend à partir de l'ID frontend
-                    const backendTemplateName = getBackendTemplateName(activeTemplate);
+                    // Utiliser directement metadataStore.templateId pour être sûr d'avoir la dernière valeur
+                    const currentTemplateId = metadataStore.templateId || invoiceTemplates[0].id;
+                    const backendTemplateName = getBackendTemplateName(currentTemplateId);
                     
-                    // Trouver le client pour obtenir son email
-                    const selectedClient = clients.find((c) => c.id === clientId) || clientFromUrl;
+                    console.log('Creating invoice with template:', {
+                        templateId: currentTemplateId,
+                        backendTemplateName: backendTemplateName,
+                        metadataStoreTemplateId: metadataStore.templateId
+                    });
                     
+                    // Créer la facture sans envoyer l'email (sendEmail: false)
                     const response = await createInvoice({
                         clientId: clientId,
                         issueDate: issueDate.toISOString().split('T')[0],
@@ -351,8 +365,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         currency: storedCurrency || undefined,
                         items: invoiceItems,
                         notes: notes || undefined,
-                        recipientEmail: selectedClient?.email || undefined,
-                        sendEmail: true, // Envoyer l'email automatiquement lors de la création
+                        recipientEmail: undefined, // Pas d'email à la création
+                        sendEmail: false, // Ne pas envoyer l'email automatiquement
                         templateName: backendTemplateName,
                     }).unwrap();
                     
@@ -366,21 +380,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         return;
                     }
                     
-                    // La facture a été créée et envoyée directement (sendEmail: true dans le payload)
-                    toast.success(t('success.invoiceSent'), {
-                        description: t('success.invoiceSentDescription', { 
-                            number: invoiceData.invoiceNumber || newInvoiceId,
-                            email: invoiceData.recipientEmail ? ` à ${invoiceData.recipientEmail}` : ""
-                        }),
-                    });
-
-                    // Réinitialiser les stores
-                    resetMetadata();
-                    clearItems();
-
-                    // Rediriger vers la page de détails de la facture
-                    router.replace(`/invoices/${newInvoiceId}`);
-                    return;
+                    invoiceIdToSend = newInvoiceId;
                 } catch (createError: any) {
                     const errorMessage = createError?.data?.message || createError?.message || t('errors.createError');
                     toast.error(t('errors.createError'), {
@@ -390,7 +390,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 }
             }
 
-            // Mode édition: envoyer la facture après mise à jour
+            // Envoyer la facture (pour création et édition)
             const selectedClient = clients.find((c) => c.id === clientId) || clientFromUrl;
 
             // Envoyer la facture
@@ -406,7 +406,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 toast.success(t('success.invoiceSent'), {
                     description: t('success.invoiceSentDescription', { 
                         number: sentInvoice.invoiceNumber || invoiceIdToSend,
-                        email: sentInvoice.recipientEmail ? ` à ${sentInvoice.recipientEmail}` : ""
+                        email: sentInvoice.recipientEmail || selectedClient?.email || t('common.client')
                     }),
                 });
 
@@ -512,7 +512,15 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 
                 try {
                     // Obtenir le nom du template backend à partir de l'ID frontend
-                    const backendTemplateName = getBackendTemplateName(activeTemplate);
+                    // Utiliser directement metadataStore.templateId pour être sûr d'avoir la dernière valeur
+                    const currentTemplateId = metadataStore.templateId || invoiceTemplates[0].id;
+                    const backendTemplateName = getBackendTemplateName(currentTemplateId);
+                    
+                    console.log('Saving draft with template:', {
+                        templateId: currentTemplateId,
+                        backendTemplateName: backendTemplateName,
+                        metadataStoreTemplateId: metadataStore.templateId
+                    });
                     
                     const response = await createInvoice({
                         clientId: clientId,
@@ -625,7 +633,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             }
 
             // Mapper le template frontend au nom backend
-            const backendTemplateName = getBackendTemplateName(activeTemplate);
+            // Utiliser directement metadataStore.templateId pour être sûr d'avoir la dernière valeur
+            const currentTemplateId = metadataStore.templateId || invoiceTemplates[0].id;
+            const backendTemplateName = getBackendTemplateName(currentTemplateId);
             
             // Construire l'URL avec le paramètre template optionnel
             const pdfUrl = `${BASE_URL}/invoices/${invoiceId}/pdf${backendTemplateName ? `?template=${backendTemplateName}` : ""}`;

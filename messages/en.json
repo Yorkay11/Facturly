@@ -23,7 +23,9 @@
     "status": "Status",
     "date": "Date",
     "amount": "Amount",
-    "total": "Total"
+    "total": "Total",
+    "invoice": "Invoice",
+    "client": "Client"
   },
   "beta": {
     "badge": "Beta",
@@ -427,7 +429,8 @@
             "name": "Name",
             "description": "Description",
             "price": "Price",
-            "vat": "VAT"
+            "vat": "VAT",
+            "sku": "SKU"
           },
           "selectProductMessage": "Select a product to continue, or switch to manual entry.",
           "manualEntry": {
@@ -472,7 +475,12 @@
             },
             "currency": {
               "label": "Currency",
-              "placeholder": "Currency"
+              "placeholder": "Currency",
+              "options": {
+                "EUR": "EUR (€)",
+                "USD": "USD ($)",
+                "XOF": "XOF (CFA)"
+              }
             },
             "summary": {
               "title": "Summary",
@@ -526,7 +534,7 @@
         "clientCreated": "Client created and selected",
         "clientCreatedDescription": "{name} has been created and selected as recipient.",
         "invoiceSent": "Invoice sent",
-        "invoiceSentDescription": "Invoice {number} has been sent successfully{email}.",
+        "invoiceSentDescription": "Invoice #{number} has been sent to {email}.",
         "draftUpdated": "Draft updated",
         "draftUpdatedDescription": "Invoice {number} has been updated successfully.",
         "draftSaved": "Draft saved",
@@ -2010,6 +2018,55 @@
         "successDescription": "Payment of {amount} has been successfully processed.",
         "error": "An error occurred while processing the payment."
       }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Manage your notifications and stay informed about your account activity",
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "notifications": "Notifications"
+    },
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "list": {
+      "title": {
+        "all": "All notifications",
+        "unread": "Unread notifications",
+        "read": "Read notifications"
+      },
+      "empty": {
+        "title": "No notifications",
+        "description": "You're all caught up!"
+      },
+      "markAllAsRead": "Mark all as read"
+    },
+    "dropdown": {
+      "title": "Notifications",
+      "unread": "{count} unread",
+      "viewAll": "View all notifications"
+    },
+    "item": {
+      "delete": "Delete notification"
+    },
+    "pagination": {
+      "page": "Page {current} of {total}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "actions": {
+      "markAsRead": "Mark all as read"
+    },
+    "toasts": {
+      "markedAsRead": "Notification marked as read",
+      "deleted": "Notification deleted",
+      "allMarkedAsRead": "All notifications have been marked as read",
+      "updateError": "Error updating notification",
+      "deleteError": "Error deleting notification",
+      "loadError": "Error loading notifications. Please try again."
     }
   },
   "metadata": {

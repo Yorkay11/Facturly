@@ -6,6 +6,7 @@ import { NotificationItem } from './NotificationItem';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface NotificationListProps {
   notifications: Notification[];
@@ -22,6 +23,7 @@ export function NotificationList({
   onMarkAllAsRead,
   loading,
 }: NotificationListProps) {
+  const t = useTranslations('notifications.list');
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   if (loading) {
@@ -49,9 +51,9 @@ export function NotificationList({
         <div className="rounded-full bg-muted p-3 mb-3">
           <CheckCheck className="h-6 w-6 text-muted-foreground" />
         </div>
-        <p className="text-sm font-medium text-foreground mb-1">Aucune notification</p>
+        <p className="text-sm font-medium text-foreground mb-1">{t('empty.title')}</p>
         <p className="text-xs text-muted-foreground">
-          Vous êtes à jour !
+          {t('empty.description')}
         </p>
       </div>
     );
@@ -68,7 +70,7 @@ export function NotificationList({
             className="text-xs h-7 gap-1.5 text-muted-foreground hover:text-foreground"
           >
             <CheckCheck className="h-3.5 w-3.5" />
-            Tout marquer comme lu
+            {t('markAllAsRead')}
           </Button>
         </div>
       )}

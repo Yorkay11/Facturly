@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
 import Image from "next/image";
 import { CheckCircle2, AlertCircle, FileText, XCircle, Check, X, Loader2, Maximize2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useTranslations, useLocale } from 'next-intl';
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { getFrontendTemplateFromBackend, invoiceTemplates } from "@/types/invoiceTemplate";
@@ -45,6 +51,18 @@ export default function PublicInvoicePage() {
   const locale = useLocale();
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+
+  // Détecter si on est sur un grand écran (md et plus)
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.matchMedia("(min-width: 768px)").matches);
+    };
+    
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   const rawToken = params?.token;
   const token =
@@ -411,7 +429,7 @@ export default function PublicInvoicePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4 py-8 md:py-12">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary/10 p-4 py-8 md:py-12 mt-6 md:mt-0">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header avec logo et sélecteur de langue */}
         <div className="flex justify-between items-start mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -445,7 +463,7 @@ export default function PublicInvoicePage() {
             <Button
               variant="outline"
               size="icon"
-              className="text-primary hover:bg-primary/10 transition-all"
+              className="hidden md:flex text-primary hover:bg-primary/10 transition-all"
               onClick={() => setIsFullscreenOpen(true)}
               title={t('actions.maximize')}
             >
@@ -643,36 +661,38 @@ export default function PublicInvoicePage() {
         />
       )}
 
-      {/* Fullscreen Invoice Dialog - Design amélioré */}
-      <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-0 overflow-hidden bg-gradient-to-br from-primary/5 to-white">
-          <DialogHeader className="px-6 pt-6 pb-4 bg-white/50 backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-md bg-primary/10">
-                  <FileText className="h-5 w-5 text-primary" />
+      {/* Fullscreen Invoice Sheet - Design amélioré (masqué sur mobile) */}
+      {isLargeScreen && (
+        <Sheet open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-y-auto p-0 bg-gradient-to-br from-primary/5 to-white">
+            <SheetHeader className="px-6 pt-6 pb-4 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-md bg-primary/10">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    {commonT('invoice')} {invoice.invoiceNumber}
+                  </SheetTitle>
                 </div>
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  {commonT('invoice')} {invoice.invoiceNumber}
-                </DialogTitle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsFullscreenOpen(false)}
+                  className="hover:bg-primary/10"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsFullscreenOpen(false)}
-                className="hover:bg-primary/10"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+            </SheetHeader>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-5xl mx-auto">
+                {renderInvoiceContent()}
+              </div>
             </div>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-5xl mx-auto">
-              {renderInvoiceContent()}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }

@@ -23,7 +23,9 @@
     "status": "Statut",
     "date": "Date",
     "amount": "Montant",
-    "total": "Total"
+    "total": "Total",
+    "invoice": "Facture",
+    "client": "Client"
   },
   "beta": {
     "badge": "Bêta",
@@ -428,7 +430,8 @@
             "name": "Nom",
             "description": "Description",
             "price": "Prix",
-            "vat": "TVA"
+            "vat": "TVA",
+            "sku": "SKU"
           },
           "selectProductMessage": "Sélectionnez un produit pour continuer, ou passez à la saisie manuelle.",
           "manualEntry": {
@@ -473,7 +476,12 @@
             },
             "currency": {
               "label": "Devise",
-              "placeholder": "Devise"
+              "placeholder": "Devise",
+              "options": {
+                "EUR": "EUR (€)",
+                "USD": "USD ($)",
+                "XOF": "XOF (CFA)"
+              }
             },
             "summary": {
               "title": "Résumé",
@@ -527,7 +535,7 @@
         "clientCreated": "Client créé et sélectionné",
         "clientCreatedDescription": "{name} a été créé et sélectionné comme destinataire.",
         "invoiceSent": "Facture envoyée",
-        "invoiceSentDescription": "La facture {number} a été envoyée avec succès{email}.",
+        "invoiceSentDescription": "La facture #{number} a été envoyée à {email}.",
         "draftUpdated": "Brouillon mis à jour",
         "draftUpdatedDescription": "La facture {number} a été mise à jour avec succès.",
         "draftSaved": "Brouillon enregistré",
@@ -2011,6 +2019,55 @@
         "successDescription": "Le paiement de {amount} a été effectué avec succès.",
         "error": "Une erreur est survenue lors du paiement."
       }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Gérez vos notifications et restez informé de l'activité de votre compte",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "notifications": "Notifications"
+    },
+    "filters": {
+      "all": "Toutes",
+      "unread": "Non lues",
+      "read": "Lues"
+    },
+    "list": {
+      "title": {
+        "all": "Toutes les notifications",
+        "unread": "Notifications non lues",
+        "read": "Notifications lues"
+      },
+      "empty": {
+        "title": "Aucune notification",
+        "description": "Vous êtes à jour !"
+      },
+      "markAllAsRead": "Tout marquer comme lu"
+    },
+    "dropdown": {
+      "title": "Notifications",
+      "unread": "{count} non {count, plural, one {lue} other {lues}}",
+      "viewAll": "Voir toutes les notifications"
+    },
+    "item": {
+      "delete": "Supprimer la notification"
+    },
+    "pagination": {
+      "page": "Page {current} sur {total}",
+      "previous": "Précédent",
+      "next": "Suivant"
+    },
+    "actions": {
+      "markAsRead": "Tout marquer comme lu"
+    },
+    "toasts": {
+      "markedAsRead": "Notification marquée comme lue",
+      "deleted": "Notification supprimée",
+      "allMarkedAsRead": "Toutes les notifications ont été marquées comme lues",
+      "updateError": "Erreur lors de la mise à jour",
+      "deleteError": "Erreur lors de la suppression",
+      "loadError": "Erreur lors du chargement des notifications. Veuillez réessayer."
     }
   },
   "metadata": {

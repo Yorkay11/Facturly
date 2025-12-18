@@ -5,8 +5,11 @@ import { useGetNotificationsQuery, useGetUnreadNotificationsCountQuery, useMarkN
 import { NotificationList } from './NotificationList';
 import { NotificationBadge } from './NotificationBadge';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 export function NotificationDropdown() {
+  const t = useTranslations('notifications.dropdown');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -87,10 +90,10 @@ export function NotificationDropdown() {
         )}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
-            <h3 className="font-semibold text-sm">Notifications</h3>
+            <h3 className="font-semibold text-sm">{t('title')}</h3>
             {unreadCount > 0 && (
               <span className="text-xs text-muted-foreground">
-                {unreadCount} non {unreadCount > 1 ? 'lues' : 'lue'}
+                {t('unread', { count: unreadCount })}
               </span>
             )}
           </div>
@@ -109,13 +112,13 @@ export function NotificationDropdown() {
           {/* Footer */}
           {notifications.length > 0 && (
             <div className="border-t px-4 py-2.5 bg-muted/20">
-              <a
+              <Link
                 href="/notifications"
                 className="text-xs text-primary hover:underline font-medium block text-center"
                 onClick={() => setIsOpen(false)}
               >
-                Voir toutes les notifications
-              </a>
+                {t('viewAll')}
+              </Link>
             </div>
           )}
         </div>

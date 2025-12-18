@@ -10,8 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import Breadcrumb from '@/components/ui/breadcrumb';
 import { IoCheckmarkDoneOutline } from 'react-icons/io5';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 export default function NotificationsPage() {
+  const t = useTranslations('notifications');
+  const commonT = useTranslations('common');
+  const dashboardT = useTranslations('dashboard');
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<{
     read?: boolean;
@@ -46,27 +51,27 @@ export default function NotificationsPage() {
   const handleMarkAsRead = async (id: string) => {
     try {
       await markAsRead(id).unwrap();
-      toast.success('Notification marquée comme lue');
+      toast.success(t('toasts.markedAsRead'));
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('toasts.updateError'));
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await deleteNotification(id).unwrap();
-      toast.success('Notification supprimée');
+      toast.success(t('toasts.deleted'));
     } catch (error) {
-      toast.error('Erreur lors de la suppression');
+      toast.error(t('toasts.deleteError'));
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead().unwrap();
-      toast.success('Toutes les notifications ont été marquées comme lues');
+      toast.success(t('toasts.allMarkedAsRead'));
     } catch (error) {
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('toasts.updateError'));
     }
   };
 
@@ -76,7 +81,7 @@ export default function NotificationsPage() {
         <Card>
           <CardContent className="p-6">
             <p className="text-destructive">
-              Erreur lors du chargement des notifications. Veuillez réessayer.
+              {t('toasts.loadError')}
             </p>
           </CardContent>
         </Card>
@@ -88,17 +93,17 @@ export default function NotificationsPage() {
     <div className="space-y-6 p-6">
       <Breadcrumb
         items={[
-          { label: 'Tableau de bord', href: '/dashboard' },
-          { label: 'Notifications' },
+          { label: dashboardT('title'), href: '/dashboard' },
+          { label: t('title') },
         ]}
         className="text-xs"
       />
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Notifications</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="text-sm text-foreground/60 mt-1">
-            Gérez vos notifications et restez informé de l'activité de votre compte
+            {t('description')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -111,7 +116,7 @@ export default function NotificationsPage() {
               className="gap-2"
             >
               <IoCheckmarkDoneOutline className="h-4 w-4" />
-              Tout marquer comme lu
+              {t('actions.markAsRead')}
             </Button>
           )}
         </div>
@@ -124,14 +129,14 @@ export default function NotificationsPage() {
           size="sm"
           onClick={() => handleFilterChange({})}
         >
-          Toutes
+          {t('filters.all')}
         </Button>
         <Button
           variant={filters.read === false ? 'default' : 'outline'}
           size="sm"
           onClick={() => handleFilterChange({ read: false })}
         >
-          Non lues
+          {t('filters.unread')}
           {unreadCount > 0 && (
             <Badge variant="secondary" className="ml-2">
               {unreadCount}
@@ -143,7 +148,7 @@ export default function NotificationsPage() {
           size="sm"
           onClick={() => handleFilterChange({ read: true })}
         >
-          Lues
+          {t('filters.read')}
         </Button>
       </div>
 
@@ -152,10 +157,10 @@ export default function NotificationsPage() {
         <CardHeader>
           <CardTitle>
             {filters.read === false
-              ? 'Notifications non lues'
+              ? t('list.title.unread')
               : filters.read === true
-              ? 'Notifications lues'
-              : 'Toutes les notifications'}
+              ? t('list.title.read')
+              : t('list.title.all')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -171,7 +176,7 @@ export default function NotificationsPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <div className="text-sm text-foreground/60">
-                Page {currentPage} sur {totalPages}
+                {t('pagination.page', { current: currentPage, total: totalPages })}
               </div>
               <div className="flex gap-2">
                 <Button
@@ -180,7 +185,7 @@ export default function NotificationsPage() {
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || isLoading}
                 >
-                  Précédent
+                  {t('pagination.previous')}
                 </Button>
                 <Button
                   variant="outline"
@@ -188,7 +193,7 @@ export default function NotificationsPage() {
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages || isLoading}
                 >
-                  Suivant
+                  {t('pagination.next')}
                 </Button>
               </div>
             </div>

@@ -20,7 +20,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useTranslations } from 'next-intl';
 
 export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'create' }: ItemModalProps) {
-  const t = useTranslations('invoices.addItemModal');
+  const t = useTranslations('invoices.form.addItemModal');
   const commonT = useTranslations('common');
   const itemsModalT = useTranslations('items.modal');
   
@@ -360,7 +360,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                               </span>
                                               {product.sku && (
                                                 <span className="text-muted-foreground">
-                                                  SKU: {product.sku}
+                                                  {t('fields.productDetails.sku')}: {product.sku}
                                                 </span>
                                               )}
                                             </div>
@@ -650,9 +650,9 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                   <SelectValue placeholder={t('saveDialog.fields.currency.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="XOF">XOF (CFA)</SelectItem>
+                  <SelectItem value="EUR">{t('saveDialog.fields.currency.options.EUR')}</SelectItem>
+                  <SelectItem value="USD">{t('saveDialog.fields.currency.options.USD')}</SelectItem>
+                  <SelectItem value="XOF">{t('saveDialog.fields.currency.options.XOF')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

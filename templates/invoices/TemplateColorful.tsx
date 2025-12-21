@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateColorful = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -14,8 +14,8 @@ const TemplateColorful = ({
   template,
 }: InvoiceTemplateProps) => {
   // Construire l'adresse de l'entreprise
-  const companyAddress = company
-    ? [company.city, company.country].filter(Boolean).join(", ")
+  const workspaceAddress = workspace
+    ? [workspace.city, workspace.country].filter(Boolean).join(", ")
     : "";
 
   // Construire l'adresse du client
@@ -44,10 +44,10 @@ const TemplateColorful = ({
           {/* Entreprise Card */}
           <div className="bg-gradient-to-br from-[#f093fb] to-[#f5576c] rounded-[15px] p-5 text-white">
             <h3 className="text-xs uppercase tracking-wide mb-3 opacity-90">Entreprise</h3>
-            <p className="mb-1 text-sm font-medium">{company?.name || "Nom de l'entreprise"}</p>
-            {companyAddress && <p className="mb-1 text-sm font-medium">{companyAddress}</p>}
-            {company?.vatNumber && (
-              <p className="mt-2 text-[11px] font-medium">TVA: {company.vatNumber}</p>
+            <p className="mb-1 text-sm font-medium">{workspace?.name || "Nom de l'entreprise"}</p>
+            {workspaceAddress && <p className="mb-1 text-sm font-medium">{workspaceAddress}</p>}
+            {workspace?.vatNumber && (
+              <p className="mt-2 text-[11px] font-medium">TVA: {workspace.vatNumber}</p>
             )}
           </div>
 
@@ -153,7 +153,7 @@ const TemplateColorful = ({
         {/* Footer */}
         <div className="mt-8 pt-5 border-t-2 border-dashed border-slate-300 text-center text-xs text-[#718096]">
           <p>Merci pour votre confiance !</p>
-          {company?.name && <p className="mt-1">{company.name}</p>}
+          {workspace?.name && <p className="mt-1">{workspace.name}</p>}
         </div>
       </div>
     </div>

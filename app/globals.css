@@ -10,27 +10,27 @@
   [cmdk-group] [data-selected="true"] {
     color: white !important;
   }
-  
+
   /* Cible tous les enfants (texte, icônes, badges) des éléments sélectionnés */
   [cmdk-root] [data-selected="true"] *,
   [cmdk-list] [data-selected="true"] *,
   [cmdk-group] [data-selected="true"] * {
     color: white !important;
   }
-  
+
   /* Exceptions pour les éléments avec opacité réduite */
   [cmdk-root] [data-selected="true"] .text-muted-foreground,
   [cmdk-list] [data-selected="true"] .text-muted-foreground,
   [cmdk-group] [data-selected="true"] .text-muted-foreground {
     color: rgb(255 255 255 / 0.9) !important;
   }
-  
+
   [cmdk-root] [data-selected="true"] .text-primary,
   [cmdk-list] [data-selected="true"] .text-primary,
   [cmdk-group] [data-selected="true"] .text-primary {
     color: white !important;
   }
-  
+
   /* Badge avec fond transparent au survol */
   [cmdk-root] [data-selected="true"] [class*="badge"],
   [cmdk-list] [data-selected="true"] [class*="badge"],
@@ -48,6 +48,35 @@ body {
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Animations pour le loader carré */
+  @keyframes fillLiquid {
+    from {
+      height: 0%;
+    }
+    to {
+      height: 100%;
+    }
+  }
+
+  @keyframes revealLogo {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+    to {
+      clip-path: inset(0% 0 0 0);
+    }
+  }
+
+  .liquid-fill {
+    height: 0%;
+    animation: fillLiquid 3s linear forwards;
+  }
+
+  .logo-colored {
+    clip-path: inset(100% 0 0 0);
+    animation: revealLogo 3s linear forwards;
   }
 
   /* Animation de vague pour le gradient violet */
@@ -71,7 +100,8 @@ body {
   }
 
   @keyframes wave-pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.75;
       transform: scale(1);
     }
@@ -83,11 +113,23 @@ body {
 
   .animate-wave-gradient {
     background-size: 400% 400%;
-    animation: wave-flow 20s ease-in-out infinite, wave-pulse 6s ease-in-out infinite;
-    background-image: 
-      radial-gradient(ellipse at 20% 50%, rgba(55, 15, 85, 0.8) 0%, transparent 50%),
-      radial-gradient(ellipse at 60% 80%, rgba(20, 35, 90, 0.7) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, rgba(120, 15, 60, 0.6) 0%, transparent 50%),
+    animation: wave-flow 20s ease-in-out infinite,
+      wave-pulse 6s ease-in-out infinite;
+    background-image: radial-gradient(
+        ellipse at 20% 50%,
+        rgba(55, 15, 85, 0.8) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 60% 80%,
+        rgba(20, 35, 90, 0.7) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 80% 20%,
+        rgba(120, 15, 60, 0.6) 0%,
+        transparent 50%
+      ),
       linear-gradient(
         135deg,
         rgba(55, 15, 85, 0.75) 0%,
@@ -97,6 +139,98 @@ body {
         rgba(120, 15, 60, 0.55) 80%,
         rgba(55, 15, 85, 0.75) 100%
       );
+  }
+
+  /* Container breathing */
+  @keyframes loaderPop {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-loader-pop {
+    animation: loaderPop 0.4s ease-out forwards;
+  }
+
+  /* Fade in text */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  /* Liquid fill */
+  .liquid-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  @keyframes liquidRise {
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0%);
+    }
+  }
+
+  @keyframes wave {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .liquid-wave {
+    position: absolute;
+    bottom: 0;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle at 50% 0%,
+        rgba(255, 255, 255, 0.25) 20%,
+        transparent 21%
+      ),
+      linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)));
+    animation: liquidRise 2.2s ease-in-out infinite alternate,
+      wave 4s linear infinite;
+  }
+
+  /* Logo reveal */
+  @keyframes logoReveal {
+    0% {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 0.6;
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .logo-reveal {
+    animation: logoReveal 1.2s ease-out forwards;
   }
 }
 
@@ -173,7 +307,7 @@ body {
     border-color: rgb(34 197 94) !important;
     color: rgb(22 101 52) !important;
   }
-  
+
   [data-sonner-toast][data-type="success"] [data-icon] {
     color: rgb(34 197 94) !important;
   }
@@ -184,7 +318,7 @@ body {
     border-color: rgb(239 68 68) !important;
     color: rgb(153 27 27) !important;
   }
-  
+
   [data-sonner-toast][data-type="error"] [data-icon] {
     color: rgb(239 68 68) !important;
   }
@@ -195,7 +329,7 @@ body {
     border-color: rgb(59 130 246) !important;
     color: rgb(30 64 175) !important;
   }
-  
+
   [data-sonner-toast][data-type="info"] [data-icon] {
     color: rgb(59 130 246) !important;
   }
@@ -206,7 +340,7 @@ body {
     border-color: rgb(245 158 11) !important;
     color: rgb(146 64 14) !important;
   }
-  
+
   [data-sonner-toast][data-type="warning"] [data-icon] {
     color: rgb(245 158 11) !important;
   }

@@ -11,7 +11,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Check, ChevronsUpDown, Package, Wrench, RotateCcw, Sparkles, Loader2, Search, Plus, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ItemModalProps } from '@/types/items';
-import { useGetProductsQuery, useCreateProductMutation } from "@/services/facturlyApi";
+import { useGetProductsQuery, useCreateProductMutation, useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -35,7 +35,6 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [showSaveProductDialog, setShowSaveProductDialog] = useState(false);
   const [productType, setProductType] = useState<'service' | 'product'>('service');
-  const [productCurrency, setProductCurrency] = useState('EUR');
   const [originalProductValues, setOriginalProductValues] = useState<{
     description: string;
     unitPrice: string;
@@ -43,10 +42,13 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
   } | null>(null);
   
   const { data: productsResponse, isLoading: isLoadingProducts, refetch: refetchProducts } = useGetProductsQuery({ page: 1, limit: 100 });
+  const { data: workspace } = useGetWorkspaceQuery();
   const products = productsResponse?.data ?? [];
   const selectedProduct = selectedProductId ? products.find((p) => p.id === selectedProductId) : null;
   
   const [createProduct, { isLoading: isCreatingProduct }] = useCreateProductMutation();
+  
+  const workspaceCurrency = workspace?.defaultCurrency || "EUR";
 
   // Réinitialiser le formulaire
   const resetForm = () => {
@@ -61,7 +63,6 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
     setIsManualEntry(false);
     setShowSaveProductDialog(false);
     setProductType('service');
-    setProductCurrency('EUR');
   };
   
   // Réinitialiser les champs quand le modal s'ouvre
@@ -169,7 +170,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
         name: description,
         type: productType,
         price: unitPrice,
-        currency: productCurrency,
+        // currency n'est pas envoyé car le backend utilise automatiquement workspace.defaultCurrency
         taxRate: vatRate,
       }).unwrap();
       
@@ -557,10 +558,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                             setOriginalProductValues(null);
                             setHasModifiedFields(false);
                           }
-                          // Extraire la devise du produit sélectionné si disponible
-                          if (selectedProduct?.currency) {
-                            setProductCurrency(selectedProduct.currency);
-                          }
+                          // La devise est automatiquement celle de l'entreprise
                         }}
                         required
                         placeholder={t('fields.unitPrice.placeholder')}
@@ -641,26 +639,17 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="save-product-currency">
-                {t('saveDialog.fields.currency.label')} <span className="text-destructive">*</span>
-              </Label>
-              <Select value={productCurrency} onValueChange={setProductCurrency}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('saveDialog.fields.currency.placeholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EUR">{t('saveDialog.fields.currency.options.EUR')}</SelectItem>
-                  <SelectItem value="USD">{t('saveDialog.fields.currency.options.USD')}</SelectItem>
-                  <SelectItem value="XOF">{t('saveDialog.fields.currency.options.XOF')}</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Information sur la devise de l'entreprise */}
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <p className="text-sm text-muted-foreground">
+                {t('saveDialog.fields.currencyInfo', { currency: workspaceCurrency })}
+              </p>
             </div>
             <div className="rounded-lg border border-muted-foreground/20 bg-muted/30 p-3 space-y-1">
               <p className="text-sm font-medium">{t('saveDialog.fields.summary.title')}</p>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p><span className="font-medium">{t('saveDialog.fields.summary.name')}:</span> {description}</p>
-                <p><span className="font-medium">{t('saveDialog.fields.summary.price')}:</span> {unitPrice} {productCurrency}</p>
+                <p><span className="font-medium">{t('saveDialog.fields.summary.price')}:</span> {unitPrice} {workspaceCurrency}</p>
                 <p><span className="font-medium">{t('saveDialog.fields.summary.vat')}:</span> {vatRate}%</p>
                 <p><span className="font-medium">{t('saveDialog.fields.summary.type')}:</span> {productType === 'service' ? t('types.service') : t('types.product')}</p>
               </div>

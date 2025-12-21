@@ -213,18 +213,21 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
 
     try {
       // Préparer les données pour l'API
-      const clients = previewData.map((row) => ({
-        name: row.name.trim(),
-        email: row.email.trim() || undefined,
-        phone: row.phone.trim() || undefined,
-        addressLine1: row.addressLine1.trim() || undefined,
-        addressLine2: row.addressLine2.trim() || undefined,
-        postalCode: row.postalCode.trim() || undefined,
-        city: row.city.trim() || undefined,
-        country: row.country.trim() || undefined,
-        taxId: row.taxId.trim() || undefined,
-        notes: row.notes.trim() || undefined,
-      }));
+      // Filtrer les clients sans email (requis) et mapper les données
+      const clients = previewData
+        .filter((row) => row.email.trim()) // Filtrer les lignes sans email
+        .map((row) => ({
+          name: row.name.trim(),
+          email: row.email.trim(), // Email est requis
+          phone: row.phone.trim() || undefined,
+          addressLine1: row.addressLine1.trim() || undefined,
+          addressLine2: row.addressLine2.trim() || undefined,
+          postalCode: row.postalCode.trim() || undefined,
+          city: row.city.trim() || undefined,
+          country: row.country.trim() || undefined,
+          taxId: row.taxId.trim() || undefined,
+          notes: row.notes.trim() || undefined,
+        }));
 
       // Appel à l'API bulk
       const response = await bulkImportClients({ clients }).unwrap();

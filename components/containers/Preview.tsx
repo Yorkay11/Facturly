@@ -19,7 +19,7 @@ import {
   TemplateClassicSerif,
   type InvoiceTemplateProps,
 } from "@/templates/invoices";
-import { useGetCompanyQuery, useGetClientByIdQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
+import { useGetWorkspaceQuery, useGetClientByIdQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
 import { getBackendTemplateName } from "@/types/invoiceTemplate";
 import Skeleton from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -121,10 +121,13 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
   }, []);
 
   // Récupérer les données de l'entreprise et du client
-  const { data: company } = useGetCompanyQuery();
+  const { data: workspace } = useGetWorkspaceQuery();
   const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
     skip: !metadataStore.clientId,
   });
+
+  // Utiliser la devise du workspace comme fallback
+  const workspaceCurrency = workspace?.defaultCurrency || "EUR";
 
   const currentTemplate = invoiceTemplates.find((tpl) => tpl.id === activeTemplate) ?? invoiceTemplates[0];
   
@@ -163,7 +166,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
     [items]
   );
   const totalAmount = subtotal + vatAmount;
-  const currencyCode = metadataStore.currency ? metadataStore.currency.toUpperCase() : "EUR";
+      const currencyCode = metadataStore.currency ? metadataStore.currency.toUpperCase() : workspaceCurrency.toUpperCase();
   const amountFormatter = useMemo(
     () =>
       new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
@@ -207,7 +210,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
         <div data-invoice-preview>
           <TemplateComponent
             metadata={metadata}
-            company={company}
+            workspace={workspace}
             client={client}
             items={items}
             subtotal={subtotal}
@@ -242,7 +245,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                 <div className="bg-white p-8 rounded-lg shadow-sm">
                   <TemplateComponent
                     metadata={metadata}
-                    company={company}
+                    workspace={workspace}
                     client={client}
                     items={items}
                     subtotal={subtotal}
@@ -280,7 +283,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                 <div className="bg-white p-8 rounded-lg shadow-sm max-w-5xl mx-auto">
                   <TemplateComponent
                     metadata={metadata}
-                    company={company}
+                    workspace={workspace}
                     client={client}
                     items={items}
                     subtotal={subtotal}

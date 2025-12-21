@@ -57,6 +57,13 @@
     "createAccount": "Create account",
     "heroTitle": "Simple & Smart Invoicing",
     "heroDescription": "Create, send and manage your invoices with ease",
+    "orContinueWith": "Or continue with",
+    "continueWithGoogle": "Continue with Google",
+    "processing": "Processing",
+    "oauthSuccess": "Google login successful",
+    "oauthError": "Error connecting with Google",
+    "oauthAccessDenied": "Access denied. Please authorize access to your Google account.",
+    "oauthNoToken": "No token received. Please try again.",
     "register": {
       "heroTitle": "Join Facturly",
       "heroDescription": "Create your account and start managing your invoices with ease",
@@ -82,7 +89,7 @@
         "password": "••••••••",
         "confirmPassword": "••••••••"
       },
-      "passwordHint": "Password must be between 8 and 128 characters, with at least one uppercase letter, one lowercase letter, and one number.",
+      "passwordHint": "Password must be between 8 and 128 characters with: at least one uppercase letter (A-Z), one lowercase letter (a-z), and one number (0-9). Special characters (!@#$%^&*...) are optional but allowed.",
       "buttons": {
         "previous": "Previous",
         "next": "Next",
@@ -246,7 +253,7 @@
     "planEnterprise": "Enterprise",
     "userProfile": "User Profile",
     "accountInfo": "Your account information",
-    "company": "Company",
+    "workspace": "Workspace",
     "preferences": "Preferences",
     "preferencesDescription": "Notifications, legal notices, branding",
     "manageAccount": "Manage my account",
@@ -473,15 +480,7 @@
               "service": "Service",
               "product": "Product"
             },
-            "currency": {
-              "label": "Currency",
-              "placeholder": "Currency",
-              "options": {
-                "EUR": "EUR (€)",
-                "USD": "USD ($)",
-                "XOF": "XOF (CFA)"
-              }
-            },
+            "currencyInfo": "All prices are in {currency}",
             "summary": {
               "title": "Summary",
               "name": "Name",
@@ -811,6 +810,8 @@
     "importSuccessDescription": "Clients have been successfully imported.",
     "createSuccess": "Client created",
     "createSuccessDescription": "The client has been successfully created.",
+    "updateSuccess": "Client updated",
+    "updateSuccessDescription": "The client information has been successfully updated.",
     "loadError": "Error loading clients. Check the API.",
     "pageInfo": "Page {current} of {total} • {count} client(s) total",
     "previous": "Previous",
@@ -849,16 +850,22 @@
       "validation": {
         "nameMinLength": "Name must contain at least 2 characters",
         "invalidEmail": "Invalid email address",
+        "emailRequired": "Email is required",
         "createError": "An error occurred while creating the client.",
-        "createErrorGeneric": "Check your information or try again later."
+        "createErrorGeneric": "Check your information or try again later.",
+        "missingField": "Missing field: {field}",
+        "nameRequired": "Name is required"
       },
       "buttons": {
         "previous": "Previous",
         "next": "Next",
         "cancel": "Cancel",
         "save": "Save",
-        "saving": "Saving..."
-      }
+        "saving": "Saving...",
+        "update": "Update",
+        "updating": "Updating..."
+      },
+      "editDescription": "Modify the client information. Fields marked with an asterisk (*) are required."
     },
     "import": {
       "title": "Import clients from CSV",
@@ -939,6 +946,7 @@
       },
       "buttons": {
         "backToList": "Back to clients list",
+        "edit": "Edit",
         "delete": "Delete",
         "createInvoice": "Create invoice"
       },
@@ -1031,8 +1039,10 @@
     "success": {
       "deleteSuccess": "Service deleted",
       "deleteSuccessDescription": "Service {name} has been successfully deleted.",
-      "createSuccess": "Service created",
-      "createSuccessDescription": "The service has been successfully created.",
+        "createSuccess": "Service created",
+        "createSuccessDescription": "The service has been successfully created.",
+        "updateSuccess": "Service updated",
+        "updateSuccessDescription": "The service information has been successfully updated.",
       "importSuccess": "Import successful",
       "importSuccessDescription": "Services have been successfully imported."
     },
@@ -1065,6 +1075,7 @@
         "taxRatePlaceholder": "VAT",
         "currency": "Currency",
         "currencyPlaceholder": "Currency",
+        "currencyInfo": "All prices are in {currency}",
         "unit": "Unit",
         "unitPlaceholder": "hour, unit, etc. (optional)",
         "sku": "Reference (SKU)",
@@ -1079,7 +1090,9 @@
         "currencyRequired": "Currency is required",
         "taxRateRequired": "VAT rate is required",
         "createError": "An error occurred while creating the service.",
-        "createErrorGeneric": "Check your information or try again later."
+        "createErrorGeneric": "Check your information or try again later.",
+        "updateError": "An error occurred while updating the service.",
+        "updateErrorGeneric": "Check your information or try again later."
       },
       "buttons": {
         "previous": "Previous",
@@ -1166,6 +1179,7 @@
       },
       "buttons": {
         "backToList": "Back to services list",
+        "edit": "Edit",
         "delete": "Delete",
         "processing": "Processing..."
       },
@@ -1271,7 +1285,7 @@
         "title": "Automatic email sending",
         "description": "Send your invoices directly by email to your clients.",
         "invoice": {
-          "companyName": "My Company",
+          "workspaceName": "My Company",
           "item": "Development"
         },
         "form": {
@@ -1599,7 +1613,7 @@
     },
     "tabs": {
       "profile": "Profile",
-      "company": "Company",
+      "workspace": "Workspace",
       "billing": "Billing",
       "subscription": "Subscription"
     },
@@ -1632,11 +1646,20 @@
         "update": "Update profile"
       }
     },
-    "company": {
-      "title": "Company & Legal",
-      "description": "Configure your company information for invoices.",
+    "workspace": {
+      "title": "Workspace & Legal",
+      "description": "Configure your workspace (company or freelance) information for invoices.",
       "fields": {
-        "name": "Company name",
+        "type": "Workspace type",
+        "typePlaceholder": "Select type",
+        "typeIndividual": "Freelance / Individual",
+        "typeCompany": "Company",
+        "typeIndividualHint": "For freelancers and independent workers. Workspace name is optional.",
+        "typeCompanyHint": "For companies and businesses. Workspace name is recommended.",
+        "name": "Workspace name",
+        "namePlaceholder": "My Company LLC",
+        "namePlaceholderIndividual": "Your name or activity name (optional)",
+        "nameOptional": "Optional for freelancers",
         "legalName": "Legal name",
         "defaultCurrency": "Default currency",
         "taxId": "Tax identification number",
@@ -1650,19 +1673,21 @@
         "countryPlaceholder": "United States"
       },
       "validation": {
+        "typeRequired": "Workspace type is required",
         "nameMin": "Name must contain at least 2 characters",
+        "nameRequiredForCompany": "Name is recommended for companies",
         "currencyRequired": "Currency is required"
       },
       "success": {
-        "updated": "Company updated",
-        "updatedDescription": "Company information has been updated successfully."
+        "updated": "Workspace updated",
+        "updatedDescription": "Workspace information has been updated successfully."
       },
       "errors": {
-        "updateError": "An error occurred while updating the company.",
+        "updateError": "An error occurred while updating the workspace.",
         "genericError": "Check your information or try again later."
       },
       "buttons": {
-        "update": "Update company"
+        "update": "Update workspace"
       }
     },
     "billing": {
@@ -2076,5 +2101,105 @@
     "landingDescription": "Create, send and manage your invoices with ease. Automate your accounting and track your payments in real-time. Join thousands of professionals who trust Facturly.",
     "home": "Home",
     "organizationDescription": "Simple and smart invoice management platform"
+  },
+  "onboarding": {
+    "title": "Configure your workspace",
+    "description": "Complete your profile in a few simple steps",
+    "steps": {
+      "type": "Type",
+      "basic": "Basic Information",
+      "legal": "Legal Information",
+      "address": "Address",
+      "review": "Review"
+    },
+    "stepCounter": "Step {current} of {total}",
+    "progress": "{percentage}%",
+    "buttons": {
+      "previous": "Previous",
+      "next": "Next",
+      "finish": "Finish",
+      "finishing": "Finishing..."
+    },
+    "type": {
+      "title": "Choose your workspace type",
+      "description": "Select the type that best matches your activity",
+      "individual": {
+        "title": "Freelance / Individual",
+        "description": "For freelancers and independent workers. Workspace name is optional."
+      },
+      "workspaceCompany": {
+        "title": "Company",
+        "description": "For companies and businesses. Workspace name is recommended."
+      }
+    },
+    "basic": {
+      "title": "Basic Information",
+      "description": "Configure the essential information for your workspace",
+      "fields": {
+        "name": "Workspace name",
+        "nameOptional": "(Optional)",
+        "namePlaceholderIndividual": "Your name or activity name (optional)",
+        "namePlaceholder": "My Company LLC",
+        "defaultCurrency": "Default currency",
+        "defaultCurrencyPlaceholder": "Select a currency"
+      }
+    },
+    "legal": {
+      "title": "Legal Information",
+      "description": "This information is optional but recommended for professional invoicing",
+      "fields": {
+        "legalName": "Legal name",
+        "legalNamePlaceholder": "My Limited Liability Company",
+        "taxId": "Tax ID / SIRET",
+        "taxIdPlaceholder": "12345678901234",
+        "vatNumber": "VAT number",
+        "vatNumberPlaceholder": "FR12345678901"
+      }
+    },
+    "address": {
+      "title": "Address",
+      "description": "This information is optional but can be useful for your invoices",
+      "fields": {
+        "addressLine1": "Address line 1",
+        "addressLine1Placeholder": "123 Main Street",
+        "addressLine2": "Address line 2",
+        "addressLine2Placeholder": "Building A, Office 101",
+        "postalCode": "Postal code",
+        "postalCodePlaceholder": "75001",
+        "city": "City",
+        "cityPlaceholder": "Paris",
+        "country": "Country",
+        "countryPlaceholder": "France"
+      }
+    },
+    "review": {
+      "title": "Review",
+      "description": "Verify your information before finalizing",
+      "summary": "Summary",
+      "labels": {
+        "type": "Type:",
+        "name": "Name:",
+        "currency": "Currency:",
+        "legalName": "Legal name:",
+        "address": "Address:"
+      },
+      "types": {
+        "individual": "Freelance / Individual",
+        "workspaceCompany": "Company"
+      }
+    },
+    "validation": {
+      "typeRequired": "Workspace type is required",
+      "nameMin": "Name must contain at least 2 characters",
+      "currencyRequired": "Currency is required"
+    },
+    "success": {
+      "title": "Profile completed",
+      "description": "Your workspace has been configured successfully."
+    },
+    "errors": {
+      "title": "Error",
+      "description": "Unable to update your workspace."
+    }
   }
 }

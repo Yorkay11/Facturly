@@ -62,7 +62,7 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetSubscriptionQuery, useGetCompanyQuery, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetSubscriptionQuery, useGetWorkspaceQuery, type Invoice } from "@/services/facturlyApi"
 import { invoiceTemplates } from "@/types/invoiceTemplate"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
@@ -94,7 +94,14 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const { items, setItems, removeItem, clearItems } = useItemsStore();
     const metadataStore = useInvoiceMetadata();
     const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
-    const [value, setValue] = useState(storedCurrency ?? "");
+    
+    // Récupérer les données du workspace et de la subscription pour le PDF
+    const { data: workspace } = useGetWorkspaceQuery();
+    const workspaceCurrency = workspace?.defaultCurrency || "EUR";
+    
+    // Utiliser la devise du workspace comme valeur par défaut si aucune devise n'est stockée
+    const defaultCurrency = storedCurrency || workspaceCurrency;
+    const [value, setValue] = useState(defaultCurrency);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const { openCreate, openEdit } = useItemModalControls();
     const { data: clientsResponse, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsQuery({ page: 1, limit: 100 });
@@ -105,9 +112,6 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
     const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
-    
-    // Récupérer les données de l'entreprise et de la subscription pour le PDF
-    const { data: company } = useGetCompanyQuery();
     const { data: subscription } = useGetSubscriptionQuery();
     const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
         skip: !metadataStore.clientId,
@@ -169,17 +173,29 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
+    // Date d'émission par défaut : date du jour si non définie (en mode création uniquement)
+    const defaultIssueDate = issueDate || (isEditMode ? undefined : new Date());
+
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
         defaultValues: {
             receiver: storedReceiver || "",
             subject: subject || "",
-            currency: storedCurrency || "",
+            currency: defaultCurrency,
             notes: notes || "",
-            issueDate: issueDate,
+            issueDate: defaultIssueDate,
             dueDate: dueDate,
         },
     })
+    
+    // Initialiser la date d'émission dans le store si elle n'est pas définie (mode création)
+    useEffect(() => {
+        if (!isEditMode && !issueDate && !existingInvoice) {
+            const today = new Date();
+            setMetadata({ issueDate: today });
+            form.setValue("issueDate", today);
+        }
+    }, [isEditMode, issueDate, existingInvoice, setMetadata, form]);
     
     // Gérer la création d'un nouveau client
     const handleClientCreated = (newClient: { id: string; name: string }) => {
@@ -304,8 +320,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 return;
             }
             
-            // Valider que la devise est définie
-            if (!storedCurrency) {
+            // Valider que la devise est définie - utiliser la devise de l'entreprise si aucune n'est stockée
+            const currencyToUse = storedCurrency || workspaceCurrency;
+            if (!currencyToUse) {
                 toast.error(t('errors.currencyMissing'), {
                     description: t('errors.currencyMissingDescription', { action: t('actions.send') }),
                 });
@@ -323,7 +340,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             clientId: clientId,
                             issueDate: issueDate.toISOString().split('T')[0],
                             dueDate: dueDate.toISOString().split('T')[0],
-                            currency: storedCurrency,
+                            currency: currencyToUse,
                             notes: notes || undefined,
                             status: "draft", // On garde draft pour l'instant, sendInvoice changera le statut
                         },
@@ -362,7 +379,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         clientId: clientId,
                         issueDate: issueDate.toISOString().split('T')[0],
                         dueDate: dueDate ? dueDate.toISOString().split('T')[0] : undefined,
-                        currency: storedCurrency || undefined,
+                        currency: storedCurrency || workspaceCurrency || undefined,
                         items: invoiceItems,
                         notes: notes || undefined,
                         recipientEmail: undefined, // Pas d'email à la création
@@ -459,7 +476,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             }
             
             // Valider que la devise est définie
-            if (!storedCurrency) {
+            // Utiliser la devise de l'entreprise si aucune n'est stockée
+            const currencyToUse = storedCurrency || workspaceCurrency;
+            if (!currencyToUse) {
                 toast.error(t('errors.currencyMissing'), {
                     description: t('errors.currencyMissingDescription', { action: t('actions.save') }),
                 });
@@ -475,7 +494,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             clientId: clientId,
                             issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
                             dueDate: dueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
-                            currency: storedCurrency,
+                            currency: currencyToUse,
                             notes: notes || undefined,
                             status: "draft", // Maintenir le statut brouillon
                         },
@@ -526,7 +545,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         clientId: clientId,
                         issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
                         dueDate: dueDate ? dueDate.toISOString().split('T')[0] : undefined, // Format YYYY-MM-DD (optionnel)
-                        currency: storedCurrency || undefined, // Optionnel, utilise la devise de l'entreprise par défaut
+                        currency: storedCurrency || workspaceCurrency || undefined, // Optionnel, utilise la devise de l'entreprise par défaut
                         items: invoiceItems,
                         notes: notes || undefined,
                         templateName: backendTemplateName,
@@ -691,7 +710,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         const hasChanges = Boolean(
             (storedClientId || storedReceiver) || 
             items.length > 0 || 
-            storedCurrency || 
+            (storedCurrency || workspaceCurrency) || 
             issueDate || 
             dueDate || 
             subject || 
@@ -699,7 +718,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         );
 
         onHasUnsavedChanges(hasChanges);
-    }, [storedClientId, storedReceiver, items.length, storedCurrency, issueDate, dueDate, subject, notes, onHasUnsavedChanges, isEditMode]);
+    }, [storedClientId, storedReceiver, items.length, storedCurrency, workspaceCurrency, issueDate, dueDate, subject, notes, onHasUnsavedChanges, isEditMode]);
 
     useEffect(() => {
         const subscription = form.watch((values) => {
@@ -722,11 +741,17 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     }, [form, setMetadata, clients, storedClientId])
 
     useEffect(() => {
-        if (storedCurrency && storedCurrency !== value) {
-            setValue(storedCurrency)
-            form.setValue("currency", storedCurrency)
+        // Si aucune devise n'est stockée, utiliser celle de l'entreprise
+        const currentCurrency = storedCurrency || workspaceCurrency;
+        if (currentCurrency && currentCurrency !== value) {
+            setValue(currentCurrency);
+            form.setValue("currency", currentCurrency);
+            // Mettre à jour le store si nécessaire
+            if (!storedCurrency) {
+                setMetadata({ currency: currentCurrency });
+            }
         }
-    }, [storedCurrency, value, form])
+    }, [storedCurrency, workspaceCurrency, value, form, setMetadata])
 
     const itemIds = useMemo(() => items.map((item) => item.id), [items])
 
@@ -1141,7 +1166,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                 size="sm" 
                                 className="w-full sm:w-auto gap-2"
                                 onClick={handleGeneratePDF}
-                                disabled={!company || !client || isGeneratingPDF || !canGeneratePDF}
+                                disabled={!workspace || !client || isGeneratingPDF || !canGeneratePDF}
                             >
                                 <FileDown className={`h-4 w-4 ${isGeneratingPDF ? "animate-spin" : ""}`} />
                                 {isGeneratingPDF ? previewT('pdf.generating') : previewT('pdf.generate')}

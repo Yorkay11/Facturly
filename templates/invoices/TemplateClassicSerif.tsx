@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateClassicSerif = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -28,16 +28,16 @@ const TemplateClassicSerif = ({
           <p className="text-sm font-normal text-[#666666]">N° {metadata.subject || "N/A"}</p>
         </div>
         <div className="text-right">
-          <h2 className="text-lg mb-2.5">{company?.name || "Nom de l'entreprise"}</h2>
-          {company?.addressLine1 && <p className="text-[11px] mb-0.5">{company.addressLine1}</p>}
-          {company?.postalCode && company?.city && (
+          <h2 className="text-lg mb-2.5">{workspace?.name || "Nom de l'entreprise"}</h2>
+          {workspace?.addressLine1 && <p className="text-[11px] mb-0.5">{workspace.addressLine1}</p>}
+          {workspace?.postalCode && workspace?.city && (
             <p className="text-[11px] mb-0.5">
-              {company.postalCode} {company.city}
+              {workspace.postalCode} {workspace.city}
             </p>
           )}
-          {company?.country && <p className="text-[11px] mb-0.5">{company.country}</p>}
-          {company?.vatNumber && <p className="text-[11px] mb-0.5">TVA: {company.vatNumber}</p>}
-          {company?.taxId && <p className="text-[11px]">SIRET: {company.taxId}</p>}
+          {workspace?.country && <p className="text-[11px] mb-0.5">{workspace.country}</p>}
+          {workspace?.vatNumber && <p className="text-[11px] mb-0.5">TVA: {workspace.vatNumber}</p>}
+          {workspace?.taxId && <p className="text-[11px]">SIRET: {workspace.taxId}</p>}
         </div>
       </div>
 
@@ -155,7 +155,7 @@ const TemplateClassicSerif = ({
       {/* Footer */}
       <div className="mt-12 pt-5 border-t border-[#e0e0e0] text-[11px] text-[#666666]">
         <p className="mb-1">Merci pour votre confiance !</p>
-        <p>{company?.name || "Entreprise"}</p>
+        <p>{workspace?.name || "Entreprise"}</p>
       </div>
     </div>
   );

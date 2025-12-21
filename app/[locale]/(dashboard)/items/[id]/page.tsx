@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { History, Trash2 } from "lucide-react";
+import { History, Trash2, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from '@/i18n/routing';
 import { useParams } from "next/navigation";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
+import ProductModal from "@/components/modals/ProductModal";
 import { useGetProductByIdQuery, useGetInvoicesQuery, useDeleteProductMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from 'next-intl';
@@ -51,6 +52,7 @@ export default function ProductDetailPage() {
   const { data: invoicesResponse } = useGetInvoicesQuery({ page: 1, limit: 100 });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!product) return;
@@ -138,6 +140,14 @@ export default function ProductDetailPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => setEditModalOpen(true)}
+          >
+            <Pencil className="h-4 w-4" />
+            {t('buttons.edit')}
+          </Button>
           <Button
             variant="destructive"
             className="gap-2"
@@ -289,6 +299,18 @@ export default function ProductDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      <ProductModal
+        open={isEditModalOpen}
+        productId={productId}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={() => {
+          toast.success(itemsT('success.updateSuccess'), {
+            description: itemsT('success.updateSuccessDescription'),
+          });
+          setEditModalOpen(false);
+        }}
+      />
     </div>
   );
 }

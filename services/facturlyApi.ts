@@ -25,11 +25,12 @@ export interface AuthResponse {
   email: string;
   firstName: string;
   lastName: string;
-  company?: {
+  workspace: {
     id: string;
-    name: string;
+    name?: string | null;
+    type: WorkspaceType;
     defaultCurrency: string;
-  };
+  } | null; // null si aucun workspace n'existe (nouvel utilisateur)
   accessToken: string;
 }
 
@@ -38,7 +39,6 @@ export interface RegisterPayload {
   password: string;
   firstName: string;
   lastName: string;
-  companyName: string;
 }
 
 export interface LoginPayload {
@@ -53,7 +53,7 @@ export interface User {
   lastName: string;
   lastLoginAt?: string;
   profileCompletion?: number;
-  company: Company;
+  workspace: Workspace | null;
 }
 
 export interface UpdateUserPayload {
@@ -62,10 +62,13 @@ export interface UpdateUserPayload {
   password?: string;
 }
 
-// Company
-export interface Company {
+// Workspace
+export type WorkspaceType = 'INDIVIDUAL' | 'COMPANY';
+
+export interface Workspace {
   id: string;
-  name: string;
+  type: WorkspaceType;
+  name?: string | null; // Optionnel pour INDIVIDUAL
   legalName?: string;
   taxId?: string;
   vatNumber?: string;
@@ -81,8 +84,22 @@ export interface Company {
   updatedAt?: string;
 }
 
-export interface UpdateCompanyPayload {
-  name?: string;
+export interface CreateWorkspacePayload {
+  type: "INDIVIDUAL" | "COMPANY";
+  name?: string | null;
+  defaultCurrency: string;
+  legalName?: string;
+  taxId?: string;
+  vatNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
+}
+
+export interface UpdateWorkspacePayload {
+  name?: string | null;
   legalName?: string;
   taxId?: string;
   vatNumber?: string;
@@ -92,6 +109,8 @@ export interface UpdateCompanyPayload {
   city?: string;
   country?: string;
   defaultCurrency?: string;
+  logoUrl?: string;
+  type?: WorkspaceType;
 }
 
 // Client
@@ -113,7 +132,7 @@ export interface Client {
 
 export interface CreateClientPayload {
   name: string;
-  email?: string;
+  email: string;
   phone?: string;
   addressLine1?: string;
   addressLine2?: string;
@@ -161,7 +180,7 @@ export interface CreateProductPayload {
   description?: string;
   type: "product" | "service";
   price: string; // Le backend accepte aussi unitPrice
-  currency: string;
+  currency?: string; // Optionnel - le backend utilise automatiquement workspace.defaultCurrency
   taxRate: string;
   unitOfMeasure?: string; // Le backend attend unitOfMeasure, pas unit
   sku?: string;
@@ -731,6 +750,7 @@ export interface DashboardStats {
     month: number;
     year: number;
   };
+  currency?: string; // Devise de l'entreprise - tous les montants sont dans cette devise
   monthlyRevenue: {
     currency: string;
     amount: string;
@@ -900,7 +920,7 @@ export interface BetaAccessInfo {
 export const facturlyApi = createApi({
   reducerPath: "facturlyApi",
   baseQuery: baseQueryWithAuth,
-  tagTypes: ["Invoice", "Client", "Product", "User", "Company", "Settings", "Subscription", "Payment", "Dashboard", "Bill", "Notification"],
+  tagTypes: ["Invoice", "Client", "Product", "User", "Workspace", "Settings", "Subscription", "Payment", "Dashboard", "Bill", "Notification"],
   endpoints: (builder) => ({
     // ==================== Public ====================
     getBetaAccessInfo: builder.query<BetaAccessInfo, void>({
@@ -946,18 +966,26 @@ export const facturlyApi = createApi({
       invalidatesTags: ["User"],
     }),
 
-    // ==================== Companies ====================
-    getCompany: builder.query<Company, void>({
-      query: () => "/companies/me",
-      providesTags: ["Company"],
+    // ==================== Workspaces ====================
+    getWorkspace: builder.query<Workspace, void>({
+      query: () => "/workspaces/me",
+      providesTags: ["Workspace"],
     }),
-    updateCompany: builder.mutation<Company, UpdateCompanyPayload>({
+    createWorkspace: builder.mutation<Workspace, CreateWorkspacePayload>({
       query: (body) => ({
-        url: "/companies/me",
+        url: "/workspaces",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Workspace", "User"],
+    }),
+    updateWorkspace: builder.mutation<Workspace, UpdateWorkspacePayload>({
+      query: (body) => ({
+        url: "/workspaces/me",
         method: "PATCH",
         body,
       }),
-      invalidatesTags: ["Company", "User"],
+      invalidatesTags: ["Workspace", "User"],
     }),
 
     // ==================== Clients ====================
@@ -1097,7 +1125,7 @@ export const facturlyApi = createApi({
         url: `/products/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Product"],
+      invalidatesTags: (_result, _error, id) => [{ type: "Product", id }, "Product"],
     }),
     bulkImportProducts: builder.mutation<BulkImportResponse, BulkImportProductsPayload>({
       query: (body) => ({
@@ -1441,9 +1469,10 @@ export const {
   useGetMeQuery,
   // Users
   useUpdateUserMutation,
-  // Companies
-  useGetCompanyQuery,
-  useUpdateCompanyMutation,
+  // Workspaces
+  useGetWorkspaceQuery,
+  useCreateWorkspaceMutation,
+  useUpdateWorkspaceMutation,
   // Clients
   useGetClientsQuery,
   useGetClientByIdQuery,

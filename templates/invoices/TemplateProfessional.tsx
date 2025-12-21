@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateProfessional = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -39,7 +39,7 @@ const TemplateProfessional = ({
       </div>
 
       <div className="p-10">
-        {/* Company & Client Section */}
+        {/* Workspace & Client Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-10 pb-8 border-b-2 border-[#ecf0f1]">
           {/* Émetteur */}
           <div>
@@ -49,24 +49,24 @@ const TemplateProfessional = ({
             <div className="space-y-1">
               <p className="text-xs text-[#2c3e50]">
                 <strong className="text-[13px] font-semibold">
-                  {company?.name || "Nom de l'entreprise"}
+                  {workspace?.name || "Nom de l'entreprise"}
                 </strong>
               </p>
-              {company?.legalName && <p className="text-xs text-[#2c3e50]">{company.legalName}</p>}
-              {company?.addressLine1 && (
-                <p className="text-xs text-[#2c3e50]">{company.addressLine1}</p>
+              {workspace?.legalName && <p className="text-xs text-[#2c3e50]">{workspace.legalName}</p>}
+              {workspace?.addressLine1 && (
+                <p className="text-xs text-[#2c3e50]">{workspace.addressLine1}</p>
               )}
-              {company?.postalCode && company?.city && (
+              {workspace?.postalCode && workspace?.city && (
                 <p className="text-xs text-[#2c3e50]">
-                  {company.postalCode} {company.city}
+                  {workspace.postalCode} {workspace.city}
                 </p>
               )}
-              {company?.country && <p className="text-xs text-[#2c3e50]">{company.country}</p>}
-              {company?.vatNumber && (
-                <p className="text-xs text-[#2c3e50] mt-2.5">TVA : {company.vatNumber}</p>
+              {workspace?.country && <p className="text-xs text-[#2c3e50]">{workspace.country}</p>}
+              {workspace?.vatNumber && (
+                <p className="text-xs text-[#2c3e50] mt-2.5">TVA : {workspace.vatNumber}</p>
               )}
-              {company?.taxId && (
-                <p className="text-xs text-[#2c3e50]">SIRET : {company.taxId}</p>
+              {workspace?.taxId && (
+                <p className="text-xs text-[#2c3e50]">SIRET : {workspace.taxId}</p>
               )}
             </div>
           </div>
@@ -208,7 +208,7 @@ const TemplateProfessional = ({
 
       {/* Footer */}
       <div className="bg-[#ecf0f1] px-10 py-5 text-center text-[10px] text-[#7f8c8d] border-t border-[#bdc3c7]">
-        <p>{company?.name || "Entreprise"} - Tous droits réservés</p>
+        <p>{workspace?.name || "Entreprise"} - Tous droits réservés</p>
       </div>
     </div>
   );

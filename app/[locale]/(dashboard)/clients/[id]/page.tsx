@@ -3,13 +3,14 @@
 import { Link } from '@/i18n/routing';
 import { useParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
-import { ArrowLeft, Mail, Phone, MapPin, Building2, Trash2, Plus, History, TrendingUp } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Building2, Trash2, Plus, History, TrendingUp, Pencil } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
+import ClientModal from "@/components/modals/ClientModal";
 import {
   useGetClientByIdQuery,
   useGetInvoicesQuery,
@@ -18,6 +19,7 @@ import {
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from 'next-intl';
+import { useState } from "react";
 
 export default function ClientDetailPage() {
   const params = useParams();
@@ -27,6 +29,7 @@ export default function ClientDetailPage() {
   const navigationT = useTranslations('navigation');
   const commonT = useTranslations('common');
   const locale = useLocale();
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
   
   // Dans Next.js 16, useParams retourne directement les paramètres
   // Vérifier que l'ID existe et n'est pas "undefined" (chaîne)
@@ -175,6 +178,14 @@ export default function ClientDetailPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => setEditModalOpen(true)}
+          >
+            <Pencil className="h-4 w-4" />
+            {t('buttons.edit')}
+          </Button>
           <Button
             variant="outline"
             className="gap-2 text-destructive hover:!bg-destructive hover:!text-white"
@@ -427,7 +438,18 @@ export default function ClientDetailPage() {
           
         </div>
       </div>
-
+      
+      <ClientModal
+        open={isEditModalOpen}
+        clientId={clientId}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={() => {
+          toast.success(clientsT('updateSuccess'), {
+            description: clientsT('updateSuccessDescription'),
+          });
+          setEditModalOpen(false);
+        }}
+      />
     </div>
   );
 }

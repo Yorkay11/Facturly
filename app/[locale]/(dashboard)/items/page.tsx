@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import Skeleton from "@/components/ui/skeleton";
 import { useState } from "react";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -56,6 +56,7 @@ export default function ItemsPage() {
   const commonT = useTranslations('common');
   const navigationT = useTranslations('navigation');
   const locale = useLocale();
+  const router = useRouter();
   
   const [currentPage, setCurrentPage] = useState(1);
   const { data: productsResponse, isLoading, isError, refetch: refetchProducts } = useGetProductsQuery({ page: currentPage, limit: ITEMS_PER_PAGE });
@@ -68,8 +69,13 @@ export default function ItemsPage() {
   const totalProducts = productsResponse?.meta?.total ?? 0;
   const totalPages = productsResponse?.meta?.totalPages ?? 1;
 
-  const handleDeleteClick = (product: { id: string; name: string }) => {
+  const handleDeleteClick = (e: React.MouseEvent, product: { id: string; name: string }) => {
+    e.stopPropagation(); // Empêcher la navigation vers la page de détails
     setProductToDelete({ id: product.id, name: product.name });
+  };
+
+  const handleRowClick = (productId: string) => {
+    router.push(`/items/${productId}`);
   };
 
   const handleConfirmDelete = async () => {
@@ -224,26 +230,25 @@ export default function ItemsPage() {
                   }).format(price);
                   
                   return (
-                    <TableRow key={product.id} className="hover:bg-primary/5">
+                    <TableRow 
+                      key={product.id} 
+                      className="hover:bg-primary/5 cursor-pointer"
+                      onClick={() => handleRowClick(product.id)}
+                    >
                       <TableCell className="font-medium text-foreground">#{product.id.slice(0, 8)}</TableCell>
                       <TableCell className="text-sm text-foreground/70">
-                        <Link 
-                          href={`/items/${product.id}`}
-                          className="hover:text-primary hover:underline transition-colors"
-                        >
-                          {product.name}
-                        </Link>
+                        {product.name}
                       </TableCell>
                       <TableCell className="text-right text-sm font-semibold text-primary">
                         {formattedPrice}
                       </TableCell>
                       <TableCell className="text-right text-sm text-foreground/60">{product.taxRate ?? "0"}%</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteClick(product)}
+                          onClick={(e) => handleDeleteClick(e, product)}
                           disabled={isDeleting}
                           title={t('buttons.delete')}
                         >

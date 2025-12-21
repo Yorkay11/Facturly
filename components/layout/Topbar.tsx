@@ -30,7 +30,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
-import { useGetMeQuery, useGetCompanyQuery, useGetSubscriptionQuery, useLogoutMutation } from "@/services/facturlyApi";
+import { useGetMeQuery, useGetWorkspaceQuery, useGetSubscriptionQuery, useLogoutMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
@@ -49,7 +49,7 @@ export const Topbar = () => {
   
   // Fetch user data from API
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
-  const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
+  const { data: workspace, isLoading: isLoadingWorkspace } = useGetWorkspaceQuery();
   const { data: subscription, isLoading: isLoadingSubscription } = useGetSubscriptionQuery();
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   
@@ -135,12 +135,12 @@ export const Topbar = () => {
     },
   ];
   
-  // Get company location string
-  const getCompanyLocation = () => {
-    if (!company) return "";
-    const parts = [company.name];
-    if (company.city) parts.push(company.city);
-    if (company.country) parts.push(company.country);
+  // Get workspace location string
+  const getWorkspaceLocation = () => {
+    if (!workspace) return "";
+    const parts = workspace.name ? [workspace.name] : [];
+    if (workspace.city) parts.push(workspace.city);
+    if (workspace.country) parts.push(workspace.country);
     return parts.filter(Boolean).join(" • ");
   };
 
@@ -394,10 +394,10 @@ export const Topbar = () => {
           <SheetHeader>
             <SheetTitle>{tTopbar('userProfile')}</SheetTitle>
             <SheetDescription>
-              {isLoadingUser || isLoadingCompany ? commonT('loading') : tTopbar('accountInfo')}
+              {isLoadingUser || isLoadingWorkspace ? commonT('loading') : tTopbar('accountInfo')}
             </SheetDescription>
           </SheetHeader>
-          {isLoadingUser || isLoadingCompany ? (
+          {isLoadingUser || isLoadingWorkspace ? (
             <div className="flex flex-col items-center gap-3 pt-2">
               <div className="h-16 w-16 rounded-full bg-muted animate-pulse" />
               <div className="h-4 w-32 bg-muted rounded animate-pulse" />
@@ -422,13 +422,13 @@ export const Topbar = () => {
                 </span>
               </div>
               <div className="space-y-3 text-sm text-foreground/70">
-                {company && (
+                {workspace && (
                   <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <IoPersonOutline className="h-4 w-4 text-primary" />
                     <div>
-                      <p className="font-medium text-foreground">{tTopbar('company')}</p>
+                      <p className="font-medium text-foreground">{tTopbar('workspace')}</p>
                       <p className="text-xs">
-                        {getCompanyLocation() || company.name}
+                        {getWorkspaceLocation() || workspace.name || ''}
                       </p>
                     </div>
                   </div>

@@ -4,7 +4,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateModern = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -15,8 +15,8 @@ const TemplateModern = ({
   template,
 }: InvoiceTemplateProps) => {
   // Construire l'adresse de l'entreprise
-  const companyAddress = company
-    ? [company.city, company.country].filter(Boolean).join(", ")
+  const workspaceAddress = workspace
+    ? [workspace.city, workspace.country].filter(Boolean).join(", ")
     : "Adresse de l'entreprise";
 
   // Construire l'adresse du client
@@ -40,8 +40,8 @@ const TemplateModern = ({
             <p className="text-xs font-semibold mb-1" style={{ color: template.accentColor }}>
               Facturly — Template {template.name || "Moderne"}
             </p>
-            <p className="text-sm font-medium">{company?.name || "Nom de l'entreprise"}</p>
-            <p className="text-xs opacity-70">{companyAddress}</p>
+            <p className="text-sm font-medium">{workspace?.name || "Nom de l'entreprise"}</p>
+            <p className="text-xs opacity-70">{workspaceAddress}</p>
           </div>
           <div>
             <p className="text-xs font-semibold mb-1" style={{ color: template.accentColor }}>
@@ -153,7 +153,7 @@ const TemplateModern = ({
           <p className="font-semibold" style={{ color: template.accentColor }}>
             Signature
           </p>
-          <p>{company?.name || "Entreprise"}</p>
+          <p>{workspace?.name || "Entreprise"}</p>
         </div>
       </div>
     </div>

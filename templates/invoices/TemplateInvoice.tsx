@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateInvoice = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -14,8 +14,8 @@ const TemplateInvoice = ({
   template,
 }: InvoiceTemplateProps) => {
   // Construire l'adresse de l'entreprise
-  const companyAddress = company
-    ? [company.city, company.country].filter(Boolean).join(", ")
+  const workspaceAddress = workspace
+    ? [workspace.city, workspace.country].filter(Boolean).join(", ")
     : "";
 
   // Construire l'adresse du client
@@ -40,8 +40,8 @@ const TemplateInvoice = ({
         <div className="space-y-3">
           <div>
             <div className="text-xs uppercase opacity-80 font-bold mb-1">Entreprise</div>
-            <p className="text-xs m-0.5">{company?.name || "Nom de l'entreprise"}</p>
-            {companyAddress && <p className="text-xs m-0.5">{companyAddress}</p>}
+            <p className="text-xs m-0.5">{workspace?.name || "Nom de l'entreprise"}</p>
+            {workspaceAddress && <p className="text-xs m-0.5">{workspaceAddress}</p>}
           </div>
 
           <div>
@@ -77,15 +77,15 @@ const TemplateInvoice = ({
           </div>
         </div>
 
-        {/* Company Info Box */}
-        {company && (
+        {/* Workspace Info Box */}
+        {workspace && (
           <div className="border border-slate-200 rounded-lg p-3 text-xs">
             <h3 className="m-0 mb-1.5 text-xs font-semibold" style={{ color: template.accentColor }}>
               Informations entreprise
             </h3>
-            {company.legalName && <p className="m-0">Raison sociale : {company.legalName}</p>}
-            {company.taxId && <p className="m-0">SIRET : {company.taxId}</p>}
-            {company.vatNumber && <p className="m-0">TVA : {company.vatNumber}</p>}
+            {workspace.legalName && <p className="m-0">Raison sociale : {workspace.legalName}</p>}
+            {workspace.taxId && <p className="m-0">SIRET : {workspace.taxId}</p>}
+            {workspace.vatNumber && <p className="m-0">TVA : {workspace.vatNumber}</p>}
           </div>
         )}
 
@@ -159,7 +159,7 @@ const TemplateInvoice = ({
             <h4 className="m-0 mb-1 text-xs font-semibold" style={{ color: template.accentColor }}>
               Signature
             </h4>
-            <p className="m-0">{company?.name || "Entreprise"}</p>
+            <p className="m-0">{workspace?.name || "Entreprise"}</p>
           </div>
         </div>
       </div>

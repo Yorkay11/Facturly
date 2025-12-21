@@ -20,8 +20,8 @@ import Skeleton from "@/components/ui/skeleton";
 import {
   useGetMeQuery,
   useUpdateUserMutation,
-  useGetCompanyQuery,
-  useUpdateCompanyMutation,
+  useGetWorkspaceQuery,
+  useUpdateWorkspaceMutation,
   useGetSettingsQuery,
   useUpdateSettingsMutation,
   useGetSubscriptionQuery,
@@ -50,8 +50,9 @@ type UserFormValues = {
   password?: string;
 };
 
-type CompanyFormValues = {
-  name: string;
+type WorkspaceFormValues = {
+  name?: string | null;
+  type?: 'INDIVIDUAL' | 'COMPANY';
   legalName?: string;
   taxId?: string;
   vatNumber?: string;
@@ -85,7 +86,7 @@ function SettingsContent() {
   // Sections avec traductions
   const sections = useMemo(() => [
     { value: "profile", label: t('tabs.profile') },
-    { value: "company", label: t('tabs.company') },
+    { value: "workspace", label: t('tabs.workspace') },
     { value: "billing", label: t('tabs.billing') },
     { value: "subscription", label: t('tabs.subscription') },
   ], [t]);
@@ -103,8 +104,11 @@ function SettingsContent() {
     password: z.string().min(8, t('profile.validation.passwordMin')).optional().or(z.literal("")),
   }), [t]);
   
-  const companySchema = useMemo(() => z.object({
-    name: z.string().min(2, t('company.validation.nameMin')),
+  const workspaceSchema = useMemo(() => z.object({
+    type: z.enum(['INDIVIDUAL', 'COMPANY'], {
+      required_error: t('workspace.validation.typeRequired'),
+    }),
+    name: z.string().min(2, t('workspace.validation.nameMin')).nullable().optional(),
     legalName: z.string().optional(),
     taxId: z.string().optional(),
     vatNumber: z.string().optional(),
@@ -113,7 +117,17 @@ function SettingsContent() {
     postalCode: z.string().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
-    defaultCurrency: z.string().min(1, t('company.validation.currencyRequired')),
+    defaultCurrency: z.string().min(1, t('workspace.validation.currencyRequired')),
+  }).refine((data) => {
+    // Pour COMPANY, le name est recommandé mais pas obligatoire
+    // Pour INDIVIDUAL, le name peut être null
+    if (data.type === 'COMPANY' && !data.name) {
+      return false; // On peut rendre le name optionnel même pour COMPANY
+    }
+    return true;
+  }, {
+    message: t('workspace.validation.nameRequiredForCompany'),
+    path: ['name'],
   }), [t]);
   
   const settingsSchema = useMemo(() => z.object({
@@ -140,7 +154,7 @@ function SettingsContent() {
   };
   // Queries
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
-  const { data: company, isLoading: isLoadingCompany } = useGetCompanyQuery();
+  const { data: workspace, isLoading: isLoadingWorkspace } = useGetWorkspaceQuery();
   const { data: settings, isLoading: isLoadingSettings } = useGetSettingsQuery();
   const { data: subscription, isLoading: isLoadingSubscription, refetch: refetchSubscription } = useGetSubscriptionQuery();
   
@@ -156,7 +170,7 @@ function SettingsContent() {
   
   // Mutations
   const [updateUser, { isLoading: isUpdatingUser }] = useUpdateUserMutation();
-  const [updateCompany, { isLoading: isUpdatingCompany }] = useUpdateCompanyMutation();
+  const [updateWorkspace, { isLoading: isUpdatingWorkspace }] = useUpdateWorkspaceMutation();
   const [updateSettings, { isLoading: isUpdatingSettings }] = useUpdateSettingsMutation();
   const [createSubscription, { isLoading: isChangingPlan }] = useCreateSubscriptionMutation();
   const [cancelSubscription, { isLoading: isCanceling }] = useCancelSubscriptionMutation();
@@ -183,9 +197,10 @@ function SettingsContent() {
     },
   });
   
-  const companyForm = useForm<CompanyFormValues>({
-    resolver: zodResolver(companySchema),
-    defaultValues: {
+  const workspaceForm = useForm<WorkspaceFormValues>({
+    resolver: zodResolver(workspaceSchema),
+      defaultValues: {
+      type: "COMPANY",
       name: "",
       legalName: "",
       taxId: "",
@@ -224,21 +239,25 @@ function SettingsContent() {
   }, [user, userForm]);
   
   useEffect(() => {
-    if (company) {
-      companyForm.reset({
-        name: company.name,
-        legalName: company.legalName || "",
-        taxId: company.taxId || "",
-        vatNumber: company.vatNumber || "",
-        addressLine1: company.addressLine1 || "",
-        addressLine2: company.addressLine2 || "",
-        postalCode: company.postalCode || "",
-        city: company.city || "",
-        country: company.country || "",
-        defaultCurrency: company.defaultCurrency || "EUR",
+    if (workspace) {
+      workspaceForm.reset({
+        type: workspace.type || "COMPANY",
+        name: workspace.name || "",
+        legalName: workspace.legalName || "",
+        taxId: workspace.taxId || "",
+        vatNumber: workspace.vatNumber || "",
+        addressLine1: workspace.addressLine1 || "",
+        addressLine2: workspace.addressLine2 || "",
+        postalCode: workspace.postalCode || "",
+        city: workspace.city || "",
+        country: workspace.country || "",
+        defaultCurrency: workspace.defaultCurrency || "EUR",
       });
     }
-  }, [company, companyForm]);
+  }, [workspace, workspaceForm]);
+  
+  // Récupérer le type actuel du workspace pour l'affichage conditionnel
+  const workspaceType = workspaceForm.watch("type");
   
   useEffect(() => {
     if (settings) {
@@ -278,10 +297,11 @@ function SettingsContent() {
     }
   };
   
-  const onCompanySubmit = async (values: CompanyFormValues) => {
+  const onWorkspaceSubmit = async (values: WorkspaceFormValues) => {
     try {
-      await updateCompany({
-        name: values.name,
+      await updateWorkspace({
+        type: values.type,
+        name: values.name || (values.type === 'INDIVIDUAL' ? null : undefined),
         legalName: values.legalName || undefined,
         taxId: values.taxId || undefined,
         vatNumber: values.vatNumber || undefined,
@@ -293,13 +313,13 @@ function SettingsContent() {
         defaultCurrency: values.defaultCurrency || undefined,
       }).unwrap();
       
-      toast.success(t('company.success.updated'), {
-        description: t('company.success.updatedDescription'),
+      toast.success(t('workspace.success.updated'), {
+        description: t('workspace.success.updatedDescription'),
       });
     } catch (error) {
       const errorMessage = error && typeof error === "object" && "data" in error
-        ? (error.data as { message?: string })?.message ?? t('company.errors.updateError')
-        : t('company.errors.genericError');
+        ? (error.data as { message?: string })?.message ?? t('workspace.errors.updateError')
+        : t('workspace.errors.genericError');
       
       toast.error(commonT('error'), {
         description: errorMessage,
@@ -533,7 +553,7 @@ function SettingsContent() {
       price: planPrices[item.plan]?.[item.interval] || "0",
     }));
   }, [availablePlans]);
-  const isLoading = isLoadingUser || isLoadingCompany || isLoadingSettings;
+  const isLoading = isLoadingUser || isLoadingWorkspace || isLoadingSettings;
   
   return (
     <div className="space-y-8">
@@ -659,54 +679,95 @@ function SettingsContent() {
           </TabsContent>
 
           {/* Entreprise */}
-          <TabsContent value="company">
+          <TabsContent value="workspace">
             <Card className="border-primary/20">
               <CardHeader>
-                <CardTitle className="text-primary">{t('company.title')}</CardTitle>
+                <CardTitle className="text-primary">{t('workspace.title')}</CardTitle>
                 <CardDescription>
-                  {t('company.description')}
+                  {t('workspace.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={companyForm.handleSubmit(onCompanySubmit)} className="space-y-4">
+                <form onSubmit={workspaceForm.handleSubmit(onWorkspaceSubmit)} className="space-y-4">
+                  {/* Sélecteur de type */}
+                  <div className="space-y-2">
+                    <Label htmlFor="workspace-type">
+                      {t('workspace.fields.type')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Controller
+                      name="type"
+                      control={workspaceForm.control}
+                      render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingWorkspace}>
+                          <SelectTrigger className={workspaceForm.formState.errors.type ? "border-destructive" : ""}>
+                            <SelectValue placeholder={t('workspace.fields.typePlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="INDIVIDUAL">{t('workspace.fields.typeIndividual')}</SelectItem>
+                            <SelectItem value="COMPANY">{t('workspace.fields.typeCompany')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {workspaceForm.formState.errors.type && (
+                      <p className="text-xs text-destructive">
+                        {workspaceForm.formState.errors.type.message}
+                      </p>
+                    )}
+                    <p className="text-xs text-foreground/60">
+                      {workspaceType === 'INDIVIDUAL' 
+                        ? t('workspace.fields.typeIndividualHint')
+                        : t('workspace.fields.typeCompanyHint')}
+                    </p>
+                  </div>
+                  
                   <div className="grid gap-4 md:grid-cols-2">
+                    {/* Le champ name est optionnel pour INDIVIDUAL */}
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="company-name">
-                        {t('company.fields.name')} <span className="text-destructive">*</span>
+                      <Label htmlFor="workspace-name">
+                        {t('workspace.fields.name')} 
+                        {workspaceType === 'COMPANY' && <span className="text-destructive">*</span>}
+                        {workspaceType === 'INDIVIDUAL' && (
+                          <span className="text-xs text-foreground/60 ml-2">
+                            ({t('workspace.fields.nameOptional')})
+                          </span>
+                        )}
                       </Label>
                       <Input
-                        id="company-name"
-                        placeholder={t('company.fields.name')}
-                        {...companyForm.register("name")}
-                        disabled={isUpdatingCompany}
-                        className={companyForm.formState.errors.name ? "border-destructive" : ""}
+                        id="workspace-name"
+                        placeholder={workspaceType === 'INDIVIDUAL' 
+                          ? t('workspace.fields.namePlaceholderIndividual')
+                          : t('workspace.fields.namePlaceholder')}
+                        {...workspaceForm.register("name")}
+                        disabled={isUpdatingWorkspace}
+                        className={workspaceForm.formState.errors.name ? "border-destructive" : ""}
                       />
-                      {companyForm.formState.errors.name && (
+                      {workspaceForm.formState.errors.name && (
                         <p className="text-xs text-destructive">
-                          {companyForm.formState.errors.name.message}
+                          {workspaceForm.formState.errors.name.message}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="legal-name">{t('company.fields.legalName')}</Label>
+                      <Label htmlFor="legal-name">{t('workspace.fields.legalName')}</Label>
                       <Input
                         id="legal-name"
-                        placeholder={t('company.fields.legalName')}
-                        {...companyForm.register("legalName")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.legalName')}
+                        {...workspaceForm.register("legalName")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="default-currency">
-                        {t('company.fields.defaultCurrency')} <span className="text-destructive">*</span>
+                        {t('workspace.fields.defaultCurrency')} <span className="text-destructive">*</span>
                       </Label>
                       <Controller
                         name="defaultCurrency"
-                        control={companyForm.control}
+                        control={workspaceForm.control}
                         render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingCompany}>
-                            <SelectTrigger className={companyForm.formState.errors.defaultCurrency ? "border-destructive" : ""}>
-                              <SelectValue placeholder={t('company.fields.defaultCurrency')} />
+                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingWorkspace}>
+                            <SelectTrigger className={workspaceForm.formState.errors.defaultCurrency ? "border-destructive" : ""}>
+                              <SelectValue placeholder={t('workspace.fields.defaultCurrency')} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="EUR">EUR (€)</SelectItem>
@@ -716,79 +777,79 @@ function SettingsContent() {
                           </Select>
                         )}
                       />
-                      {companyForm.formState.errors.defaultCurrency && (
+                      {workspaceForm.formState.errors.defaultCurrency && (
                         <p className="text-xs text-destructive">
-                          {companyForm.formState.errors.defaultCurrency.message}
+                          {workspaceForm.formState.errors.defaultCurrency.message}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="tax-id">{t('company.fields.taxId')}</Label>
+                      <Label htmlFor="tax-id">{t('workspace.fields.taxId')}</Label>
                       <Input
                         id="tax-id"
-                        placeholder={t('company.fields.taxIdPlaceholder')}
-                        {...companyForm.register("taxId")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.taxIdPlaceholder')}
+                        {...workspaceForm.register("taxId")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="vat-number">{t('company.fields.vatNumber')}</Label>
+                      <Label htmlFor="vat-number">{t('workspace.fields.vatNumber')}</Label>
                       <Input
                         id="vat-number"
-                        placeholder={t('company.fields.vatNumber')}
-                        {...companyForm.register("vatNumber")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.vatNumber')}
+                        {...workspaceForm.register("vatNumber")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="address-line1">{t('company.fields.addressLine1')}</Label>
+                      <Label htmlFor="address-line1">{t('workspace.fields.addressLine1')}</Label>
                       <Input
                         id="address-line1"
-                        placeholder={t('company.fields.addressLine1')}
-                        {...companyForm.register("addressLine1")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.addressLine1')}
+                        {...workspaceForm.register("addressLine1")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="address-line2">{t('company.fields.addressLine2')}</Label>
+                      <Label htmlFor="address-line2">{t('workspace.fields.addressLine2')}</Label>
                       <Input
                         id="address-line2"
-                        placeholder={t('company.fields.addressLine2')}
-                        {...companyForm.register("addressLine2")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.addressLine2')}
+                        {...workspaceForm.register("addressLine2")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="postal-code">{t('company.fields.postalCode')}</Label>
+                      <Label htmlFor="postal-code">{t('workspace.fields.postalCode')}</Label>
                       <Input
                         id="postal-code"
-                        placeholder={t('company.fields.postalCode')}
-                        {...companyForm.register("postalCode")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.postalCode')}
+                        {...workspaceForm.register("postalCode")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="city">{t('company.fields.city')}</Label>
+                      <Label htmlFor="city">{t('workspace.fields.city')}</Label>
                       <Input
                         id="city"
-                        placeholder={t('company.fields.city')}
-                        {...companyForm.register("city")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.city')}
+                        {...workspaceForm.register("city")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="country">{t('company.fields.country')}</Label>
+                      <Label htmlFor="country">{t('workspace.fields.country')}</Label>
                       <Input
                         id="country"
-                        placeholder={t('company.fields.countryPlaceholder')}
-                        {...companyForm.register("country")}
-                        disabled={isUpdatingCompany}
+                        placeholder={t('workspace.fields.countryPlaceholder')}
+                        {...workspaceForm.register("country")}
+                        disabled={isUpdatingWorkspace}
                       />
                     </div>
                   </div>
-                  <Button type="submit" disabled={isUpdatingCompany}>
-                    {isUpdatingCompany && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {t('company.buttons.update')}
+                  <Button type="submit" disabled={isUpdatingWorkspace}>
+                    {isUpdatingWorkspace && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {t('workspace.buttons.update')}
                   </Button>
                 </form>
               </CardContent>
@@ -810,68 +871,7 @@ function SettingsContent() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={settingsForm.handleSubmit(onSettingsSubmit)} className="space-y-6">
-                    {/* Section Localisation */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 pb-2 border-b border-border/50">
-                        <Globe className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-semibold text-primary">{t('billing.sections.localization')}</h3>
-                      </div>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="language" className="flex items-center gap-2">
-                            {t('billing.fields.language')} <span className="text-destructive">*</span>
-                          </Label>
-                          <Controller
-                            name="language"
-                            control={settingsForm.control}
-                            render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                                <SelectTrigger className={settingsForm.formState.errors.language ? "border-destructive" : ""}>
-                                  <SelectValue placeholder={t('billing.fields.language')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="fr">Français</SelectItem>
-                                  <SelectItem value="en">English</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {settingsForm.formState.errors.language && (
-                            <p className="text-xs text-destructive">
-                              {settingsForm.formState.errors.language.message}
-                            </p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="timezone" className="flex items-center gap-2">
-                            {t('billing.fields.timezone')} <span className="text-destructive">*</span>
-                          </Label>
-                          <Controller
-                            name="timezone"
-                            control={settingsForm.control}
-                            render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                                <SelectTrigger className={settingsForm.formState.errors.timezone ? "border-destructive" : ""}>
-                                  <SelectValue placeholder={t('billing.fields.timezone')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Europe/Paris">Europe/Paris</SelectItem>
-                                  <SelectItem value="Europe/London">Europe/London</SelectItem>
-                                  <SelectItem value="America/New_York">America/New_York</SelectItem>
-                                  <SelectItem value="America/Los_Angeles">America/Los_Angeles</SelectItem>
-                                  <SelectItem value="Africa/Lome">Africa/Lomé</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {settingsForm.formState.errors.timezone && (
-                            <p className="text-xs text-destructive">
-                              {settingsForm.formState.errors.timezone.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    
 
                     {/* Section Format */}
                     <div className="space-y-4">

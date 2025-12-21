@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateCompact = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -14,8 +14,8 @@ const TemplateCompact = ({
   template,
 }: InvoiceTemplateProps) => {
   // Construire l'adresse de l'entreprise
-  const companyAddress = company
-    ? [company.city, company.country].filter(Boolean).join(", ")
+  const workspaceAddress = workspace
+    ? [workspace.city, workspace.country].filter(Boolean).join(", ")
     : "-";
 
   // Construire l'adresse du client
@@ -47,9 +47,9 @@ const TemplateCompact = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 text-[9px]">
         <div>
           <p className="font-bold mb-1 uppercase">Entreprise</p>
-          <p className="mb-0.5">{company?.name || "-"}</p>
-          <p className="mb-0.5">{companyAddress}</p>
-          {company?.vatNumber && <p>TVA: {company.vatNumber}</p>}
+          <p className="mb-0.5">{workspace?.name || "-"}</p>
+          <p className="mb-0.5">{workspaceAddress}</p>
+          {workspace?.vatNumber && <p>TVA: {workspace.vatNumber}</p>}
         </div>
         <div>
           <p className="font-bold mb-1 uppercase">Client</p>
@@ -129,7 +129,7 @@ const TemplateCompact = ({
 
       {/* Footer */}
       <div className="mt-5 pt-2.5 border-t border-black text-[8px] text-center">
-        <p>{company?.name || "Entreprise"}</p>
+        <p>{workspace?.name || "Entreprise"}</p>
       </div>
     </div>
   );

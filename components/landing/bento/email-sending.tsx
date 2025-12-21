@@ -16,7 +16,7 @@ const EmailSending: React.FC = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-[7px] font-semibold text-primary mb-0.5">FACTURLY</p>
-                  <p className="text-[8px] text-slate-700">{t('invoice.companyName')}</p>
+                  <p className="text-[8px] text-slate-700">{t('invoice.workspaceName')}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[8px] text-slate-900 font-medium">FAC-001</p>

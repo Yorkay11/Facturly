@@ -8,9 +8,8 @@ import { GlobalLoader } from "@/components/ui/global-loader";
 import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
-import { useRouter } from '@/i18n/routing';
-import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
-import { useGetMeQuery, useGetCompanyQuery } from "@/services/facturlyApi";
+import { useRouter, usePathname } from '@/i18n/routing';
+import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { useBetaBanner } from "@/hooks/useBetaBanner";
 
 // Composant interne pour utiliser le contexte et afficher le dialog
@@ -130,65 +129,55 @@ function NavigationBlockDialog() {
   );
 }
 
-// Composant pour gérer l'onboarding
-function OnboardingHandler() {
-  const { data: user, isLoading: isLoadingUser, refetch: refetchUser } = useGetMeQuery();
-  const { data: company, isLoading: isLoadingCompany, refetch: refetchCompany } = useGetCompanyQuery();
-  const [showOnboarding, setShowOnboarding] = useState(false);
+// Composant pour gérer la redirection vers l'onboarding
+function OnboardingRedirect() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data: workspace, isLoading, error } = useGetWorkspaceQuery();
   const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
+    // Ne pas rediriger si on est déjà sur la page d'onboarding
+    if (pathname === '/onboarding') {
+      return;
+    }
+
     // Attendre que les données soient chargées
-    if (isLoadingCompany) return;
+    if (isLoading) return;
 
     // Ne vérifier qu'une seule fois
     if (hasChecked) return;
 
-    // Vérifier si le profil n'est pas complet
-    if (company) {
-      // Petit délai pour s'assurer que tout est bien chargé
-      const checkTimer = setTimeout(() => {
-        const companyCompletion = company.profileCompletion ?? 0;
-        
-        // Vérifier si les champs essentiels de l'entreprise manquent
-        const hasMissingCompanyInfo = !company.name || !company.defaultCurrency;
-        
-        // Afficher l'onboarding si :
-        // 1. L'entreprise n'est pas complète (< 100)
-        // 2. OU les champs essentiels manquent
-        const shouldShow = 
-          companyCompletion < 100 || 
-          hasMissingCompanyInfo;
-        
-        console.log('Should show onboarding:', shouldShow);
-        
-        if (shouldShow) {
-          setShowOnboarding(true);
-        }
-        setHasChecked(true);
-      }, 500); // Délai de 500ms pour s'assurer que les données sont bien chargées
-
-      return () => clearTimeout(checkTimer);
+    // Si l'utilisateur n'a pas de workspace (nouvel utilisateur Google OAuth)
+    // ou si une erreur 404 est retournée, rediriger vers l'onboarding
+    if (!workspace || (error && 'status' in error && error.status === 404)) {
+      router.push('/onboarding');
+      setHasChecked(true);
+      return;
     }
-  }, [company, isLoadingCompany, hasChecked]);
 
-  const handleOnboardingComplete = async () => {
-    // Rafraîchir les données après la complétion
-    await refetchCompany();
-    setShowOnboarding(false);
-  };
+    // Vérifier si le profil n'est pas complet
+    const workspaceCompletion = workspace.profileCompletion ?? 0;
+    
+    // Vérifier si les champs essentiels du workspace manquent
+    const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
+      ? (!workspace.name || !workspace.defaultCurrency)
+      : !workspace.defaultCurrency;
+    
+    // Rediriger vers l'onboarding si :
+    // 1. Le workspace n'est pas complet (< 100)
+    // 2. OU les champs essentiels manquent
+    const shouldRedirect = 
+      workspaceCompletion < 100 || 
+      hasMissingWorkspaceInfo;
+    
+    if (shouldRedirect) {
+      router.push('/onboarding');
+    }
+    setHasChecked(true);
+  }, [workspace, isLoading, error, hasChecked, pathname, router]);
 
-  // Ne rien afficher si les données ne sont pas encore chargées
-  if (isLoadingCompany || !company) {
-    return null;
-  }
-
-  return (
-    <OnboardingModal 
-      open={showOnboarding} 
-      onComplete={handleOnboardingComplete}
-    />
-  );
+  return null;
 }
 
 function DashboardLayoutContent({
@@ -196,7 +185,19 @@ function DashboardLayoutContent({
 }: {
   children: ReactNode;
 }) {
+  const pathname = usePathname();
   const isBetaBannerVisible = useBetaBanner();
+  const isOnboardingPage = pathname === '/onboarding';
+
+  // Sur la page d'onboarding, ne pas afficher la topbar et le layout normal
+  if (isOnboardingPage) {
+    return (
+      <>
+        {children}
+        <OnboardingRedirect />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
@@ -208,7 +209,7 @@ function DashboardLayoutContent({
         </div>
       </main>
       <NavigationBlockDialog />
-      <OnboardingHandler />
+      <OnboardingRedirect />
     </div>
   );
 }

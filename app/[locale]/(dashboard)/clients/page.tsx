@@ -2,7 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
@@ -40,6 +40,7 @@ const ITEMS_PER_PAGE = 20;
 
 export default function ClientsPage() {
   const locale = useLocale();
+  const router = useRouter();
   const t = useTranslations('clients');
   const commonT = useTranslations('common');
   const navigationT = useTranslations('navigation');
@@ -86,8 +87,13 @@ export default function ClientsPage() {
     return mostRecentClient?.createdAt ? formatDate(mostRecentClient.createdAt) : "—";
   }, [clients]);
 
-  const handleDeleteClick = (client: { id: string; name: string }) => {
+  const handleDeleteClick = (e: React.MouseEvent, client: { id: string; name: string }) => {
+    e.stopPropagation(); // Empêcher la navigation vers la page de détails
     setClientToDelete({ id: client.id, name: client.name });
+  };
+
+  const handleRowClick = (clientId: string) => {
+    router.push(`/clients/${clientId}`);
   };
 
   const handleConfirmDelete = async () => {
@@ -204,12 +210,11 @@ export default function ClientsPage() {
                   .map((client) => (
                     <TableRow 
                       key={client.id} 
-                      className="hover:bg-primary/5"
+                      className="hover:bg-primary/5 cursor-pointer"
+                      onClick={() => handleRowClick(client.id)}
                     >
                       <TableCell className="font-medium text-primary">
-                        <Link href={`/clients/${client.id}`} className="hover:underline">
-                          {client.name}
-                        </Link>
+                        {client.name}
                       </TableCell>
                     <TableCell className="text-sm text-foreground/70">
                       {client.email ?? "—"}
@@ -226,12 +231,12 @@ export default function ClientsPage() {
                     <TableCell className="text-right text-sm text-foreground/60">
                       {client.createdAt ? formatDate(client.createdAt) : "—"}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteClick(client)}
+                        onClick={(e) => handleDeleteClick(e, client)}
                         disabled={isDeleting}
                         title={t('deleteAction')}
                       >

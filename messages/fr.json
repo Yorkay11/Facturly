@@ -57,6 +57,13 @@
     "createAccount": "Créer un compte",
     "heroTitle": "Facturation simple & intelligente",
     "heroDescription": "Créez, envoyez et gérez vos factures en toute simplicité",
+    "orContinueWith": "Ou continuer avec",
+    "continueWithGoogle": "Continuer avec Google",
+    "processing": "Traitement en cours",
+    "oauthSuccess": "Connexion Google réussie",
+    "oauthError": "Erreur lors de la connexion avec Google",
+    "oauthAccessDenied": "Accès refusé. Veuillez autoriser l'accès à votre compte Google.",
+    "oauthNoToken": "Aucun token reçu. Veuillez réessayer.",
     "register": {
       "heroTitle": "Rejoignez Facturly",
       "heroDescription": "Créez votre compte et commencez à gérer vos factures en toute simplicité",
@@ -82,7 +89,7 @@
         "password": "••••••••",
         "confirmPassword": "••••••••"
       },
-      "passwordHint": "Le mot de passe doit contenir entre 8 et 128 caractères, avec au moins une majuscule, une minuscule et un chiffre.",
+      "passwordHint": "Le mot de passe doit contenir entre 8 et 128 caractères avec : au moins une majuscule (A-Z), une minuscule (a-z) et un chiffre (0-9). Les caractères spéciaux (!@#$%^&*...) sont optionnels mais autorisés.",
       "buttons": {
         "previous": "Précédent",
         "next": "Suivant",
@@ -247,7 +254,7 @@
     "planEnterprise": "Enterprise",
     "userProfile": "Profil utilisateur",
     "accountInfo": "Informations de votre compte",
-    "company": "Entreprise",
+    "workspace": "Espace de travail",
     "preferences": "Préférences",
     "preferencesDescription": "Notifications, mentions légales, branding",
     "manageAccount": "Gérer mon compte",
@@ -474,15 +481,7 @@
               "service": "Service",
               "product": "Produit"
             },
-            "currency": {
-              "label": "Devise",
-              "placeholder": "Devise",
-              "options": {
-                "EUR": "EUR (€)",
-                "USD": "USD ($)",
-                "XOF": "XOF (CFA)"
-              }
-            },
+            "currencyInfo": "Tous les prix sont en {currency}",
             "summary": {
               "title": "Résumé",
               "name": "Nom",
@@ -812,6 +811,8 @@
     "importSuccessDescription": "Les clients ont été importés avec succès.",
     "createSuccess": "Client créé",
     "createSuccessDescription": "Le client a été créé avec succès.",
+    "updateSuccess": "Client modifié",
+    "updateSuccessDescription": "Les informations du client ont été mises à jour avec succès.",
     "loadError": "Erreur lors du chargement des clients. Vérifiez l'API.",
     "pageInfo": "Page {current} sur {total} • {count} client(s) au total",
     "previous": "Précédent",
@@ -820,6 +821,7 @@
       "addTitle": "Ajouter un client",
       "editTitle": "Modifier le client",
       "description": "Remplissez les informations du client par sections. Les champs marqués d'un astérisque (*) sont obligatoires.",
+      "editDescription": "Modifiez les informations du client. Les champs marqués d'un astérisque (*) sont obligatoires.",
       "tabs": {
         "informations": "Informations",
         "adresse": "Adresse",
@@ -850,15 +852,20 @@
       "validation": {
         "nameMinLength": "Le nom doit contenir au moins 2 caractères",
         "invalidEmail": "Adresse email invalide",
+        "emailRequired": "L'email est requis",
         "createError": "Une erreur est survenue lors de la création du client.",
-        "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+        "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard.",
+        "missingField": "Champ manquant : {field}",
+        "nameRequired": "Le nom est obligatoire"
       },
       "buttons": {
         "previous": "Précédent",
         "next": "Suivant",
         "cancel": "Annuler",
         "save": "Enregistrer",
-        "saving": "Enregistrement..."
+        "saving": "Enregistrement...",
+        "update": "Mettre à jour",
+        "updating": "Mise à jour..."
       }
     },
     "import": {
@@ -940,6 +947,7 @@
       },
       "buttons": {
         "backToList": "Retour à la liste des clients",
+        "edit": "Modifier",
         "delete": "Supprimer",
         "createInvoice": "Créer une facture"
       },
@@ -1066,6 +1074,7 @@
         "taxRatePlaceholder": "TVA",
         "currency": "Devise",
         "currencyPlaceholder": "Devise",
+        "currencyInfo": "Tous les prix sont en {currency}",
         "unit": "Unité",
         "unitPlaceholder": "heure, unité, etc. (optionnel)",
         "sku": "Référence (SKU)",
@@ -1080,15 +1089,20 @@
         "currencyRequired": "La devise est obligatoire",
         "taxRateRequired": "Le taux de TVA est obligatoire",
         "createError": "Une erreur est survenue lors de la création de la prestation.",
-        "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
+        "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard.",
+        "updateError": "Une erreur est survenue lors de la mise à jour de la prestation.",
+        "updateErrorGeneric": "Vérifiez vos informations ou réessayez plus tard."
       },
       "buttons": {
         "previous": "Précédent",
         "next": "Suivant",
         "cancel": "Annuler",
         "create": "Créer la prestation",
-        "creating": "Création..."
-      }
+        "creating": "Création...",
+        "update": "Mettre à jour",
+        "updating": "Mise à jour..."
+      },
+      "editDescription": "Modifiez les informations de la prestation. Les champs marqués d'un astérisque (*) sont obligatoires."
     },
     "import": {
       "title": "Importer des prestations depuis un CSV",
@@ -1130,7 +1144,11 @@
         "importCompletedDescription": "{successCount} prestation(s) importée(s) avec succès{errors, plural, =0 {} other {, {failedCount} erreur(s)}}.",
         "productsImported": "{count} prestation(s) importée(s)",
         "errors": "{count} erreur(s)",
-        "lineError": "Ligne {line}: {error}"
+        "lineError": "Ligne {line}: {error}",
+        "createSuccess": "Prestation créée",
+        "createSuccessDescription": "La prestation a été créée avec succès.",
+        "updateSuccess": "Prestation modifiée",
+        "updateSuccessDescription": "Les informations de la prestation ont été mises à jour avec succès."
       },
       "pagination": {
         "pageInfo": "Page {current} sur {total} • {count} prestation(s) au total"
@@ -1167,6 +1185,7 @@
       },
       "buttons": {
         "backToList": "Retour à la liste des prestations",
+        "edit": "Modifier",
         "delete": "Supprimer",
         "processing": "Traitement..."
       },
@@ -1272,7 +1291,7 @@
         "title": "Envoi par email automatique",
         "description": "Envoyez vos factures directement par email à vos clients.",
         "invoice": {
-          "companyName": "Ma Société",
+          "workspaceName": "Ma Société",
           "item": "Développement"
         },
         "form": {
@@ -1600,7 +1619,7 @@
     },
     "tabs": {
       "profile": "Profil",
-      "company": "Entreprise",
+      "workspace": "Espace de travail",
       "billing": "Facturation",
       "subscription": "Abonnement"
     },
@@ -1633,11 +1652,20 @@
         "update": "Mettre à jour le profil"
       }
     },
-    "company": {
-      "title": "Entreprise & Mentions",
-      "description": "Configurez les informations de votre entreprise pour les factures.",
+    "workspace": {
+      "title": "Workspace & Mentions",
+      "description": "Configurez les informations de votre workspace (entreprise ou freelance) pour les factures.",
       "fields": {
-        "name": "Nom de l'entreprise",
+        "type": "Type de workspace",
+        "typePlaceholder": "Sélectionnez le type",
+        "typeIndividual": "Freelance / Indépendant",
+        "typeCompany": "Entreprise",
+        "typeIndividualHint": "Pour les travailleurs indépendants et freelances. Le nom du workspace est optionnel.",
+        "typeCompanyHint": "Pour les entreprises et sociétés. Le nom du workspace est recommandé.",
+        "name": "Nom du workspace",
+        "namePlaceholder": "Ma Société SARL",
+        "namePlaceholderIndividual": "Votre nom ou nom d'activité (optionnel)",
+        "nameOptional": "Optionnel pour les freelances",
         "legalName": "Raison sociale",
         "defaultCurrency": "Devise par défaut",
         "taxId": "Numéro d'identification fiscale",
@@ -1651,19 +1679,21 @@
         "countryPlaceholder": "France"
       },
       "validation": {
+        "typeRequired": "Le type de workspace est obligatoire",
         "nameMin": "Le nom doit contenir au moins 2 caractères",
+        "nameRequiredForCompany": "Le nom est recommandé pour les entreprises",
         "currencyRequired": "La devise est obligatoire"
       },
       "success": {
-        "updated": "Entreprise mise à jour",
-        "updatedDescription": "Les informations de l'entreprise ont été mises à jour avec succès."
+        "updated": "Workspace mis à jour",
+        "updatedDescription": "Les informations du workspace ont été mises à jour avec succès."
       },
       "errors": {
-        "updateError": "Une erreur est survenue lors de la mise à jour de l'entreprise.",
+        "updateError": "Une erreur est survenue lors de la mise à jour du workspace.",
         "genericError": "Vérifiez vos informations ou réessayez plus tard."
       },
       "buttons": {
-        "update": "Mettre à jour l'entreprise"
+        "update": "Mettre à jour le workspace"
       }
     },
     "billing": {
@@ -2077,5 +2107,105 @@
     "landingDescription": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel. Rejoignez des milliers de professionnels qui font confiance à Facturly.",
     "home": "Accueil",
     "organizationDescription": "Plateforme de gestion de facturation simple et intelligente"
+  },
+  "onboarding": {
+    "title": "Configuration de votre workspace",
+    "description": "Complétez votre profil en quelques étapes simples",
+    "steps": {
+      "type": "Type",
+      "basic": "Informations de base",
+      "legal": "Informations légales",
+      "address": "Adresse",
+      "review": "Confirmation"
+    },
+    "stepCounter": "Étape {current} sur {total}",
+    "progress": "{percentage}%",
+    "buttons": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "finish": "Finaliser",
+      "finishing": "Finalisation..."
+    },
+    "type": {
+      "title": "Choisissez votre type de workspace",
+      "description": "Sélectionnez le type qui correspond le mieux à votre activité",
+      "individual": {
+        "title": "Freelance / Indépendant",
+        "description": "Pour les travailleurs indépendants et freelances. Le nom du workspace est optionnel."
+      },
+      "workspaceCompany": {
+        "title": "Entreprise",
+        "description": "Pour les entreprises et sociétés. Le nom du workspace est recommandé."
+      }
+    },
+    "basic": {
+      "title": "Informations de base",
+      "description": "Configurez les informations essentielles de votre workspace",
+      "fields": {
+        "name": "Nom du workspace",
+        "nameOptional": "(Optionnel)",
+        "namePlaceholderIndividual": "Votre nom ou nom d'activité (optionnel)",
+        "namePlaceholder": "Ma Société SARL",
+        "defaultCurrency": "Devise par défaut",
+        "defaultCurrencyPlaceholder": "Sélectionner une devise"
+      }
+    },
+    "legal": {
+      "title": "Informations légales",
+      "description": "Ces informations sont optionnelles mais recommandées pour la facturation professionnelle",
+      "fields": {
+        "legalName": "Raison sociale",
+        "legalNamePlaceholder": "Ma Société à Responsabilité Limitée",
+        "taxId": "Numéro SIRET / Tax ID",
+        "taxIdPlaceholder": "12345678901234",
+        "vatNumber": "Numéro de TVA",
+        "vatNumberPlaceholder": "FR12345678901"
+      }
+    },
+    "address": {
+      "title": "Adresse",
+      "description": "Ces informations sont optionnelles mais peuvent être utiles pour vos factures",
+      "fields": {
+        "addressLine1": "Adresse ligne 1",
+        "addressLine1Placeholder": "123 Rue de la République",
+        "addressLine2": "Adresse ligne 2",
+        "addressLine2Placeholder": "Bâtiment A, Bureau 101",
+        "postalCode": "Code postal",
+        "postalCodePlaceholder": "75001",
+        "city": "Ville",
+        "cityPlaceholder": "Paris",
+        "country": "Pays",
+        "countryPlaceholder": "France"
+      }
+    },
+    "review": {
+      "title": "Confirmation",
+      "description": "Vérifiez vos informations avant de finaliser",
+      "summary": "Résumé",
+      "labels": {
+        "type": "Type:",
+        "name": "Nom:",
+        "currency": "Devise:",
+        "legalName": "Raison sociale:",
+        "address": "Adresse:"
+      },
+      "types": {
+        "individual": "Freelance / Indépendant",
+        "workspaceCompany": "Entreprise"
+      }
+    },
+    "validation": {
+      "typeRequired": "Le type de workspace est obligatoire",
+      "nameMin": "Le nom doit contenir au moins 2 caractères",
+      "currencyRequired": "La devise est obligatoire"
+    },
+    "success": {
+      "title": "Profil complété",
+      "description": "Votre workspace a été configuré avec succès."
+    },
+    "errors": {
+      "title": "Erreur",
+      "description": "Impossible de mettre à jour votre workspace."
+    }
   }
 }

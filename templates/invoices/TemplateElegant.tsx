@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateElegant = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -41,17 +41,17 @@ const TemplateElegant = ({
           <div className="space-y-1.5 text-[13px] leading-relaxed">
             <p>
               <strong className="font-semibold text-[#2c3e50]">
-                {company?.name || "Nom de l'entreprise"}
+                {workspace?.name || "Nom de l'entreprise"}
               </strong>
             </p>
-            {company?.addressLine1 && <p>{company.addressLine1}</p>}
-            {company?.postalCode && company?.city && (
+            {workspace?.addressLine1 && <p>{workspace.addressLine1}</p>}
+            {workspace?.postalCode && workspace?.city && (
               <p>
-                {company.postalCode} {company.city}
+                {workspace.postalCode} {workspace.city}
               </p>
             )}
-            {company?.country && <p>{company.country}</p>}
-            {company?.vatNumber && <p>TVA : {company.vatNumber}</p>}
+            {workspace?.country && <p>{workspace.country}</p>}
+            {workspace?.vatNumber && <p>TVA : {workspace.vatNumber}</p>}
           </div>
         </div>
 
@@ -167,7 +167,7 @@ const TemplateElegant = ({
       {/* Footer */}
       <div className="mt-12 pt-8 border-t border-[#ecf0f1] text-center text-[11px] text-[#95a5a6] italic">
         <p>Nous vous remercions de votre confiance</p>
-        {company?.name && <p className="mt-1">{company.name}</p>}
+        {workspace?.name && <p className="mt-1">{workspace.name}</p>}
       </div>
     </div>
   );

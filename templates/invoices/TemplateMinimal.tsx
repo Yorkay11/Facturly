@@ -3,7 +3,7 @@ import { InvoiceTemplateProps } from "./types";
 
 const TemplateMinimal = ({
   metadata,
-  company,
+  workspace,
   client,
   items,
   subtotal,
@@ -14,8 +14,8 @@ const TemplateMinimal = ({
   template,
 }: InvoiceTemplateProps) => {
   // Construire l'adresse de l'entreprise
-  const companyAddress = company
-    ? [company.city, company.country].filter(Boolean).join(", ")
+  const workspaceAddress = workspace
+    ? [workspace.city, workspace.country].filter(Boolean).join(", ")
     : "-";
 
   // Construire l'adresse du client
@@ -50,8 +50,8 @@ const TemplateMinimal = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 text-xs">
         <div>
           <p className="font-semibold mb-1">Entreprise</p>
-          <p className="mb-1">{company?.name || "Nom de l'entreprise"}</p>
-          <p className="opacity-70">{companyAddress}</p>
+          <p className="mb-1">{workspace?.name || "Nom de l'entreprise"}</p>
+          <p className="opacity-70">{workspaceAddress}</p>
         </div>
         <div>
           <p className="font-semibold mb-1">Client</p>

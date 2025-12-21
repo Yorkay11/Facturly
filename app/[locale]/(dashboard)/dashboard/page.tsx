@@ -34,6 +34,7 @@ import {
   useGetDashboardActivitiesQuery,
   useGetDashboardAlertsQuery,
   useGetSubscriptionQuery,
+  useGetWorkspaceQuery,
 } from "@/services/facturlyApi";
 import { InvoiceLimitBanner } from "@/components/dashboard/InvoiceLimitBanner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +59,7 @@ export default function DashboardPage() {
   const { data: alertsData, isLoading: isLoadingAlerts } =
     useGetDashboardAlertsQuery();
   const { data: subscription } = useGetSubscriptionQuery(); // Pour vérifier le plan
+  const { data: workspace } = useGetWorkspaceQuery(); // Pour obtenir la devise du workspace comme fallback
 
   // Récupérer les factures pour le graphique (fallback si stats non disponibles)
   const { data: invoicesData, isLoading: isLoadingInvoices } =
@@ -68,13 +70,15 @@ export default function DashboardPage() {
 
   const invoices = invoicesData?.data || [];
 
-  // Transformer les données de revenus mensuels depuis l'API
+  // Transformer les données de revenus mensuels depuis l'API (4 derniers mois)
   const monthlyRevenue = useMemo(() => {
     if (
       dashboardStats?.monthlyRevenues &&
       dashboardStats.monthlyRevenues.length > 0
     ) {
-      return dashboardStats.monthlyRevenues.map((item) => {
+      // Prendre les 4 derniers mois seulement
+      const last4Months = dashboardStats.monthlyRevenues.slice(-4);
+      return last4Months.map((item) => {
         const date = new Date(item.year, item.month - 1, 1);
         const monthName = date.toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", { month: "short" });
         return {
@@ -217,7 +221,24 @@ export default function DashboardPage() {
   // Statistiques pour les cartes
   const stats = useMemo(() => {
     if (dashboardStats) {
-      const monthlyRev = dashboardStats.monthlyRevenue?.[0];
+      // Trouver le revenu du mois en cours selon period.month et period.year
+      let monthlyRev = 0;
+      
+      if (dashboardStats.period && dashboardStats.monthlyRevenues) {
+        // Chercher le revenu correspondant au mois et à l'année dans period
+        const currentMonthRevenue = dashboardStats.monthlyRevenues.find(
+          (item) => item.month === dashboardStats.period.month && item.year === dashboardStats.period.year
+        );
+        
+        if (currentMonthRevenue) {
+          monthlyRev = parseFloat(currentMonthRevenue.revenue || "0");
+        }
+      }
+      
+      // Fallback: utiliser monthlyRevenue[0] si monthlyRevenues n'est pas disponible
+      if (monthlyRev === 0 && dashboardStats.monthlyRevenue?.[0]) {
+        monthlyRev = parseFloat(dashboardStats.monthlyRevenue[0].amount || "0");
+      }
 
       // Utiliser invoicesByStatus pour obtenir le nombre total de factures envoyées
       // Plus précis que invoicesSent qui peut être limité au mois en cours
@@ -227,7 +248,7 @@ export default function DashboardPage() {
       const totalSentCount = sentStatusCount?.count || 0;
 
       return {
-        monthlyRevenue: monthlyRev ? parseFloat(monthlyRev.amount || "0") : 0,
+        monthlyRevenue: monthlyRev,
         invoicesSent: totalSentCount,
         totalPaid: parseFloat(dashboardStats.totalPaid || "0"),
         totalUnpaid: parseFloat(dashboardStats.totalUnpaid || "0"),
@@ -319,7 +340,10 @@ export default function DashboardPage() {
               : new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                   style: "currency",
                   currency:
-                    dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
+                    dashboardStats?.currency || 
+                    dashboardStats?.monthlyRevenue?.[0]?.currency || 
+                    workspace?.defaultCurrency || 
+                    "EUR",
                   minimumFractionDigits: 0,
                 }).format(stats.monthlyRevenue)
           }
@@ -340,7 +364,10 @@ export default function DashboardPage() {
               : new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                   style: "currency",
                   currency:
-                    dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
+                    dashboardStats?.currency || 
+                    dashboardStats?.monthlyRevenue?.[0]?.currency || 
+                    workspace?.defaultCurrency || 
+                    "EUR",
                   minimumFractionDigits: 0,
                 }).format(stats.totalPaid)
           }
@@ -355,7 +382,10 @@ export default function DashboardPage() {
               : new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                   style: "currency",
                   currency:
-                    dashboardStats?.monthlyRevenue?.[0]?.currency || "EUR",
+                    dashboardStats?.currency || 
+                    dashboardStats?.monthlyRevenue?.[0]?.currency || 
+                    workspace?.defaultCurrency || 
+                    "EUR",
                   minimumFractionDigits: 0,
                 }).format(stats.totalUnpaid)
           }
@@ -406,7 +436,9 @@ export default function DashboardPage() {
                         {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                           style: "currency",
                           currency:
-                            dashboardStats?.monthlyRevenue?.[0]?.currency ||
+                            dashboardStats?.currency || 
+                            dashboardStats?.monthlyRevenue?.[0]?.currency || 
+                            workspace?.defaultCurrency || 
                             "EUR",
                           minimumFractionDigits: 0,
                         }).format(stats.totalPaid)}
@@ -418,7 +450,9 @@ export default function DashboardPage() {
                         {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                           style: "currency",
                           currency:
-                            dashboardStats?.monthlyRevenue?.[0]?.currency ||
+                            dashboardStats?.currency || 
+                            dashboardStats?.monthlyRevenue?.[0]?.currency || 
+                            workspace?.defaultCurrency || 
                             "EUR",
                           minimumFractionDigits: 0,
                         }).format(stats.totalUnpaid)}

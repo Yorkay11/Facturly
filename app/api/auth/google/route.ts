@@ -6,8 +6,9 @@ export async function GET(request: NextRequest) {
   const locale = searchParams.get('locale') || 'fr';
 
   // Construire l'URL de callback frontend
+  // Note: la route est /[locale]/callback, pas /[locale]/auth/callback (le groupe (auth) n'apparaît pas dans l'URL)
   const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const callbackUrl = `${frontendUrl}/${locale}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`;
+  const callbackUrl = `${frontendUrl}/${locale}/callback?redirect=${encodeURIComponent(redirectTo)}`;
 
   // Construire l'URL de redirection Google OAuth du backend
   // Le backend redirigera vers callbackUrl avec le token

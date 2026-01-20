@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Configuration des chemins publics (sans authentification)
-const PUBLIC_PATHS = ['/login', '/register', '/auth/login', '/auth', '/'];
+const PUBLIC_PATHS = ['/login', '/register', '/auth/login', '/auth/callback', '/auth', '/'];
 // Routes publiques avec paramètres dynamiques (ex: /invoice/[token], /pay/[token])
 const PUBLIC_PATH_PATTERNS = [/^\/invoice\/[^/]+$/, /^\/pay\/[^/]+$/];
 

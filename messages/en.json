@@ -2103,8 +2103,8 @@
     "organizationDescription": "Simple and smart invoice management platform"
   },
   "onboarding": {
-    "title": "Configure your workspace",
-    "description": "Complete your profile in a few simple steps",
+    "title": "Create your billing profile",
+    "description": "You're 2 minutes away from your first invoice",
     "steps": {
       "type": "Type",
       "basic": "Basic Information",
@@ -2121,32 +2121,41 @@
       "finishing": "Finishing..."
     },
     "type": {
-      "title": "Choose your workspace type",
+      "title": "Choose your profile",
       "description": "Select the type that best matches your activity",
       "individual": {
         "title": "Freelance / Individual",
-        "description": "For freelancers and independent workers. Workspace name is optional."
+        "badge": "Recommended",
+        "subtitle": "Perfect for consultants, developers, designers",
+        "description": "No formalities • Invoice in your name",
+        "recommended": true
       },
       "workspaceCompany": {
         "title": "Company",
-        "description": "For companies and businesses. Workspace name is recommended."
+        "subtitle": "For teams and legal structures",
+        "description": "For companies and businesses with legal structure"
       }
     },
     "basic": {
       "title": "Basic Information",
-      "description": "Configure the essential information for your workspace",
+      "description": "Configure the essential information for your profile",
       "fields": {
         "name": "Workspace name",
+        "nameLabelIndividual": "Name displayed on invoices",
+        "nameLabelCompany": "Company name",
         "nameOptional": "(Optional)",
-        "namePlaceholderIndividual": "Your name or activity name (optional)",
+        "namePlaceholderIndividual": "Ex: John Doe – Freelance Developer",
         "namePlaceholder": "My Company LLC",
+        "nameHintIndividual": "This name will appear on all your invoices",
         "defaultCurrency": "Default currency",
         "defaultCurrencyPlaceholder": "Select a currency"
       }
     },
     "legal": {
       "title": "Legal Information",
-      "description": "This information is optional but recommended for professional invoicing",
+      "description": "Optional — useful for some clients or accounting export",
+      "optionalBadge": "Optional",
+      "skipHint": "You can complete this information later",
       "fields": {
         "legalName": "Legal name",
         "legalNamePlaceholder": "My Limited Liability Company",
@@ -2158,7 +2167,10 @@
     },
     "address": {
       "title": "Address",
-      "description": "This information is optional but can be useful for your invoices",
+      "description": "Optional — you can add your full address later",
+      "optionalBadge": "Optional",
+      "showFullAddress": "Add full address",
+      "hideFullAddress": "Hide",
       "fields": {
         "addressLine1": "Address line 1",
         "addressLine1Placeholder": "123 Main Street",
@@ -2173,9 +2185,15 @@
       }
     },
     "review": {
-      "title": "Review",
-      "description": "Verify your information before finalizing",
+      "title": "🎉 Your profile is ready!",
+      "description": "You can now create your first invoice",
       "summary": "Summary",
+      "nextSteps": {
+        "title": "Next steps",
+        "createInvoice": "Create an invoice",
+        "addClient": "Add a client",
+        "receivePayment": "Receive a payment"
+      },
       "labels": {
         "type": "Type:",
         "name": "Name:",

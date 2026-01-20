@@ -36,6 +36,7 @@ type StepId = typeof STEP_IDS[number];
 export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProps) {
   const t = useTranslations('onboarding');
   const [currentStep, setCurrentStep] = useState<StepId>('type');
+  const [showFullAddress, setShowFullAddress] = useState(false);
   const [updateWorkspace, { isLoading: isUpdating }] = useUpdateWorkspaceMutation();
   const [createWorkspace, { isLoading: isCreating }] = useCreateWorkspaceMutation();
   const { refetch } = useGetWorkspaceQuery();
@@ -161,6 +162,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
       });
 
       await refetch();
+      // Redirection guidée vers la création de facture
       onComplete();
     } catch (error: any) {
       toast.error(t('errors.title'), {
@@ -173,11 +175,11 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
     switch (currentStep) {
       case 'type':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-semibold">Choisissez votre type de workspace</h2>
+              <h2 className="text-2xl font-semibold">{t('type.title')}</h2>
               <p className="text-muted-foreground">
-                Sélectionnez le type qui correspond le mieux à votre activité
+                {t('type.description')}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -185,14 +187,22 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                 type="button"
                 onClick={() => form.setValue('type', 'INDIVIDUAL')}
                 className={cn(
-                  "p-6 rounded-lg border-2 text-left transition-all",
+                  "group p-6 rounded-xl border-2 text-left transition-all duration-300 relative",
                   workspaceType === 'INDIVIDUAL'
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
+                    ? "border-primary bg-primary/5 shadow-md scale-[1.02]"
+                    : "border-border hover:border-primary/50 hover:shadow-sm"
                 )}
               >
-                <User className="h-8 w-8 mb-3 text-primary" />
-                <h3 className="font-semibold text-lg mb-2">{t('type.individual.title')}</h3>
+                {workspaceType === 'INDIVIDUAL' && (
+                  <span className="absolute top-3 right-3 inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                    {t('type.individual.badge')}
+                  </span>
+                )}
+                <User className="h-10 w-10 mb-4 text-primary" />
+                <h3 className="font-bold text-lg mb-1">{t('type.individual.title')}</h3>
+                <p className="text-sm font-medium text-foreground mb-2">
+                  {t('type.individual.subtitle')}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {t('type.individual.description')}
                 </p>
@@ -201,14 +211,17 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                 type="button"
                 onClick={() => form.setValue('type', 'COMPANY')}
                 className={cn(
-                  "p-6 rounded-lg border-2 text-left transition-all",
+                  "group p-6 rounded-xl border-2 text-left transition-all duration-300",
                   workspaceType === 'COMPANY'
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
+                    ? "border-primary bg-primary/5 shadow-md scale-[1.02]"
+                    : "border-border hover:border-primary/50 hover:shadow-sm"
                 )}
               >
-                <Building2 className="h-8 w-8 mb-3 text-primary" />
-                <h3 className="font-semibold text-lg mb-2">{t('type.workspaceCompany.title')}</h3>
+                <Building2 className="h-10 w-10 mb-4 text-primary" />
+                <h3 className="font-bold text-lg mb-1">{t('type.workspaceCompany.title')}</h3>
+                <p className="text-sm font-medium text-foreground mb-2">
+                  {t('type.workspaceCompany.subtitle')}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {t('type.workspaceCompany.description')}
                 </p>
@@ -234,7 +247,9 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  {t('basic.fields.name')}
+                  {workspaceType === 'INDIVIDUAL' 
+                    ? t('basic.fields.nameLabelIndividual')
+                    : t('basic.fields.nameLabelCompany')}
                   {workspaceType === 'COMPANY' && <span className="text-destructive">*</span>}
                   {workspaceType === 'INDIVIDUAL' && (
                     <span className="text-xs text-muted-foreground ml-2">{t('basic.fields.nameOptional')}</span>
@@ -249,6 +264,11 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                   disabled={isUpdatingOrCreating}
                   className={form.formState.errors.name ? "border-destructive" : ""}
                 />
+                {workspaceType === 'INDIVIDUAL' && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('basic.fields.nameHintIndividual')}
+                  </p>
+                )}
                 {form.formState.errors.name && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.name.message}
@@ -287,11 +307,19 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
 
       case 'legal':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-semibold">{t('legal.title')}</h2>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h2 className="text-2xl font-semibold">{t('legal.title')}</h2>
+                <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground">
+                  {t('legal.optionalBadge')}
+                </span>
+              </div>
               <p className="text-muted-foreground">
                 {t('legal.description')}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {t('legal.skipHint')}
               </p>
             </div>
             <div className="space-y-4">
@@ -330,77 +358,106 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
 
       case 'address':
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-semibold">{t('address.title')}</h2>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h2 className="text-2xl font-semibold">{t('address.title')}</h2>
+                <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground">
+                  {t('address.optionalBadge')}
+                </span>
+              </div>
               <p className="text-muted-foreground">
                 {t('address.description')}
               </p>
             </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="addressLine1">{t('address.fields.addressLine1')}</Label>
-                <Input
-                  id="addressLine1"
-                  {...form.register("addressLine1")}
-                  placeholder={t('address.fields.addressLine1Placeholder')}
-                  disabled={isUpdatingOrCreating}
-                />
+            {!showFullAddress ? (
+              <div className="text-center py-8">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowFullAddress(true)}
+                  className="mx-auto"
+                >
+                  {t('address.showFullAddress')}
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="addressLine2">{t('address.fields.addressLine2')}</Label>
-                <Input
-                  id="addressLine2"
-                  {...form.register("addressLine2")}
-                  placeholder={t('address.fields.addressLine2Placeholder')}
-                  disabled={isUpdatingOrCreating}
-                />
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted-foreground">{t('address.description')}</p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFullAddress(false)}
+                  >
+                    {t('address.hideFullAddress')}
+                  </Button>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postalCode">{t('address.fields.postalCode')}</Label>
+                  <Label htmlFor="addressLine1">{t('address.fields.addressLine1')}</Label>
                   <Input
-                    id="postalCode"
-                    {...form.register("postalCode")}
-                    placeholder={t('address.fields.postalCodePlaceholder')}
+                    id="addressLine1"
+                    {...form.register("addressLine1")}
+                    placeholder={t('address.fields.addressLine1Placeholder')}
                     disabled={isUpdatingOrCreating}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city">{t('address.fields.city')}</Label>
+                  <Label htmlFor="addressLine2">{t('address.fields.addressLine2')}</Label>
                   <Input
-                    id="city"
-                    {...form.register("city")}
-                    placeholder={t('address.fields.cityPlaceholder')}
+                    id="addressLine2"
+                    {...form.register("addressLine2")}
+                    placeholder={t('address.fields.addressLine2Placeholder')}
                     disabled={isUpdatingOrCreating}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">{t('address.fields.country')}</Label>
-                  <Input
-                    id="country"
-                    {...form.register("country")}
-                    placeholder={t('address.fields.countryPlaceholder')}
-                    disabled={isUpdatingOrCreating}
-                  />
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">{t('address.fields.postalCode')}</Label>
+                    <Input
+                      id="postalCode"
+                      {...form.register("postalCode")}
+                      placeholder={t('address.fields.postalCodePlaceholder')}
+                      disabled={isUpdatingOrCreating}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">{t('address.fields.city')}</Label>
+                    <Input
+                      id="city"
+                      {...form.register("city")}
+                      placeholder={t('address.fields.cityPlaceholder')}
+                      disabled={isUpdatingOrCreating}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country">{t('address.fields.country')}</Label>
+                    <Input
+                      id="country"
+                      {...form.register("country")}
+                      placeholder={t('address.fields.countryPlaceholder')}
+                      disabled={isUpdatingOrCreating}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         );
 
       case 'review':
         const values = form.getValues();
         return (
-          <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-semibold">{t('review.title')}</h2>
-              <p className="text-muted-foreground">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl font-bold">{t('review.title')}</h2>
+              <p className="text-lg text-muted-foreground">
                 {t('review.description')}
               </p>
             </div>
-            <div className="space-y-4">
-              <Card>
+            <div className="space-y-6">
+              <Card className="border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-lg">{t('review.summary')}</CardTitle>
                 </CardHeader>
@@ -435,6 +492,27 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                   )}
                 </CardContent>
               </Card>
+              <Card className="bg-primary/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg">{t('review.nextSteps.title')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span>{t('review.nextSteps.createInvoice')}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span>{t('review.nextSteps.addClient')}</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span>{t('review.nextSteps.receivePayment')}</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
@@ -460,7 +538,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
             </span>
             <span className="font-medium">{t('progress', { percentage: Math.round(progress) })}</span>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-2 transition-all duration-300 ease-out" />
         </div>
         <div className="flex items-center justify-center gap-2">
           {STEP_IDS.map((stepId, index) => {
@@ -471,16 +549,20 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
             return (
               <div key={stepId} className="flex items-center">
                 <div className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all",
-                  isActive && "border-primary bg-primary text-primary-foreground",
+                  "flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300",
+                  isActive && "border-primary bg-primary text-primary-foreground scale-110",
                   isCompleted && "border-primary bg-primary/10 text-primary",
                   !isActive && !isCompleted && "border-muted bg-muted text-muted-foreground"
                 )}>
-                  <Icon className="h-5 w-5" />
+                  {isCompleted ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : (
+                    <Icon className="h-5 w-5" />
+                  )}
                 </div>
                 {index < STEP_IDS.length - 1 && (
                   <div className={cn(
-                    "w-12 h-0.5 mx-2 transition-colors",
+                    "w-12 h-0.5 mx-2 transition-all duration-300",
                     isCompleted ? "bg-primary" : "bg-muted"
                   )} />
                 )}

@@ -2109,8 +2109,8 @@
     "organizationDescription": "Plateforme de gestion de facturation simple et intelligente"
   },
   "onboarding": {
-    "title": "Configuration de votre workspace",
-    "description": "Complétez votre profil en quelques étapes simples",
+    "title": "Créez votre profil de facturation",
+    "description": "Vous êtes à 2 minutes de votre première facture",
     "steps": {
       "type": "Type",
       "basic": "Informations de base",
@@ -2127,32 +2127,41 @@
       "finishing": "Finalisation..."
     },
     "type": {
-      "title": "Choisissez votre type de workspace",
+      "title": "Choisissez votre profil",
       "description": "Sélectionnez le type qui correspond le mieux à votre activité",
       "individual": {
         "title": "Freelance / Indépendant",
-        "description": "Pour les travailleurs indépendants et freelances. Le nom du workspace est optionnel."
+        "badge": "Recommandé",
+        "subtitle": "Parfait pour consultants, développeurs, designers",
+        "description": "Sans formalités • Facturez en votre nom",
+        "recommended": true
       },
       "workspaceCompany": {
         "title": "Entreprise",
-        "description": "Pour les entreprises et sociétés. Le nom du workspace est recommandé."
+        "subtitle": "Pour équipes et structures légales",
+        "description": "Pour les entreprises et sociétés avec structure légale"
       }
     },
     "basic": {
       "title": "Informations de base",
-      "description": "Configurez les informations essentielles de votre workspace",
+      "description": "Configurez les informations essentielles de votre profil",
       "fields": {
         "name": "Nom du workspace",
+        "nameLabelIndividual": "Nom affiché sur les factures",
+        "nameLabelCompany": "Nom de l'entreprise",
         "nameOptional": "(Optionnel)",
-        "namePlaceholderIndividual": "Votre nom ou nom d'activité (optionnel)",
+        "namePlaceholderIndividual": "Ex: John Doe – Développeur freelance",
         "namePlaceholder": "Ma Société SARL",
+        "nameHintIndividual": "Ce nom apparaîtra sur toutes vos factures",
         "defaultCurrency": "Devise par défaut",
         "defaultCurrencyPlaceholder": "Sélectionner une devise"
       }
     },
     "legal": {
       "title": "Informations légales",
-      "description": "Ces informations sont optionnelles mais recommandées pour la facturation professionnelle",
+      "description": "Facultatif — utile pour certains clients ou export comptable",
+      "optionalBadge": "Optionnel",
+      "skipHint": "Vous pourrez compléter ces informations plus tard",
       "fields": {
         "legalName": "Raison sociale",
         "legalNamePlaceholder": "Ma Société à Responsabilité Limitée",
@@ -2164,7 +2173,10 @@
     },
     "address": {
       "title": "Adresse",
-      "description": "Ces informations sont optionnelles mais peuvent être utiles pour vos factures",
+      "description": "Optionnel — vous pouvez ajouter votre adresse complète plus tard",
+      "optionalBadge": "Optionnel",
+      "showFullAddress": "Ajouter une adresse complète",
+      "hideFullAddress": "Masquer",
       "fields": {
         "addressLine1": "Adresse ligne 1",
         "addressLine1Placeholder": "123 Rue de la République",
@@ -2179,9 +2191,15 @@
       }
     },
     "review": {
-      "title": "Confirmation",
-      "description": "Vérifiez vos informations avant de finaliser",
+      "title": "🎉 Votre profil est prêt !",
+      "description": "Vous pourrez maintenant créer votre première facture",
       "summary": "Résumé",
+      "nextSteps": {
+        "title": "Prochaines étapes",
+        "createInvoice": "Créer une facture",
+        "addClient": "Ajouter un client",
+        "receivePayment": "Recevoir un paiement"
+      },
       "labels": {
         "type": "Type:",
         "name": "Nom:",

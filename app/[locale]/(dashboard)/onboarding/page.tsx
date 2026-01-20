@@ -55,7 +55,8 @@ export default function OnboardingPage() {
           workspace={workspace ?? null}
           onComplete={async () => {
             await refetch();
-            router.push('/dashboard');
+            // Redirection guidée vers la création de la première facture
+            router.push('/invoices/new?from=onboarding');
           }}
         />
       </div>

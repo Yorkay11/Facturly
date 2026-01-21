@@ -259,12 +259,6 @@ export default function PublicInvoicePage() {
                   )}
                 </div>
               )}
-              {invoice.issuer?.taxId && (
-                <p className="text-xs opacity-70 mt-2">{t('labels.siret')} : {invoice.issuer.taxId}</p>
-              )}
-              {invoice.issuer?.vatNumber && (
-                <p className="text-xs opacity-70">{t('labels.vatNumber')} : {invoice.issuer.vatNumber}</p>
-              )}
               {invoice.issuer?.email && (
                 <p className="text-xs opacity-70 mt-2">{invoice.issuer.email}</p>
               )}

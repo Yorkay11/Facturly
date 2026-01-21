@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2, FileDown, Lock, ArrowRight } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2, FileDown, Lock, ArrowRight, Clock, CheckCircle2, AlertCircle, Info } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import {
@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import { InvoiceProgress } from "./InvoiceProgress"
 import {
     Select,
     SelectContent,
@@ -51,6 +52,7 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
+    CommandSeparator,
 } from "@/components/ui/command"
 import React, { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "next/navigation"
@@ -62,7 +64,7 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetSubscriptionQuery, useGetWorkspaceQuery, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetSubscriptionQuery, useGetWorkspaceQuery, useGetProductsQuery, type Invoice } from "@/services/facturlyApi"
 import { invoiceTemplates } from "@/types/invoiceTemplate"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
@@ -73,6 +75,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { getBackendTemplateName, getFrontendTemplateFromBackend } from "@/types/invoiceTemplate"
+import { CommandPalette } from "@/components/invoices/CommandPalette"
 
 interface InvoiceDetailsProps {
     invoiceId?: string;
@@ -91,6 +94,10 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const [open, setOpen] = React.useState(false);
     const [clientOpen, setClientOpen] = React.useState(false);
     const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
+    const [commandPaletteOpen, setCommandPaletteOpen] = React.useState(false);
+    const [lastSavedAt, setLastSavedAt] = React.useState<Date | undefined>(undefined);
+    const [isSavingDraft, setIsSavingDraft] = React.useState(false);
+    const clientSearchRef = React.useRef<HTMLButtonElement>(null);
     const { items, setItems, removeItem, clearItems } = useItemsStore();
     const metadataStore = useInvoiceMetadata();
     const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
@@ -109,6 +116,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         skip: !clientIdFromUrl,
     });
     const clients = clientsResponse?.data ?? [];
+    
+    // Précharger les produits au chargement de la page pour optimisation
+    useGetProductsQuery({ page: 1, limit: 100 });
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
     const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
@@ -175,18 +185,84 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
 
     // Date d'émission par défaut : date du jour si non définie (en mode création uniquement)
     const defaultIssueDate = issueDate || (isEditMode ? undefined : new Date());
+    
+    // Calculer la date d'échéance par défaut (+30 jours) si pas définie en mode création
+    const calculateDefaultDueDate = (issueDateValue?: Date): Date | undefined => {
+        if (isEditMode || !issueDateValue) return dueDate;
+        const defaultDueDate = new Date(issueDateValue);
+        defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+        return defaultDueDate;
+    };
+    
+    const defaultDueDate = calculateDefaultDueDate(defaultIssueDate);
+    
+    // Récupérer le dernier client utilisé depuis localStorage
+    const getLastUsedClientId = (): string | null => {
+        if (typeof window === 'undefined') return null;
+        return localStorage.getItem('facturly_last_client_id');
+    };
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
+        mode: 'onChange', // Validation en temps réel
         defaultValues: {
             receiver: storedReceiver || "",
             subject: subject || "",
             currency: defaultCurrency,
             notes: notes || "",
             issueDate: defaultIssueDate,
-            dueDate: dueDate,
+            dueDate: defaultDueDate,
         },
     })
+    
+    // Calculer la complétude du formulaire
+    const formValues = form.watch();
+    const formErrors = form.formState.errors;
+    const isFormValid = form.formState.isValid;
+    
+    const getCompletenessInfo = () => {
+        const requiredFields = ['receiver', 'subject', 'issueDate', 'dueDate', 'currency'];
+        const missingFields: string[] = [];
+        
+        requiredFields.forEach(field => {
+            if (!formValues[field as keyof typeof formValues]) {
+                missingFields.push(field);
+            } else if (formErrors[field as keyof typeof formErrors]) {
+                missingFields.push(field);
+            }
+        });
+        
+        // Vérifier aussi qu'il y a au moins un article
+        const hasItems = items.length > 0;
+        
+        const totalChecks = requiredFields.length + 1; // +1 pour les articles
+        const passedChecks = totalChecks - missingFields.length - (hasItems ? 0 : 1);
+        const percentage = Math.round((passedChecks / totalChecks) * 100);
+        
+        return {
+            percentage,
+            missingFields,
+            hasItems,
+            isComplete: missingFields.length === 0 && hasItems && isFormValid,
+            missingCount: missingFields.length + (hasItems ? 0 : 1)
+        };
+    };
+    
+    const completenessInfo = useMemo(() => getCompletenessInfo(), [formValues, formErrors, items.length, isFormValid]);
+    
+    // Calculer l'étape actuelle de la progression de la création de facture
+    const currentStep = useMemo(() => {
+        const hasClient = !!(storedClientId || clientIdFromUrl);
+        const hasItems = items.length > 0;
+        const hasDates = !!(issueDate && dueDate);
+        const isComplete = completenessInfo.isComplete;
+        
+        if (!hasClient) return 1; // Étape 1 : Client
+        if (!hasItems) return 2; // Étape 2 : Articles
+        if (!hasDates) return 3; // Étape 3 : Dates
+        if (isComplete) return 4; // Étape 4 : Prêt à envoyer
+        return 3; // Dates renseignées mais pas encore complet
+    }, [storedClientId, clientIdFromUrl, items.length, issueDate, dueDate, completenessInfo.isComplete]);
     
     // Initialiser la date d'émission dans le store si elle n'est pas définie (mode création)
     useEffect(() => {
@@ -194,8 +270,61 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             const today = new Date();
             setMetadata({ issueDate: today });
             form.setValue("issueDate", today);
+            
+            // Calculer et définir la date d'échéance automatiquement (+30 jours)
+            const autoDueDate = new Date(today);
+            autoDueDate.setDate(autoDueDate.getDate() + 30);
+            setMetadata({ dueDate: autoDueDate });
+            form.setValue("dueDate", autoDueDate);
         }
     }, [isEditMode, issueDate, existingInvoice, setMetadata, form]);
+    
+    // Calculer automatiquement la date d'échéance quand la date d'émission change (mode création uniquement)
+    useEffect(() => {
+        if (!isEditMode && !existingInvoice) {
+            const currentIssueDate = form.watch("issueDate");
+            const currentDueDate = form.getValues("dueDate");
+            
+            if (currentIssueDate && currentIssueDate instanceof Date) {
+                // Calculer la nouvelle date d'échéance (+30 jours)
+                const newDueDate = new Date(currentIssueDate);
+                newDueDate.setDate(newDueDate.getDate() + 30);
+                
+                // Mettre à jour seulement si la date d'échéance actuelle n'a pas été modifiée manuellement
+                // ou si elle n'existe pas
+                if (!currentDueDate || currentDueDate.getTime() === defaultDueDate?.getTime()) {
+                    setMetadata({ dueDate: newDueDate });
+                    form.setValue("dueDate", newDueDate);
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form.watch("issueDate"), isEditMode, existingInvoice]);
+    
+    // Générer automatiquement le sujet quand un client est sélectionné
+    useEffect(() => {
+        if (!isEditMode && !existingInvoice) {
+            const currentReceiver = form.watch("receiver");
+            const currentSubject = form.getValues("subject");
+            
+            // Générer le sujet automatiquement si :
+            // - Un client est sélectionné
+            // - Le sujet est vide ou correspond au format "Facture [ancien client]"
+            if (currentReceiver && currentReceiver.trim() !== '') {
+                const expectedSubject = `Facture ${currentReceiver}`;
+                const currentSubjectLower = currentSubject?.toLowerCase() || '';
+                const receiverLower = currentReceiver.toLowerCase();
+                
+                // Si le sujet est vide ou commence par "Facture" suivi d'un autre nom de client
+                if (!currentSubject || 
+                    (currentSubjectLower.startsWith('facture ') && !currentSubjectLower.includes(receiverLower))) {
+                    form.setValue("subject", expectedSubject);
+                    setMetadata({ subject: expectedSubject });
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [form.watch("receiver"), isEditMode, existingInvoice]);
     
     // Gérer la création d'un nouveau client
     const handleClientCreated = (newClient: { id: string; name: string }) => {
@@ -203,10 +332,22 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         refetchClients().then(() => {
             // Sélectionner automatiquement le nouveau client après le rafraîchissement
             form.setValue("receiver", newClient.name);
+            
+            // Générer automatiquement le sujet
+            const autoSubject = `Facture ${newClient.name}`;
+            form.setValue("subject", autoSubject);
+            
             setMetadata({
                 receiver: newClient.name,
                 clientId: newClient.id,
+                subject: autoSubject,
             });
+            
+            // Sauvegarder le dernier client utilisé dans localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('facturly_last_client_id', newClient.id);
+            }
+            
             // Afficher un toast de confirmation
             toast.success(t('success.clientCreated'), {
                 description: t('success.clientCreatedDescription', { name: newClient.name }),
@@ -222,30 +363,66 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             const currentReceiver = form.getValues("receiver");
             if (!currentReceiver || currentReceiver !== clientFromUrl.name) {
                 form.setValue("receiver", clientFromUrl.name);
+                
+                // Générer automatiquement le sujet
+                const autoSubject = `Facture ${clientFromUrl.name}`;
+                form.setValue("subject", autoSubject);
+                
                 setMetadata({
                     receiver: clientFromUrl.name,
                     clientId: clientFromUrl.id,
+                    subject: autoSubject,
                 });
+                
+                // Sauvegarder le dernier client utilisé dans localStorage
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('facturly_last_client_id', clientFromUrl.id);
+                }
             }
         }
     }, [clientFromUrl, isLoadingClientFromUrl, form, setMetadata]);
     
-    // Si un client est déjà sélectionné dans le store, le pré-remplir
+    // Si un client est déjà sélectionné dans le store ou localStorage, le pré-remplir
     useEffect(() => {
-        if (storedClientId && !clientIdFromUrl && clients.length > 0 && !isLoadingClients) {
-            const storedClient = clients.find((c) => c.id === storedClientId);
-            if (storedClient) {
+        if (!clientIdFromUrl && clients.length > 0 && !isLoadingClients && !isEditMode && !existingInvoice) {
+            let clientToUse = null;
+            
+            // Priorité 1: Client dans le store
+            if (storedClientId) {
+                clientToUse = clients.find((c) => c.id === storedClientId);
+            }
+            
+            // Priorité 2: Dernier client utilisé (localStorage)
+            if (!clientToUse) {
+                const lastClientId = getLastUsedClientId();
+                if (lastClientId) {
+                    clientToUse = clients.find((c) => c.id === lastClientId);
+                }
+            }
+            
+            if (clientToUse) {
                 const currentReceiver = form.getValues("receiver");
-                if (!currentReceiver || currentReceiver !== storedClient.name) {
-                    form.setValue("receiver", storedClient.name);
+                if (!currentReceiver || currentReceiver !== clientToUse.name) {
+                    form.setValue("receiver", clientToUse.name);
+                    
+                    // Générer automatiquement le sujet
+                    const autoSubject = `Facture ${clientToUse.name}`;
+                    form.setValue("subject", autoSubject);
+                    
                     setMetadata({
-                        receiver: storedClient.name,
-                        clientId: storedClient.id,
+                        receiver: clientToUse.name,
+                        clientId: clientToUse.id,
+                        subject: autoSubject,
                     });
+                    
+                    // Sauvegarder le dernier client utilisé dans localStorage
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('facturly_last_client_id', clientToUse.id);
+                    }
                 }
             }
         }
-    }, [storedClientId, clients, isLoadingClients, form, setMetadata, clientIdFromUrl]);
+    }, [storedClientId, clients, isLoadingClients, form, setMetadata, clientIdFromUrl, isEditMode, existingInvoice]);
     
     // Charger les données de la facture existante dans le formulaire si on est en mode édition
     useEffect(() => {
@@ -449,6 +626,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     
     // Fonction pour sauvegarder le brouillon (création ou mise à jour)
     const handleSaveDraft = async (skipRedirect: boolean = false) => {
+        setIsSavingDraft(true);
         try {
             // Valider que le client est sélectionné
             const clientId = storedClientId || clientIdFromUrl;
@@ -510,6 +688,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     toast.success(t('success.draftUpdated'), {
                         description: t('success.draftUpdatedDescription', { number: response?.invoiceNumber || invoiceId }),
                     });
+                    
+                    // Mettre à jour la date de dernière sauvegarde
+                    setLastSavedAt(new Date());
                     
                     // Rediriger vers la page de détails de la facture seulement si skipRedirect est false
                     if (!skipRedirect) {
@@ -593,6 +774,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         description: t('success.draftSavedDescription', { number: invoiceData?.invoiceNumber || newInvoiceId }),
                     });
                     
+                    // Mettre à jour la date de dernière sauvegarde
+                    setLastSavedAt(new Date());
+                    
                     // Réinitialiser les stores après la création réussie seulement si skipRedirect est false
                     // Si skipRedirect est true, on laisse le parent gérer la navigation et la réinitialisation
                     if (!skipRedirect) {
@@ -615,6 +799,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             toast.error(t('errors.saveError'), {
                 description: errorMessage,
             });
+        } finally {
+            setIsSavingDraft(false);
         }
     }
 
@@ -764,9 +950,103 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         setItems(arrayMove(items, oldIndex, newIndex))
     }
 
+    // Gérer le focus sur le champ client
+    const handleFocusClient = () => {
+        setClientOpen(true);
+        // Focus sera géré automatiquement par le Popover
+    };
+
+    // Gestionnaires de raccourcis clavier
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ne pas intercepter si on est dans un input, textarea, ou un modal
+            const target = e.target as HTMLElement;
+            const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            const isContentEditable = target.isContentEditable;
+            const isModalOpen = isClientModalOpen;
+            
+            // Ctrl/Cmd + K : Ouvrir palette de commandes
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k' && !isInput && !isContentEditable) {
+                e.preventDefault();
+                setCommandPaletteOpen((open) => !open);
+                return;
+            }
+
+            // Ne pas intercepter les autres raccourcis si on est dans un input ou modal
+            if (isInput || isContentEditable || isModalOpen) {
+                // Mais permettre Escape pour fermer les modaux
+                if (e.key === 'Escape') {
+                    if (isClientModalOpen) {
+                        setIsClientModalOpen(false);
+                    }
+                    if (clientOpen) {
+                        setClientOpen(false);
+                    }
+                }
+                return;
+            }
+
+            // Ctrl/Cmd + S : Sauvegarder le brouillon
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                // Appeler handleSaveDraft via la référence du formulaire
+                const formData = form.getValues();
+                const currentClientId = storedClientId || clientIdFromUrl;
+                if (currentClientId && formData.issueDate && formData.dueDate) {
+                    handleSaveDraft(false).catch(() => {});
+                } else {
+                    toast.error(t('errors.clientMissing'), {
+                        description: t('errors.clientMissingDescription', { action: t('actions.save') }),
+                    });
+                }
+                return;
+            }
+
+            // Ctrl/Cmd + Enter : Envoyer la facture
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault();
+                form.handleSubmit(onSubmit)();
+                return;
+            }
+
+            // N : Ajouter un nouvel article (seulement si on est dans la section articles)
+            if (e.key === 'n' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+                // Vérifier si on est focus sur la section articles (approximation)
+                const invoiceLinesSection = document.querySelector('[data-section="invoice-lines"]');
+                if (invoiceLinesSection && invoiceLinesSection.contains(target) || document.activeElement?.closest('[data-section="invoice-lines"]')) {
+                    e.preventDefault();
+                    openCreate();
+                    return;
+                }
+            }
+
+            // Escape : Fermer les modaux
+            if (e.key === 'Escape') {
+                if (clientOpen) {
+                    setClientOpen(false);
+                }
+                if (commandPaletteOpen) {
+                    setCommandPaletteOpen(false);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isClientModalOpen, clientOpen, commandPaletteOpen, openCreate, form, storedClientId, clientIdFromUrl, t]);
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-6">
+                {/* Indicateur de progression (uniquement en mode création) */}
+                {!isEditMode && (
+                    <InvoiceProgress
+                        currentStep={currentStep}
+                        isSavingDraft={isSavingDraft}
+                        lastSavedAt={lastSavedAt}
+                        isEditMode={isEditMode}
+                    />
+                )}
                 <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <div>
                         <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceInfo.title')}</p>
@@ -802,7 +1082,10 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                         </PopoverTrigger>
                                         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                                             <Command shouldFilter={true}>
-                                                <CommandInput placeholder={t('fields.receiver.searchPlaceholder')} className="h-9" />
+                                                <CommandInput 
+                                                    placeholder={t('fields.receiver.searchPlaceholder') || "Rechercher un client..."} 
+                                                    className="h-9"
+                                                />
                                                 <CommandList>
                                                     {isLoadingClients ? (
                                                         <div className="py-6 text-center text-sm text-muted-foreground">
@@ -810,63 +1093,118 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <CommandEmpty>{t('fields.receiver.empty')}</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {clients.length === 0 ? (
-                                                                    <div className="py-6 text-center text-sm text-muted-foreground">
-                                                                        {t('fields.receiver.noClients')}
-                                                                    </div>
-                                                                ) : (
-                                                                    clients.map((client) => (
-                                                                        <CommandItem
-                                                                            key={client.id}
-                                                                            value={`${client.name} ${client.email || ""} ${client.phone || ""} ${client.city || ""}`}
-                                                                            onSelect={() => {
-                                                                                field.onChange(client.name);
-                                                                                setMetadata({
-                                                                                    receiver: client.name,
-                                                                                    clientId: client.id,
-                                                                                });
-                                                                                setClientOpen(false);
-                                                                            }}
-                                                                            className="cursor-pointer"
-                                                                        >
-                                                                            <div className="flex flex-1 flex-col gap-0.5">
-                                                                                <span className="font-medium">{client.name}</span>
-                                                                                {(client.email || client.phone || client.city) && (
-                                                                                    <span className="text-xs text-muted-foreground">
-                                                                                        {[client.email, client.phone, client.city].filter(Boolean).join(" • ")}
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                            <Check
-                                                                                className={cn(
-                                                                                    "ml-2 h-4 w-4 shrink-0",
-                                                                                    field.value === client.name ? "opacity-100" : "opacity-0"
-                                                                                )}
-                                                                            />
-                                                                        </CommandItem>
-                                                                    ))
-                                                                )}
-                                                            </CommandGroup>
-                                                            <CommandGroup>
-                                                                <div className="border-t border-border p-1">
+                                                            <CommandEmpty>
+                                                                <div className="py-6 text-center">
+                                                                    <p className="text-sm text-muted-foreground mb-2">{t('fields.receiver.empty')}</p>
                                                                     <Button
                                                                         type="button"
-                                                                        variant="ghost"
+                                                                        variant="outline"
                                                                         size="sm"
-                                                                        className="w-full justify-start gap-2 text-primary hover:bg-primary/10"
+                                                                        className="gap-2"
                                                                         onClick={(e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
                                                                             setClientOpen(false);
-                                                                            setIsClientModalOpen(true);
+                                                                            // Utiliser un setTimeout pour s'assurer que le popover est fermé avant d'ouvrir le modal
+                                                                            setTimeout(() => {
+                                                                                setIsClientModalOpen(true);
+                                                                            }, 100);
                                                                         }}
                                                                     >
                                                                         <PlusIcon className="h-4 w-4" />
                                                                         {t('fields.receiver.createNew')}
                                                                     </Button>
                                                                 </div>
+                                                            </CommandEmpty>
+                                                            <CommandGroup>
+                                                                {(() => {
+                                                                    // Trier les clients : dernier utilisé en premier
+                                                                    const lastUsedClientId = getLastUsedClientId();
+                                                                    const sortedClients = [...clients].sort((a, b) => {
+                                                                        if (a.id === lastUsedClientId) return -1;
+                                                                        if (b.id === lastUsedClientId) return 1;
+                                                                        return 0;
+                                                                    });
+
+                                                                    return sortedClients.length === 0 ? (
+                                                                        <div className="py-6 text-center text-sm text-muted-foreground">
+                                                                            {t('fields.receiver.noClients')}
+                                                                        </div>
+                                                                    ) : (
+                                                                        sortedClients.map((client) => {
+                                                                            const isLastUsed = client.id === lastUsedClientId;
+                                                                            return (
+                                                                                <CommandItem
+                                                                                    key={client.id}
+                                                                                    value={`${client.name} ${client.email || ""} ${client.phone || ""} ${client.city || ""}`}
+                                                                                    onSelect={() => {
+                                                                                        field.onChange(client.name);
+                                                                                        
+                                                                                        // Générer automatiquement le sujet
+                                                                                        const autoSubject = `Facture ${client.name}`;
+                                                                                        form.setValue("subject", autoSubject);
+                                                                                        
+                                                                                        setMetadata({
+                                                                                            receiver: client.name,
+                                                                                            clientId: client.id,
+                                                                                            subject: autoSubject,
+                                                                                        });
+                                                                                        
+                                                                                        // Sauvegarder le dernier client utilisé dans localStorage
+                                                                                        if (typeof window !== 'undefined') {
+                                                                                            localStorage.setItem('facturly_last_client_id', client.id);
+                                                                                        }
+                                                                                        
+                                                                                        setClientOpen(false);
+                                                                                    }}
+                                                                                    className={cn(
+                                                                                        "cursor-pointer",
+                                                                                        isLastUsed && "bg-accent/50"
+                                                                                    )}
+                                                                                >
+                                                                                    <div className="flex flex-1 flex-col gap-0.5">
+                                                                                        <div className="flex items-center gap-2">
+                                                                                            <span className="font-medium">{client.name}</span>
+                                                                                            {isLastUsed && (
+                                                                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded-md">
+                                                                                                    <Clock className="h-3 w-3" />
+                                                                                                    {t('fields.receiver.recent') || "Récent"}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </div>
+                                                                                        {(client.email || client.phone || client.city) && (
+                                                                                            <span className="text-xs text-muted-foreground">
+                                                                                                {[client.email, client.phone, client.city].filter(Boolean).join(" • ")}
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                    <Check
+                                                                                        className={cn(
+                                                                                            "ml-2 h-4 w-4 shrink-0",
+                                                                                            field.value === client.name ? "opacity-100" : "opacity-0"
+                                                                                        )}
+                                                                                    />
+                                                                                </CommandItem>
+                                                                            );
+                                                                        })
+                                                                    );
+                                                                })()}
+                                                            </CommandGroup>
+                                                            <CommandSeparator />
+                                                            <CommandGroup>
+                                                                <CommandItem
+                                                                    onSelect={() => {
+                                                                        setClientOpen(false);
+                                                                        // Utiliser un setTimeout pour s'assurer que le popover est fermé avant d'ouvrir le modal
+                                                                        setTimeout(() => {
+                                                                            setIsClientModalOpen(true);
+                                                                        }, 100);
+                                                                    }}
+                                                                    className="cursor-pointer text-primary font-medium"
+                                                                >
+                                                                    <PlusIcon className="mr-2 h-4 w-4" />
+                                                                    <span>{t('fields.receiver.createNew')}</span>
+                                                                </CommandItem>
                                                             </CommandGroup>
                                                         </>
                                                     )}
@@ -1042,7 +1380,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     </div>
                 </section>
 
-                <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div>
                             <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
@@ -1173,6 +1511,92 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             </Button>
                         </div>
                     )}
+                    {/* Indicateur de complétude */}
+                    {!isEditMode && (
+                        <div className={cn(
+                            "flex items-center gap-2 rounded-lg border p-3 transition-colors",
+                            completenessInfo.isComplete
+                                ? "border-green-200 bg-green-50"
+                                : completenessInfo.percentage >= 60
+                                ? "border-amber-200 bg-amber-50"
+                                : "border-red-200 bg-red-50"
+                        )}>
+                            {completenessInfo.isComplete ? (
+                                <>
+                                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-green-900">
+                                            {t('validation.readyToSend') || "Prêt à envoyer"}
+                                        </p>
+                                        <p className="text-xs text-green-700">
+                                            {t('validation.readyToSendDescription') || "Tous les champs requis sont remplis et la facture contient au moins un article."}
+                                        </p>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <AlertCircle className={cn(
+                                        "h-5 w-5",
+                                        completenessInfo.percentage >= 60 ? "text-amber-600" : "text-red-600"
+                                    )} />
+                                    <div className="flex-1">
+                                        <p className={cn(
+                                            "text-sm font-medium",
+                                            completenessInfo.percentage >= 60 ? "text-amber-900" : "text-red-900"
+                                        )}>
+                                            {completenessInfo.missingCount === 1
+                                                ? t('validation.missingFields_one', { count: completenessInfo.missingCount })
+                                                : t('validation.missingFields_other', { count: completenessInfo.missingCount })}
+                                        </p>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200">
+                                                <div
+                                                    className={cn(
+                                                        "h-full transition-all duration-300",
+                                                        completenessInfo.percentage >= 60 ? "bg-amber-500" : "bg-red-500"
+                                                    )}
+                                                    style={{ width: `${completenessInfo.percentage}%` }}
+                                                />
+                                            </div>
+                                            <span className={cn(
+                                                "text-xs font-medium",
+                                                completenessInfo.percentage >= 60 ? "text-amber-700" : "text-red-700"
+                                            )}>
+                                                {completenessInfo.percentage}%
+                                            </span>
+                                        </div>
+                                        {completenessInfo.missingFields.length > 0 && (
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                {t('validation.missingFieldsHint') || "Champs requis manquants : "}
+                                                {completenessInfo.missingFields.map((field, index) => {
+                                                    const fieldNames: Record<string, string> = {
+                                                        receiver: t('fields.receiver.label') || "Destinataire",
+                                                        subject: t('fields.subject.label') || "Objet",
+                                                        issueDate: t('fields.issueDate.label') || "Date d'émission",
+                                                        dueDate: t('fields.dueDate.label') || "Date d'échéance",
+                                                        currency: t('fields.currency.label') || "Devise",
+                                                    };
+                                                    return (
+                                                        <span key={field}>
+                                                            {index > 0 && ", "}
+                                                            {fieldNames[field] || field}
+                                                        </span>
+                                                    );
+                                                })}
+                                                {!completenessInfo.hasItems && completenessInfo.missingFields.length > 0 && ", "}
+                                                {!completenessInfo.hasItems && (t('sections.invoiceLines.title') || "Articles")}
+                                            </p>
+                                        )}
+                                        {!completenessInfo.hasItems && (
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                {t('validation.noItems') || "Au moins un article est requis."}
+                                            </p>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
                     <div className="flex items-center justify-end gap-3">
                         <Button 
                             type="button" 
@@ -1183,7 +1607,12 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         >
                             {isSaving ? (isEditMode ? t('buttons.updating') : t('buttons.saving')) : (isEditMode ? t('buttons.updateDraft') : t('buttons.saveDraft'))}
                         </Button>
-                        <Button type="submit" className="w-full sm:w-auto" disabled={isSaving}>
+                        <Button 
+                            type="submit" 
+                            className="w-full sm:w-auto" 
+                            disabled={isSaving || (!isEditMode && !completenessInfo.isComplete)}
+                            title={!completenessInfo.isComplete && !isEditMode ? (t('validation.notReadyToSend') || "Complétez tous les champs requis") : undefined}
+                        >
                             {isSaving && isSendingInvoice ? t('buttons.sending') : t('buttons.send')}
                         </Button>
                     </div>
@@ -1193,6 +1622,16 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 open={isClientModalOpen}
                 onClose={() => setIsClientModalOpen(false)}
                 onSuccess={handleClientCreated}
+            />
+            <CommandPalette
+                open={commandPaletteOpen}
+                onOpenChange={setCommandPaletteOpen}
+                onSaveDraft={() => handleSaveDraft(false)}
+                onSendInvoice={() => form.handleSubmit(onSubmit)()}
+                onAddItem={openCreate}
+                onFocusClient={handleFocusClient}
+                canSaveDraft={!!storedClientId || !!clientIdFromUrl}
+                canSendInvoice={!!storedClientId || !!clientIdFromUrl}
             />
         </Form>
     )

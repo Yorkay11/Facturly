@@ -25,7 +25,9 @@
     "amount": "Montant",
     "total": "Total",
     "invoice": "Facture",
-    "client": "Client"
+    "client": "Client",
+    "retry": "Réessayer",
+    "dismiss": "Ignorer"
   },
   "beta": {
     "badge": "Bêta",
@@ -272,6 +274,16 @@
       "dashboard": "Tableau de bord",
       "invoices": "Factures"
     },
+    "commands": {
+      "searchPlaceholder": "Rechercher une commande...",
+      "noResults": "Aucun résultat trouvé.",
+      "actions": "Actions",
+      "navigation": "Navigation",
+      "saveDraft": "Sauvegarder le brouillon",
+      "sendInvoice": "Envoyer la facture",
+      "addItem": "Ajouter un article",
+      "focusClient": "Rechercher un client"
+    },
     "create": "Créer une facture",
     "edit": "Modifier la facture",
     "view": "Voir la facture",
@@ -338,7 +350,14 @@
         "subjectRequired": "L'objet est requis",
         "issueDateRequired": "La date d'émission est requise",
         "dueDateRequired": "La date d'échéance est requise",
-        "currencyRequired": "La devise est obligatoire"
+        "currencyRequired": "La devise est obligatoire",
+        "readyToSend": "Prêt à envoyer",
+        "readyToSendDescription": "Tous les champs requis sont remplis et la facture contient au moins un article.",
+        "missingFields_one": "{count} élément manquant",
+        "missingFields_other": "{count} éléments manquants",
+        "missingFieldsHint": "Champs requis manquants :",
+        "noItems": "Au moins un article est requis.",
+        "notReadyToSend": "Complétez tous les champs requis pour pouvoir envoyer la facture."
       },
       "loading": {
         "sending": "Envoi de la facture...",
@@ -372,7 +391,8 @@
           "loading": "Chargement des clients...",
           "empty": "Aucun client trouvé.",
           "noClients": "Aucun client disponible. Créez un client depuis la page Clients.",
-          "createNew": "Créer un nouveau client"
+          "createNew": "Créer un nouveau client",
+          "recent": "Récent"
         },
         "subject": {
           "label": "Objet",
@@ -466,11 +486,11 @@
           "service": "Prestation",
           "product": "Produit"
         },
-        "buttons": {
-          "cancel": "Annuler",
-          "add": "Ajouter l'article",
-          "update": "Mettre à jour"
-        },
+      "buttons": {
+        "cancel": "Annuler",
+        "add": "Ajouter l'article",
+        "update": "Mettre à jour"
+      },
         "saveDialog": {
           "title": "Sauvegarder dans le catalogue ?",
           "description": "Voulez-vous sauvegarder cet article dans votre catalogue de produits ? Il pourra être réutilisé pour d'autres factures.",
@@ -545,6 +565,23 @@
         "save": "de sauvegarder le brouillon"
       }
     },
+    "progress": {
+      "title": "Progression de la création",
+      "saving": "Sauvegarde en cours...",
+      "steps": {
+        "client": "Client",
+        "items": "Articles",
+        "dates": "Dates",
+        "send": "Envoi"
+      },
+      "saved": {
+        "justNow": "À l'instant",
+        "minutesAgo": "Il y a {count} minute(s)",
+        "hoursAgo": "Il y a {count} heure(s)",
+        "draftSaved": "Brouillon sauvegardé",
+        "draftUpdated": "Brouillon mis à jour"
+      }
+    },
     "preview": {
       "title": "Aperçu",
       "description": "Synchronisé avec les informations saisies.",
@@ -586,6 +623,12 @@
       "cancelSuccess": "Facture annulée",
       "cancelSuccessDescription": "La facture {number} a été annulée avec succès.",
       "error": "Une erreur est survenue lors de la suppression."
+    },
+    "duplicate": {
+      "button": "Dupliquer",
+      "success": "Facture dupliquée",
+      "successDescription": "La facture {number} a été dupliquée avec succès.",
+      "error": "Erreur lors de la duplication de la facture"
     },
     "rejectModal": {
       "title": "Refuser la facture",
@@ -820,8 +863,9 @@
     "modal": {
       "addTitle": "Ajouter un client",
       "editTitle": "Modifier le client",
-      "description": "Remplissez les informations du client par sections. Les champs marqués d'un astérisque (*) sont obligatoires.",
+      "description": "Remplissez les informations essentielles du client. Les champs marqués d'un astérisque (*) sont obligatoires.",
       "editDescription": "Modifiez les informations du client. Les champs marqués d'un astérisque (*) sont obligatoires.",
+      "addressSection": "Adresse (optionnel)",
       "tabs": {
         "informations": "Informations",
         "adresse": "Adresse",
@@ -845,7 +889,7 @@
         "country": "Pays",
         "countryPlaceholder": "France",
         "taxId": "Numéro d'identification fiscale",
-        "taxIdPlaceholder": "SIRET, TVA, etc.",
+        "taxIdPlaceholder": "NINEA, RCCM, Tax ID, etc.",
         "notes": "Notes",
         "notesPlaceholder": "Notes supplémentaires (optionnel)"
       },
@@ -887,7 +931,7 @@
         "postalCode": "Code postal",
         "city": "Ville",
         "country": "Pays",
-        "taxId": "SIRET/TVA",
+        "taxId": "Tax ID/TVA",
         "notes": "Notes"
       },
       "errors": {
@@ -916,7 +960,7 @@
       },
       "format": {
         "title": "Format CSV attendu :",
-        "columns": "Colonnes possibles : Nom, Email, Téléphone, Adresse, Code postal, Ville, Pays, SIRET/TVA, Notes",
+        "columns": "Colonnes possibles : Nom, Email, Téléphone, Adresse, Code postal, Ville, Pays, Tax ID/TVA, Notes",
         "nameRequired": "Le nom est obligatoire, les autres champs sont optionnels",
         "headersRequired": "La première ligne doit contenir les en-têtes",
         "separator": "Séparateur : virgule (,) ou point-virgule (;)"
@@ -1669,14 +1713,16 @@
         "legalName": "Raison sociale",
         "defaultCurrency": "Devise par défaut",
         "taxId": "Numéro d'identification fiscale",
-        "taxIdPlaceholder": "SIRET, etc.",
+        "taxIdPlaceholder": "NINEA, RCCM, etc.",
         "vatNumber": "Numéro de TVA",
         "addressLine1": "Adresse ligne 1",
         "addressLine2": "Adresse ligne 2",
         "postalCode": "Code postal",
         "city": "Ville",
         "country": "Pays",
-        "countryPlaceholder": "France"
+        "countryPlaceholder": "Sélectionner votre pays",
+        "countryNotSpecified": "Non spécifié",
+        "countryHint": "Le taux de TVA sera appliqué automatiquement selon votre pays"
       },
       "validation": {
         "typeRequired": "Le type de workspace est obligatoire",
@@ -1707,6 +1753,10 @@
         "dateFormat": "Format de date",
         "currency": "Devise",
         "taxRate": "Taux de TVA (%)",
+        "taxRateInfo": {
+          "title": "Taux de TVA automatique",
+          "description": "Le taux de TVA est appliqué automatiquement selon le pays sélectionné dans votre workspace. Vous pouvez modifier le pays dans les paramètres du workspace."
+        },
         "paymentTerms": "Délai de paiement",
         "paymentTermsHint": "En jours (ex: 30 = 30 jours)"
       },
@@ -1721,7 +1771,6 @@
         "invoicePrefixRequired": "Le préfixe est obligatoire",
         "dateFormatRequired": "Le format de date est obligatoire",
         "currencyRequired": "La devise est obligatoire",
-        "taxRateRequired": "Le taux de TVA est obligatoire",
         "paymentTermsPositive": "Les termes de paiement doivent être positifs"
       },
       "sequence": {
@@ -1949,7 +1998,7 @@
         "remaining": "Restant à payer",
         "totalTTC": "Total TTC",
         "notes": "Notes",
-        "siret": "SIRET",
+        "siret": "Tax ID",
         "vatNumber": "TVA"
       },
       "empty": {
@@ -2025,10 +2074,12 @@
         "method": "Méthode de paiement",
         "methods": {
           "online": "Paiement en ligne",
+          "mobileMoney": "Payer",
           "bankTransfer": "Virement bancaire",
           "check": "Chèque",
           "cash": "Espèces"
         },
+        "payWithMobileMoney": "Payer",
         "email": "Email (optionnel)",
         "emailPlaceholder": "votre@email.com",
         "notes": "Notes (optionnel)",
@@ -2048,6 +2099,24 @@
         "success": "Paiement effectué",
         "successDescription": "Le paiement de {amount} a été effectué avec succès.",
         "error": "Une erreur est survenue lors du paiement."
+      }
+    }
+  },
+  "payments": {
+    "moneroo": {
+      "title": "Paiement",
+      "description": "Vous serez redirigé vers la page de paiement pour finaliser votre transaction",
+      "phoneNumber": "Numéro de téléphone",
+      "phoneHint": "Format international requis (ex: +221771234567)",
+      "amount": "Montant",
+      "continue": "Continuer",
+      "processing": "Traitement en cours...",
+      "redirectInfo": "Vous serez redirigé vers la page de paiement pour choisir votre méthode de paiement",
+      "errors": {
+        "phoneRequired": "Le numéro de téléphone est requis",
+        "invalidPhoneFormat": "Format de numéro de téléphone invalide. Utilisez le format international (ex: +221771234567)",
+        "checkoutUrlMissing": "Impossible d'obtenir l'URL de paiement",
+        "paymentFailed": "Échec du paiement. Veuillez réessayer."
       }
     }
   },
@@ -2143,8 +2212,9 @@
       }
     },
     "basic": {
-      "title": "Informations de base",
-      "description": "Configurez les informations essentielles de votre profil",
+      "title": "Informations essentielles",
+      "description": "Configurez les informations de base pour commencer",
+      "note": "💡 Vous pourrez ajouter vos informations légales et votre adresse plus tard dans les paramètres",
       "fields": {
         "name": "Nom du workspace",
         "nameLabelIndividual": "Nom affiché sur les factures",
@@ -2154,7 +2224,11 @@
         "namePlaceholder": "Ma Société SARL",
         "nameHintIndividual": "Ce nom apparaîtra sur toutes vos factures",
         "defaultCurrency": "Devise par défaut",
-        "defaultCurrencyPlaceholder": "Sélectionner une devise"
+        "defaultCurrencyPlaceholder": "Sélectionner une devise",
+        "country": "Pays",
+        "countryPlaceholder": "Sélectionner votre pays",
+        "countryNotSpecified": "Non spécifié",
+        "countryHint": "Le taux de TVA sera appliqué automatiquement selon votre pays"
       }
     },
     "legal": {
@@ -2165,10 +2239,10 @@
       "fields": {
         "legalName": "Raison sociale",
         "legalNamePlaceholder": "Ma Société à Responsabilité Limitée",
-        "taxId": "Numéro SIRET / Tax ID",
-        "taxIdPlaceholder": "12345678901234",
+        "taxId": "Numéro d'identification fiscale",
+        "taxIdPlaceholder": "Ex: NINEA, RCCM, Tax ID",
         "vatNumber": "Numéro de TVA",
-        "vatNumberPlaceholder": "FR12345678901"
+        "vatNumberPlaceholder": "Ex: SN12345678901"
       }
     },
     "address": {

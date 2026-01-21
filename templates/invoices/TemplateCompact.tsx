@@ -49,7 +49,6 @@ const TemplateCompact = ({
           <p className="font-bold mb-1 uppercase">Entreprise</p>
           <p className="mb-0.5">{workspace?.name || "-"}</p>
           <p className="mb-0.5">{workspaceAddress}</p>
-          {workspace?.vatNumber && <p>TVA: {workspace.vatNumber}</p>}
         </div>
         <div>
           <p className="font-bold mb-1 uppercase">Client</p>

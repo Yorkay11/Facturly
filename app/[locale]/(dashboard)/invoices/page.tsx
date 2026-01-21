@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { Plus, Download, Trash2 } from "lucide-react";
+import { Plus, Download, Trash2, Copy } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
@@ -35,7 +35,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
-import { useGetInvoicesQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation } from "@/services/facturlyApi";
+import { useGetInvoicesQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useGetInvoiceByIdQuery, useCreateInvoiceMutation, facturlyApi } from "@/services/facturlyApi";
+import { store } from "@/lib/redux/store";
 import { toast } from "sonner";
 
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
@@ -49,7 +50,9 @@ export default function InvoicesPage() {
   const { data: invoicesResponse, isLoading, isError } = useGetInvoicesQuery({ page: 1, limit: 100 });
   const [deleteInvoice, { isLoading: isDeleting }] = useDeleteInvoiceMutation();
   const [cancelInvoice, { isLoading: isCancelling }] = useCancelInvoiceMutation();
+  const [createInvoice, { isLoading: isDuplicating }] = useCreateInvoiceMutation();
   const [invoiceToDelete, setInvoiceToDelete] = useState<{ id: string; number: string; status: string } | null>(null);
+  const [invoiceToDuplicate, setInvoiceToDuplicate] = useState<string | null>(null);
   
   const invoices = invoicesResponse?.data ?? [];
   const totalInvoices = invoicesResponse?.meta?.total ?? 0;
@@ -99,6 +102,65 @@ export default function InvoicesPage() {
       toast.error(commonT('error'), {
         description: errorMessage,
       });
+    }
+  };
+
+  // Fonction pour dupliquer une facture
+  const handleDuplicate = async (invoiceId: string) => {
+    try {
+      // Récupérer la facture complète avec RTK Query
+      const invoiceResult = await store.dispatch(
+        facturlyApi.endpoints.getInvoiceById.initiate(invoiceId)
+      );
+      
+      if ('error' in invoiceResult) {
+        throw new Error('Erreur lors de la récupération de la facture');
+      }
+      
+      const invoice = invoiceResult.data;
+      
+      if (!invoice) {
+        throw new Error('Facture introuvable');
+      }
+      
+      // Préparer les données de la nouvelle facture
+      const today = new Date().toISOString().split('T')[0];
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+      const newDueDate = dueDate.toISOString().split('T')[0];
+      
+      const duplicatePayload = {
+        clientId: invoice.client.id,
+        issueDate: today,
+        dueDate: newDueDate,
+        currency: invoice.currency,
+        items: invoice.items?.map((item: any) => ({
+          productId: item.product?.id || undefined,
+          description: item.description,
+          quantity: item.quantity.toString(),
+          unitPrice: item.unitPrice.toString(),
+        })) || [],
+        notes: invoice.notes || undefined,
+        recipientEmail: invoice.recipientEmail || undefined,
+        templateName: invoice.templateName || undefined,
+      };
+      
+      // Créer la nouvelle facture
+      const newInvoice = await createInvoice(duplicatePayload).unwrap();
+      
+      toast.success(t('duplicate.success') || 'Facture dupliquée avec succès', {
+        description: t('duplicate.successDescription', { number: invoice.invoiceNumber }) || `La facture ${invoice.invoiceNumber} a été dupliquée`,
+      });
+      
+      // Rediriger vers la nouvelle facture en mode édition
+      router.push(`/invoices/${newInvoice.id}/edit`);
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message || t('duplicate.error') || 'Erreur lors de la duplication';
+      toast.error(commonT('error'), {
+        description: errorMessage,
+      });
+    } finally {
+      setInvoiceToDuplicate(null);
     }
   };
   
@@ -207,16 +269,35 @@ export default function InvoicesPage() {
                       {formatCurrency(invoice.totalAmount, invoice.currency)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDeleteClick(invoice)}
-                        disabled={isDeleting || isCancelling || invoice.status === "cancelled"}
-                        title={invoice.status === "draft" ? t('deleteDialog.delete') : t('deleteDialog.cancelAction')}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setInvoiceToDuplicate(invoice.id);
+                            handleDuplicate(invoice.id);
+                          }}
+                          disabled={isDuplicating}
+                          title={t('duplicate.button') || 'Dupliquer la facture'}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(invoice);
+                          }}
+                          disabled={isDeleting || isCancelling || invoice.status === "cancelled"}
+                          title={invoice.status === "draft" ? t('deleteDialog.delete') : t('deleteDialog.cancelAction')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

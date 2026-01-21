@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTranslations, useLocale } from 'next-intl';
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import Image from "next/image";
+import { MonerooPaymentModal } from "@/components/payments/MonerooPaymentModal";
 
 export default function PublicPayPage() {
   const params = useParams();
@@ -43,6 +44,7 @@ export default function PublicPayPage() {
   const [paymentMethod, setPaymentMethod] = useState("online_payment");
   const [paymentEmail, setPaymentEmail] = useState("");
   const [paymentNotes, setPaymentNotes] = useState("");
+  const [showMonerooModal, setShowMonerooModal] = useState(false);
 
   const rawToken = params?.token;
   const token = typeof rawToken === "string" && rawToken !== "undefined" && rawToken.trim() !== "" 
@@ -295,6 +297,7 @@ export default function PublicPayPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="online_payment">{t('payment.methods.online')}</SelectItem>
+                        <SelectItem value="mobile_money">{t('payment.methods.mobileMoney')}</SelectItem>
                         <SelectItem value="bank_transfer">{t('payment.methods.bankTransfer')}</SelectItem>
                         <SelectItem value="check">{t('payment.methods.check')}</SelectItem>
                         <SelectItem value="cash">{t('payment.methods.cash')}</SelectItem>
@@ -329,15 +332,26 @@ export default function PublicPayPage() {
                       </span>
                     </div>
                   </div>
-                  <Button
-                    className="w-full gap-2"
-                    onClick={handlePay}
-                    disabled={isPaying}
-                    size="lg"
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    {isPaying ? t('payment.processing') : t('payment.payNow')}
-                  </Button>
+                  {paymentMethod === "mobile_money" ? (
+                    <Button
+                      className="w-full gap-2"
+                      onClick={() => setShowMonerooModal(true)}
+                      size="lg"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      {t('payment.payWithMobileMoney')}
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full gap-2"
+                      onClick={handlePay}
+                      disabled={isPaying}
+                      size="lg"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      {isPaying ? t('payment.processing') : t('payment.payNow')}
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
@@ -363,6 +377,19 @@ export default function PublicPayPage() {
               <p className="whitespace-pre-wrap">{invoice.notes}</p>
             </CardContent>
           </Card>
+        )}
+
+        {/* Moneroo Payment Modal */}
+        {invoice && (
+          <MonerooPaymentModal
+            open={showMonerooModal}
+            onOpenChange={setShowMonerooModal}
+            invoiceId={invoice.id}
+            amount={invoice.remainingAmount}
+            currency={invoice.currency}
+            customerName={invoice.recipient?.name}
+            customerEmail={paymentEmail || invoice.recipient?.email}
+          />
         )}
       </div>
     </div>

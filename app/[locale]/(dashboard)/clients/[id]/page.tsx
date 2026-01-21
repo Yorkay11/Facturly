@@ -263,18 +263,6 @@ export default function ClientDetailPage() {
                   </div>
                 </>
               )}
-              {client.taxId && (
-                <>
-                  <Separator />
-                  <div className="flex items-start gap-3">
-                    <Building2 className="h-5 w-5 text-primary/60 mt-0.5" />
-                    <div>
-                      <p className="text-xs uppercase text-foreground/50">{t('contactInfo.taxId')}</p>
-                      <p className="text-sm font-medium text-primary">{client.taxId}</p>
-                    </div>
-                  </div>
-                </>
-              )}
             </CardContent>
           </Card>
 

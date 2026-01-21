@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
-import { ArrowLeft, Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon, Copy } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -30,7 +30,8 @@ import {
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/ui/skeleton";
-import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useMarkInvoicePaidMutation, useGetInvoiceRemindersQuery } from "@/services/facturlyApi";
+import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useMarkInvoicePaidMutation, useGetInvoiceRemindersQuery, useCreateInvoiceMutation, facturlyApi } from "@/services/facturlyApi";
+import { store } from "@/lib/redux/store";
 import { toast } from "sonner";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import { ReminderModal } from "@/components/modals/ReminderModal";
@@ -70,6 +71,7 @@ export default function InvoiceDetailPage() {
   const [deleteInvoice, { isLoading: isDeleting }] = useDeleteInvoiceMutation();
   const [cancelInvoice, { isLoading: isCancelling }] = useCancelInvoiceMutation();
   const [markInvoicePaid, { isLoading: isMarkingPaid }] = useMarkInvoicePaidMutation();
+  const [createInvoice, { isLoading: isDuplicating }] = useCreateInvoiceMutation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showMarkPaidDialog, setShowMarkPaidDialog] = useState(false);
@@ -267,6 +269,61 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  // Fonction pour dupliquer une facture
+  const handleDuplicate = async () => {
+    if (!invoiceId || !invoice) return;
+
+    try {
+      // Récupérer la facture complète avec RTK Query
+      const invoiceResult = await store.dispatch(
+        facturlyApi.endpoints.getInvoiceById.initiate(invoiceId)
+      );
+      
+      if ('error' in invoiceResult || !invoiceResult.data) {
+        throw new Error('Erreur lors de la récupération de la facture');
+      }
+      
+      const fullInvoice = invoiceResult.data;
+      
+      // Préparer les données de la nouvelle facture
+      const today = new Date().toISOString().split('T')[0];
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+      const newDueDate = dueDate.toISOString().split('T')[0];
+      
+      const duplicatePayload = {
+        clientId: fullInvoice.client.id,
+        issueDate: today,
+        dueDate: newDueDate,
+        currency: fullInvoice.currency,
+        items: fullInvoice.items?.map((item: any) => ({
+          productId: item.product?.id || undefined,
+          description: item.description,
+          quantity: item.quantity.toString(),
+          unitPrice: item.unitPrice.toString(),
+        })) || [],
+        notes: fullInvoice.notes || undefined,
+        recipientEmail: fullInvoice.recipientEmail || undefined,
+        templateName: fullInvoice.templateName || undefined,
+      };
+      
+      // Créer la nouvelle facture
+      const newInvoice = await createInvoice(duplicatePayload).unwrap();
+      
+      toast.success(invoicesT('duplicate.success') || 'Facture dupliquée avec succès', {
+        description: invoicesT('duplicate.successDescription', { number: invoice.invoiceNumber }) || `La facture ${invoice.invoiceNumber} a été dupliquée`,
+      });
+      
+      // Rediriger vers la nouvelle facture en mode édition
+      router.push(`/invoices/${newInvoice.id}/edit`);
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.message || invoicesT('duplicate.error') || 'Erreur lors de la duplication';
+      toast.error(commonT('error'), {
+        description: errorMessage,
+      });
+    }
+  };
+
   // Afficher un message d'erreur si l'ID est invalide
   if (shouldSkip) {
     return (
@@ -428,6 +485,15 @@ export default function InvoiceDetailPage() {
               {t('buttons.edit')}
             </Button>
           )}
+          <Button
+            variant="outline"
+            className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+            onClick={handleDuplicate}
+            disabled={isDuplicating}
+          >
+            <Copy className="h-4 w-4" />
+            {invoicesT('duplicate.button') || 'Dupliquer'}
+          </Button>
           {invoice.status !== "draft" && invoice.paymentLinkToken && (
             <>
               <Button

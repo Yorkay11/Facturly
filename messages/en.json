@@ -25,7 +25,9 @@
     "amount": "Amount",
     "total": "Total",
     "invoice": "Invoice",
-    "client": "Client"
+    "client": "Client",
+    "retry": "Retry",
+    "dismiss": "Dismiss"
   },
   "beta": {
     "badge": "Beta",
@@ -271,6 +273,16 @@
       "dashboard": "Dashboard",
       "invoices": "Invoices"
     },
+    "commands": {
+      "searchPlaceholder": "Search for a command...",
+      "noResults": "No results found.",
+      "actions": "Actions",
+      "navigation": "Navigation",
+      "saveDraft": "Save draft",
+      "sendInvoice": "Send invoice",
+      "addItem": "Add item",
+      "focusClient": "Search for a client"
+    },
     "create": "Create invoice",
     "edit": "Edit invoice",
     "view": "View invoice",
@@ -337,7 +349,14 @@
         "subjectRequired": "Subject is required",
         "issueDateRequired": "Issue date is required",
         "dueDateRequired": "Due date is required",
-        "currencyRequired": "Currency is required"
+        "currencyRequired": "Currency is required",
+        "readyToSend": "Ready to send",
+        "readyToSendDescription": "All required fields are filled and the invoice contains at least one item.",
+        "missingFields_one": "{count} missing element",
+        "missingFields_other": "{count} missing elements",
+        "missingFieldsHint": "Missing required fields:",
+        "noItems": "At least one item is required.",
+        "notReadyToSend": "Complete all required fields to send the invoice."
       },
       "loading": {
         "sending": "Sending invoice...",
@@ -371,7 +390,8 @@
           "loading": "Loading clients...",
           "empty": "No client found.",
           "noClients": "No clients available. Create a client from the Clients page.",
-          "createNew": "Create a new client"
+          "createNew": "Create a new client",
+          "recent": "Recent"
         },
         "subject": {
           "label": "Subject",
@@ -544,6 +564,23 @@
         "save": "saving the draft"
       }
     },
+    "progress": {
+      "title": "Creation progress",
+      "saving": "Saving...",
+      "steps": {
+        "client": "Client",
+        "items": "Items",
+        "dates": "Dates",
+        "send": "Send"
+      },
+      "saved": {
+        "justNow": "Just now",
+        "minutesAgo": "{count} minute(s) ago",
+        "hoursAgo": "{count} hour(s) ago",
+        "draftSaved": "Draft saved",
+        "draftUpdated": "Draft updated"
+      }
+    },
     "preview": {
       "title": "Preview",
       "description": "Synchronized with entered information.",
@@ -585,6 +622,12 @@
       "cancelSuccess": "Invoice cancelled",
       "cancelSuccessDescription": "Invoice {number} has been successfully cancelled.",
       "error": "An error occurred while deleting."
+    },
+    "duplicate": {
+      "button": "Duplicate",
+      "success": "Invoice duplicated",
+      "successDescription": "Invoice {number} has been successfully duplicated.",
+      "error": "Error while duplicating the invoice"
     },
     "rejectModal": {
       "title": "Reject invoice",
@@ -1663,14 +1706,16 @@
         "legalName": "Legal name",
         "defaultCurrency": "Default currency",
         "taxId": "Tax identification number",
-        "taxIdPlaceholder": "EIN, SIRET, etc.",
+        "taxIdPlaceholder": "NINEA, RCCM, Tax ID, etc.",
         "vatNumber": "VAT number",
         "addressLine1": "Address line 1",
         "addressLine2": "Address line 2",
         "postalCode": "Postal code",
         "city": "City",
         "country": "Country",
-        "countryPlaceholder": "United States"
+        "countryPlaceholder": "Select your country",
+        "countryNotSpecified": "Not specified",
+        "countryHint": "VAT rate will be automatically applied based on your country"
       },
       "validation": {
         "typeRequired": "Workspace type is required",
@@ -1701,6 +1746,10 @@
         "dateFormat": "Date format",
         "currency": "Currency",
         "taxRate": "VAT rate (%)",
+        "taxRateInfo": {
+          "title": "Automatic VAT rate",
+          "description": "The VAT rate is automatically applied based on the country selected in your workspace. You can change the country in workspace settings."
+        },
         "paymentTerms": "Payment terms",
         "paymentTermsHint": "In days (e.g., 30 = 30 days)"
       },
@@ -1715,7 +1764,6 @@
         "invoicePrefixRequired": "Prefix is required",
         "dateFormatRequired": "Date format is required",
         "currencyRequired": "Currency is required",
-        "taxRateRequired": "VAT rate is required",
         "paymentTermsPositive": "Payment terms must be positive"
       },
       "sequence": {
@@ -1943,7 +1991,7 @@
         "remaining": "Remaining to pay",
         "totalTTC": "Total inc. VAT",
         "notes": "Notes",
-        "siret": "SIRET",
+        "siret": "Tax ID",
         "vatNumber": "VAT"
       },
       "empty": {
@@ -2019,10 +2067,12 @@
         "method": "Payment method",
         "methods": {
           "online": "Online payment",
+          "mobileMoney": "Pay",
           "bankTransfer": "Bank transfer",
           "check": "Check",
           "cash": "Cash"
         },
+        "payWithMobileMoney": "Pay",
         "email": "Email (optional)",
         "emailPlaceholder": "your@email.com",
         "notes": "Notes (optional)",
@@ -2042,6 +2092,24 @@
         "success": "Payment processed",
         "successDescription": "Payment of {amount} has been successfully processed.",
         "error": "An error occurred while processing the payment."
+      }
+    }
+  },
+  "payments": {
+    "moneroo": {
+      "title": "Payment",
+      "description": "You will be redirected to the payment page to complete your transaction",
+      "phoneNumber": "Phone number",
+      "phoneHint": "International format required (e.g., +221771234567)",
+      "amount": "Amount",
+      "continue": "Continue",
+      "processing": "Processing...",
+      "redirectInfo": "You will be redirected to the payment page to choose your payment method",
+      "errors": {
+        "phoneRequired": "Phone number is required",
+        "invalidPhoneFormat": "Invalid phone number format. Use international format (e.g., +221771234567)",
+        "checkoutUrlMissing": "Unable to get payment URL",
+        "paymentFailed": "Payment failed. Please try again."
       }
     }
   },
@@ -2137,7 +2205,9 @@
       }
     },
     "basic": {
-      "title": "Basic Information",
+      "title": "Essential Information",
+      "description": "Set up basic information to get started",
+      "note": "💡 You can add your legal information and address later in settings",
       "description": "Configure the essential information for your profile",
       "fields": {
         "name": "Workspace name",
@@ -2148,7 +2218,11 @@
         "namePlaceholder": "My Company LLC",
         "nameHintIndividual": "This name will appear on all your invoices",
         "defaultCurrency": "Default currency",
-        "defaultCurrencyPlaceholder": "Select a currency"
+        "defaultCurrencyPlaceholder": "Select a currency",
+        "country": "Country",
+        "countryPlaceholder": "Select your country",
+        "countryNotSpecified": "Not specified",
+        "countryHint": "VAT rate will be automatically applied based on your country"
       }
     },
     "legal": {
@@ -2159,10 +2233,10 @@
       "fields": {
         "legalName": "Legal name",
         "legalNamePlaceholder": "My Limited Liability Company",
-        "taxId": "Tax ID / SIRET",
-        "taxIdPlaceholder": "12345678901234",
+        "taxId": "Tax identification number",
+        "taxIdPlaceholder": "Ex: NINEA, RCCM, Tax ID",
         "vatNumber": "VAT number",
-        "vatNumberPlaceholder": "FR12345678901"
+        "vatNumberPlaceholder": "Ex: SN12345678901"
       }
     },
     "address": {

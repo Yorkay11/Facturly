@@ -36,8 +36,6 @@ const TemplateClassicSerif = ({
             </p>
           )}
           {workspace?.country && <p className="text-[11px] mb-0.5">{workspace.country}</p>}
-          {workspace?.vatNumber && <p className="text-[11px] mb-0.5">TVA: {workspace.vatNumber}</p>}
-          {workspace?.taxId && <p className="text-[11px]">SIRET: {workspace.taxId}</p>}
         </div>
       </div>
 

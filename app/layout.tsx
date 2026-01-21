@@ -180,25 +180,36 @@ export default function RootLayout({
                 backgroundColor: 'white',
                 overflow: 'hidden'
               }}>
-                <div id="initial-loader-liquid" style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: '0%',
-                  backgroundColor: 'rgb(120, 53, 240)',
-                  borderRadius: '40% 40% 0 0',
-                  transition: 'height 3s linear'
-                }}></div>
-                <div id="initial-loader-logo" style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  clipPath: 'inset(100% 0 0 0)',
-                  transition: 'clip-path 3s linear'
-                }}>
+                <div 
+                  id="initial-loader-liquid" 
+                  suppressHydrationWarning
+                  style={{
+                    position: 'absolute',
+                    bottom: '0px',
+                    left: '0px',
+                    right: '0px',
+                    height: '0%',
+                    backgroundColor: 'rgb(120, 53, 240)',
+                    borderRadius: '40% 40% 0 0',
+                    transition: 'height 3s linear'
+                  }}
+                ></div>
+                <div 
+                  id="initial-loader-logo" 
+                  suppressHydrationWarning
+                  style={{
+                    position: 'absolute',
+                    top: '0px',
+                    right: '0px',
+                    bottom: '0px',
+                    left: '0px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    clipPath: 'inset(100% 0 0 0)',
+                    transition: 'clip-path 3s linear'
+                  }}
+                >
                   <img 
                     src="/icon.png" 
                     alt="Facturly" 

@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/routing';
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 import { useTranslations, useLocale } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,8 +41,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertCircle, CheckCircle2, Calendar, ArrowRight, Crown, Zap, Infinity, CreditCard, TrendingUp, BadgeCheck, Receipt, Globe, DollarSign, Percent, FileText, Clock } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle2, Crown, Zap, Infinity, CreditCard, TrendingUp, BadgeCheck, Receipt, Globe, DollarSign, Percent, FileText } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type UserFormValues = {
   firstName: string;
@@ -54,8 +54,6 @@ type WorkspaceFormValues = {
   name?: string | null;
   type?: 'INDIVIDUAL' | 'COMPANY';
   legalName?: string;
-  taxId?: string;
-  vatNumber?: string;
   addressLine1?: string;
   addressLine2?: string;
   postalCode?: string;
@@ -70,7 +68,6 @@ type SettingsFormValues = {
   invoicePrefix: string;
   dateFormat: string;
   currency: string;
-  taxRate: string;
   paymentTerms: number;
 };
 
@@ -110,8 +107,6 @@ function SettingsContent() {
     }),
     name: z.string().min(2, t('workspace.validation.nameMin')).nullable().optional(),
     legalName: z.string().optional(),
-    taxId: z.string().optional(),
-    vatNumber: z.string().optional(),
     addressLine1: z.string().optional(),
     addressLine2: z.string().optional(),
     postalCode: z.string().optional(),
@@ -136,7 +131,6 @@ function SettingsContent() {
     invoicePrefix: z.string().min(1, t('billing.validation.invoicePrefixRequired')),
     dateFormat: z.string().min(1, t('billing.validation.dateFormatRequired')),
     currency: z.string().min(1, t('billing.validation.currencyRequired')),
-    taxRate: z.string().min(1, t('billing.validation.taxRateRequired')),
     paymentTerms: z.number().min(0, t('billing.validation.paymentTermsPositive')),
   }), [t]);
 
@@ -203,14 +197,12 @@ function SettingsContent() {
       type: "COMPANY",
       name: "",
       legalName: "",
-      taxId: "",
-      vatNumber: "",
       addressLine1: "",
       addressLine2: "",
       postalCode: "",
       city: "",
       country: "",
-      defaultCurrency: "EUR",
+      defaultCurrency: "XOF",
     },
   });
   
@@ -218,11 +210,10 @@ function SettingsContent() {
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       language: "fr",
-      timezone: "Europe/Paris",
+      timezone: "Africa/Dakar",
       invoicePrefix: "FAC",
       dateFormat: "DD/MM/YYYY",
-      currency: "EUR",
-      taxRate: "20.00",
+      currency: "XOF",
       paymentTerms: 30,
     },
   });
@@ -244,14 +235,12 @@ function SettingsContent() {
         type: workspace.type || "COMPANY",
         name: workspace.name || "",
         legalName: workspace.legalName || "",
-        taxId: workspace.taxId || "",
-        vatNumber: workspace.vatNumber || "",
         addressLine1: workspace.addressLine1 || "",
         addressLine2: workspace.addressLine2 || "",
         postalCode: workspace.postalCode || "",
         city: workspace.city || "",
         country: workspace.country || "",
-        defaultCurrency: workspace.defaultCurrency || "EUR",
+        defaultCurrency: workspace.defaultCurrency || "XOF",
       });
     }
   }, [workspace, workspaceForm]);
@@ -267,7 +256,6 @@ function SettingsContent() {
         invoicePrefix: settings.invoicePrefix,
         dateFormat: settings.dateFormat,
         currency: settings.currency,
-        taxRate: settings.taxRate,
         paymentTerms: settings.paymentTerms,
       });
     }
@@ -303,8 +291,6 @@ function SettingsContent() {
         type: values.type,
         name: values.name || (values.type === 'INDIVIDUAL' ? null : undefined),
         legalName: values.legalName || undefined,
-        taxId: values.taxId || undefined,
-        vatNumber: values.vatNumber || undefined,
         addressLine1: values.addressLine1 || undefined,
         addressLine2: values.addressLine2 || undefined,
         postalCode: values.postalCode || undefined,
@@ -335,7 +321,6 @@ function SettingsContent() {
         invoicePrefix: values.invoicePrefix,
         dateFormat: values.dateFormat,
         currency: values.currency,
-        taxRate: values.taxRate,
         paymentTerms: values.paymentTerms,
       }).unwrap();
       
@@ -783,24 +768,6 @@ function SettingsContent() {
                         </p>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tax-id">{t('workspace.fields.taxId')}</Label>
-                      <Input
-                        id="tax-id"
-                        placeholder={t('workspace.fields.taxIdPlaceholder')}
-                        {...workspaceForm.register("taxId")}
-                        disabled={isUpdatingWorkspace}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="vat-number">{t('workspace.fields.vatNumber')}</Label>
-                      <Input
-                        id="vat-number"
-                        placeholder={t('workspace.fields.vatNumber')}
-                        {...workspaceForm.register("vatNumber")}
-                        disabled={isUpdatingWorkspace}
-                      />
-                    </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="address-line1">{t('workspace.fields.addressLine1')}</Label>
                       <Input
@@ -838,13 +805,48 @@ function SettingsContent() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="country">{t('workspace.fields.country')}</Label>
-                      <Input
-                        id="country"
-                        placeholder={t('workspace.fields.countryPlaceholder')}
-                        {...workspaceForm.register("country")}
-                        disabled={isUpdatingWorkspace}
+                      <Label htmlFor="country" className="flex items-center gap-2">
+                        {t('workspace.fields.country')} <span className="text-muted-foreground text-xs">(optionnel)</span>
+                      </Label>
+                      <Controller
+                        name="country"
+                        control={workspaceForm.control}
+                        render={({ field }) => (
+                          <Select 
+                            onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
+                            value={field.value || 'none'} 
+                            disabled={isUpdatingWorkspace}
+                          >
+                            <SelectTrigger className={workspaceForm.formState.errors.country ? "border-destructive" : ""}>
+                              <SelectValue placeholder={t('workspace.fields.countryPlaceholder')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">{t('workspace.fields.countryNotSpecified')}</SelectItem>
+                              <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
+                              <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
+                              <SelectItem value="ML">🇲🇱 Mali</SelectItem>
+                              <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+                              <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+                              <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                              <SelectItem value="NE">🇳🇪 Niger</SelectItem>
+                              <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
+                              <SelectItem value="GH">🇬🇭 Ghana</SelectItem>
+                              <SelectItem value="NG">🇳🇬 Nigeria</SelectItem>
+                              <SelectItem value="CM">🇨🇲 Cameroun</SelectItem>
+                              <SelectItem value="GA">🇬🇦 Gabon</SelectItem>
+                              <SelectItem value="TD">🇹🇩 Tchad</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {t('workspace.fields.countryHint')}
+                      </p>
+                      {workspaceForm.formState.errors.country && (
+                        <p className="text-xs text-destructive">
+                          {workspaceForm.formState.errors.country.message}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <Button type="submit" disabled={isUpdatingWorkspace}>
@@ -914,7 +916,6 @@ function SettingsContent() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (31/12/2024)</SelectItem>
-                                  <SelectItem value="MM/DD/YYYY">MM/DD/YYYY (12/31/2024)</SelectItem>
                                   <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (2024-12-31)</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -935,7 +936,7 @@ function SettingsContent() {
                         <DollarSign className="h-4 w-4 text-primary" />
                         <h3 className="text-sm font-semibold text-primary">{t('billing.sections.financial')}</h3>
                       </div>
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label htmlFor="currency" className="flex items-center gap-2">
                             {t('billing.fields.currency')} <span className="text-destructive">*</span>
@@ -949,9 +950,12 @@ function SettingsContent() {
                                   <SelectValue placeholder={t('billing.fields.currency')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                                  <SelectItem value="USD">USD ($)</SelectItem>
-                                  <SelectItem value="XOF">XOF (CFA)</SelectItem>
+                                  <SelectItem value="XOF">XOF (CFA) - Franc CFA (Afrique de l'Ouest)</SelectItem>
+                                  <SelectItem value="XAF">XAF (CFA) - Franc CFA (Afrique Centrale)</SelectItem>
+                                  <SelectItem value="NGN">NGN (₦) - Naira nigérian</SelectItem>
+                                  <SelectItem value="GHS">GHS (₵) - Cedi ghanéen</SelectItem>
+                                  <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
+                                  <SelectItem value="USD">USD ($) - Dollar américain</SelectItem>
                                 </SelectContent>
                               </Select>
                             )}
@@ -959,25 +963,6 @@ function SettingsContent() {
                           {settingsForm.formState.errors.currency && (
                             <p className="text-xs text-destructive">
                               {settingsForm.formState.errors.currency.message}
-                            </p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="tax-rate" className="flex items-center gap-2">
-                            {t('billing.fields.taxRate')} <span className="text-destructive">*</span>
-                          </Label>
-                          <Input
-                            id="tax-rate"
-                            type="number"
-                            step="0.01"
-                            placeholder="20.00"
-                            {...settingsForm.register("taxRate", { valueAsNumber: false })}
-                            disabled={isUpdatingSettings}
-                            className={settingsForm.formState.errors.taxRate ? "border-destructive" : ""}
-                          />
-                          {settingsForm.formState.errors.taxRate && (
-                            <p className="text-xs text-destructive">
-                              {settingsForm.formState.errors.taxRate.message}
                             </p>
                           )}
                         </div>
@@ -1001,6 +986,15 @@ function SettingsContent() {
                               {settingsForm.formState.errors.paymentTerms.message}
                             </p>
                           )}
+                        </div>
+                      </div>
+                      <div className="rounded-md bg-primary/5 border border-primary/20 p-3">
+                        <div className="flex items-start gap-2">
+                          <Info className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div className="text-xs text-muted-foreground">
+                            <p className="font-medium text-primary mb-1">{t('billing.fields.taxRateInfo.title')}</p>
+                            <p>{t('billing.fields.taxRateInfo.description')}</p>
+                          </div>
                         </div>
                       </div>
                     </div>

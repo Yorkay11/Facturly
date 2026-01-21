@@ -415,6 +415,27 @@ export interface UpdatePaymentPayload {
   notes?: string;
 }
 
+// Moneroo Mobile Money
+export type MonerooPaymentMethod =
+  | 'orange_money_sn' // Sénégal
+  | 'orange_money_ci' // Côte d'Ivoire
+  | 'orange_money_ml' // Mali
+  | 'mtn_momo_gh' // Ghana
+  | 'mtn_momo_ci' // Côte d'Ivoire
+  | 'mtn_momo_cm' // Cameroun
+  | 'moov_money_bj' // Bénin
+  | 'moov_money_tg' // Togo
+  | 'wave_sn' // Sénégal
+  | 'wave_ci'; // Côte d'Ivoire
+
+export interface InitMonerooPaymentPayload {
+  invoiceId: string;
+  phoneNumber: string; // Format international (ex: +221771234567)
+  customerName?: string;
+  customerEmail?: string;
+  method?: MonerooPaymentMethod; // Optionnel : Moneroo gère la sélection dans son UI
+}
+
 // Bill (Received Invoice)
 export interface BillInvoice {
   id: string;
@@ -567,7 +588,6 @@ export interface Settings {
   invoiceSequence: number;
   dateFormat: string;
   currency: string;
-  taxRate: string;
   paymentTerms: number;
   createdAt?: string;
   updatedAt?: string;
@@ -579,7 +599,6 @@ export interface UpdateSettingsPayload {
   invoicePrefix?: string;
   dateFormat?: string;
   currency?: string;
-  taxRate?: string;
   paymentTerms?: number;
 }
 
@@ -871,13 +890,69 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-// Base query avec gestion des erreurs d'authentification
+// Configuration du retry
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 seconde
+
+// Fonction pour déterminer si une erreur est transitoire (réseau)
+function isRetryableError(error: FetchBaseQueryError | undefined): boolean {
+  if (!error) return false;
+  
+  // Erreurs réseau (FETCH_ERROR, PARSING_ERROR)
+  if (error.status === 'FETCH_ERROR' || error.status === 'PARSING_ERROR') {
+    return true;
+  }
+  
+  // Erreurs HTTP 5xx (erreurs serveur temporaires)
+  if (typeof error.status === 'number' && error.status >= 500 && error.status < 600) {
+    return true;
+  }
+  
+  // Erreur 408 (Request Timeout)
+  if (error.status === 408) {
+    return true;
+  }
+  
+  // Erreur 429 (Too Many Requests) - peut être temporaire
+  if (error.status === 429) {
+    return true;
+  }
+  
+  return false;
+}
+
+// Fonction pour attendre avant de réessayer
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Base query avec gestion des erreurs d'authentification et retry automatique
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const result = await baseQuery(args, api, extraOptions);
+  let result;
+  let retryCount = 0;
+  
+  // Boucle de retry pour les erreurs transitoires
+  do {
+    result = await baseQuery(args, api, extraOptions);
+    
+    // Si succès ou erreur non retryable, sortir de la boucle
+    if (!result.error || !isRetryableError(result.error)) {
+      break;
+    }
+    
+    // Incrémenter le compteur de retry
+    retryCount++;
+    
+    // Attendre avant de réessayer (backoff exponentiel)
+    if (retryCount < MAX_RETRIES) {
+      const delayMs = RETRY_DELAY * Math.pow(2, retryCount - 1);
+      await delay(delayMs);
+    }
+  } while (retryCount < MAX_RETRIES);
   
   // Traiter les réponses 204 (No Content) comme des succès
   // Vérifier à la fois dans meta.response et dans error (car fetchBaseQuery peut créer une erreur pour 204)
@@ -921,6 +996,7 @@ export const facturlyApi = createApi({
   reducerPath: "facturlyApi",
   baseQuery: baseQueryWithAuth,
   tagTypes: ["Invoice", "Client", "Product", "User", "Workspace", "Settings", "Subscription", "Payment", "Dashboard", "Bill", "Notification"],
+  keepUnusedDataFor: 60, // Garder les données en cache 60 secondes (optimisation)
   endpoints: (builder) => ({
     // ==================== Public ====================
     getBetaAccessInfo: builder.query<BetaAccessInfo, void>({
@@ -1066,6 +1142,7 @@ export const facturlyApi = createApi({
         };
       },
       providesTags: ["Product"],
+      keepUnusedDataFor: 120, // Garder les produits en cache 120 secondes (2 minutes)
     }),
     getProductById: builder.query<Product, string>({
       query: (id) => `/products/${id}`,
@@ -1241,6 +1318,30 @@ export const facturlyApi = createApi({
     getInvoicePayments: builder.query<{ data: InvoicePayment[] }, string>({
       query: (invoiceId) => `/invoices/${invoiceId}/payments`,
       providesTags: (_result, _error, invoiceId) => [{ type: "Payment", id: invoiceId }],
+    }),
+    
+    // ==================== Moneroo Mobile Money ====================
+    initMonerooPayment: builder.mutation<
+      { checkoutUrl: string; paymentId: string; reference: string },
+      InitMonerooPaymentPayload
+    >({
+      query: (body) => ({
+        url: "/payments/moneroo/init",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Payment", "Invoice"],
+    }),
+    getMonerooPaymentMethods: builder.query<MonerooPaymentMethod[], string | void>({
+      query: (country) => {
+        const searchParams = new URLSearchParams();
+        if (country) searchParams.append("country", country);
+        const queryString = searchParams.toString();
+        return `/payments/moneroo/methods${queryString ? `?${queryString}` : ""}`;
+      },
+    }),
+    checkMonerooPaymentStatus: builder.query<{ status: string }, string>({
+      query: (reference) => `/payments/moneroo/status/${reference}`,
     }),
     createPayment: builder.mutation<InvoicePayment, { invoiceId: string; payload: CreatePaymentPayload }>({
       query: ({ invoiceId, payload }) => ({
@@ -1540,4 +1641,8 @@ export const {
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
   useDeleteNotificationMutation,
+  // Moneroo Mobile Money
+  useInitMonerooPaymentMutation,
+  useGetMonerooPaymentMethodsQuery,
+  useCheckMonerooPaymentStatusQuery,
 } = facturlyApi;

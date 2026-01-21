@@ -92,7 +92,19 @@ export const devises = [
   },
   {
       value: "XOF",
-      label: "Franc CFA (XOF)",
+      label: "Franc CFA (XOF) - Afrique de l'Ouest",
+  },
+  {
+      value: "XAF",
+      label: "Franc CFA (XAF) - Afrique Centrale",
+  },
+  {
+      value: "NGN",
+      label: "Naira nigérian (₦)",
+  },
+  {
+      value: "GHS",
+      label: "Cedi ghanéen (₵)",
   },
 ];
 

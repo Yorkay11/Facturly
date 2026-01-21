@@ -46,9 +46,6 @@ const TemplateColorful = ({
             <h3 className="text-xs uppercase tracking-wide mb-3 opacity-90">Entreprise</h3>
             <p className="mb-1 text-sm font-medium">{workspace?.name || "Nom de l'entreprise"}</p>
             {workspaceAddress && <p className="mb-1 text-sm font-medium">{workspaceAddress}</p>}
-            {workspace?.vatNumber && (
-              <p className="mt-2 text-[11px] font-medium">TVA: {workspace.vatNumber}</p>
-            )}
           </div>
 
           {/* Client Card */}

@@ -77,12 +77,20 @@ Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
 ### ⚙️ Configuration
 
-Créez un fichier `.env.local` :
+Créez un fichier `.env.local` à partir de `.env.example` :
 
 ```env
-NEXT_PUBLIC_API_URL=https://votre-api-backend.com
+# API Backend URL
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Site URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# App URL (optionnel, pour les callbacks OAuth)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
+
+**Note** : Les variables d'environnement Moneroo (Mobile Money) sont configurées côté backend uniquement. Voir `facturly_backend/config/env.example` pour la configuration complète.
 
 ---
 

@@ -51,7 +51,6 @@ const TemplateElegant = ({
               </p>
             )}
             {workspace?.country && <p>{workspace.country}</p>}
-            {workspace?.vatNumber && <p>TVA : {workspace.vatNumber}</p>}
           </div>
         </div>
 

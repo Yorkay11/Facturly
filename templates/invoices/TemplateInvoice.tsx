@@ -84,8 +84,6 @@ const TemplateInvoice = ({
               Informations entreprise
             </h3>
             {workspace.legalName && <p className="m-0">Raison sociale : {workspace.legalName}</p>}
-            {workspace.taxId && <p className="m-0">SIRET : {workspace.taxId}</p>}
-            {workspace.vatNumber && <p className="m-0">TVA : {workspace.vatNumber}</p>}
           </div>
         )}
 

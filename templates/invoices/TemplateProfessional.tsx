@@ -62,12 +62,6 @@ const TemplateProfessional = ({
                 </p>
               )}
               {workspace?.country && <p className="text-xs text-[#2c3e50]">{workspace.country}</p>}
-              {workspace?.vatNumber && (
-                <p className="text-xs text-[#2c3e50] mt-2.5">TVA : {workspace.vatNumber}</p>
-              )}
-              {workspace?.taxId && (
-                <p className="text-xs text-[#2c3e50]">SIRET : {workspace.taxId}</p>
-              )}
             </div>
           </div>
 

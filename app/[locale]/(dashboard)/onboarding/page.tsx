@@ -36,23 +36,34 @@ export default function OnboardingPage() {
     );
   }
 
-  // Si le workspace existe, vérifier si le profil est déjà complet
-  if (workspace) {
-    const workspaceCompletion = workspace.profileCompletion ?? 0;
-    const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-      ? (!workspace.name || !workspace.defaultCurrency)
-      : !workspace.defaultCurrency;
-    
-    if (workspaceCompletion >= 100 && !hasMissingWorkspaceInfo) {
-      return null; // La redirection va se faire via useEffect
-    }
+  // Le workspace existe toujours maintenant (créé automatiquement à l'inscription)
+  // Si le profil est déjà complet, rediriger vers le dashboard
+  if (!workspace) {
+    // Le workspace devrait toujours exister, mais au cas où...
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
+        <div className="w-full max-w-2xl space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  const workspaceCompletion = workspace.profileCompletion ?? 0;
+  const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
+    ? (!workspace.name || !workspace.defaultCurrency)
+    : !workspace.defaultCurrency;
+  
+  if (workspaceCompletion >= 100 && !hasMissingWorkspaceInfo) {
+    return null; // La redirection va se faire via useEffect
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
       <div className="w-full max-w-4xl">
         <OnboardingWizard 
-          workspace={workspace ?? null}
+          workspace={workspace}
           onComplete={async () => {
             await refetch();
             // Redirection guidée vers la création de la première facture

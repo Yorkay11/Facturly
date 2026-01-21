@@ -27,7 +27,6 @@ interface EditableCSVRow {
   postalCode: string;
   city: string;
   country: string;
-  taxId: string;
   notes: string;
 }
 
@@ -76,7 +75,6 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
     const postalCodeIndex = headers.findIndex((h) => ["code postal", "postal code", "cp", "zip"].includes(h));
     const cityIndex = headers.findIndex((h) => ["ville", "city"].includes(h));
     const countryIndex = headers.findIndex((h) => ["pays", "country"].includes(h));
-    const taxIdIndex = headers.findIndex((h) => ["siret", "tva", "tax id", "numéro fiscal", "numero fiscal"].includes(h));
     const notesIndex = headers.findIndex((h) => ["notes", "note", "commentaire", "comment"].includes(h));
 
     const rows: EditableCSVRow[] = [];
@@ -100,7 +98,6 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
         postalCode: postalCodeIndex >= 0 ? (values[postalCodeIndex] || "") : "",
         city: cityIndex >= 0 ? (values[cityIndex] || "") : "",
         country: countryIndex >= 0 ? (values[countryIndex] || "") : "",
-        taxId: taxIdIndex >= 0 ? (values[taxIdIndex] || "") : "",
         notes: notesIndex >= 0 ? (values[notesIndex] || "") : "",
       });
     }
@@ -225,7 +222,6 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
           postalCode: row.postalCode.trim() || undefined,
           city: row.city.trim() || undefined,
           country: row.country.trim() || undefined,
-          taxId: row.taxId.trim() || undefined,
           notes: row.notes.trim() || undefined,
         }));
 
@@ -389,7 +385,6 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                         <TableHead className="min-w-[100px]">{t('table.postalCode')}</TableHead>
                         <TableHead className="min-w-[120px]">{t('table.city')}</TableHead>
                         <TableHead className="min-w-[100px]">{t('table.country')}</TableHead>
-                        <TableHead className="min-w-[120px]">{t('table.taxId')}</TableHead>
                         <TableHead className="min-w-[150px]">{t('table.notes')}</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -451,14 +446,6 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
                               onChange={(e) => handleFieldChange(row.id, "country", e.target.value)}
                               className="h-8 text-sm"
                               placeholder={t('table.country')}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              value={row.taxId}
-                              onChange={(e) => handleFieldChange(row.id, "taxId", e.target.value)}
-                              className="h-8 text-sm"
-                              placeholder={t('table.taxId')}
                             />
                           </TableCell>
                           <TableCell>

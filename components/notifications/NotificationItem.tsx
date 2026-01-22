@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { useLocale, useTranslations } from 'next-intl';
+import { interpolateMessage } from '@/utils/interpolation';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -106,7 +107,7 @@ export function NotificationItem({
               "text-sm font-medium leading-tight",
               !notification.read && "font-semibold"
             )}>
-              {notification.title}
+              {interpolateMessage(notification.title, notification.data, locale)}
             </h4>
             <Button
               variant="ghost"
@@ -124,7 +125,7 @@ export function NotificationItem({
           </div>
           
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-            {notification.message}
+            {interpolateMessage(notification.message, notification.data, locale)}
           </p>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">

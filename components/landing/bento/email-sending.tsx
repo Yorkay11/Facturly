@@ -20,7 +20,7 @@ const EmailSending: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-[8px] text-slate-900 font-medium">FAC-001</p>
-                  <p className="text-[7px] text-slate-500">01/04/2024</p>
+                  <p className="text-[7px] text-slate-500">01/04/2026</p>
                 </div>
               </div>
               <div className="h-px bg-slate-200 my-0.5" />

@@ -915,8 +915,8 @@ function SettingsContent() {
                                   <SelectValue placeholder={t('billing.fields.dateFormat')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (31/12/2024)</SelectItem>
-                                  <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (2024-12-31)</SelectItem>
+                                  <SelectItem value="DD/MM/YYYY">DD/MM/YYYY (31/12/2026)</SelectItem>
+                                  <SelectItem value="YYYY-MM-DD">YYYY-MM-DD (2026-12-31)</SelectItem>
                                 </SelectContent>
                               </Select>
                             )}

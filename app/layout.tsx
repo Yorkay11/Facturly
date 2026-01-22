@@ -148,7 +148,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        {/* Loader initial qui s'affiche immédiatement avant le chargement du JS */}
+        {/* Loader initial professionnel */}
         <div id="initial-loader" style={{
           position: 'fixed',
           inset: 0,
@@ -157,136 +157,217 @@ export default function RootLayout({
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: 'white',
-          transition: 'opacity 0.3s ease-out'
+          transition: 'opacity 0.4s ease-out'
         }}>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '1.25rem',
-            padding: '2rem',
-            borderRadius: '0.75rem'
+            gap: '2rem'
           }}>
+            {/* Logo avec animation de pulse subtile */}
             <div style={{
               position: 'relative',
-              width: '8rem',
-              height: '8rem'
+              width: '5rem',
+              height: '5rem',
+              animation: 'loaderLogoPulse 2s ease-in-out infinite'
             }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '0.75rem',
-                border: '4px solid rgba(120, 53, 240, 0.3)',
-                backgroundColor: 'white',
-                overflow: 'hidden'
-              }}>
-                <div 
-                  id="initial-loader-liquid" 
-                  suppressHydrationWarning
-                  style={{
-                    position: 'absolute',
-                    bottom: '0px',
-                    left: '0px',
-                    right: '0px',
-                    height: '0%',
-                    backgroundColor: 'rgb(120, 53, 240)',
-                    borderRadius: '40% 40% 0 0',
-                    transition: 'height 3s linear'
-                  }}
-                ></div>
-                <div 
-                  id="initial-loader-logo" 
-                  suppressHydrationWarning
-                  style={{
-                    position: 'absolute',
-                    top: '0px',
-                    right: '0px',
-                    bottom: '0px',
-                    left: '0px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    clipPath: 'inset(100% 0 0 0)',
-                    transition: 'clip-path 3s linear'
-                  }}
-                >
-                  <img 
-                    src="/icon.png" 
-                    alt="Facturly" 
-                    style={{
-                      width: '5rem',
-                      height: '5rem',
-                      objectFit: 'contain',
-                      borderRadius: '0.75rem'
-                    }}
-                  />
-                </div>
-              </div>
+              <img 
+                src="/icon.png" 
+                alt="Facturly" 
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '0.75rem',
+                  filter: 'drop-shadow(0 4px 12px rgba(120, 53, 240, 0.15))'
+                }}
+              />
+            </div>
+            
+            {/* Barres de progression animées */}
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div 
+                id="initial-loader-bar-1"
+                style={{
+                  width: '0.5rem',
+                  height: '2.5rem',
+                  backgroundColor: 'rgba(120, 53, 240, 0.2)',
+                  borderRadius: '0.25rem',
+                  transformOrigin: 'bottom',
+                  animation: 'loaderBar1 1.2s ease-in-out infinite'
+                }}
+              ></div>
+              <div 
+                id="initial-loader-bar-2"
+                style={{
+                  width: '0.5rem',
+                  height: '2.5rem',
+                  backgroundColor: 'rgba(120, 53, 240, 0.2)',
+                  borderRadius: '0.25rem',
+                  transformOrigin: 'bottom',
+                  animation: 'loaderBar2 1.2s ease-in-out infinite 0.15s'
+                }}
+              ></div>
+              <div 
+                id="initial-loader-bar-3"
+                style={{
+                  width: '0.5rem',
+                  height: '2.5rem',
+                  backgroundColor: 'rgba(120, 53, 240, 0.2)',
+                  borderRadius: '0.25rem',
+                  transformOrigin: 'bottom',
+                  animation: 'loaderBar3 1.2s ease-in-out infinite 0.3s'
+                }}
+              ></div>
+              <div 
+                id="initial-loader-bar-4"
+                style={{
+                  width: '0.5rem',
+                  height: '2.5rem',
+                  backgroundColor: 'rgba(120, 53, 240, 0.2)',
+                  borderRadius: '0.25rem',
+                  transformOrigin: 'bottom',
+                  animation: 'loaderBar4 1.2s ease-in-out infinite 0.45s'
+                }}
+              ></div>
+              <div 
+                id="initial-loader-bar-5"
+                style={{
+                  width: '0.5rem',
+                  height: '2.5rem',
+                  backgroundColor: 'rgba(120, 53, 240, 0.2)',
+                  borderRadius: '0.25rem',
+                  transformOrigin: 'bottom',
+                  animation: 'loaderBar5 1.2s ease-in-out infinite 0.6s'
+                }}
+              ></div>
             </div>
           </div>
         </div>
+        
+        {/* Styles CSS inline pour les animations */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes loaderLogoPulse {
+              0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+              }
+              50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+              }
+            }
+            
+            @keyframes loaderBar1 {
+              0%, 100% {
+                transform: scaleY(0.3);
+                background-color: rgba(120, 53, 240, 0.2);
+              }
+              50% {
+                transform: scaleY(1);
+                background-color: rgb(120, 53, 240);
+              }
+            }
+            
+            @keyframes loaderBar2 {
+              0%, 100% {
+                transform: scaleY(0.4);
+                background-color: rgba(120, 53, 240, 0.2);
+              }
+              50% {
+                transform: scaleY(1);
+                background-color: rgb(120, 53, 240);
+              }
+            }
+            
+            @keyframes loaderBar3 {
+              0%, 100% {
+                transform: scaleY(0.5);
+                background-color: rgba(120, 53, 240, 0.2);
+              }
+              50% {
+                transform: scaleY(1);
+                background-color: rgb(120, 53, 240);
+              }
+            }
+            
+            @keyframes loaderBar4 {
+              0%, 100% {
+                transform: scaleY(0.4);
+                background-color: rgba(120, 53, 240, 0.2);
+              }
+              50% {
+                transform: scaleY(1);
+                background-color: rgb(120, 53, 240);
+              }
+            }
+            
+            @keyframes loaderBar5 {
+              0%, 100% {
+                transform: scaleY(0.3);
+                background-color: rgba(120, 53, 240, 0.2);
+              }
+              50% {
+                transform: scaleY(1);
+                background-color: rgb(120, 53, 240);
+              }
+            }
+          `
+        }} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                var animationStarted = false;
                 var pageLoaded = false;
-                
-                function startAnimation() {
-                  if (animationStarted) return;
-                  animationStarted = true;
-                  
-                  var liquid = document.getElementById('initial-loader-liquid');
-                  var logo = document.getElementById('initial-loader-logo');
-                  
-                  if (liquid) {
-                    setTimeout(function() {
-                      liquid.style.height = '100%';
-                    }, 10);
-                  }
-                  
-                  if (logo) {
-                    setTimeout(function() {
-                      logo.style.clipPath = 'inset(0% 0 0 0)';
-                    }, 10);
-                  }
-                  
-                  // Masquer le loader après que l'animation soit complète (3 secondes)
-                  setTimeout(function() {
-                    hideLoader();
-                  }, 3000);
-                }
+                var minDisplayTime = 800; // Minimum 800ms d'affichage pour une meilleure UX
+                var startTime = Date.now();
                 
                 function hideLoader() {
-                  // Attendre que la page soit chargée ET que l'animation soit terminée
-                  if (!pageLoaded) return;
-                  
                   var loader = document.getElementById('initial-loader');
-                  if (loader) {
+                  if (!loader) return;
+                  
+                  var elapsed = Date.now() - startTime;
+                  var remainingTime = Math.max(0, minDisplayTime - elapsed);
+                  
+                  setTimeout(function() {
                     loader.style.opacity = '0';
                     setTimeout(function() {
                       loader.style.display = 'none';
-                    }, 300);
-                  }
+                    }, 400);
+                  }, remainingTime);
                 }
                 
-                // Démarrer l'animation immédiatement
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', startAnimation);
-                } else {
-                  startAnimation();
+                // Masquer le loader une fois que la page est chargée
+                function checkAndHide() {
+                  if (pageLoaded) {
+                    hideLoader();
+                  }
                 }
                 
                 // Marquer que la page est chargée
-                window.addEventListener('load', function() {
+                if (document.readyState === 'complete') {
                   pageLoaded = true;
-                  // Si l'animation est déjà terminée, masquer le loader
-                  if (animationStarted) {
-                    setTimeout(function() {
-                      hideLoader();
-                    }, Math.max(0, 3000 - (Date.now() - (window.performance.timing.domContentLoadedEventEnd || Date.now()))));
+                  checkAndHide();
+                } else {
+                  window.addEventListener('load', function() {
+                    pageLoaded = true;
+                    checkAndHide();
+                  });
+                }
+                
+                // Fallback: masquer après 3 secondes maximum
+                setTimeout(function() {
+                  if (document.getElementById('initial-loader')) {
+                    hideLoader();
                   }
-                });
+                }, 3000);
               })();
             `,
           }}

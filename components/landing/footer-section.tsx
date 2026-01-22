@@ -40,12 +40,12 @@ export function FooterSection() {
         <div className="flex flex-col justify-start items-start gap-3">
           <h3 className="text-muted-foreground text-sm font-medium leading-5">{t('legal')}</h3>
           <div className="flex flex-col justify-center items-start gap-2">
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
+            <Link href="/terms" className="text-foreground text-sm font-normal leading-5 hover:underline">
               {t('terms')}
-            </a>
-            <a href="#" className="text-foreground text-sm font-normal leading-5 hover:underline">
+            </Link>
+            <Link href="/privacy" className="text-foreground text-sm font-normal leading-5 hover:underline">
               {t('privacy')}
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -502,7 +502,31 @@ export default function RegisterPage() {
             </CardContent>
           </Card>
           <p className="mt-6 text-center text-xs text-foreground/50">
-            {t('terms')}
+            {locale === 'fr' ? (
+              <>
+                En créant un compte, vous acceptez nos{' '}
+                <Link href="/terms" className="text-primary hover:underline">
+                  conditions d'utilisation
+                </Link>
+                {' '}et notre{' '}
+                <Link href="/privacy" className="text-primary hover:underline">
+                  politique de confidentialité
+                </Link>
+                .
+              </>
+            ) : (
+              <>
+                By creating an account, you agree to our{' '}
+                <Link href="/terms" className="text-primary hover:underline">
+                  terms of use
+                </Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-primary hover:underline">
+                  privacy policy
+                </Link>
+                .
+              </>
+            )}
           </p>
         </div>
       </div>

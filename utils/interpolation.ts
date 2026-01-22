@@ -18,44 +18,62 @@ export function interpolateMessage(
   locale: string = 'fr'
 ): string {
   if (!message) return message;
-  if (!data) return message;
   
   // Remplacer {variable} et {{variable}} par leurs valeurs
-  return message.replace(/\{\{?\s*([a-zA-Z0-9_.]+)\s*\}\}?/g, (match, key) => {
-    // Chercher la valeur dans data
-    const parts = String(key).split('.');
-    let value: any = data;
-    
-    for (const part of parts) {
-      if (value && typeof value === 'object' && part in value) {
-        value = value[part];
-      } else {
-        return match; // Retourner la variable originale si non trouvée
-      }
-    }
-    
-    // Formater les valeurs spéciales
-    if (value === null || value === undefined) {
-      return match; // Garder la variable si la valeur est absente
-    }
-    
-    // Formater les montants avec devise si nécessaire
-    if (key === 'amount' || key === 'totalAmount' || key === 'remaining') {
-      const currency = data.currency as string | undefined;
-      if (currency && typeof value === 'string') {
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-          return new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
-            style: 'currency',
-            currency: currency,
-            maximumFractionDigits: 2,
-          }).format(numValue);
+  let result = message.replace(/\{\{?\s*([a-zA-Z0-9_.]+)\s*\}\}?/g, (match, key) => {
+    // Si on a des données, chercher la valeur
+    if (data) {
+      const parts = String(key).split('.');
+      let value: any = data;
+      
+      for (const part of parts) {
+        if (value && typeof value === 'object' && part in value) {
+          value = value[part];
+        } else {
+          // Variable non trouvée dans data - la supprimer
+          return '';
         }
       }
+      
+      // Formater les valeurs spéciales
+      if (value === null || value === undefined || value === '') {
+        // Variable vide - la supprimer complètement
+        return '';
+      }
+      
+      // Formater les montants avec devise si nécessaire
+      if (key === 'amount' || key === 'totalAmount' || key === 'remaining') {
+        const currency = data.currency as string | undefined;
+        if (currency && typeof value === 'string') {
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue)) {
+            return new Intl.NumberFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
+              style: 'currency',
+              currency: currency,
+              maximumFractionDigits: 2,
+            }).format(numValue);
+          }
+        }
+      }
+      
+      return String(value);
     }
     
-    return String(value);
+    // Si pas de data, supprimer toutes les variables (elles sont probablement déjà interpolées côté backend mais vides)
+    return '';
   });
+  
+  // Nettoyer les espaces multiples et les ponctuations en double causées par la suppression de variables
+  result = result.replace(/\s+/g, ' ').trim();
+  result = result.replace(/\s*,\s*,/g, ','); // Supprimer les virgules doubles
+  result = result.replace(/\s*\.\s*\./g, '.'); // Supprimer les points doubles
+  result = result.replace(/\s+([,\.])/g, '$1'); // Supprimer les espaces avant virgules/points
+  result = result.replace(/\s+\)/g, ')'); // Supprimer les espaces avant parenthèses fermantes
+  result = result.replace(/\(\s+/g, '('); // Supprimer les espaces après parenthèses ouvrantes
+  result = result.replace(/\(\s*\)/g, ''); // Supprimer les parenthèses vides
+  result = result.replace(/\s+/g, ' ').trim(); // Nettoyer à nouveau les espaces multiples
+  
+  return result;
 }
 
 /**

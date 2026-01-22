@@ -11,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '', // Page d'accueil
     '/login',
     '/register',
+    '/terms',
+    '/privacy',
   ];
   
   // Générer les routes pour chaque locale

@@ -41,7 +41,7 @@ export const mockClients: MockClient[] = [
     company: "FoodConnect",
     email: "samuel.d@foodconnect.tg",
     invoicesCount: 5,
-    lastInvoiceDate: "2024-12-22",
+    lastInvoiceDate: "2026-12-22",
   },
   {
     id: "c5",
@@ -49,6 +49,6 @@ export const mockClients: MockClient[] = [
     company: "LM Creative",
     email: "contact@lmcreative.io",
     invoicesCount: 2,
-    lastInvoiceDate: "2024-11-30",
+    lastInvoiceDate: "2026-11-30",
   },
 ];

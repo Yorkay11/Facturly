@@ -1311,8 +1311,8 @@
           "lyonFrance": "Lyon, France",
           "info": "INFORMATIONS",
           "subject": "Objet : Projet web",
-          "issuedOn": "Émise le : 01/04/2024",
-          "dueDate": "Échéance : 30/04/2024",
+          "issuedOn": "Émise le : 01/04/2026",
+          "dueDate": "Échéance : 30/04/2026",
           "table": {
             "description": "Description",
             "quantity": "Qté",
@@ -1749,7 +1749,7 @@
         "language": "Langue",
         "timezone": "Fuseau horaire",
         "invoicePrefix": "Préfixe facture",
-        "invoicePrefixExample": "Exemple : FAC-2024-001, INV-2024-001",
+        "invoicePrefixExample": "Exemple : FAC-2026-001, INV-2026-001",
         "dateFormat": "Format de date",
         "currency": "Devise",
         "taxRate": "Taux de TVA (%)",
@@ -2298,6 +2298,181 @@
     "errors": {
       "title": "Erreur",
       "description": "Impossible de mettre à jour votre workspace."
+    }
+  },
+  "legal": {
+    "terms": {
+      "title": "Conditions d'utilisation",
+      "description": "Conditions d'utilisation de Facturly",
+      "backToHome": "Retour à l'accueil",
+      "lastUpdated": "Dernière mise à jour",
+      "lastUpdatedDate": "1er janvier 2026",
+      "tableOfContents": "Table des matières",
+      "sections": {
+        "introduction": {
+          "title": "1. Introduction",
+          "content": "Bienvenue sur Facturly. En accédant et en utilisant notre plateforme de facturation en ligne, vous acceptez d'être lié par les présentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service."
+        },
+        "acceptance": {
+          "title": "2. Acceptation des conditions",
+          "content": "En créant un compte ou en utilisant Facturly, vous confirmez que :",
+          "items": {
+            "1": "Vous avez au moins 18 ans ou l'âge légal dans votre juridiction",
+            "2": "Vous avez la capacité légale de conclure des contrats",
+            "3": "Vous acceptez de respecter toutes les lois et réglementations applicables"
+          }
+        },
+        "service": {
+          "title": "3. Description du service",
+          "content": "Facturly est une plateforme de facturation en ligne qui permet aux utilisateurs de :",
+          "features": {
+            "1": "Créer et gérer des factures",
+            "2": "Suivre les paiements et les relances",
+            "3": "Gérer leurs clients et produits",
+            "4": "Générer des rapports financiers",
+            "5": "Accéder à des fonctionnalités de facturation avancées selon leur plan d'abonnement"
+          }
+        },
+        "accounts": {
+          "title": "4. Comptes utilisateurs",
+          "content": "Vous êtes responsable de :",
+          "responsibilities": {
+            "1": "Maintenir la confidentialité de vos identifiants de connexion",
+            "2": "Toutes les activités qui se produisent sous votre compte",
+            "3": "Fournir des informations exactes et à jour",
+            "4": "Nous informer immédiatement de toute utilisation non autorisée de votre compte"
+          }
+        },
+        "payment": {
+          "title": "5. Conditions de paiement",
+          "content": "Les abonnements payants sont facturés selon les tarifs en vigueur. Vous acceptez que :",
+          "terms": {
+            "1": "Les paiements sont effectués à l'avance pour la période d'abonnement",
+            "2": "Les prix peuvent être modifiés avec un préavis de 30 jours",
+            "3": "Aucun remboursement n'est accordé pour les périodes partiellement utilisées",
+            "4": "Les abonnements se renouvellent automatiquement sauf annulation"
+          }
+        },
+        "intellectual": {
+          "title": "6. Propriété intellectuelle",
+          "content": "Tous les contenus, fonctionnalités et technologies de Facturly sont la propriété exclusive de Facturly ou de ses concédants de licence. Vous ne pouvez pas copier, modifier, distribuer ou créer des œuvres dérivées sans autorisation écrite."
+        },
+        "liability": {
+          "title": "7. Limitation de responsabilité",
+          "content": "Facturly est fourni \"tel quel\" sans garantie d'aucune sorte. Nous ne serons pas responsables des dommages directs, indirects, accessoires ou consécutifs résultant de l'utilisation ou de l'impossibilité d'utiliser notre service."
+        },
+        "termination": {
+          "title": "8. Résiliation",
+          "content": "Nous nous réservons le droit de suspendre ou de résilier votre compte à tout moment pour :",
+          "reasons": {
+            "1": "Violation des présentes conditions d'utilisation",
+            "2": "Activité frauduleuse ou suspecte",
+            "3": "Non-paiement des frais d'abonnement"
+          }
+        },
+        "changes": {
+          "title": "9. Modifications des conditions",
+          "content": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications entreront en vigueur dès leur publication sur cette page. Il est de votre responsabilité de consulter régulièrement ces conditions."
+        },
+        "contact": {
+          "title": "10. Contact",
+          "content": "Pour toute question concernant ces conditions d'utilisation, veuillez nous contacter à :",
+          "email": "Email"
+        }
+      }
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "description": "Politique de confidentialité de Facturly",
+      "backToHome": "Retour à l'accueil",
+      "lastUpdated": "Dernière mise à jour",
+      "lastUpdatedDate": "1er janvier 2026",
+      "tableOfContents": "Table des matières",
+      "sections": {
+        "introduction": {
+          "title": "1. Introduction",
+          "content": "Facturly s'engage à protéger votre vie privée. Cette politique de confidentialité explique comment nous collectons, utilisons, partageons et protégeons vos informations personnelles lorsque vous utilisez notre service."
+        },
+        "collection": {
+          "title": "2. Informations collectées",
+          "content": "Nous collectons les types d'informations suivants :",
+          "types": {
+            "1": "Informations d'identification : nom, adresse email, numéro de téléphone",
+            "2": "Informations de facturation : adresse, informations de paiement",
+            "3": "Données d'utilisation : historique de connexion, fonctionnalités utilisées",
+            "4": "Données de facturation : factures créées, clients, produits",
+            "5": "Données techniques : adresse IP, type de navigateur, appareil utilisé"
+          }
+        },
+        "usage": {
+          "title": "3. Utilisation des informations",
+          "content": "Nous utilisons vos informations pour :",
+          "purposes": {
+            "1": "Fournir et améliorer nos services",
+            "2": "Traiter vos transactions et paiements",
+            "3": "Vous envoyer des notifications importantes",
+            "4": "Personnaliser votre expérience utilisateur",
+            "5": "Assurer la sécurité et prévenir la fraude"
+          }
+        },
+        "protection": {
+          "title": "4. Protection des données",
+          "content": "Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos données :",
+          "measures": {
+            "1": "Chiffrement des données en transit et au repos",
+            "2": "Contrôles d'accès stricts",
+            "3": "Surveillance continue de la sécurité",
+            "4": "Sauvegardes régulières des données"
+          }
+        },
+        "sharing": {
+          "title": "5. Partage des informations",
+          "content": "Nous ne vendons jamais vos données. Nous pouvons partager vos informations uniquement dans les cas suivants :",
+          "cases": {
+            "1": "Avec votre consentement explicite",
+            "2": "Avec des prestataires de services de confiance (hébergement, paiement)",
+            "3": "Pour se conformer aux obligations légales",
+            "4": "En cas de fusion, acquisition ou vente d'actifs"
+          }
+        },
+        "rights": {
+          "title": "6. Vos droits",
+          "content": "Vous avez le droit de :",
+          "list": {
+            "1": "Accéder à vos données personnelles",
+            "2": "Corriger des informations inexactes",
+            "3": "Demander la suppression de vos données",
+            "4": "Vous opposer au traitement de vos données",
+            "5": "Demander la portabilité de vos données"
+          }
+        },
+        "cookies": {
+          "title": "7. Cookies",
+          "content": "Nous utilisons des cookies et technologies similaires pour améliorer votre expérience, analyser l'utilisation du service et personnaliser le contenu. Vous pouvez gérer vos préférences de cookies dans les paramètres de votre navigateur."
+        },
+        "thirdParty": {
+          "title": "8. Services tiers",
+          "content": "Nous utilisons des services tiers pour :",
+          "services": {
+            "1": "Le traitement des paiements (Moneroo)",
+            "2": "L'analyse et le suivi (Google Analytics)",
+            "3": "L'hébergement et l'infrastructure"
+          }
+        },
+        "children": {
+          "title": "9. Protection des mineurs",
+          "content": "Notre service n'est pas destiné aux personnes de moins de 18 ans. Nous ne collectons pas sciemment d'informations personnelles auprès d'enfants."
+        },
+        "changes": {
+          "title": "10. Modifications de la politique",
+          "content": "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Nous vous informerons de tout changement important par email ou via une notification sur notre site."
+        },
+        "contact": {
+          "title": "11. Contact",
+          "content": "Pour toute question concernant cette politique de confidentialité ou pour exercer vos droits, contactez-nous à :",
+          "email": "Email"
+        }
+      }
     }
   }
 }

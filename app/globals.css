@@ -157,6 +157,73 @@ body {
     animation: loaderPop 0.4s ease-out forwards;
   }
 
+  /* Fade in loader */
+  @keyframes loaderFadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-loader-fade-in {
+    animation: loaderFadeIn 0.3s ease-out forwards;
+  }
+
+  /* Spinner draw animation */
+  @keyframes spinnerDraw {
+    0% {
+      stroke-dashoffset: 175.9;
+    }
+    50% {
+      stroke-dashoffset: 43.98;
+    }
+    100% {
+      stroke-dashoffset: 175.9;
+    }
+  }
+
+  .animate-spinner-draw {
+    animation: spinnerDraw 1.5s ease-in-out infinite;
+  }
+
+  /* Progress fill animation for square loader */
+  @keyframes progressFill {
+    0% {
+      height: 0%;
+    }
+    50% {
+      height: 100%;
+    }
+    100% {
+      height: 0%;
+    }
+  }
+
+  .animate-progress-fill {
+    animation: progressFill 1.5s ease-in-out infinite;
+  }
+
+  /* Spinner arc animation for simple loader */
+  @keyframes spinnerArc {
+    0% {
+      stroke-dashoffset: 47.12;
+    }
+    50% {
+      stroke-dashoffset: 15.71;
+    }
+    100% {
+      stroke-dashoffset: 47.12;
+    }
+  }
+
+  .animate-spinner-arc {
+    animation: spinnerArc 1.2s ease-in-out infinite;
+  }
+
   /* Fade in text */
   @keyframes fadeIn {
     from {

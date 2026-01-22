@@ -470,7 +470,7 @@ export function HeroSection() {
         </p>
       </div>
 
-      <Link href={buttonHref} onClick={handleClick} className="relative z-10 mt-4 md:mt-0">
+      <Link href={buttonHref} onClick={handleClick} className="relative z-40 mt-4 md:mt-0">
         <Button className="bg-gradient-to-r from-primary via-primary to-primary/90 text-primary-foreground hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 px-8 py-3 rounded-full font-medium text-base shadow-lg ring-1 ring-white/10 transition-all duration-300">
           {buttonText}
         </Button>

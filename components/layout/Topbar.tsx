@@ -153,7 +153,11 @@ export const Topbar = () => {
   const isBetaBannerVisible = useBetaBanner();
 
   return (
-    <header className={cn("sticky z-10 border-b border-primary/10 bg-white/85 backdrop-blur", isBetaBannerVisible ? "top-[44px] md:top-[42px]" : "top-0", "py-2 md:py-4")}>
+    <header className={cn(
+      "sticky z-40 border-b border-primary/10 bg-white/85 backdrop-blur",
+      isBetaBannerVisible ? "top-[44px] md:top-[42px]" : "top-0",
+      "py-2 md:py-4"
+    )}>
       <div className="mx-auto flex max-w-[90vw] flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between md:gap-4 md:px-10">
         <div className="flex items-center justify-between w-full md:hidden">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">

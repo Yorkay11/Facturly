@@ -58,20 +58,23 @@ export function LanguageSwitcher() {
 
 
 
+  const Flag = currentLanguage.Flag;
+
   return (
     <Select value={locale} onValueChange={handleLanguageChange}>
-      <SelectTrigger className="w-[140px]">
-        <div className="flex items-center gap-2 w-full">
-          <SelectValue className="sr-only" aria-label={currentLanguage.label} />
-        </div>
+      <SelectTrigger className="w-auto md:w-[140px] px-2 md:px-3 gap-2" aria-label={currentLanguage.label}>
+        <Flag />
+        <p className="hidden md:inline">
+          {currentLanguage.label}
+        </p>
       </SelectTrigger>
       <SelectContent>
         {languages.map((lang) => {
-          const Flag = lang.Flag;
+          const FlagItem = lang.Flag;
           return (
             <SelectItem key={lang.code} value={lang.code}>
               <span className="flex items-center gap-2">
-                <Flag />
+                <FlagItem />
                 <span>{lang.label}</span>
               </span>
             </SelectItem>

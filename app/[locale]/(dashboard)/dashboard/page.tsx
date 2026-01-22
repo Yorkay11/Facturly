@@ -42,6 +42,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { fr, enUS } from "date-fns/locale";
+import { interpolateMessage } from "@/utils/interpolation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -147,15 +148,23 @@ export default function DashboardPage() {
         status = "warning";
       }
 
+      // Préparer les données pour l'interpolation
+      const activityData: Record<string, unknown> = {
+        invoiceNumber: activity.entityType === 'invoice' ? activity.title.match(/#([A-Z0-9-]+)/)?.[1] : undefined,
+        clientName: activity.description || '',
+        amount: activity.amount,
+        currency: activity.currency,
+      };
+
       return {
         id: activity.entityId,
-        title: activity.title,
-        description: activity.description || "",
+        title: interpolateMessage(activity.title, activityData, locale),
+        description: interpolateMessage(activity.description || "", activityData, locale),
         time: timeAgo,
         status,
       };
     });
-  }, [activitiesData]);
+  }, [activitiesData, dateLocale, locale]);
 
   // Transformer les alertes depuis l'API
   const atRiskItems = useMemo(() => {

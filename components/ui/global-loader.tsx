@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 
 interface GlobalLoaderProps {
   isLoading: boolean;
@@ -20,43 +19,30 @@ export function GlobalLoader({
     <div
       className={cn(
         "fixed inset-0 z-[9999] flex items-center justify-center",
-        whiteOverlay ? "bg-white" : "bg-black/40 backdrop-blur-sm",
-        "transition-opacity duration-300 ease-out opacity-100"
+        whiteOverlay ? "bg-white" : "bg-black/50 backdrop-blur-sm",
+        "transition-opacity duration-200 ease-out"
       )}
       aria-live="polite"
       aria-busy="true"
     >
       <div
         className={cn(
-          "flex flex-col items-center gap-5 rounded-xl p-8",
-          "animate-loader-pop",
-          whiteOverlay ? "shadow-none" : "bg-white shadow-xl"
+          "flex flex-col items-center gap-6",
+          "animate-loader-fade-in"
         )}
       >
-        {/* Loader */}
-        <div className="relative w-32 h-32">
-          <div className="absolute inset-0 rounded-xl border-4 border-primary/30 bg-white overflow-hidden">
-            {/* Liquide */}
-            <div className="absolute inset-0 liquid-container">
-              <div className="liquid-wave" />
-            </div>
-
-            {/* Logo */}
-            <div className="absolute inset-0 flex items-center justify-center logo-reveal">
-              <Image
-                src="/icon.png"
-                alt="Facturly"
-                width={80}
-                height={80}
-                priority
-                className="w-20 h-20 object-contain rounded-xl"
-              />
-            </div>
+        {/* Loader carré avec barre de progression */}
+        <div className="relative w-20 h-20">
+          {/* Conteneur carré avec bordure */}
+          <div className="absolute inset-0 rounded-lg border border-primary/30 bg-white overflow-hidden">
+            {/* Barre de progression animée */}
+            <div className="absolute bottom-0 left-0 right-0 h-0 bg-primary animate-progress-fill" />
           </div>
         </div>
 
+        {/* Message */}
         {message && (
-          <p className="text-sm font-medium text-muted-foreground animate-fade-in">
+          <p className="text-sm font-medium text-foreground/90">
             {message}
           </p>
         )}

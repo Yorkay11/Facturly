@@ -7,10 +7,10 @@ import { useTranslations } from 'next-intl'
 const PaymentTracking: React.FC = () => {
   const t = useTranslations('landing.bento.paymentTracking')
   const invoices = [
-    { id: 1, number: "FAC-042", client: "Fidelize", amount: "2 400€", status: "paid", date: "15/04/2024" },
-    { id: 2, number: "FAC-043", client: "Tech Solutions", amount: "1 800€", status: "sent", date: "18/04/2024" },
-    { id: 3, number: "FAC-044", client: "Design Studio", amount: "950€", status: "overdue", date: "10/04/2024" },
-    { id: 4, number: "FAC-045", client: "Marketing Pro", amount: "3 200€", status: "paid", date: "20/04/2024" },
+    { id: 1, number: "FAC-042", client: "Fidelize", amount: "2 400€", status: "paid", date: "15/04/2026" },
+    { id: 2, number: "FAC-043", client: "Tech Solutions", amount: "1 800€", status: "sent", date: "18/04/2026" },
+    { id: 3, number: "FAC-044", client: "Design Studio", amount: "950€", status: "overdue", date: "10/04/2026" },
+    { id: 4, number: "FAC-045", client: "Marketing Pro", amount: "3 200€", status: "paid", date: "20/04/2026" },
   ]
 
   const getStatusBadge = (status: string) => {

@@ -32,11 +32,11 @@ export const mockReminders: MockReminder[] = [
   },
   {
     id: "r3",
-    invoiceNumber: "INV-2024-015",
+    invoiceNumber: "INV-2026-015",
     client: "FoodConnect",
     amount: 420,
     currency: "EUR",
-    dueDate: "2024-12-16",
+    dueDate: "2026-12-16",
     lastAction: "Relance automatique 30/12",
     status: "resolved",
   },

@@ -91,8 +91,8 @@ Authorization: Bearer {token}
   "defaultCurrency": "EUR",
   "logoUrl": "https://...",
   "profileCompletion": 85,
-  "createdAt": "2024-01-15T10:00:00Z",
-  "updatedAt": "2024-01-15T10:00:00Z"
+  "createdAt": "2026-01-15T10:00:00Z",
+  "updatedAt": "2026-01-15T10:00:00Z"
 }
 ```
 

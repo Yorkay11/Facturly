@@ -56,19 +56,29 @@ const nextConfig = {
           // CSP avec unsafe-inline pour script-src et style-src (nécessaire pour Next.js et les templates dynamiques)
           {
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'", // unsafe-inline nécessaire pour Next.js (hydratation, etc.)
-              "style-src 'self' 'unsafe-inline'", // unsafe-inline nécessaire pour les couleurs dynamiques des templates
-              "img-src 'self' data: https:",
-              "font-src 'self' data:",
-              "connect-src 'self'",
-              "frame-src 'none'",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              process.env.NODE_ENV === 'production' ? "upgrade-insecure-requests" : "",
-            ].filter(Boolean).join('; ')
+            value: (() => {
+              const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+              // Construire connect-src avec l'URL du backend si disponible
+              const connectSrc = apiUrl 
+                ? `'self' ${apiUrl}` 
+                : process.env.NODE_ENV === 'production' 
+                  ? "'self'" 
+                  : "'self' https: http://localhost:*"; // En dev, permettre localhost et toutes les connexions HTTPS
+              
+              return [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline'", // unsafe-inline nécessaire pour Next.js (hydratation, etc.)
+                "style-src 'self' 'unsafe-inline'", // unsafe-inline nécessaire pour les couleurs dynamiques des templates
+                "img-src 'self' data: https:",
+                "font-src 'self' data:",
+                `connect-src ${connectSrc}`, // Autoriser les connexions vers le backend
+                "frame-src 'none'",
+                "object-src 'none'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                process.env.NODE_ENV === 'production' ? "upgrade-insecure-requests" : "",
+              ].filter(Boolean).join('; ');
+            })()
           },
         ],
       },

@@ -162,7 +162,7 @@ export default async function LandingPage() {
       />
       <div className="min-h-screen bg-background relative overflow-hidden pb-0 mt-20">
           <div className="relative z-10">
-          <main className="max-w-[1320px] mx-auto relative px-4 md:px-0" id="hero-container mb-20">
+          <main className="max-w-[1320px] mx-auto relative px-4 md:px-0 mb-20" id="hero-container">
             <HeroSection />
             <div className="flex items-center justify-center w-full z-30">
               <DashboardPreview />

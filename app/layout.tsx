@@ -3,7 +3,7 @@ import "./globals.css";
 import { Nunito } from 'next/font/google';
 
 const inter = Nunito({ subsets: ['latin'] });
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL as string;
 
 // Métadonnées par défaut (français) - Les pages dans [locale] peuvent les surcharger avec generateMetadata
 export const metadata: Metadata = {
@@ -148,8 +148,8 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className} suppressHydrationWarning>
-        {/* Loader initial professionnel */}
-        <div id="initial-loader" style={{
+        {/* Loader initial professionnel - DÉSACTIVÉ */}
+        {/* <div id="initial-loader" style={{
           position: 'fixed',
           inset: 0,
           zIndex: 9999,
@@ -157,7 +157,8 @@ export default function RootLayout({
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: 'white',
-          transition: 'opacity 0.4s ease-out'
+          transition: 'opacity 0.4s ease-out',
+          pointerEvents: 'none'
         }}>
           <div style={{
             display: 'flex',
@@ -165,11 +166,10 @@ export default function RootLayout({
             alignItems: 'center',
             gap: '2rem'
           }}>
-            {/* Logo avec animation de pulse subtile */}
             <div style={{
               position: 'relative',
-              width: '5rem',
-              height: '5rem',
+              width: '3rem',
+              height: '3rem',
               animation: 'loaderLogoPulse 2s ease-in-out infinite'
             }}>
               <img 
@@ -185,7 +185,6 @@ export default function RootLayout({
               />
             </div>
             
-            {/* Barres de progression animées */}
             <div style={{
               display: 'flex',
               gap: '0.5rem',
@@ -251,7 +250,6 @@ export default function RootLayout({
           </div>
         </div>
         
-        {/* Styles CSS inline pour les animations */}
         <style dangerouslySetInnerHTML={{
           __html: `
             @keyframes loaderLogoPulse {
@@ -326,7 +324,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 var pageLoaded = false;
-                var minDisplayTime = 800; // Minimum 800ms d'affichage pour une meilleure UX
+                var minDisplayTime = 800;
                 var startTime = Date.now();
                 
                 function hideLoader() {
@@ -338,20 +336,20 @@ export default function RootLayout({
                   
                   setTimeout(function() {
                     loader.style.opacity = '0';
+                    loader.style.pointerEvents = 'none';
                     setTimeout(function() {
                       loader.style.display = 'none';
+                      loader.style.visibility = 'hidden';
                     }, 400);
                   }, remainingTime);
                 }
                 
-                // Masquer le loader une fois que la page est chargée
                 function checkAndHide() {
                   if (pageLoaded) {
                     hideLoader();
                   }
                 }
                 
-                // Marquer que la page est chargée
                 if (document.readyState === 'complete') {
                   pageLoaded = true;
                   checkAndHide();
@@ -362,7 +360,6 @@ export default function RootLayout({
                   });
                 }
                 
-                // Fallback: masquer après 3 secondes maximum
                 setTimeout(function() {
                   if (document.getElementById('initial-loader')) {
                     hideLoader();
@@ -371,7 +368,7 @@ export default function RootLayout({
               })();
             `,
           }}
-        />
+        /> */}
         {children}
       </body>
     </html>

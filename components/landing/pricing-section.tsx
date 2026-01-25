@@ -23,7 +23,7 @@ export function PricingSection() {
       features: [
         tPlans('free.features.invoices'),
         tPlans('free.features.clients'),
-        tPlans('free.features.email'),
+        tPlans('free.features.whatsapp'),
         tPlans('free.features.dashboard'),
         tPlans('free.features.support'),
       ],
@@ -41,7 +41,7 @@ export function PricingSection() {
       savings: t('save', { percent: 20 }),
       features: [
         tPlans('pro.features.invoices'),
-        tPlans('pro.features.onlinePayment'),
+        tPlans('pro.features.mobileMoney'),
         tPlans('pro.features.reminders'),
         tPlans('pro.features.statistics'),
         tPlans('pro.features.customization'),

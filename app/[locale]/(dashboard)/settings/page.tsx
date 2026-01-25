@@ -41,8 +41,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AlertCircle, CheckCircle2, Crown, Zap, Infinity, CreditCard, TrendingUp, BadgeCheck, Receipt, Globe, DollarSign, Percent, FileText } from "lucide-react";
+import { AlertCircle, CheckCircle2, Crown, Zap, Infinity, CreditCard, TrendingUp, BadgeCheck, Receipt, Globe, DollarSign, Percent, FileText, Sparkles } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CreditsPurchaseModal } from "@/components/billing/credits-purchase-modal";
 
 type UserFormValues = {
   firstName: string;
@@ -177,6 +178,7 @@ function SettingsContent() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
   const [isProcessingPlan, setIsProcessingPlan] = useState(false);
+  const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false);
   
   // État de chargement combiné pour les boutons d'abonnement
   const isLoadingSubscriptionAction = isCreatingCheckout || isChangingPlanStripe || isProcessingPlan || isCreatingPortal;
@@ -467,10 +469,11 @@ function SettingsContent() {
         // Vérifier si le plan a changé
         if (currentSubscription?.plan === targetPlan && currentSubscription?.interval === targetInterval) {
           clearInterval(poll);
-          const planNames: Record<"free" | "pro" | "enterprise", string> = {
+          const planNames: Record<"free" | "pro" | "enterprise" | "pay_as_you_go", string> = {
             free: t('subscription.plans.free'),
             pro: t('subscription.plans.pro'),
-            enterprise: t('subscription.plans.enterprise')
+            enterprise: t('subscription.plans.enterprise'),
+            pay_as_you_go: t('subscription.plans.pay_as_you_go', { defaultValue: 'Pay-as-you-go' })
           };
           toast.success("Plan mis à jour", {
             description: `Vous êtes maintenant sur le plan ${planNames[targetPlan]}`,
@@ -1057,19 +1060,20 @@ function SettingsContent() {
             <div className="space-y-6">
               {/* Plan actuel */}
               {subscription && (() => {
-                const planNames: Record<"free" | "pro" | "enterprise", string> = {
+                const planNames: Record<"free" | "pro" | "enterprise" | "pay_as_you_go", string> = {
                   free: t('subscription.plans.free'),
                   pro: t('subscription.plans.pro'),
-                  enterprise: t('subscription.plans.enterprise')
+                  enterprise: t('subscription.plans.enterprise'),
+                  pay_as_you_go: t('subscription.plans.pay_as_you_go', { defaultValue: 'Pay-as-you-go' })
                 };
                 const planPrices: Record<"pro" | "enterprise", Record<"month" | "year", string>> = {
                   pro: { month: "5", year: "48" },
                   enterprise: { month: "20", year: "192" }
                 };
-                const currentPlanName = planNames[subscription.plan];
-                const currentPrice = subscription.plan === "free" 
-                  ? "0,00 €" 
-                  : planPrices[subscription.plan]?.[subscription.interval] 
+                const currentPlanName = planNames[subscription.plan] || subscription.plan;
+                const currentPrice = subscription.plan === "free" || subscription.plan === "pay_as_you_go"
+                  ? subscription.plan === "free" ? "0,00 €" : "À la carte"
+                  : subscription.interval && planPrices[subscription.plan]?.[subscription.interval] 
                     ? `${planPrices[subscription.plan][subscription.interval]} €` 
                     : "N/A";
                 
@@ -1088,19 +1092,25 @@ function SettingsContent() {
                           <p className="text-sm text-muted-foreground">
                             {subscription.plan === "free" 
                               ? t('subscription.currentPlan.free')
+                              : subscription.plan === "pay_as_you_go"
+                              ? "Pay-as-you-go"
                               : subscription.interval === "month" 
                                 ? t('subscription.currentPlan.monthly')
-                                : t('subscription.currentPlan.yearly')}
+                                : subscription.interval === "year"
+                                ? t('subscription.currentPlan.yearly')
+                                : ""}
                           </p>
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-primary">{currentPrice}</p>
                           <p className="text-xs text-muted-foreground">
-                            {subscription.plan === "free" 
+                            {subscription.plan === "free" || subscription.plan === "pay_as_you_go"
                               ? "" 
                               : subscription.interval === "month" 
                                 ? t('subscription.currentPlan.perMonth')
-                                : t('subscription.currentPlan.perYear')}
+                                : subscription.interval === "year"
+                                ? t('subscription.currentPlan.perYear')
+                                : ""}
                           </p>
                         </div>
                       </div>
@@ -1117,7 +1127,52 @@ function SettingsContent() {
                   planCode={subscription.plan === "free" ? "free" : subscription.plan}
                 />
               )}
-             
+
+              {/* PHASE 4 : Achat de crédits (Pay-as-you-go) */}
+              {(subscription?.plan === "free" || subscription?.plan === "pay_as_you_go") && (
+                <Card className="border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-primary flex items-center gap-2">
+                      <Sparkles className="h-5 w-5" />
+                      {t('subscription.credits.title')}
+                    </CardTitle>
+                    <CardDescription>
+                      {t('subscription.credits.description')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {subscription.plan === "pay_as_you_go" && (
+                      <div className="rounded-lg bg-muted p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">
+                              {t('subscription.credits.available')}
+                            </p>
+                            <p className="text-2xl font-bold text-primary">
+                              {(subscription as any).credits || 0}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">
+                              {t('subscription.credits.totalSent')}
+                            </p>
+                            <p className="text-lg font-semibold">
+                              {(subscription as any).totalInvoicesSent || 0}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <Button
+                      onClick={() => setIsCreditsModalOpen(true)}
+                      className="w-full"
+                    >
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      {t('subscription.credits.cta')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Plans disponibles */}
               {plans.length > 0 && (
@@ -1465,6 +1520,12 @@ function SettingsContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* PHASE 4 : Modal d'achat de crédits */}
+      <CreditsPurchaseModal
+        open={isCreditsModalOpen}
+        onOpenChange={setIsCreditsModalOpen}
+      />
     </div>
   );
 }

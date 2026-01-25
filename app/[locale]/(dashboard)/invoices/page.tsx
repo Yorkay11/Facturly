@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { Plus, Download, Trash2, Copy } from "lucide-react";
+import { Plus, Download, Trash2, Copy, Repeat, Palette } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
@@ -182,14 +182,22 @@ export default function InvoicesPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* <Button variant="outline" size="sm" className="gap-2 border-primary/40 text-primary hover:bg-primary/10">
-              <Download className="h-4 w-4" />
-              {t('export')}
-            </Button> */}
+            <Button variant="outline" size="sm" className="gap-2 border-primary/40 text-primary hover:bg-primary/10" asChild>
+              <Link href="/recurring-invoices">
+                <Repeat className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('recurring')}</span>
+              </Link>
+            </Button>
             <Button className="gap-2" asChild>
               <Link href="/invoices/new">
                 <Plus className="h-4 w-4" />
                 {t('new')}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" asChild>
+              <Link href="/invoices/templates">
+                <Palette className="h-4 w-4" />
+                <span className="hidden sm:inline">{t('templates') || 'Templates'}</span>
               </Link>
             </Button>
           </div>

@@ -14,9 +14,11 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!isLoading && workspace) {
       const workspaceCompletion = workspace.profileCompletion ?? 0;
+      // PHASE 3.1 : Onboarding simplifié - Pour INDIVIDUAL, toujours complet (defaultCurrency a une valeur par défaut)
+      // Pour COMPANY, seulement le nom est requis
       const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-        ? (!workspace.name || !workspace.defaultCurrency)
-        : !workspace.defaultCurrency;
+        ? !workspace.name
+        : false; // INDIVIDUAL n'a plus besoin de defaultCurrency (valeur par défaut)
       
       // Si le profil est complet, rediriger
       if (workspaceCompletion >= 100 && !hasMissingWorkspaceInfo) {
@@ -51,9 +53,11 @@ export default function OnboardingPage() {
   }
 
   const workspaceCompletion = workspace.profileCompletion ?? 0;
+  // PHASE 3.1 : Onboarding simplifié - Pour INDIVIDUAL, toujours complet (defaultCurrency a une valeur par défaut)
+  // Pour COMPANY, seulement le nom est requis
   const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-    ? (!workspace.name || !workspace.defaultCurrency)
-    : !workspace.defaultCurrency;
+    ? !workspace.name
+    : false; // INDIVIDUAL n'a plus besoin de defaultCurrency (valeur par défaut)
   
   if (workspaceCompletion >= 100 && !hasMissingWorkspaceInfo) {
     return null; // La redirection va se faire via useEffect

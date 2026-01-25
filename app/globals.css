@@ -79,6 +79,49 @@ body {
     animation: revealLogo 3s linear forwards;
   }
 
+  /* Animations pour l'accordion */
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  .animate-accordion-down {
+    animation: accordion-down 0.2s ease-out;
+  }
+
+  .animate-accordion-up {
+    animation: accordion-up 0.2s ease-out;
+  }
+
+  /* Animation pour les providers en cercle */
+  @keyframes floatProvider {
+    0%, 100% {
+      transform: translate(-50%, -50%) translateY(0px) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -50%) translateY(-10px) scale(1.05);
+    }
+  }
+
+  .animate-float-provider {
+    animation: floatProvider 6s ease-in-out infinite;
+  }
+
+  /* Animation marquee - maintenant gérée par react-fast-marquee */
+
   /* Animation de vague pour le gradient violet */
   @keyframes wave-flow {
     0% {

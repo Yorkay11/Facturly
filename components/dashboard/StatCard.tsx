@@ -33,8 +33,8 @@ export const StatCard = ({ title, value, helper, icon, trend, variant = "default
           <div className="flex h-full w-full items-center justify-center text-lg">{icon}</div>
         </div>
       ) : null}
-      <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">{title}</p>
-      <p className="mt-3 text-2xl font-semibold text-foreground">{value}</p>
+      <p className="text-xs md:text-sm font-medium uppercase tracking-wide text-foreground/60">{title}</p>
+      <p className="mt-3 text-xl md:text-2xl font-semibold text-foreground">{value}</p>
       {trend ? (
         <div
           className={cn(

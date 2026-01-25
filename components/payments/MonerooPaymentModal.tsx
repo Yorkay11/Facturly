@@ -11,8 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useInitMonerooPaymentMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 
@@ -24,8 +22,18 @@ interface MonerooPaymentModalProps {
   currency: string;
   customerName?: string;
   customerEmail?: string;
+  customerPhone?: string; // Optionnel - peut être fourni depuis le client
 }
 
+/**
+ * Modal simplifié pour initier un paiement Moneroo
+ * 
+ * Architecture: Hosted Checkout
+ * - Le backend génère un lien Moneroo (checkout_url)
+ * - L'utilisateur est redirigé vers l'interface Moneroo
+ * - Moneroo gère la sélection de méthode (Orange Money, MTN, Wave, etc.)
+ * - Pas besoin de demander le numéro de téléphone ici (optionnel)
+ */
 export function MonerooPaymentModal({
   open,
   onOpenChange,
@@ -34,40 +42,23 @@ export function MonerooPaymentModal({
   currency,
   customerName,
   customerEmail,
+  customerPhone,
 }: MonerooPaymentModalProps) {
   const t = useTranslations('payments.moneroo');
   const commonT = useTranslations('common');
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [initPayment, { isLoading }] = useInitMonerooPaymentMutation();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!phoneNumber.trim()) {
-      toast.error(commonT('error'), {
-        description: t('errors.phoneRequired'),
-      });
-      return;
-    }
-
-    // Valider le format du numéro de téléphone (format international)
-    const phoneRegex = /^\+[1-9]\d{1,14}$/;
-    if (!phoneRegex.test(phoneNumber.trim())) {
-      toast.error(commonT('error'), {
-        description: t('errors.invalidPhoneFormat'),
-      });
-      return;
-    }
-
+  const handlePay = async () => {
     try {
       const result = await initPayment({
         invoiceId,
-        phoneNumber: phoneNumber.trim(),
+        phoneNumber: customerPhone, // Optionnel - Moneroo peut le demander dans son UI
         customerName,
         customerEmail,
       }).unwrap();
 
-      // Rediriger vers la page de paiement Moneroo où l'utilisateur choisira sa méthode
+      // Redirection directe vers le Hosted Checkout Moneroo
+      // Moneroo gère la sélection de méthode de paiement dans son interface
       if (result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
       } else {
@@ -97,20 +88,7 @@ export function MonerooPaymentModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone">{t('phoneNumber')}</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+221771234567"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              required
-            />
-            <p className="text-sm text-muted-foreground">{t('phoneHint')}</p>
-          </div>
-
+        <div className="space-y-4">
           <div className="rounded-lg bg-muted p-4">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('amount')}</span>
@@ -137,18 +115,21 @@ export function MonerooPaymentModal({
             >
               {commonT('cancel')}
             </Button>
-            <Button type="submit" disabled={isLoading || !phoneNumber.trim()}>
+            <Button onClick={handlePay} disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {t('processing')}
                 </>
               ) : (
-                t('continue')
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  {t('continue')}
+                </>
               )}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

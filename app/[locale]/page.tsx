@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { getTranslations } from 'next-intl/server';
 import { HeroSection } from "@/components/landing/hero-section"
 import { DashboardPreview } from "@/components/landing/dashboard-preview"
+import { CountriesBanner } from "@/components/landing/countries-banner"
+import { InteractiveDemo } from "@/components/landing/interactive-demo"
+import { VideoCarousel } from "@/components/landing/video-carousel"
 import { SocialProof } from "@/components/landing/social-proof"
-import { BentoSection } from "@/components/landing/bento-section"
-import { LargeTestimonial } from "@/components/landing/large-testimonial"
-import { PricingSection } from "@/components/landing/pricing-section"
-import { TestimonialGridSection } from "@/components/landing/testimonial-grid-section"
+import { TrustBadges } from "@/components/landing/trust-badges"
+import { RealMetrics } from "@/components/landing/real-metrics"
+import { WhyFacturlySection } from "@/components/landing/why-facturly-section"
+import { MobileMoneySection } from "@/components/landing/mobile-money-section"
 import { FAQSection } from "@/components/landing/faq-section"
 import { CTASection } from "@/components/landing/cta-section"
 import { FooterSection } from "@/components/landing/footer-section"
@@ -159,34 +162,33 @@ export default async function LandingPage() {
       />
       <div className="min-h-screen bg-background relative overflow-hidden pb-0 mt-20">
           <div className="relative z-10">
-          <main className="max-w-[1320px] mx-auto relative px-4 md:px-0" id="hero-container">
+          <main className="max-w-[1320px] mx-auto relative px-4 md:px-0" id="hero-container mb-20">
             <HeroSection />
-            <div className="absolute bottom-[-150px] md:bottom-[-400px] left-1/2 transform -translate-x-1/2 z-30">
+            <div className="flex items-center justify-center w-full z-30">
               <DashboardPreview />
             </div>
           </main>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto px-6 mt-40 md:mt-[400px]" delay={0.1}>
+          <CountriesBanner />
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto px-6 mt-20 md:mt-40" delay={0.1}>
             <SocialProof />
           </AnimatedSection>
-          <AnimatedSection id="features-section" className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
-            <BentoSection />
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+            <VideoCarousel />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
+            <InteractiveDemo />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
-            <LargeTestimonial />
+            <RealMetrics />
           </AnimatedSection>
-          <AnimatedSection
-            id="pricing-section"
-            className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16"
-            delay={0.2}
-          >
-            <PricingSection />
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
+            <TrustBadges />
           </AnimatedSection>
-          <AnimatedSection
-            id="testimonials-section"
-            className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16"
-            delay={0.2}
-          >
-            <TestimonialGridSection />
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.4}>
+            <WhyFacturlySection />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
+            <MobileMoneySection />
           </AnimatedSection>
           <AnimatedSection id="faq-section" className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <FAQSection />

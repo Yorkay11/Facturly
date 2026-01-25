@@ -34,7 +34,6 @@ import { useGetMeQuery, useGetWorkspaceQuery, useGetSubscriptionQuery, useLogout
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { useBetaBanner } from "@/hooks/useBetaBanner";
 import { useTranslations } from 'next-intl';
 
 export const Topbar = () => {
@@ -71,10 +70,11 @@ export const Topbar = () => {
   // Get subscription plan name
   const getSubscriptionPlanName = () => {
     if (!subscription) return tTopbar('noPlan');
-    const planNames: Record<"free" | "pro" | "enterprise", string> = {
+    const planNames: Record<"free" | "pro" | "enterprise" | "pay_as_you_go", string> = {
       free: tTopbar('planFree'),
       pro: tTopbar('planPro'),
-      enterprise: tTopbar('planEnterprise')
+      enterprise: tTopbar('planEnterprise'),
+      pay_as_you_go: tTopbar('planPayAsYouGo') || 'Pay-as-you-go'
     };
     return planNames[subscription.plan] || tTopbar('noPlan');
   };
@@ -100,6 +100,11 @@ export const Topbar = () => {
           label: t('invoicesCreated'),
           href: "/invoices",
           description: t('invoicesCreatedDescription'),
+        },
+        {
+          label: t('recurringInvoices'),
+          href: "/recurring-invoices",
+          description: t('recurringInvoicesDescription'),
         },
         {
           label: t('invoicesReceived'),
@@ -129,6 +134,11 @@ export const Topbar = () => {
       description: t('remindersDescription'),
     },
     {
+      label: t('reports'),
+      href: "/reports",
+      description: t('reportsDescription'),
+    },
+    {
       label: t('settings'),
       href: "/settings",
       description: t('settingsDescription'),
@@ -150,121 +160,52 @@ export const Topbar = () => {
      return children.some((child) => pathname === child.href || pathname?.startsWith(`${child.href}/`));
    };
 
-  const isBetaBannerVisible = useBetaBanner();
-
   return (
     <header className={cn(
-      "sticky z-40 border-b border-primary/10 bg-white/85 backdrop-blur",
-      isBetaBannerVisible ? "top-[44px] md:top-[42px]" : "top-0",
-      "py-2 md:py-4"
+      "sticky z-40 border-b border-primary/10 bg-white/85 backdrop-blur top-0",
+      "py-2 md:py-3 lg:py-4"
     )}>
-      <div className="mx-auto flex max-w-[90vw] flex-col gap-2 px-3 md:flex-row md:items-center md:justify-between md:gap-4 md:px-10">
-        <div className="flex items-center justify-between w-full md:hidden">
+      <div className="mx-auto flex max-w-[90vw] flex-col gap-2 px-3 sm:px-4 md:flex-row md:items-center md:justify-between md:gap-3 md:px-6 lg:gap-4 lg:px-10">
+        <div className="flex items-center justify-between w-full lg:hidden">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
             <Image
               src="/logos/logo.png"
               alt="Facturly"
               width={120}
               height={40}
-              className="h-7 w-auto object-contain"
+              className="h-6 md:h-7 w-auto object-contain"
             />
           </Link>
-          <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+          <div className="flex items-center gap-2 md:gap-3">
             <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10 h-8 px-2"
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 md:h-10 md:w-10"
               onClick={(e) => {
                 e.preventDefault();
                 handleNavigation("/invoices/new");
               }}
+              aria-label={t('newInvoice')}
             >
-              <IoAddOutline className="h-4 w-4" />
-              <span className="hidden xs:inline">{t('new')}</span>
+              <IoAddOutline className="h-5 w-5 md:h-5 md:w-5" />
             </Button>
             <NotificationDropdown />
             <button
               type="button"
               onClick={() => setProfileOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition hover:bg-primary/20 flex-shrink-0"
+              className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full border border-primary/30 bg-primary/10 transition hover:bg-primary/20 flex-shrink-0"
               aria-label={t('openUserProfile')}
             >
-              <Avatar className="h-6 w-6">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+              <Avatar className="h-7 w-7 md:h-8 md:w-8">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs md:text-sm">
                   {isLoadingUser ? "..." : getInitials(user?.firstName, user?.lastName)}
                 </AvatarFallback>
               </Avatar>
             </button>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8">
-                  <IoMenuOutline className="h-5 w-5" />
-                  <span className="sr-only">{t('openNavigation')}</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side={isMobile ? "left" : "right"} className="w-full max-w-xs space-y-6">
-              <SheetHeader className="space-y-1">
-                <SheetTitle>Facturly</SheetTitle>
-                <SheetDescription>{t('mainNavigation')}</SheetDescription>
-              </SheetHeader>
-              <nav className="space-y-4 text-sm">
-                {navItems.map((item) => {
-                  const active =
-                    pathname === item.href || pathname?.startsWith(`${item.href}/`) ||
-                    item.children?.some((child) => pathname === child.href || pathname?.startsWith(`${child.href}/`));
-
-                  return (
-                    <div key={item.href} className="space-y-2">
-                      <SheetClose asChild>
-                        <Link
-                          href={item.href}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleNavigation(item.href);
-                          }}
-                          className={cn(
-                            "block rounded-lg px-3 py-2 font-medium",
-                            active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-foreground/80"
-                          )}
-                        >
-                          {item.label}
-                        </Link>
-                      </SheetClose>
-                      {item.children ? (
-                        <div className="space-y-1 pl-3">
-                          {item.children.map((child) => {
-                            const childActive = pathname === child.href || pathname?.startsWith(`${child.href}/`);
-                            return (
-                              <SheetClose asChild key={child.href}>
-                                <Link
-                                  href={child.href}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNavigation(child.href);
-                                  }}
-                                  className={cn(
-                                    "block rounded-md px-3 py-2 text-xs",
-                                    childActive ? "bg-primary/20 text-primary" : "text-foreground/70 hover:bg-primary/10"
-                                  )}
-                                >
-                                  {child.label}
-                                </Link>
-                              </SheetClose>
-                            );
-                          })}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </nav>
-              </SheetContent>
-            </Sheet>
           </div>
         </div>
 
-        <div className="hidden flex-wrap items-center gap-3 md:flex">
+        <div className="hidden lg:flex flex-wrap items-center gap-3 lg:gap-4">
           <Link href="/dashboard" className="flex items-center">
             <Image
               src="/logos/logo.png"
@@ -274,8 +215,8 @@ export const Topbar = () => {
               className="h-8 w-auto object-contain"
             />
           </Link>
-          <Separator orientation="vertical" className="hidden h-6 md:block" />
-          <NavigationMenu className="hidden md:flex">
+          <Separator orientation="vertical" className="hidden h-6 lg:block" />
+          <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList className="flex-wrap gap-1">
               {navItems.map((item) => {
                 const active = isActive(item.href, item.children);
@@ -358,12 +299,12 @@ export const Topbar = () => {
           </NavigationMenu>
         </div>
 
-        <div className="hidden md:flex flex-wrap items-center gap-3 text-sm">
+        <div className="hidden lg:flex flex-wrap items-center gap-3 lg:gap-4 text-sm">
           <LanguageSwitcher />
           <Separator orientation="vertical" className="h-6" />
-          <div className="flex items-center gap-2 text-foreground/70">
+          <div className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer">
             <IoHelpCircleOutline className="h-4 w-4 text-primary" />
-            <span>{t('support')}</span>
+            <span className="hidden xl:inline">{t('support')}</span>
           </div>
           <Separator orientation="vertical" className="h-6" />
           <Button 
@@ -376,7 +317,8 @@ export const Topbar = () => {
             }}
           >
             <IoAddOutline className="h-4 w-4" />
-            {t('newInvoice')}
+            <span className="hidden xl:inline">{t('newInvoice')}</span>
+            <span className="xl:hidden">{t('new')}</span>
           </Button>
           <NotificationDropdown />
           <button
@@ -442,6 +384,13 @@ export const Topbar = () => {
                   <div>
                     <p className="font-medium text-foreground">{tTopbar('preferences')}</p>
                     <p className="text-xs">{tTopbar('preferencesDescription')}</p>
+                  </div>
+                </div>
+                {/* Language Switcher sur mobile et tablette */}
+                <div className="lg:hidden flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground text-sm mb-2">Langue / Language</p>
+                    <LanguageSwitcher />
                   </div>
                 </div>
               </div>

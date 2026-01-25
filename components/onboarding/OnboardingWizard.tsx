@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUpdateWorkspaceMutation, useGetWorkspaceQuery, Workspace } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { Loader2, Building2, User, CheckCircle2, ArrowRight } from "lucide-react";
+import { Loader2, Building2, User, CheckCircle2, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InteractiveDemo } from "./InteractiveDemo";
 
 interface OnboardingWizardProps {
   workspace: Workspace;
@@ -25,16 +26,21 @@ type WorkspaceType = 'INDIVIDUAL' | 'COMPANY';
 export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProps) {
   const t = useTranslations('onboarding');
   const [selectedType, setSelectedType] = useState<WorkspaceType>(workspace?.type || 'INDIVIDUAL');
+  const [showAdvanced, setShowAdvanced] = useState(false); // Masquer les options avancées par défaut
+  const [showDemo, setShowDemo] = useState(true); // Afficher la démo par défaut
   const [updateWorkspace, { isLoading }] = useUpdateWorkspaceMutation();
   const { refetch } = useGetWorkspaceQuery();
 
-  // Schéma de validation professionnel
+  // Schéma de validation simplifié - 3 clics max
+  // Pour INDIVIDUAL : Aucun champ requis (tout en option avec valeurs par défaut)
+  // Pour COMPANY : Seulement le nom est requis
   const workspaceSchema = useMemo(() => z.object({
     type: z.enum(['INDIVIDUAL', 'COMPANY']),
     name: z.string().optional().nullable(),
-    defaultCurrency: z.string().min(1, t('validation.defaultCurrencyRequired')),
+    defaultCurrency: z.string().optional(), // Optionnel - valeur par défaut XOF
     country: z.string().optional(),
   }).refine((data) => {
+    // Pour COMPANY, le nom est requis
     if (data.type === 'COMPANY' && (!data.name || data.name.trim().length < 2)) {
       return false;
     }
@@ -58,7 +64,11 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
   });
 
   const workspaceType = form.watch("type");
-  const isFormValid = form.formState.isValid;
+  // Pour INDIVIDUAL : toujours valide (aucun champ requis)
+  // Pour COMPANY : valide si le nom est rempli
+  const isFormValid = workspaceType === 'INDIVIDUAL' 
+    ? true 
+    : form.formState.isValid;
 
   const handleTypeSelect = (type: WorkspaceType) => {
     setSelectedType(type);
@@ -89,7 +99,8 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
       await updateWorkspace({
         type: values.type,
         name: values.name?.trim() || (values.type === 'INDIVIDUAL' ? null : undefined),
-        defaultCurrency: values.defaultCurrency,
+        // Utiliser la valeur par défaut XOF si non spécifiée
+        defaultCurrency: values.defaultCurrency || 'XOF',
         country: values.country || undefined,
       }).unwrap();
 
@@ -107,9 +118,16 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      {/* Header avec progression visuelle */}
-      <div className="mb-6 text-center space-y-2">
+    <div className="w-full max-w-2xl mx-auto space-y-6">
+      {/* Démonstration interactive */}
+      {showDemo && (
+        <InteractiveDemo onSkip={() => setShowDemo(false)} />
+      )}
+
+      {/* Formulaire d'onboarding */}
+      <div className="w-full max-w-2xl mx-auto">
+        {/* Header avec progression visuelle */}
+        <div className="mb-6 text-center space-y-2">
         <div className="flex items-center justify-center gap-2 mb-1">
           <div className="h-1 w-8 bg-primary rounded-full" />
           <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -208,151 +226,133 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="border-t" />
-
-            {/* Section Informations */}
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold">{t('basic.title')}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t('basic.description')}
-                </p>
-              </div>
-
-              <div className="grid gap-4">
-                {/* Nom */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="name" className="text-xs font-medium">
-                    {workspaceType === 'INDIVIDUAL' 
-                      ? t('basic.fields.nameLabelIndividual')
-                      : t('basic.fields.nameLabelCompany')}
-                    {workspaceType === 'COMPANY' && (
-                      <span className="text-destructive ml-1">*</span>
-                    )}
-                    {workspaceType === 'INDIVIDUAL' && (
-                      <span className="text-muted-foreground font-normal ml-1 text-xs">
-                        {t('basic.fields.nameOptional')}
-                      </span>
-                    )}
-                  </Label>
-                  <Input
-                    id="name"
-                    {...form.register("name")}
-                    placeholder={
-                      workspaceType === 'INDIVIDUAL' 
-                        ? t('basic.fields.namePlaceholderIndividual')
-                        : t('basic.fields.namePlaceholder')
-                    }
-                    disabled={isLoading}
-                    className={cn(
-                      "h-10 text-sm",
-                      form.formState.errors.name && "border-destructive focus-visible:ring-destructive"
-                    )}
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-xs text-destructive">
-                      {form.formState.errors.name.message}
-                    </p>
-                  )}
-                  {workspaceType === 'INDIVIDUAL' && !form.formState.errors.name && (
+            {/* Section Informations - Seulement le nom pour COMPANY */}
+            {workspaceType === 'COMPANY' && (
+              <>
+                <div className="border-t" />
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-semibold">{t('basic.title')}</Label>
                     <p className="text-xs text-muted-foreground">
-                      {t('basic.fields.nameHintIndividual')}
+                      {t('basic.description')}
                     </p>
-                  )}
-                </div>
+                  </div>
 
-                {/* Devise */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="defaultCurrency" className="text-xs font-medium">
-                    {t('basic.fields.defaultCurrency')} <span className="text-destructive">*</span>
-                  </Label>
-                  <Controller
-                    name="defaultCurrency"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value} 
+                  <div className="grid gap-4">
+                    {/* Nom - Requis pour COMPANY */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="name" className="text-xs font-medium">
+                        {t('basic.fields.nameLabelCompany')}
+                        <span className="text-destructive ml-1">*</span>
+                      </Label>
+                      <Input
+                        id="name"
+                        {...form.register("name")}
+                        placeholder={t('basic.fields.namePlaceholder')}
                         disabled={isLoading}
-                      >
-                        <SelectTrigger 
-                          className={cn(
-                            "h-10 text-sm",
-                            form.formState.errors.defaultCurrency && "border-destructive focus-visible:ring-destructive"
-                          )}
-                        >
-                          <SelectValue placeholder={t('basic.fields.defaultCurrencyPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="XOF">XOF (CFA) - Franc CFA (Afrique de l'Ouest)</SelectItem>
-                          <SelectItem value="XAF">XAF (CFA) - Franc CFA (Afrique Centrale)</SelectItem>
-                          <SelectItem value="NGN">NGN (₦) - Naira nigérian</SelectItem>
-                          <SelectItem value="GHS">GHS (₵) - Cedi ghanéen</SelectItem>
-                          <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
-                          <SelectItem value="USD">USD ($) - Dollar américain</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {form.formState.errors.defaultCurrency && (
-                    <p className="text-xs text-destructive">
-                      {form.formState.errors.defaultCurrency.message}
-                    </p>
-                  )}
+                        className={cn(
+                          "h-10 text-sm",
+                          form.formState.errors.name && "border-destructive focus-visible:ring-destructive"
+                        )}
+                      />
+                      {form.formState.errors.name && (
+                        <p className="text-xs text-destructive">
+                          {form.formState.errors.name.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
+              </>
+            )}
 
-                {/* Pays */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="country" className="text-xs font-medium">
-                    {t('basic.fields.country')} <span className="text-muted-foreground text-xs">(optionnel)</span>
-                  </Label>
-                  <Controller
-                    name="country"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Select 
-                        onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
-                        value={field.value || 'none'} 
-                        disabled={isLoading}
-                      >
-                        <SelectTrigger 
-                          className={cn(
-                            "h-10 text-sm",
-                            form.formState.errors.country && "border-destructive focus-visible:ring-destructive"
-                          )}
+            {/* Options avancées (devise, pays) - Masquées par défaut */}
+            <div className="border-t" />
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center justify-between w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <span>{t('basic.advancedOptions')}</span>
+                {showAdvanced ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+
+              {showAdvanced && (
+                <div className="grid gap-4 pt-2">
+                  {/* Devise - Optionnel avec valeur par défaut */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="defaultCurrency" className="text-xs font-medium">
+                      {t('basic.fields.defaultCurrency')} <span className="text-muted-foreground text-xs">(optionnel)</span>
+                    </Label>
+                    <Controller
+                      name="defaultCurrency"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value || 'XOF'} 
+                          disabled={isLoading}
                         >
-                          <SelectValue placeholder={t('basic.fields.countryPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">{t('basic.fields.countryNotSpecified')}</SelectItem>
-                          <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
-                          <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
-                          <SelectItem value="ML">🇲🇱 Mali</SelectItem>
-                          <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                          <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                          <SelectItem value="TG">🇹🇬 Togo</SelectItem>
-                          <SelectItem value="NE">🇳🇪 Niger</SelectItem>
-                          <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
-                          <SelectItem value="GH">🇬🇭 Ghana</SelectItem>
-                          <SelectItem value="NG">🇳🇬 Nigeria</SelectItem>
-                          <SelectItem value="CM">🇨🇲 Cameroun</SelectItem>
-                          <SelectItem value="GA">🇬🇦 Gabon</SelectItem>
-                          <SelectItem value="TD">🇹🇩 Tchad</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {form.formState.errors.country && (
-                    <p className="text-xs text-destructive">
-                      {form.formState.errors.country.message}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {t('basic.fields.countryHint')}
-                  </p>
+                          <SelectTrigger className="h-10 text-sm">
+                            <SelectValue placeholder={t('basic.fields.defaultCurrencyPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="XOF">XOF (CFA) - Franc CFA (Afrique de l'Ouest)</SelectItem>
+                            <SelectItem value="XAF">XAF (CFA) - Franc CFA (Afrique Centrale)</SelectItem>
+                            <SelectItem value="NGN">NGN (₦) - Naira nigérian</SelectItem>
+                            <SelectItem value="GHS">GHS (₵) - Cedi ghanéen</SelectItem>
+                            <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
+                            <SelectItem value="USD">USD ($) - Dollar américain</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+
+                  {/* Pays */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="country" className="text-xs font-medium">
+                      {t('basic.fields.country')} <span className="text-muted-foreground text-xs">(optionnel)</span>
+                    </Label>
+                    <Controller
+                      name="country"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select 
+                          onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
+                          value={field.value || 'none'} 
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger className="h-10 text-sm">
+                            <SelectValue placeholder={t('basic.fields.countryPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">{t('basic.fields.countryNotSpecified')}</SelectItem>
+                            <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
+                            <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
+                            <SelectItem value="ML">🇲🇱 Mali</SelectItem>
+                            <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
+                            <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
+                            <SelectItem value="TG">🇹🇬 Togo</SelectItem>
+                            <SelectItem value="NE">🇳🇪 Niger</SelectItem>
+                            <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
+                            <SelectItem value="GH">🇬🇭 Ghana</SelectItem>
+                            <SelectItem value="NG">🇳🇬 Nigeria</SelectItem>
+                            <SelectItem value="CM">🇨🇲 Cameroun</SelectItem>
+                            <SelectItem value="GA">🇬🇦 Gabon</SelectItem>
+                            <SelectItem value="TD">🇹🇩 Tchad</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Message informatif */}
@@ -363,7 +363,38 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end pt-3 border-t">
+            <div className="flex justify-between items-center pt-3 border-t gap-3">
+              {/* Bouton Skip - Passer l'onboarding */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="default"
+                disabled={isLoading}
+                onClick={async () => {
+                  try {
+                    // Mettre à jour avec les valeurs minimales (type INDIVIDUAL, XOF par défaut)
+                    await updateWorkspace({
+                      type: 'INDIVIDUAL',
+                      defaultCurrency: 'XOF',
+                    }).unwrap();
+                    
+                    toast.success(t('success.skipped'), {
+                      description: t('success.skippedDescription'),
+                    });
+                    
+                    await refetch();
+                    onComplete();
+                  } catch (error: any) {
+                    toast.error(t('errors.title'), {
+                      description: error?.data?.message || t('errors.description'),
+                    });
+                  }
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {t('buttons.skip')}
+              </Button>
+              
               <Button
                 type="submit"
                 size="default"
@@ -386,6 +417,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

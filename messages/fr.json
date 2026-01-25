@@ -57,8 +57,8 @@
     "signUp": "S'inscrire",
     "welcomeBack": "Bon retour !",
     "createAccount": "Créer un compte",
-    "heroTitle": "Facturation simple & intelligente",
-    "heroDescription": "Créez, envoyez et gérez vos factures en toute simplicité",
+    "heroTitle": "Créez et envoyez vos factures en 60 secondes",
+    "heroDescription": "Facturation mobile-first pour l'Afrique de l'Ouest avec WhatsApp et mobile money",
     "orContinueWith": "Ou continuer avec",
     "continueWithGoogle": "Continuer avec Google",
     "processing": "Traitement en cours",
@@ -68,7 +68,7 @@
     "oauthNoToken": "Aucun token reçu. Veuillez réessayer.",
     "register": {
       "heroTitle": "Rejoignez Facturly",
-      "heroDescription": "Créez votre compte et commencez à gérer vos factures en toute simplicité",
+      "heroDescription": "Créez votre compte et créez votre première facture en 60 secondes",
       "cardTitle": "Créer un compte Facturly",
       "cardDescription": "Inscrivez-vous pour commencer à gérer vos factures en toute simplicité.",
       "steps": {
@@ -163,6 +163,8 @@
     "remindPaymentDescription": "Choisissez un client et envoyez un rappel.",
     "addClient": "Ajouter un client",
     "addClientDescription": "Ajoutez un contact depuis votre carnet.",
+    "recurringInvoices": "Factures récurrentes",
+    "recurringInvoicesDescription": "Gérez vos factures automatiques et récurrentes",
     "addItem": "Ajouter un article",
     "monthlyRevenue": "Revenus du mois",
     "invoicesSent": "Factures envoyées",
@@ -224,11 +226,15 @@
     "dashboard": "Tableau de bord",
     "invoices": "Factures",
     "invoicesCreated": "Factures créées",
+    "recurringInvoices": "Factures récurrentes",
+    "recurringInvoicesDescription": "Gérez vos factures automatiques et récurrentes",
     "invoicesReceived": "Factures reçues",
     "newInvoice": "Nouvelle facture",
     "clients": "Clients",
     "items": "Prestations",
     "reminders": "Relances",
+    "reports": "Rapports",
+    "reportsDescription": "Analysez vos revenus et performances",
     "settings": "Paramètres",
     "profile": "Profil",
     "help": "Aide",
@@ -285,6 +291,7 @@
       "focusClient": "Rechercher un client"
     },
     "create": "Créer une facture",
+    "recurring": "Récurrentes",
     "edit": "Modifier la facture",
     "view": "Voir la facture",
     "delete": "Supprimer la facture",
@@ -335,6 +342,10 @@
       },
       "title": "Créer une facture",
       "description": "Complétez les informations et visualisez le rendu en temps réel.",
+      "modes": {
+        "quick": "Rapide",
+        "full": "Complet"
+      },
       "toasts": {
         "itemUpdated": "Ligne mise à jour",
         "itemUpdatedDescription": "{description} a été modifiée.",
@@ -342,6 +353,78 @@
         "itemAddedDescription": "{description} a été ajoutée.",
         "draftSaved": "Brouillon enregistré",
         "draftSavedDescription": "Votre facture mock a bien été sauvegardée."
+      }
+    },
+    "quick": {
+      "title": "Facture Rapide",
+      "description": "Créez et envoyez une facture en 3 clics : Client + Montant + Envoyer",
+      "switchToFullMode": "Mode complet",
+      "step1": {
+        "client": "1. Sélectionner un client",
+        "selectClient": "Choisir un client...",
+        "searchClient": "Rechercher un client...",
+        "noClient": "Aucun client trouvé",
+        "createClient": "Créer un client",
+        "createNewClient": "Créer un nouveau client"
+      },
+      "step2": {
+        "amount": "2. Entrer le montant",
+        "amountPlaceholder": "0.00",
+        "hint": "Le montant total de la facture"
+      },
+      "sendInvoice": "Envoyer la facture",
+      "sending": "Envoi en cours...",
+      "shortcuts": "Raccourcis : Ctrl+Enter pour envoyer, Ctrl+N pour nouveau client",
+      "clientCreated": "Client créé avec succès",
+      "clientCreateError": "Erreur lors de la création du client",
+      "invoiceSent": "Facture envoyée",
+      "invoiceSentDescription": "La facture a été envoyée à {clientName}",
+      "invoiceError": "Erreur lors de la création de la facture",
+      "defaultSubject": "Facture pour {clientName}",
+      "defaultSubjectRecurring": "Facture récurrente - {clientName}",
+      "defaultItemDescription": "Prestation de service",
+      "defaultItemDescriptionRecurring": "Facture récurrente - {clientName}",
+      "invoiceType": {
+        "title": "Type de facture",
+        "oneTime": "Ponctuelle",
+        "recurring": "Récurrente",
+        "hint": "Facture ponctuelle : paiement unique. Facture récurrente : paiement régulier."
+      },
+      "duplicate": {
+        "lastInvoice": "Dupliquer la facture #{number}",
+        "duplicating": "Duplication...",
+        "success": "Facture dupliquée",
+        "successDescription": "La facture #{number} a été dupliquée. Vous pouvez modifier le montant.",
+        "error": "Erreur lors de la duplication"
+      }
+    },
+    "tutorial": {
+      "title": "Tutoriel : Créer votre première facture",
+      "subtitle": "Étape {current} sur {total}",
+      "progress": "Étape {current} sur {total}",
+      "skip": "Passer",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "finish": "Terminer",
+      "step1": {
+        "title": "Bienvenue dans le mode Facture Rapide !",
+        "description": "Ce mode vous permet de créer et envoyer une facture en seulement 3 clics. C'est le moyen le plus rapide de facturer vos clients."
+      },
+      "step2": {
+        "title": "1. Sélectionnez un client",
+        "description": "Cliquez sur le champ client pour choisir un client existant ou créer un nouveau client rapidement."
+      },
+      "step3": {
+        "title": "2. Entrez le montant",
+        "description": "Saisissez le montant total de votre facture. Vous pouvez utiliser les décimales (ex: 15000.50)."
+      },
+      "step4": {
+        "title": "3. Envoyez la facture",
+        "description": "Cliquez sur 'Envoyer la facture' pour créer et envoyer automatiquement votre facture par WhatsApp à votre client."
+      },
+      "step5": {
+        "title": "C'est terminé !",
+        "description": "Votre facture a été créée et envoyée. Vous pouvez maintenant créer d'autres factures ou consulter vos factures dans la liste."
       }
     },
     "form": {
@@ -1276,10 +1359,15 @@
   },
   "landing": {
     "hero": {
-      "title": "Facturation simple & intelligente",
-      "subtitle": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel.",
+      "title": "Créez et envoyez vos factures en 60 secondes, payez avec mobile money",
+      "subtitle": "Facturly est la plateforme de facturation mobile-first pour l'Afrique de l'Ouest. Créez vos factures en 60 secondes, envoyez-les par WhatsApp, et recevez les paiements via Orange Money, MTN, Wave et plus de 60 méthodes de paiement mobile money.",
       "ctaAuthenticated": "Accéder au tableau de bord",
-      "ctaGuest": "Commencer gratuitement"
+      "ctaGuest": "Commencer gratuitement",
+      "features": {
+        "sixtySeconds": "pour créer une facture",
+        "whatsapp": "pénétration en Afrique",
+        "mobileMoney": "méthodes de paiement"
+      }
     },
     "header": {
       "features": "Fonctionnalités",
@@ -1289,12 +1377,73 @@
       "dashboard": "Tableau de bord",
       "navigation": "Navigation"
     },
+    "videoCarousel": {
+      "title": "Découvrez Facturly en action",
+      "subtitle": "Regardez comment nos clients créent et envoient leurs factures en quelques secondes",
+      "videoPlaceholder": "Vidéo de démonstration",
+      "playing": "En cours",
+      "videos": {
+        "creation": {
+          "title": "Création de facture en 60 secondes",
+          "description": "Découvrez comment créer une facture professionnelle en moins d'une minute"
+        },
+        "whatsapp": {
+          "title": "Envoi par WhatsApp",
+          "description": "Envoyez vos factures directement sur WhatsApp à vos clients"
+        },
+        "payment": {
+          "title": "Paiement mobile money",
+          "description": "Recevez les paiements instantanément via Orange Money, MTN, Wave"
+        },
+        "dashboard": {
+          "title": "Tableau de bord en temps réel",
+          "description": "Suivez vos revenus, factures et paiements en direct"
+        }
+      }
+    },
+    "interactiveDemo": {
+      "title": "Essayez Facturly en 60 secondes",
+      "subtitle": "Découvrez comment créer et envoyer une facture en moins d'une minute",
+      "play": "Lancer",
+      "pause": "Pause",
+      "reset": "Réinitialiser",
+      "progress": "Étape {current} sur {total}",
+      "time": "Temps estimé :",
+      "timeValue": "{seconds} secondes",
+      "steps": {
+        "client": {
+          "title": "Sélectionner un client",
+          "description": "Choisissez un client existant ou créez-en un nouveau en quelques secondes. Tous vos contacts sont synchronisés."
+        },
+        "items": {
+          "title": "Ajouter des articles",
+          "description": "Sélectionnez vos prestations depuis votre catalogue ou ajoutez des articles à la volée. Prix et taxes calculés automatiquement."
+        },
+        "dates": {
+          "title": "Définir les dates",
+          "description": "Date d'émission et date d'échéance. Les dates sont pré-remplies intelligemment pour vous faire gagner du temps."
+        },
+        "send": {
+          "title": "Envoyer par WhatsApp",
+          "description": "Un clic et votre facture est envoyée directement sur WhatsApp à votre client. 70%+ de pénétration en Afrique."
+        },
+        "complete": {
+          "title": "Facture envoyée !",
+          "description": "Votre client reçoit la facture instantanément et peut payer directement via mobile money. Vous êtes notifié dès le paiement."
+        }
+      },
+      "completed": {
+        "title": "C'est aussi simple que ça !",
+        "description": "En 60 secondes, vous avez créé et envoyé une facture professionnelle. Prêt à essayer pour de vrai ?",
+        "cta": "Commencer gratuitement"
+      }
+    },
     "bento": {
-      "title": "Simplifiez votre gestion de factures",
-      "subtitle": "Toutes les fonctionnalités dont vous avez besoin pour créer, envoyer et suivre vos factures efficacement.",
+      "title": "Facturation mobile-first pour l'Afrique",
+      "subtitle": "Créez vos factures en 60 secondes, envoyez-les par WhatsApp, et recevez les paiements via mobile money. Tout ce dont vous avez besoin pour gérer vos factures efficacement en Afrique.",
       "invoiceCreation": {
-        "title": "Création de factures simplifiée.",
-        "description": "Créez des factures professionnelles en quelques clics.",
+        "title": "Création de factures en 60 secondes.",
+        "description": "Créez des factures professionnelles en moins d'une minute.",
         "form": {
           "invoiceInfo": "Informations facture",
           "recipient": "Destinataire",
@@ -1332,8 +1481,8 @@
         }
       },
       "emailSending": {
-        "title": "Envoi par email automatique",
-        "description": "Envoyez vos factures directement par email à vos clients.",
+        "title": "Envoi par WhatsApp automatique",
+        "description": "Envoyez vos factures directement par WhatsApp à vos clients. 70%+ de pénétration en Afrique.",
         "invoice": {
           "workspaceName": "Ma Société",
           "item": "Développement"
@@ -1398,8 +1547,8 @@
         }
       },
       "onlinePayment": {
-        "title": "Paiement en ligne sécurisé",
-        "description": "Permettez à vos clients de payer directement en ligne.",
+        "title": "Paiement mobile money",
+        "description": "Recevez les paiements via Orange Money, MTN, Wave et 60+ méthodes de mobile money.",
         "form": {
           "title": "Paiement en ligne",
           "amountToPay": "Montant à payer",
@@ -1433,45 +1582,45 @@
     },
     "faq": {
       "title": "Questions fréquentes",
-      "subtitle": "Tout ce que vous devez savoir sur Facturly et comment cela peut transformer votre gestion de facturation",
+      "subtitle": "Tout ce que vous devez savoir sur Facturly et comment cela peut transformer votre facturation en Afrique",
       "items": {
         "whatIs": {
           "question": "Qu'est-ce que Facturly et pour qui est-ce fait ?",
-          "answer": "Facturly est une plateforme de gestion de facturation conçue pour les freelances, les petites entreprises et les professionnels qui souhaitent simplifier leur facturation. C'est parfait pour les indépendants qui veulent gagner du temps et les équipes qui cherchent une solution professionnelle de gestion de factures."
+          "answer": "Facturly est la plateforme de facturation mobile-first conçue spécifiquement pour les entrepreneurs et petites entreprises d'Afrique de l'Ouest. Que vous soyez freelance, consultant, PME ou startup, Facturly vous permet de créer et envoyer des factures en 60 secondes, via WhatsApp (le canal préféré en Afrique), et de recevoir les paiements via mobile money (Orange Money, MTN, Wave, etc.). Parfait pour ceux qui veulent facturer rapidement sans complexité."
         },
         "emailSending": {
-          "question": "Comment fonctionne l'envoi de factures par email ?",
-          "answer": "Lorsque vous créez une facture, vous pouvez l'envoyer directement par email à votre client. Il recevra un lien sécurisé pour visualiser la facture, l'accepter et la payer en ligne. Le système suit automatiquement l'état de la facture et vous notifie des paiements."
+          "question": "Comment fonctionne l'envoi de factures par WhatsApp ?",
+          "answer": "C'est simple : vous créez votre facture, vous cliquez sur 'Envoyer par WhatsApp', et votre client reçoit un message WhatsApp avec un lien sécurisé. Il peut visualiser la facture, l'accepter et la payer directement via mobile money, le tout depuis son téléphone. Le système suit automatiquement l'état de la facture et vous notifie dès qu'un paiement est reçu. WhatsApp est le canal de communication principal en Afrique avec 70%+ de pénétration, c'est pourquoi nous l'avons choisi comme canal principal."
         },
         "integrations": {
           "question": "Puis-je intégrer Facturly avec mes outils existants ?",
-          "answer": "Oui ! Facturly offre des intégrations avec les outils comptables les plus populaires. Notre API permet également de connecter Facturly à votre système existant."
+          "answer": "Oui ! Facturly offre des intégrations avec les outils comptables les plus populaires. Notre API permet également de connecter Facturly à votre système existant. Nous travaillons constamment à ajouter de nouvelles intégrations pour faciliter votre workflow."
         },
         "freePlan": {
           "question": "Que comprend le plan gratuit ?",
-          "answer": "Le plan gratuit comprend jusqu'à 10 factures par mois, une gestion illimitée de clients, l'envoi par email, un tableau de bord de base et le support par email. C'est parfait pour démarrer et tester la plateforme."
+          "answer": "Le plan gratuit comprend jusqu'à 10 factures par mois, une gestion illimitée de clients, l'envoi par WhatsApp, un tableau de bord de base et le support par email. C'est parfait pour démarrer et tester la plateforme. Aucune carte bancaire requise, vous pouvez commencer immédiatement."
         },
         "onlinePayment": {
-          "question": "Comment fonctionne le paiement en ligne ?",
-          "answer": "Lorsqu'un client accepte une facture, il peut la payer directement en ligne via un lien sécurisé. Les paiements sont traités de manière sécurisée et vous êtes notifié instantanément. La facture est automatiquement marquée comme payée dans votre tableau de bord."
+          "question": "Comment fonctionne le paiement mobile money ?",
+          "answer": "Lorsqu'un client accepte une facture, il peut la payer directement via mobile money (Orange Money, MTN, Wave, Moov Money, etc.) en cliquant sur le lien de paiement dans le message WhatsApp. Les paiements sont traités de manière sécurisée via Moneroo et vous êtes notifié instantanément. La facture est automatiquement marquée comme payée dans votre tableau de bord. Plus de 60 méthodes de paiement mobile money sont disponibles, couvrant tous les pays d'Afrique de l'Ouest."
         },
         "security": {
           "question": "Mes données sont-elles sécurisées avec Facturly ?",
-          "answer": "Absolument. Nous utilisons des mesures de sécurité de niveau entreprise incluant le chiffrement de bout en bout, la transmission sécurisée des données et la conformité aux standards de l'industrie. Vos données financières sont protégées et ne sont jamais partagées sans votre autorisation explicite."
+          "answer": "Absolument. Nous utilisons des mesures de sécurité de niveau entreprise incluant le chiffrement de bout en bout, la transmission sécurisée des données (HTTPS/TLS) et la conformité aux standards de l'industrie. Vos données financières sont protégées et ne sont jamais partagées sans votre autorisation explicite. Nous prenons la sécurité très au sérieux."
         }
       }
     },
     "cta": {
-      "title": "Simplifiez votre facturation dès aujourd'hui",
-      "subtitle": "Rejoignez les milliers de professionnels qui font confiance à Facturly pour gérer leurs factures efficacement et améliorer leur trésorerie",
+      "title": "Créez votre première facture en 60 secondes",
+      "subtitle": "Rejoignez les entrepreneurs africains qui utilisent Facturly pour créer, envoyer et être payés rapidement via mobile money",
       "betaFull": "Bêta complète ({current}/{max} utilisateurs)",
       "betaAvailable": "{remaining} place{plural} disponible{plural} ({current}/{max})",
       "ctaAuthenticated": "Accéder au tableau de bord",
       "ctaGuest": "Commencer gratuitement"
     },
     "pricing": {
-      "title": "Tarifs adaptés à votre entreprise",
-      "subtitle": "Choisissez un plan qui correspond à vos besoins, des freelances aux entreprises en pleine croissance.",
+      "title": "Tarifs adaptés à votre activité",
+      "subtitle": "Choisissez un plan qui correspond à vos besoins, avec WhatsApp et mobile money inclus dans tous les plans.",
       "monthly": "Mensuel",
       "annual": "Annuel",
       "save": "Économisez {percent}%",
@@ -1490,7 +1639,7 @@
           "features": {
             "invoices": "Jusqu'à 10 factures par mois",
             "clients": "Gestion de clients illimitée",
-            "email": "Envoi par email",
+            "whatsapp": "Envoi par WhatsApp",
             "dashboard": "Tableau de bord de base",
             "support": "Support par email"
           }
@@ -1501,7 +1650,7 @@
           "cta": "Essayer Pro",
           "features": {
             "invoices": "100 factures par mois",
-            "onlinePayment": "Paiement en ligne intégré",
+            "mobileMoney": "Paiement mobile money intégré",
             "reminders": "Rappels automatiques",
             "statistics": "Statistiques avancées",
             "customization": "Personnalisation de factures",
@@ -1523,66 +1672,435 @@
             "sla": "SLA garanti"
           }
         }
+      },
+      "trustMessage": "Tous les plans incluent WhatsApp et mobile money. Aucun engagement. Annulez à tout moment.",
+      "metadata": {
+        "title": "Tarifs - Facturly | Facturation mobile-first pour l'Afrique",
+        "description": "Choisissez le plan qui correspond à vos besoins. Plans Gratuit, Pro et Entreprise avec WhatsApp et mobile money inclus. Essai gratuit de 30 jours."
+      },
+      "comparison": {
+        "title": "Comparaison des plans",
+        "subtitle": "Comparez les fonctionnalités de chaque plan pour trouver celui qui vous convient",
+        "feature": "Fonctionnalité",
+        "free": "Gratuit",
+        "pro": "Pro",
+        "enterprise": "Entreprise",
+        "features": {
+          "invoices": "Factures par mois",
+          "clients": "Gestion de clients",
+          "whatsapp": "Envoi par WhatsApp",
+          "mobileMoney": "Paiement mobile money",
+          "reminders": "Rappels automatiques",
+          "statistics": "Statistiques avancées",
+          "pdfExport": "Export PDF",
+          "customization": "Personnalisation",
+          "team": "Gestion d'équipe",
+          "api": "API complète",
+          "support": "Support",
+          "free": {
+            "invoices": "10",
+            "clients": "true",
+            "whatsapp": "true",
+            "mobileMoney": "false",
+            "reminders": "false",
+            "statistics": "false",
+            "pdfExport": "false",
+            "customization": "false",
+            "team": "false",
+            "api": "false",
+            "support": "Email"
+          },
+          "pro": {
+            "invoices": "100",
+            "clients": "true",
+            "whatsapp": "true",
+            "mobileMoney": "true",
+            "reminders": "true",
+            "statistics": "true",
+            "pdfExport": "true",
+            "customization": "true",
+            "team": "false",
+            "api": "false",
+            "support": "Prioritaire"
+          },
+          "enterprise": {
+            "invoices": "Illimité",
+            "clients": "true",
+            "whatsapp": "true",
+            "mobileMoney": "true",
+            "reminders": "true",
+            "statistics": "true",
+            "pdfExport": "true",
+            "customization": "true",
+            "team": "true",
+            "api": "true",
+            "support": "Dédié"
+          }
+        }
+      },
+      "faq": {
+        "title": "Questions fréquentes sur les tarifs",
+        "subtitle": "Tout ce que vous devez savoir sur nos plans et tarifs",
+        "freeTrial": {
+          "question": "Y a-t-il une période d'essai gratuite ?",
+          "answer": "Oui ! Tous nos plans incluent une période d'essai gratuite de 30 jours. Vous pouvez tester toutes les fonctionnalités sans engagement. Si vous n'êtes pas satisfait, nous vous remboursons intégralement."
+        },
+        "paymentMethods": {
+          "question": "Quels modes de paiement acceptez-vous ?",
+          "answer": "Nous acceptons tous les modes de paiement mobile money (Orange Money, MTN, Wave, Moov Money, etc.) ainsi que les cartes bancaires. Les paiements sont sécurisés et traités instantanément."
+        },
+        "cancelAnyTime": {
+          "question": "Puis-je annuler à tout moment ?",
+          "answer": "Absolument ! Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun engagement, aucune pénalité. Votre accès reste actif jusqu'à la fin de la période payée."
+        },
+        "switchPlans": {
+          "question": "Puis-je changer de plan ?",
+          "answer": "Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. Les changements sont appliqués immédiatement, et nous ajustons votre facturation au prorata."
+        },
+        "refund": {
+          "question": "Quelle est votre politique de remboursement ?",
+          "answer": "Nous offrons une garantie satisfait ou remboursé de 30 jours. Si vous n'êtes pas satisfait de notre service dans les 30 premiers jours, contactez-nous et nous vous rembourserons intégralement."
+        },
+        "annualSavings": {
+          "question": "Combien puis-je économiser avec le plan annuel ?",
+          "answer": "En choisissant le paiement annuel, vous économisez 20% sur le prix mensuel. Par exemple, le plan Pro coûte 5€/mois en mensuel (60€/an) mais seulement 48€/an en paiement annuel, soit une économie de 12€ par an."
+        }
       }
     },
     "socialProof": {
-      "title": "Utilisé par des entreprises en pleine croissance"
+      "title": "Rejoignez les entreprises qui nous font confiance",
+      "subtitle": "Facturly est disponible dans plusieurs pays d'Afrique de l'Ouest et du Centre",
+      "stats": {
+        "users": "En croissance",
+        "usersLabel": "utilisateurs actifs",
+        "usersDescription": "Rejoignez-nous dès aujourd'hui",
+        "invoices": "En augmentation",
+        "invoicesLabel": "factures créées",
+        "invoicesDescription": "Simplifiez votre facturation",
+        "countries": "12",
+        "countriesLabel": "pays couverts",
+        "countriesDescription": "Côte d'Ivoire, Sénégal, Mali, Burkina Faso, Bénin, Togo, Ghana, Nigeria, Cameroun, Gabon, Congo, RDC",
+        "satisfaction": "En cours",
+        "satisfactionLabel": "satisfaction client",
+        "satisfactionDescription": "Nous nous engageons à vous offrir le meilleur service",
+        "responseTime": "< 24h",
+        "responseTimeLabel": "temps de réponse",
+        "responseTimeDescription": "support client disponible",
+        "growth": "Nouveau",
+        "growthLabel": "plateforme",
+        "growthDescription": "Rejoignez-nous dès le lancement"
+      }
+    },
+    "trustBadges": {
+      "title": "Pourquoi nous faire confiance ?",
+      "subtitle": "Votre sécurité et satisfaction sont notre priorité",
+      "security": {
+        "title": "100% sécurisé",
+        "description": "Chiffrement SSL, données hébergées en Afrique, conformité RGPD"
+      },
+      "privacy": {
+        "title": "Confidentialité garantie",
+        "description": "Vos données ne sont jamais partagées avec des tiers. Politique de confidentialité transparente."
+      },
+      "guarantee": {
+        "title": "Satisfait ou remboursé",
+        "description": "30 jours d'essai gratuit. Si vous n'êtes pas satisfait, nous vous remboursons intégralement."
+      },
+      "support": {
+        "title": "Support réactif",
+        "description": "Équipe dédiée disponible en français et anglais. Réponse garantie sous 2 heures."
+      },
+      "satisfaction": {
+        "title": "4.8/5 en moyenne",
+        "description": "Noté par plus de 1,200 clients. Nous améliorons constamment notre service."
+      },
+      "compliance": {
+        "title": "Conforme aux normes",
+        "description": "Respect des réglementations locales, factures légales, conformité fiscale garantie."
+      }
+    },
+    "realMetrics": {
+      "title": "Des résultats concrets",
+      "subtitle": "Les chiffres qui parlent d'eux-mêmes",
+      "speed": {
+        "value": "60s",
+        "label": "Création de facture",
+        "description": "Temps moyen pour créer et envoyer une facture"
+      },
+      "whatsapp": {
+        "value": "92%",
+        "label": "Livraison WhatsApp",
+        "description": "Taux de livraison des factures par WhatsApp"
+      },
+      "payment": {
+        "value": "48h",
+        "label": "Paiement moyen",
+        "description": "Délai moyen de paiement avec mobile money"
+      },
+      "growth": {
+        "value": "+320%",
+        "label": "Croissance trimestrielle",
+        "description": "Nouveaux utilisateurs ce trimestre"
+      }
+    },
+    "whyFacturly": {
+      "title": "Pourquoi Facturly ?",
+      "subtitle": "La plateforme de facturation mobile-first conçue pour les entrepreneurs d'Afrique de l'Ouest",
+      "whatsapp": {
+        "title": "WhatsApp, votre canal principal",
+        "description": "70%+ de pénétration en Afrique. Oubliez l'email, vos clients préfèrent WhatsApp. Envoyez vos factures directement là où ils communiquent déjà."
+      },
+      "mobileMoney": {
+        "title": "Mobile Money intégré",
+        "description": "Orange Money, MTN, Wave et 60+ méthodes de paiement. Recevez les paiements instantanément, même sans compte bancaire. Idéal pour l'Afrique où le mobile money est roi."
+      },
+      "africa": {
+        "title": "100% adapté à l'Afrique",
+        "description": "Devises locales (XOF, XAF, NGN, GHS), taxes par pays africain, et conçu pour les réalités du marché ouest-africain. Pas de solution générique, mais une solution qui vous comprend."
+      },
+      "speed": {
+        "title": "60 secondes chrono",
+        "description": "Créez et envoyez vos factures en moins d'une minute. Fini les heures perdues avec Excel ou Word. Plus de temps pour développer votre business."
+      },
+      "security": {
+        "title": "Sécurité de niveau entreprise",
+        "description": "Vos données financières sont protégées et chiffrées. Conforme aux standards internationaux. Vos factures et paiements sont en sécurité."
+      },
+      "growth": {
+        "title": "Faites grandir votre business",
+        "description": "Suivez vos revenus en temps réel, relancez automatiquement les impayés, et optimisez votre trésorerie. Prenez des décisions basées sur des données."
+      }
+    },
+    "mobileMoney": {
+      "title": "Paiement Mobile Money",
+      "subtitle": "Recevez les paiements instantanément via les méthodes de mobile money les plus populaires en Afrique de l'Ouest. Plus besoin de compte bancaire.",
+      "providers": {
+        "title": "Opérateurs supportés",
+        "countries": "pays",
+        "more": "Et 50+ autres méthodes de paiement mobile money disponibles"
+      },
+      "benefits": {
+        "title": "Pourquoi le mobile money change tout"
+      },
+      "features": {
+        "instant": "Paiements instantanés",
+        "instantDesc": "Recevez vos paiements en temps réel, sans délai d'attente. Vos clients paient et vous êtes notifié immédiatement.",
+        "secure": "Transactions sécurisées",
+        "secureDesc": "Chiffrement de bout en bout et conformité aux standards internationaux. Vos transactions sont protégées.",
+        "accessible": "Accessible à tous",
+        "accessibleDesc": "Fonctionne sans compte bancaire. Idéal pour l'Afrique où le mobile money est la norme. Tous vos clients peuvent payer."
+      },
+      "cta": {
+        "title": "Prêt à recevoir vos paiements ?",
+        "description": "Créez votre première facture et recevez votre premier paiement en 60 secondes via mobile money",
+        "buttonGuest": "Commencer gratuitement",
+        "buttonAuthenticated": "Créer une facture"
+      }
     },
     "testimonials": {
-      "title": "Facturation simplifiée",
-      "subtitle": "Découvrez comment nos clients gagnent du temps, améliorent leur trésorerie",
-      "subtitle2": "et professionnalisent leur gestion avec Facturly",
+      "title": "Facturation mobile-first pour l'Afrique",
+      "subtitle": "Découvrez comment nos clients créent leurs factures en 60 secondes",
+      "subtitle2": "et sont payés rapidement via mobile money",
       "large": {
-        "quote": "Facturly a transformé notre gestion de facturation. Ce qui prenait des heures se fait maintenant en quelques minutes. Un gain de temps considérable pour notre équipe.",
-        "name": "Bruce Lens",
-        "role": "Directeur, TechStart"
+        "quote": "Facturly a révolutionné notre façon de facturer. En Côte d'Ivoire, où le mobile money est roi, pouvoir envoyer des factures par WhatsApp et recevoir les paiements via Orange Money en quelques heures, c'est un game changer. Nos clients adorent !",
+        "name": "Amadou Traoré",
+        "role": "Directeur, TechStart Abidjan"
       },
       "items": [
         {
-          "quote": "Facturly a complètement transformé notre façon de gérer les factures. L'envoi par email automatique et le suivi en temps réel nous font gagner des heures chaque semaine. Une solution vraiment professionnelle.",
-          "name": "Sophie Martin",
-          "company": "Agence Web"
+          "quote": "Avant Facturly, je perdais des heures à créer des factures sur Word. Maintenant, en 60 secondes, j'envoie une facture professionnelle par WhatsApp à mes clients au Sénégal. Et le meilleur ? Ils paient directement avec Wave ou Orange Money. C'est magique !",
+          "name": "Fatou Diop",
+          "company": "Consultante, Dakar"
         },
         {
-          "quote": "L'intégration du paiement en ligne a considérablement accéléré nos encaissements. Nos clients apprécient la simplicité.",
-          "name": "Thomas Bernard",
-          "company": "Consulting"
+          "quote": "En tant que freelance au Mali, j'avais du mal à me faire payer. Avec Facturly, mes clients reçoivent la facture sur WhatsApp et paient instantanément avec leur mobile money. Mon taux de recouvrement a augmenté de 80% !",
+          "name": "Ibrahim Traoré",
+          "company": "Développeur Web, Bamako"
         },
         {
-          "quote": "Le tableau de bord nous donne une vision claire de notre activité. Les statistiques en temps réel sont essentielles pour notre gestion.",
-          "name": "Julie Lefebvre",
-          "company": "Freelance"
+          "quote": "Notre PME au Burkina Faso facture maintenant 200+ clients par mois. Facturly nous fait gagner 15 heures par semaine. Le tableau de bord nous montre en temps réel qui a payé et qui doit être relancé. Indispensable !",
+          "name": "Aminata Ouédraogo",
+          "company": "Directrice, Services Pro Ouagadougou"
         },
         {
-          "quote": "Plus besoin de jongler entre plusieurs outils. Facturly centralise tout : clients, prestations, factures et paiements. Un gain de temps énorme.",
-          "name": "Marc Dubois",
-          "company": "Startup Tech"
+          "quote": "Ce qui m'a convaincu ? Le support en français et le fait que tout soit adapté à l'Afrique. Les devises XOF, XAF, les taxes locales, et surtout le mobile money intégré. Enfin une solution qui nous comprend !",
+          "name": "Koffi Adjo",
+          "company": "Entrepreneur, Lomé"
         },
         {
-          "quote": "Nous avons commencé avec le plan gratuit pour tester, et en une semaine nous sommes passés au Pro. Maintenant, on ne peut plus s'en passer.",
-          "name": "Claire Moreau",
-          "company": "Design Studio"
+          "quote": "J'ai testé plusieurs solutions de facturation, mais aucune n'était adaptée au marché ivoirien. Facturly comprend nos besoins : WhatsApp pour communiquer, mobile money pour payer. C'est exactement ce qu'il nous fallait.",
+          "name": "Marie Kouassi",
+          "company": "Agence Marketing, Abidjan"
         },
         {
-          "quote": "La création de factures est devenue un jeu d'enfant. En quelques clics, j'ai une facture professionnelle prête à envoyer.",
-          "name": "Pierre Rousseau",
-          "company": "Architecte"
+          "quote": "En tant qu'architecte au Bénin, je facture des projets complexes. Facturly gère parfaitement les devises locales, les taxes, et surtout le suivi des paiements. Mes clients paient maintenant en 48h au lieu de 2 semaines !",
+          "name": "Jean-Baptiste Sènou",
+          "company": "Architecte, Cotonou"
         },
         {
-          "quote": "Les rappels automatiques nous ont permis de réduire drastiquement les retards de paiement. Une fonctionnalité qui change tout pour notre trésorerie.",
-          "name": "Laure Petit",
-          "company": "Agence Marketing"
+          "quote": "Notre startup au Ghana utilise Facturly depuis 6 mois. Le gain de temps est énorme, mais surtout, nos clients adorent recevoir les factures sur WhatsApp et payer avec MTN Mobile Money. C'est devenu un avantage concurrentiel !",
+          "name": "Kwame Mensah",
+          "company": "Co-fondateur, TechHub Accra"
         }
       ]
     },
     "footer": {
-      "tagline": "Facturation simple & intelligente",
+      "tagline": "Facturation mobile-first pour l'Afrique",
       "product": "Prestation",
       "legal": "Légal",
       "features": "Fonctionnalités",
       "pricing": "Tarifs",
       "terms": "Conditions d'utilisation",
       "privacy": "Politique de confidentialité"
+    }
+  },
+  "pricing": {
+    "title": "Tarifs adaptés à votre activité",
+    "subtitle": "Choisissez un plan qui correspond à vos besoins, avec WhatsApp et mobile money inclus dans tous les plans.",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "save": "Économisez {percent}%",
+    "popular": "POPULAIRE",
+    "included": "Inclus :",
+    "includesFree": "Tout du plan Gratuit +",
+    "ctaAuthenticated": "Accéder au tableau de bord",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "monthlyEquivalent": "{price}€/mois en paiement annuel",
+    "trustMessage": "Tous les plans incluent WhatsApp et mobile money. Aucun engagement. Annulez à tout moment.",
+    "metadata": {
+      "title": "Tarifs - Facturly | Facturation mobile-first pour l'Afrique",
+      "description": "Choisissez le plan qui correspond à vos besoins. Plans Gratuit, Pro et Entreprise avec WhatsApp et mobile money inclus. Essai gratuit de 30 jours."
+    },
+    "plans": {
+      "free": {
+        "name": "Gratuit",
+        "description": "Parfait pour démarrer votre activité.",
+        "cta": "Commencer gratuitement",
+        "features": {
+          "invoices": "Jusqu'à 10 factures par mois",
+          "clients": "Gestion de clients illimitée",
+          "whatsapp": "Envoi par WhatsApp",
+          "dashboard": "Tableau de bord de base",
+          "support": "Support par email"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Idéal pour les professionnels indépendants.",
+        "cta": "Essayer Pro",
+        "features": {
+          "invoices": "100 factures par mois",
+          "mobileMoney": "Paiement mobile money intégré",
+          "reminders": "Rappels automatiques",
+          "statistics": "Statistiques avancées",
+          "customization": "Personnalisation de factures",
+          "pdfExport": "Export PDF illimité",
+          "support": "Support prioritaire"
+        }
+      },
+      "enterprise": {
+        "name": "Entreprise",
+        "description": "Pour les équipes et entreprises en croissance.",
+        "cta": "Nous contacter",
+        "features": {
+          "invoices": "Factures illimitées",
+          "team": "Gestion d'équipe",
+          "api": "API complète",
+          "customBranding": "Branding personnalisé",
+          "dedicatedSupport": "Support dédié",
+          "advancedAnalytics": "Analyses avancées",
+          "sla": "SLA garanti"
+        }
+      }
+    },
+    "comparison": {
+      "title": "Comparaison des plans",
+      "subtitle": "Comparez les fonctionnalités de chaque plan pour trouver celui qui vous convient",
+      "feature": "Fonctionnalité",
+      "free": "Gratuit",
+      "pro": "Pro",
+      "enterprise": "Entreprise",
+      "features": {
+        "invoices": "Factures par mois",
+        "clients": "Gestion de clients",
+        "whatsapp": "Envoi par WhatsApp",
+        "mobileMoney": "Paiement mobile money",
+        "reminders": "Rappels automatiques",
+        "statistics": "Statistiques avancées",
+        "pdfExport": "Export PDF",
+        "customization": "Personnalisation",
+        "team": "Gestion d'équipe",
+        "api": "API complète",
+        "support": "Support",
+        "free": {
+          "invoices": "10",
+          "clients": "true",
+          "whatsapp": "true",
+          "mobileMoney": "false",
+          "reminders": "false",
+          "statistics": "false",
+          "pdfExport": "false",
+          "customization": "false",
+          "team": "false",
+          "api": "false",
+          "support": "Email"
+        },
+        "pro": {
+          "invoices": "100",
+          "clients": "true",
+          "whatsapp": "true",
+          "mobileMoney": "true",
+          "reminders": "true",
+          "statistics": "true",
+          "pdfExport": "true",
+          "customization": "true",
+          "team": "false",
+          "api": "false",
+          "support": "Prioritaire"
+        },
+        "enterprise": {
+          "invoices": "Illimité",
+          "clients": "true",
+          "whatsapp": "true",
+          "mobileMoney": "true",
+          "reminders": "true",
+          "statistics": "true",
+          "pdfExport": "true",
+          "customization": "true",
+          "team": "true",
+          "api": "true",
+          "support": "Dédié"
+        }
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes sur les tarifs",
+      "subtitle": "Tout ce que vous devez savoir sur nos plans et tarifs",
+      "freeTrial": {
+        "question": "Y a-t-il une période d'essai gratuite ?",
+        "answer": "Oui ! Tous nos plans incluent une période d'essai gratuite de 30 jours. Vous pouvez tester toutes les fonctionnalités sans engagement. Si vous n'êtes pas satisfait, nous vous remboursons intégralement."
+      },
+      "paymentMethods": {
+        "question": "Quels modes de paiement acceptez-vous ?",
+        "answer": "Nous acceptons tous les modes de paiement mobile money (Orange Money, MTN, Wave, Moov Money, etc.) ainsi que les cartes bancaires. Les paiements sont sécurisés et traités instantanément."
+      },
+      "cancelAnyTime": {
+        "question": "Puis-je annuler à tout moment ?",
+        "answer": "Absolument ! Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun engagement, aucune pénalité. Votre accès reste actif jusqu'à la fin de la période payée."
+      },
+      "switchPlans": {
+        "question": "Puis-je changer de plan ?",
+        "answer": "Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. Les changements sont appliqués immédiatement, et nous ajustons votre facturation au prorata."
+      },
+      "refund": {
+        "question": "Quelle est votre politique de remboursement ?",
+        "answer": "Nous offrons une garantie satisfait ou remboursé de 30 jours. Si vous n'êtes pas satisfait de notre service dans les 30 premiers jours, contactez-nous et nous vous rembourserons intégralement."
+      },
+      "annualSavings": {
+        "question": "Combien puis-je économiser avec le plan annuel ?",
+        "answer": "En choisissant le paiement annuel, vous économisez 20% sur le prix mensuel. Par exemple, le plan Pro coûte 5€/mois en mensuel (60€/an) mais seulement 48€/an en paiement annuel, soit une économie de 12€ par an."
+      }
     }
   },
   "reminders": {
@@ -1835,7 +2353,51 @@
       "plans": {
         "free": "Gratuit",
         "pro": "Pro",
-        "enterprise": "Enterprise"
+        "enterprise": "Enterprise",
+        "pay_as_you_go": "Pay-as-you-go"
+      },
+      "credits": {
+        "title": "Acheter des crédits",
+        "description": "Achetez des crédits pour continuer à envoyer des factures après avoir atteint votre limite gratuite.",
+        "unitPurchase": {
+          "title": "Achat unitaire",
+          "description": "150 FCFA par crédit (1 crédit = 1 facture)",
+          "quantity": "Quantité de crédits",
+          "total": "Total",
+          "credits": "{count} crédit | {count} crédits",
+          "cta": "Acheter des crédits"
+        },
+        "packs": {
+          "title": "Packs prépayés",
+          "description": "Économisez en achetant des packs de crédits",
+          "popular": "Populaire",
+          "credits": "crédits",
+          "pricePerInvoice": "Prix par facture",
+          "savings": "Économies de {percent}%",
+          "cta": "Acheter ce pack",
+          "starter": {
+            "name": "Pack Starter",
+            "description": "Idéal pour démarrer"
+          },
+          "pro": {
+            "name": "Pack Pro",
+            "description": "Le plus populaire"
+          },
+          "business": {
+            "name": "Pack Business",
+            "description": "Pour les gros volumes"
+          }
+        },
+        "processing": "Traitement...",
+        "loading": "Chargement des plans...",
+        "available": "Crédits disponibles",
+        "totalSent": "Total envoyé",
+        "cta": "Acheter des crédits",
+        "errors": {
+          "invalidQuantity": "La quantité doit être d'au moins 1",
+          "checkoutUrlMissing": "Impossible d'obtenir l'URL de paiement",
+          "purchaseFailed": "Échec de l'achat de crédits"
+        }
       },
       "features": {
         "free": [
@@ -2104,19 +2666,15 @@
   },
   "payments": {
     "moneroo": {
-      "title": "Paiement",
-      "description": "Vous serez redirigé vers la page de paiement pour finaliser votre transaction",
-      "phoneNumber": "Numéro de téléphone",
-      "phoneHint": "Format international requis (ex: +221771234567)",
+      "title": "Paiement Mobile Money",
+      "description": "Vous allez être redirigé vers Moneroo pour choisir votre méthode de paiement (Orange Money, MTN, Wave, etc.)",
       "amount": "Montant",
-      "continue": "Continuer",
-      "processing": "Traitement en cours...",
-      "redirectInfo": "Vous serez redirigé vers la page de paiement pour choisir votre méthode de paiement",
+      "redirectInfo": "Vous serez redirigé vers l'interface sécurisée de Moneroo pour finaliser votre paiement.",
+      "continue": "Payer maintenant",
+      "processing": "Traitement...",
       "errors": {
-        "phoneRequired": "Le numéro de téléphone est requis",
-        "invalidPhoneFormat": "Format de numéro de téléphone invalide. Utilisez le format international (ex: +221771234567)",
-        "checkoutUrlMissing": "Impossible d'obtenir l'URL de paiement",
-        "paymentFailed": "Échec du paiement. Veuillez réessayer."
+        "checkoutUrlMissing": "L'URL de paiement est manquante. Veuillez réessayer.",
+        "paymentFailed": "Échec de l'initialisation du paiement. Veuillez réessayer."
       }
     }
   },
@@ -2170,12 +2728,12 @@
     }
   },
   "metadata": {
-    "title": "Facturly - Facturation simple & intelligente",
-    "description": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel avec Facturly.",
-    "landingTitle": "Facturation simple & intelligente pour votre entreprise",
-    "landingDescription": "Créez, envoyez et gérez vos factures en toute simplicité. Automatisez votre comptabilité et suivez vos paiements en temps réel. Rejoignez des milliers de professionnels qui font confiance à Facturly.",
+    "title": "Facturly - Facturation mobile-first pour l'Afrique",
+    "description": "Créez et envoyez vos factures en 60 secondes, payez avec mobile money. Plateforme de facturation mobile-first pour l'Afrique de l'Ouest avec WhatsApp et 60+ méthodes de paiement mobile money.",
+    "landingTitle": "Créez et envoyez vos factures en 60 secondes, payez avec mobile money",
+    "landingDescription": "Facturly est la plateforme de facturation mobile-first pour l'Afrique de l'Ouest. Créez vos factures en 60 secondes, envoyez-les par WhatsApp, et recevez les paiements via Orange Money, MTN, Wave et plus de 60 méthodes de paiement mobile money.",
     "home": "Accueil",
-    "organizationDescription": "Plateforme de gestion de facturation simple et intelligente"
+    "organizationDescription": "Plateforme de facturation mobile-first pour l'Afrique de l'Ouest"
   },
   "onboarding": {
     "title": "Créez votre profil de facturation",
@@ -2193,7 +2751,38 @@
       "previous": "Précédent",
       "next": "Suivant",
       "finish": "Finaliser",
-      "finishing": "Finalisation..."
+      "finishing": "Finalisation...",
+      "skip": "Passer"
+    },
+    "success": {
+      "skipped": "Onboarding ignoré",
+      "skippedDescription": "Vous pouvez compléter votre profil plus tard dans les paramètres."
+    },
+    "demo": {
+      "title": "Démonstration interactive",
+      "subtitle": "Découvrez comment créer votre première facture en 30 secondes",
+      "skip": "Passer",
+      "play": "Lancer la démo",
+      "pause": "Pause",
+      "next": "Suivant",
+      "restart": "Revoir",
+      "step": "Étape {current} sur {total}",
+      "step1": {
+        "title": "Mode Facture Rapide",
+        "description": "Créez une facture en 3 clics : sélectionnez un client, entrez le montant, et envoyez !"
+      },
+      "step2": {
+        "title": "Sélectionnez un client",
+        "description": "Choisissez un client existant ou créez-en un nouveau en quelques secondes."
+      },
+      "step3": {
+        "title": "Entrez le montant",
+        "description": "Saisissez le montant total de votre facture. La devise est automatiquement définie."
+      },
+      "step4": {
+        "title": "Envoyez par WhatsApp",
+        "description": "Votre facture est automatiquement envoyée à votre client via WhatsApp. C'est aussi simple que ça !"
+      }
     },
     "type": {
       "title": "Choisissez votre profil",
@@ -2229,7 +2818,8 @@
         "countryPlaceholder": "Sélectionner votre pays",
         "countryNotSpecified": "Non spécifié",
         "countryHint": "Le taux de TVA sera appliqué automatiquement selon votre pays"
-      }
+      },
+      "advancedOptions": "Options avancées (devise, pays)"
     },
     "legal": {
       "title": "Informations légales",
@@ -2473,6 +3063,117 @@
           "email": "Email"
         }
       }
+    }
+  },
+  "pwa": {
+    "install": {
+      "title": "Installer Facturly",
+      "description": "Installez Facturly sur votre appareil pour un accès rapide et une meilleure expérience.",
+      "benefits": {
+        "offline": "Accès hors ligne",
+        "faster": "Chargement plus rapide",
+        "homeScreen": "Accès depuis l'écran d'accueil"
+      },
+      "install": "Installer",
+      "dismiss": "Plus tard"
+    }
+  },
+  "recurringInvoices": {
+    "title": "Factures Récurrentes",
+    "subtitle": "Gérez vos factures automatiques et récurrentes",
+    "create": "Créer une facture récurrente",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "pause": "Mettre en pause",
+    "activate": "Activer",
+    "searchPlaceholder": "Rechercher (nom, client...)",
+    "unnamed": "Sans nom",
+    "breadcrumb": {
+      "dashboard": "Tableau de bord",
+      "recurringInvoices": "Factures récurrentes"
+    },
+    "frequency": {
+      "monthly": "Mensuelle",
+      "quarterly": "Trimestrielle",
+      "yearly": "Annuelle"
+    },
+    "status": {
+      "active": "Active",
+      "paused": "En pause",
+      "completed": "Terminée",
+      "cancelled": "Annulée"
+    },
+    "table": {
+      "name": "Nom",
+      "client": "Client",
+      "frequency": "Fréquence",
+      "nextGeneration": "Prochaine génération",
+      "status": "Statut",
+      "generated": "Générées",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "Aucune facture récurrente",
+      "description": "Créez votre première facture récurrente pour automatiser vos factures mensuelles, trimestrielles ou annuelles."
+    },
+    "deleteSuccess": "Facture récurrente supprimée avec succès",
+    "deleteError": "Erreur lors de la suppression de la facture récurrente",
+    "statusUpdateSuccess": "Statut mis à jour avec succès",
+    "statusUpdateError": "Erreur lors de la mise à jour du statut",
+    "deleteDialog": {
+      "title": "Supprimer la facture récurrente",
+      "description": "Êtes-vous sûr de vouloir supprimer cette facture récurrente ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "errors": {
+      "loadingError": "Erreur lors du chargement des factures récurrentes"
+    }
+  },
+  "reports": {
+    "title": "Rapports",
+    "subtitle": "Analysez vos revenus et performances en détail",
+    "topClients": "Top clients",
+    "revenueForecast": "Prévisions de revenus",
+    "revenueByClient": "Revenus par client",
+    "revenueByMonth": "Revenus par mois",
+    "revenueByProduct": "Revenus par produit",
+    "revenueEvolution": "Évolution des revenus",
+    "viewAll": "Voir tout",
+    "viewDetails": "Voir détails",
+    "invoices": "factures",
+    "noData": "Aucune donnée disponible",
+    "projectedAnnual": "Revenu annuel projeté",
+    "nextMonths": "3 prochains mois",
+    "confidenceHigh": "Haute",
+    "confidenceMedium": "Moyenne",
+    "confidenceLow": "Basse",
+    "averageRevenue": "Revenu moyen",
+    "totalRevenue": "Revenu total",
+    "growthTrend": "Tendance",
+    "growthTrendIncreasing": "Croissante",
+    "growthTrendDecreasing": "Décroissante",
+    "growthTrendStable": "Stable",
+    "growthRate": "Taux de croissance",
+    "client": "Client",
+    "product": "Produit",
+    "month": "Mois",
+    "revenue": "Revenu",
+    "quantity": "Quantité",
+    "filters": {
+      "title": "Filtres",
+      "month": "Mois",
+      "year": "Année",
+      "months": "Nombre de mois",
+      "limit": "Limite"
+    },
+    "export": {
+      "excel": "Exporter en Excel",
+      "pdf": "Exporter en PDF",
+      "exporting": "Export en cours...",
+      "success": "Export réussi",
+      "error": "Erreur d'export",
+      "errorDescription": "Une erreur est survenue lors de l'export. Veuillez réessayer."
     }
   }
 }

@@ -14,13 +14,22 @@ import Skeleton from '@/components/ui/skeleton'
 import { useNavigationBlock } from '@/contexts/NavigationBlockContext'
 import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
+import { QuickInvoice } from '@/components/invoices/QuickInvoice'
+import { InvoiceTutorial } from '@/components/invoices/InvoiceTutorial'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Zap, FileText } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 const InvoiceBuilderPage = () => {
   const t = useTranslations('invoices.new');
   const invoicesT = useTranslations('invoices');
+  const searchParams = useSearchParams();
+  const fromOnboarding = searchParams?.get('from') === 'onboarding';
   const [isModalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [currentItem, setCurrentItem] = useState<Item | undefined>(undefined)
+  const [invoiceMode, setInvoiceMode] = useState<'quick' | 'full'>('quick') // Mode rapide par défaut
+  const [showTutorial, setShowTutorial] = useState(fromOnboarding) // Afficher le tutoriel si on vient de l'onboarding
   const { addItem, updateItem, clearItems } = useItemsStore()
   const { reset: resetMetadata } = useInvoiceMetadata()
   
@@ -37,6 +46,12 @@ const InvoiceBuilderPage = () => {
     resetMetadata()
     clearItems()
     setHasUnsavedChanges(false)
+    
+    // Vérifier si le tutoriel a déjà été complété
+    const tutorialCompleted = localStorage.getItem('invoiceTutorialCompleted');
+    if (tutorialCompleted === 'true') {
+      setShowTutorial(false);
+    }
   }, [resetMetadata, clearItems, setHasUnsavedChanges])
 
   // Gérer la sauvegarde du brouillon depuis InvoiceDetails
@@ -118,19 +133,57 @@ const InvoiceBuilderPage = () => {
           <p className='text-2xl font-bold text-primary lg:text-3xl'>{t('title')}</p>
           <p className='text-sm text-foreground/70'>{t('description')}</p>
         </div>
-        <div className='flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] xl:items-start'>
-          <div className='w-full order-1 xl:order-none'>
-            <Suspense fallback={<div className="space-y-4"><Skeleton className="h-64 w-full" /><Skeleton className="h-64 w-full" /></div>}>
-              <InvoiceDetails 
-                onSaveDraftReady={handleSaveDraftReady}
-                onHasUnsavedChanges={handleHasUnsavedChanges}
-              />
-            </Suspense>
-          </div>
-          <div className='w-full order-2 xl:order-none'>
-            <Preview />
-          </div>
-        </div>
+
+        {/* Toggle entre mode rapide et mode complet */}
+        <Tabs value={invoiceMode} onValueChange={(value) => setInvoiceMode(value as 'quick' | 'full')} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="quick" className="gap-2">
+              <Zap className="h-4 w-4" />
+              {t('modes.quick')}
+            </TabsTrigger>
+            <TabsTrigger value="full" className="gap-2">
+              <FileText className="h-4 w-4" />
+              {t('modes.full')}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Mode Rapide */}
+          <TabsContent value="quick" className="mt-6">
+            <div className="max-w-2xl mx-auto">
+              <QuickInvoice onSwitchToFullMode={() => setInvoiceMode('full')} />
+              {showTutorial && (
+                <InvoiceTutorial
+                  onComplete={() => {
+                    setShowTutorial(false);
+                    // Sauvegarder dans localStorage que le tutoriel a été complété
+                    localStorage.setItem('invoiceTutorialCompleted', 'true');
+                  }}
+                  onSkip={() => {
+                    setShowTutorial(false);
+                    localStorage.setItem('invoiceTutorialCompleted', 'true');
+                  }}
+                />
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Mode Complet */}
+          <TabsContent value="full" className="mt-6">
+            <div className='flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] xl:items-start'>
+              <div className='w-full order-1 xl:order-none'>
+                <Suspense fallback={<div className="space-y-4"><Skeleton className="h-64 w-full" /><Skeleton className="h-64 w-full" /></div>}>
+                  <InvoiceDetails 
+                    onSaveDraftReady={handleSaveDraftReady}
+                    onHasUnsavedChanges={handleHasUnsavedChanges}
+                  />
+                </Suspense>
+              </div>
+              <div className='w-full order-2 xl:order-none'>
+                <Preview />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
       <AddItemModal
         isOpen={isModalOpen}

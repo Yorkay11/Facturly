@@ -2,6 +2,7 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import Topbar from "@/components/layout/Topbar";
+import { BottomTabs } from "@/components/layout/BottomTabs";
 import { NavigationBlockProvider, useNavigationBlock } from "@/contexts/NavigationBlockContext";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 import { GlobalLoader } from "@/components/ui/global-loader";
@@ -10,7 +11,6 @@ import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
-import { useBetaBanner } from "@/hooks/useBetaBanner";
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -159,10 +159,11 @@ function OnboardingRedirect() {
     // Vérifier si le profil n'est pas complet
     const workspaceCompletion = workspace.profileCompletion ?? 0;
     
-    // Vérifier si les champs essentiels du workspace manquent
+    // PHASE 3.1 : Onboarding simplifié - Pour INDIVIDUAL, toujours complet (defaultCurrency a une valeur par défaut)
+    // Pour COMPANY, seulement le nom est requis
     const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-      ? (!workspace.name || !workspace.defaultCurrency)
-      : !workspace.defaultCurrency;
+      ? !workspace.name
+      : false; // INDIVIDUAL n'a plus besoin de defaultCurrency (valeur par défaut)
     
     // Rediriger vers l'onboarding si :
     // 1. Le workspace n'est pas complet (< 100)
@@ -186,7 +187,6 @@ function DashboardLayoutContent({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const isBetaBannerVisible = useBetaBanner();
   const isOnboardingPage = pathname === '/onboarding';
 
   // Sur la page d'onboarding, ne pas afficher la topbar et le layout normal
@@ -201,13 +201,13 @@ function DashboardLayoutContent({
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
-      {isBetaBannerVisible && <div className="h-[44px] md:h-[42px]" />} {/* Spacer pour le banner fixe */}
       <Topbar />
-      <main className="px-4 py-6 lg:px-10 lg:py-8">
+      <main className="px-4 py-6 md:px-6 md:py-8 lg:px-10 lg:py-8 pb-20 md:pb-24 lg:pb-6">
         <div className="mx-auto max-w-7xl space-y-6">
           {children}
         </div>
       </main>
+      <BottomTabs />
       <NavigationBlockDialog />
       <OnboardingRedirect />
     </div>

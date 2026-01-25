@@ -379,7 +379,7 @@ export default function PublicPayPage() {
           </Card>
         )}
 
-        {/* Moneroo Payment Modal */}
+        {/* Moneroo Payment Modal - Hosted Checkout */}
         {invoice && (
           <MonerooPaymentModal
             open={showMonerooModal}
@@ -389,6 +389,7 @@ export default function PublicPayPage() {
             currency={invoice.currency}
             customerName={invoice.recipient?.name}
             customerEmail={paymentEmail || invoice.recipient?.email}
+            customerPhone={undefined} // Optionnel - Moneroo peut le demander dans son UI (recipient n'a pas de phone)
           />
         )}
       </div>

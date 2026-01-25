@@ -63,7 +63,7 @@ export const QuickActionCard = ({
   return (
     <div
       className={cn(
-        "cursor-pointer rounded-md border bg-white p-4 shadow-sm transition hover:shadow-sm",
+        "cursor-pointer rounded-md border bg-white p-4 md:p-5 shadow-sm transition hover:shadow-sm",
         colors.border,
         disabled && "cursor-not-allowed opacity-70"
       )}
@@ -81,15 +81,15 @@ export const QuickActionCard = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-md",
+            "flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-md",
             colors.iconBg,
             colors.iconText
           )}>
             {icon}
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">{title}</p>
-            <p className="text-xs text-foreground/60 max-w-[220px]">{description}</p>
+            <p className="text-sm md:text-base font-semibold text-foreground">{title}</p>
+            <p className="text-xs md:text-sm text-foreground/60 max-w-[220px] md:max-w-none">{description}</p>
           </div>
         </div>
         <Button

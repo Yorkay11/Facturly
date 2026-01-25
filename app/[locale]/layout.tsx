@@ -7,9 +7,9 @@ import { Toaster } from 'sonner';
 import { GoogleTagManager, GoogleTagManagerNoscript } from '@/components/analytics/GoogleTagManager';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { BetaBannerWrapper } from '@/components/layout/BetaBannerWrapper';
 import { LoadingProvider } from '@/contexts/LoadingContext';
 import { GlobalLoadingHandler } from '@/components/layout/GlobalLoadingHandler';
+import { PWAProvider } from '@/components/pwa/PWAProvider';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -44,14 +44,15 @@ export default async function LocaleLayout({
       <NextIntlClientProvider messages={messages}>
         <LoadingProvider>
           <GlobalLoadingHandler />
-          <BetaBannerWrapper />
-          <Providers>
-            {children}
-            <Toaster 
-              position="top-right"
-              closeButton
-            />
-          </Providers>
+          <PWAProvider>
+            <Providers>
+              {children}
+              <Toaster 
+                position="top-right"
+                closeButton
+              />
+            </Providers>
+          </PWAProvider>
         </LoadingProvider>
       </NextIntlClientProvider>
       <Analytics />

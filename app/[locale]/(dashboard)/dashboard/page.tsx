@@ -21,6 +21,7 @@ import {
   IoListOutline,
   IoCubeOutline,
   IoSettingsOutline,
+  IoRepeatOutline,
 } from "react-icons/io5";
 import { FaMagic } from "react-icons/fa";
 import QuickActionCard from "@/components/dashboard/QuickActionCard";
@@ -28,6 +29,8 @@ import RevenueChart from "@/components/dashboard/RevenueChart";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import AtRiskCard from "@/components/dashboard/AtRiskCard";
 import ClientModal from "@/components/modals/ClientModal";
+import { TopClientsCard } from "@/components/reports/TopClientsCard";
+import { RevenueForecastCard } from "@/components/reports/RevenueForecastCard";
 import {
   useGetInvoicesQuery,
   useGetDashboardStatsQuery,
@@ -287,12 +290,12 @@ export default function DashboardPage() {
   const isLoading = isLoadingStats || isLoadingInvoices;
 
   return (
-    <div className="space-y-6 ">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
           {t('title')}
         </h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm md:text-base text-slate-500">
           {t('subtitle')}
         </p>
       </div>
@@ -316,13 +319,20 @@ export default function DashboardPage() {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
+        <CardContent className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           <QuickActionCard
             icon={<IoDocumentTextOutline className="h-5 w-5" />}
             title={t('createInvoice')}
             description={t('createInvoiceDescription')}
             onClick={() => router.push("/invoices/new")}
             color="blue"
+          />
+          <QuickActionCard
+            icon={<IoRepeatOutline className="h-5 w-5" />}
+            title={t('recurringInvoices')}
+            description={t('recurringInvoicesDescription')}
+            onClick={() => router.push("/recurring-invoices")}
+            color="purple"
           />
           <QuickActionCard
             icon={<IoRefreshOutline className="h-5 w-5" />}
@@ -340,7 +350,7 @@ export default function DashboardPage() {
           />
         </CardContent>
       </Card>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t('monthlyRevenue')}
           value={
@@ -403,7 +413,7 @@ export default function DashboardPage() {
           variant="accent"
         />
       </div>
-      <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr] xl:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[1.8fr_1fr] xl:grid-cols-[2fr_1fr]">
         <div className="space-y-6">
           <Card className="border-primary/20 shadow-sm">
             <CardHeader>
@@ -472,7 +482,7 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <Card className="border-primary/20 shadow-sm">
           <CardHeader>
             <CardTitle className="text-primary">{t('recentActivity')}</CardTitle>
@@ -528,6 +538,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
+          {/* Rapports - Top Clients */}
+          <TopClientsCard limit={5} />
+          
+          {/* Rapports - Prévisions */}
+          <RevenueForecastCard />
+
           {/* Statistiques rapides */}
           <Card className="border-primary/20 shadow-sm">
             <CardHeader className="pb-3">

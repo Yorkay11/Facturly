@@ -87,7 +87,7 @@ export function CountriesBanner() {
             className="inline-flex items-center gap-3 px-4 md:px-6 mx-3 group"
           >
             {country.flagPath ? (
-              <div className="relative w-6 h-6 md:w-8 md:h-8 flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
+              <div className="relative w-4 h-4 md:w-6 md:h-6 flex-shrink-0 transition-transform duration-300 group-hover:scale-110">
                 <Image
                   src={country.flagPath}
                   alt={`Drapeau ${country.name}`}
@@ -102,7 +102,7 @@ export function CountriesBanner() {
               </span>
             )}
 
-            <span className="text-xs md:text-base font-semibold text-white whitespace-nowrap opacity-80 group-hover:opacity-100 transition-opacity">
+            <span className="text-xs md:text-xs font-semibold text-white whitespace-nowrap opacity-80 group-hover:opacity-100 transition-opacity">
               {country.name}
             </span>
 

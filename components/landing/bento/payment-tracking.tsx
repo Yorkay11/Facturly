@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle2, Clock, AlertCircle } from "lucide-react"
+import { FaCircleCheck, FaClock, FaCircleExclamation } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
 
 const PaymentTracking: React.FC = () => {
@@ -18,21 +18,21 @@ const PaymentTracking: React.FC = () => {
       case "paid":
         return (
           <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-300">
-            <CheckCircle2 className="h-2 w-2" />
+            <FaCircleCheck className="h-2 w-2" />
             <span className="text-[7px] font-medium">{t('status.paid')}</span>
           </div>
         )
       case "sent":
         return (
           <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-300">
-            <Clock className="h-2 w-2" />
+            <FaClock className="h-2 w-2" />
             <span className="text-[7px] font-medium">{t('status.sent')}</span>
           </div>
         )
       case "overdue":
         return (
           <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-400">
-            <AlertCircle className="h-2 w-2" />
+            <FaCircleExclamation className="h-2 w-2" />
             <span className="text-[7px] font-medium">{t('status.overdue')}</span>
           </div>
         )
@@ -76,13 +76,13 @@ const PaymentTracking: React.FC = () => {
                 <p className="text-[10px] font-semibold text-slate-900">{invoice.amount}</p>
                 {invoice.status === "paid" && (
                   <div className="mt-0.5 flex items-center justify-end gap-0.5">
-                    <CheckCircle2 className="h-2 w-2 text-green-600" />
+                    <FaCircleCheck className="h-2 w-2 text-green-600" />
                     <span className="text-[6px] text-green-600">{t('status.paidShort')}</span>
                   </div>
                 )}
                 {invoice.status === "overdue" && (
                   <div className="mt-0.5 flex items-center justify-end gap-0.5">
-                    <AlertCircle className="h-2 w-2 text-orange-600" />
+                    <FaCircleExclamation className="h-2 w-2 text-orange-600" />
                     <span className="text-[6px] text-orange-600">{t('status.overdueShort')}</span>
                   </div>
                 )}

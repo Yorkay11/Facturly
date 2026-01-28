@@ -6,6 +6,7 @@ import { MobileMoneySection } from "@/components/landing/mobile-money-section"
 import { AnimatedSection } from "@/components/landing/animated-section"
 import { CTASection } from "@/components/landing/cta-section"
 import { Header } from "@/components/landing/header"
+import { FeaturesSection } from "@/components/landing/features-section";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL as string;
 
@@ -53,7 +54,7 @@ export default async function FeaturesPage() {
             <BentoSection />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
-            <WhyFacturlySection />
+          <FeaturesSection />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
             <MobileMoneySection />

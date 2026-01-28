@@ -70,6 +70,8 @@ import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useLoading } from "@/contexts/LoadingContext"
+import { useRedirect } from "@/hooks/useRedirect"
+import { Redirect } from "@/components/navigation"
 import { Loader } from "@/components/ui/loader"
 import { useTranslations, useLocale } from 'next-intl'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -92,12 +94,14 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const searchParams = useSearchParams();
     const clientIdFromUrl = searchParams ? searchParams.get("clientId") || undefined : undefined;
     const router = useRouter();
+    const redirect = useRedirect({ checkUnsavedChanges: false });
     
     const [open, setOpen] = React.useState(false);
     const [clientOpen, setClientOpen] = React.useState(false);
     const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
     const [commandPaletteOpen, setCommandPaletteOpen] = React.useState(false);
     const [lastSavedAt, setLastSavedAt] = React.useState<Date | undefined>(undefined);
+    const [redirectAfterSave, setRedirectAfterSave] = React.useState<string | null>(null);
     const [isSavingDraft, setIsSavingDraft] = React.useState(false);
     const clientSearchRef = React.useRef<HTMLButtonElement>(null);
     const { items, setItems, removeItem, clearItems, addItem, updateItem } = useItemsStore();
@@ -787,10 +791,8 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         resetMetadata();
                         clearItems();
                         
-                        // Rediriger vers la page de détails de la facture
-                        // Utiliser router.replace pour éviter de pouvoir revenir en arrière vers la page de création
-                        console.log("Redirecting to:", `/invoices/${newInvoiceId}`);
-                        router.replace(`/invoices/${newInvoiceId}`);
+                        // Déclencher la redirection avec loader
+                        setRedirectAfterSave(`/invoices/${newInvoiceId}`);
                     }
                 } catch (createError: any) {
                     // Si l'erreur vient de la création, elle sera gérée par le catch principal
@@ -1038,6 +1040,20 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isClientModalOpen, clientOpen, commandPaletteOpen, openCreate, form, storedClientId, clientIdFromUrl, t]);
+
+    // Redirection avec loader après sauvegarde
+    if (redirectAfterSave) {
+        return (
+            <Redirect
+                to={redirectAfterSave}
+                type="replace"
+                checkUnsavedChanges={false}
+                showLoader={true}
+                loaderType="saving"
+                delay={300}
+            />
+        );
+    }
 
     return (
         <Form {...form}>

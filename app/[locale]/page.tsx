@@ -5,9 +5,8 @@ import { DashboardPreview } from "@/components/landing/dashboard-preview"
 import { CountriesBanner } from "@/components/landing/countries-banner"
 import { InteractiveDemo } from "@/components/landing/interactive-demo"
 import { VideoCarousel } from "@/components/landing/video-carousel"
-import { SocialProof } from "@/components/landing/social-proof"
-import { TrustBadges } from "@/components/landing/trust-badges"
 import { RealMetrics } from "@/components/landing/real-metrics"
+import { FeaturesSection } from "@/components/landing/features-section"
 import { WhyFacturlySection } from "@/components/landing/why-facturly-section"
 import { MobileMoneySection } from "@/components/landing/mobile-money-section"
 import { FAQSection } from "@/components/landing/faq-section"
@@ -169,27 +168,26 @@ export default async function LandingPage() {
               <DashboardPreview />
             </div>
           </main>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto px-6 mt-20 md:mt-40" delay={0.1}>
-            <SocialProof />
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.25}>
+            <FeaturesSection />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <VideoCarousel />
-          </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
-            <InteractiveDemo />
-          </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
-            <RealMetrics />
-          </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
-            <TrustBadges />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.4}>
             <WhyFacturlySection />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
+            <InteractiveDemo />
+          </AnimatedSection>
+         
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
             <MobileMoneySection />
           </AnimatedSection>
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+            <RealMetrics />
+          </AnimatedSection>
+          
           <AnimatedSection id="faq-section" className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <FAQSection />
           </AnimatedSection>

@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Plus, Mail, Phone, MapPin, User } from "lucide-react"
+import { FaPlus, FaEnvelope, FaPhone, FaLocationDot, FaUser } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
 
 const ClientManagement: React.FC = () => {
@@ -23,7 +23,7 @@ const ClientManagement: React.FC = () => {
             <p className="text-[8px] text-slate-500">{t('header.activeClients')}</p>
           </div>
           <div className="h-5 px-1.5 rounded border border-primary/20 bg-primary/5 flex items-center gap-1 pointer-events-none">
-            <Plus className="h-2.5 w-2.5 text-primary" />
+            <FaPlus className="h-2.5 w-2.5 text-primary" />
             <span className="text-[8px] font-medium text-primary">{t('header.new')}</span>
           </div>
         </div>
@@ -44,11 +44,11 @@ const ClientManagement: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-[9px] font-semibold text-primary truncate">{client.name}</p>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <Mail className="h-2 w-2 text-slate-400 flex-shrink-0" />
+                  <FaEnvelope className="h-2 w-2 text-slate-400 flex-shrink-0" />
                   <p className="text-[7px] text-slate-600 truncate">{client.email}</p>
                 </div>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <MapPin className="h-2 w-2 text-slate-400 flex-shrink-0" />
+                  <FaLocationDot className="h-2 w-2 text-slate-400 flex-shrink-0" />
                   <p className="text-[7px] text-slate-500">{client.city}</p>
                 </div>
               </div>
@@ -60,7 +60,7 @@ const ClientManagement: React.FC = () => {
         <div className="absolute bottom-1 left-1 right-1 rounded border border-primary/30 bg-white shadow-lg pointer-events-none z-20 p-1.5"
              style={{ transform: 'scale(0.95)' }}>
           <div className="flex items-center gap-1 mb-1 pb-1 border-b border-slate-200">
-            <User className="h-3 w-3 text-primary" />
+            <FaUser className="h-3 w-3 text-primary" />
             <p className="text-[9px] font-semibold text-slate-900">{t('form.title')}</p>
           </div>
           <div className="space-y-1">
@@ -73,7 +73,7 @@ const ClientManagement: React.FC = () => {
             <div>
               <label className="text-[7px] text-slate-600 block mb-0.5">{t('form.email')}</label>
               <div className="h-3 w-full rounded border border-slate-300 bg-white px-1 text-[8px] pointer-events-none flex items-center gap-0.5">
-                <Mail className="h-2 w-2 text-slate-400" />
+                <FaEnvelope className="h-2 w-2 text-slate-400" />
                 <span>contact@example.com</span>
               </div>
             </div>

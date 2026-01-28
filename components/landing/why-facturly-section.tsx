@@ -1,39 +1,39 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { MessageCircle, Smartphone, Globe, Zap, Shield, TrendingUp } from 'lucide-react'
+import { FaMessage, FaMobileScreen, FaGlobe, FaBolt, FaShield, FaArrowTrendUp } from 'react-icons/fa6'
 
 export function WhyFacturlySection() {
   const t = useTranslations('landing.whyFacturly')
   
   const reasons = [
     {
-      icon: MessageCircle,
+      icon: FaMessage,
       title: t('whatsapp.title'),
       description: t('whatsapp.description')
     },
     {
-      icon: Smartphone,
+      icon: FaMobileScreen,
       title: t('mobileMoney.title'),
       description: t('mobileMoney.description')
     },
     {
-      icon: Globe,
+      icon: FaGlobe,
       title: t('africa.title'),
       description: t('africa.description')
     },
     {
-      icon: Zap,
+      icon: FaBolt,
       title: t('speed.title'),
       description: t('speed.description')
     },
     {
-      icon: Shield,
+      icon: FaShield,
       title: t('security.title'),
       description: t('security.description')
     },
     {
-      icon: TrendingUp,
+      icon: FaArrowTrendUp,
       title: t('growth.title'),
       description: t('growth.description')
     }

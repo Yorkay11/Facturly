@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { FaChevronDown } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
 
 interface FAQItemProps {
@@ -25,7 +25,7 @@ const FAQItem = ({ question, answer, isOpen, onToggle }: FAQItemProps) => {
       <div className="w-full px-5 py-[18px] pr-4 flex justify-between items-center gap-5 text-left transition-all duration-300 ease-out">
         <div className="flex-1 text-foreground text-base font-medium leading-6 break-words">{question}</div>
         <div className="flex justify-center items-center">
-          <ChevronDown
+          <FaChevronDown
             className={`w-6 h-6 text-muted-foreground-dark transition-all duration-500 ease-out ${isOpen ? "rotate-180 scale-110" : "rotate-0 scale-100"}`}
           />
         </div>

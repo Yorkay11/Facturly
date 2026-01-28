@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Smartphone } from "lucide-react";
+import { FaMobileScreen } from "react-icons/fa6";
 import { ProviderLogo } from "./provider-logo";
 
 const ProvidersCircle = ({ providers, t }: { providers: { name: string; logo: string; alt: string }[], t: any }) => {
@@ -39,7 +39,7 @@ const ProvidersCircle = ({ providers, t }: { providers: { name: string; logo: st
               border border-primary/30 
               flex items-center justify-center 
               backdrop-blur-sm shadow-lg">
-              <Smartphone className="h-5 w-5 md:h-7 md:w-7 text-primary" />
+              <FaMobileScreen className="h-5 w-5 md:h-7 md:w-7 text-primary" />
             </div>
           </div>
 

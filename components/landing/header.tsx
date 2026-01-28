@@ -20,6 +20,7 @@ export function Header() {
   const buttonHref = isAuthenticated ? "/dashboard" : "/login"
 
   const navItems = [
+    { name: t('home'), href: "/" },
     { name: t('features'), href: "/features" },
     { name: t('pricing'), href: "/pricing" },
     { name: t('testimonials'), href: "/testimonials" },
@@ -51,7 +52,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-[#888888] hover:text-foreground px-4 py-2 rounded-full font-medium transition-colors"
+                className="text-black hover:text-foreground px-4 py-2 rounded-full font-medium transition-colors"
               >
                 {item.name}
               </Link>

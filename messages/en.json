@@ -27,7 +27,11 @@
     "invoice": "Invoice",
     "client": "Client",
     "retry": "Retry",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "redirecting": "Redirecting...",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "redirectingToPayment": "Redirecting to payment..."
   },
   "beta": {
     "badge": "Beta",
@@ -871,6 +875,7 @@
         "title": "Mark as paid",
         "description": "Record a payment received for invoice {invoiceNumber}.",
         "amountLabel": "Amount *",
+        "alreadyPaid": "Already paid",
         "remaining": "Remaining to pay: {amount}",
         "dateLabel": "Payment date *",
         "methodLabel": "Payment method *",
@@ -1377,6 +1382,7 @@
       }
     },
     "header": {
+      "home": "Home",
       "features": "Features",
       "pricing": "Pricing",
       "testimonials": "Testimonials",
@@ -1848,6 +1854,26 @@
         "value": "+320%",
         "label": "Quarterly growth",
         "description": "New users this quarter"
+      }
+    },
+    "featuresSection": {
+      "title": "Features built for you",
+      "subtitle": "From creating invoices to sending via WhatsApp and receiving mobile money payments, Facturly covers the full billing cycle. Designed for West Africa.",
+      "card1": {
+        "title": "Invoice in a few clicks",
+        "description": "Create professional invoices in under a minute. Catalog, clients and templates ready to use."
+      },
+      "card2": {
+        "title": "Clients, invoices and payments",
+        "description": "Manage clients, track invoices and receive payments. Everything in one simple interface."
+      },
+      "card3": {
+        "title": "Discover Facturly on video",
+        "description": "Invoice creation, WhatsApp sending, mobile money payments… Watch our demos to understand everything in minutes."
+      },
+      "card4": {
+        "title": "Available across West Africa",
+        "description": "Facturly works everywhere: Ivory Coast, Senegal, Mali, Burkina Faso, Benin, Togo, Ghana, Nigeria and more."
       }
     },
     "whyFacturly": {

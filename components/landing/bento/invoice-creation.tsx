@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Plus, ChevronsUpDown } from "lucide-react"
+import { FaPlus, FaArrowsUpDown } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
 
 const InvoiceCreation: React.FC = () => {
@@ -19,7 +19,7 @@ const InvoiceCreation: React.FC = () => {
                 <label className="text-[8px] text-muted-foreground block mb-0.5">{t('form.recipient')}</label>
                 <div className="h-4 w-full rounded border border-input bg-background flex items-center justify-between px-1.5 text-[9px] pointer-events-none">
                   <span>Fidelize</span>
-                  <ChevronsUpDown className="h-2 w-2 opacity-50" />
+                  <FaArrowsUpDown className="h-2 w-2 opacity-50" />
                 </div>
               </div>
               <div>
@@ -36,7 +36,7 @@ const InvoiceCreation: React.FC = () => {
             <div className="flex items-center justify-between mb-0.5">
               <p className="text-[9px] font-semibold text-slate-900">{t('form.invoiceLines')}</p>
               <div className="h-4 px-1 rounded border border-input bg-background flex items-center gap-0.5 text-[8px] pointer-events-none">
-                <Plus className="h-2 w-2" />
+                <FaPlus className="h-2 w-2" />
                 <span>{t('form.add')}</span>
               </div>
             </div>

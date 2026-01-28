@@ -1,11 +1,11 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { Smartphone, Zap, Shield, Globe2, ArrowRight } from 'lucide-react'
+import { FaMobileScreen, FaBolt, FaShield, FaGlobe, FaArrowRight } from 'react-icons/fa6'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from '@/i18n/routing'
-import ProvidersCircle from './providerCircle'
+import { PaymentMethodsGallery } from '@/components/payments/PaymentMethodsGallery'
 
 export function MobileMoneySection() {
   const t = useTranslations('landing.mobileMoney')
@@ -50,17 +50,17 @@ export function MobileMoneySection() {
 
   const features = [
     {
-      icon: Zap,
+      icon: FaBolt,
       title: t('features.instant'),
       description: t('features.instantDesc')
     },
     {
-      icon: Shield,
+      icon: FaShield,
       title: t('features.secure'),
       description: t('features.secureDesc')
     },
     {
-      icon: Globe2,
+      icon: FaGlobe,
       title: t('features.accessible'),
       description: t('features.accessibleDesc')
     }
@@ -85,7 +85,7 @@ export function MobileMoneySection() {
         {/* Header */}
         <div className="text-center mb-16 md:mb-20">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-6">
-            <Smartphone className="h-7 w-7 text-primary" />
+            <FaMobileScreen className="h-7 w-7 text-primary" />
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-foreground mb-6 leading-tight">
             {t('title')}
@@ -122,8 +122,30 @@ export function MobileMoneySection() {
           })}
         </div>
 
-        {/* Providers Circle Animation */}
-        <ProvidersCircle providers={providers} t={t} />
+        {/* Opérateurs supportés - Galerie circulaire */}
+        <div className="mb-12 md:mb-16">
+          <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6 md:mb-12">
+            {t("providers.title")}
+          </h3>
+          
+          {/* Galerie circulaire – hauteur réduite sur mobile pour des cartes plus petites */}
+          <div className="h-[220px] sm:h-[280px] md:h-[380px] lg:h-[500px] w-full min-h-[180px]">
+            <PaymentMethodsGallery
+              providers={providers}
+              height="100%"
+              className="w-full h-full"
+              bend={3}
+              textColor="hsl(var(--primary))"
+              borderRadius={0.05}
+              scrollSpeed={2}
+              scrollEase={0.05}
+            />
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-6 md:mt-12">
+            {t("providers.more")}
+          </p>
+        </div>
 
         {/* CTA */}
         <div className="text-center">
@@ -142,7 +164,7 @@ export function MobileMoneySection() {
               className="group px-8 py-6 text-base font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {isAuthenticated ? t('cta.buttonAuthenticated') : t('cta.buttonGuest')}
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <FaArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>

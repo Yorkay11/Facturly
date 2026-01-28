@@ -27,7 +27,11 @@
     "invoice": "Facture",
     "client": "Client",
     "retry": "Réessayer",
-    "dismiss": "Ignorer"
+    "dismiss": "Ignorer",
+    "redirecting": "Redirection...",
+    "saving": "Enregistrement...",
+    "processing": "Traitement...",
+    "redirectingToPayment": "Redirection vers le paiement..."
   },
   "beta": {
     "badge": "Bêta",
@@ -872,6 +876,7 @@
         "title": "Marquer comme payé",
         "description": "Enregistrez un paiement reçu pour la facture {invoiceNumber}.",
         "amountLabel": "Montant *",
+        "alreadyPaid": "Déjà payé",
         "remaining": "Restant à payer : {amount}",
         "dateLabel": "Date de paiement *",
         "methodLabel": "Méthode de paiement *",
@@ -1384,6 +1389,7 @@
       }
     },
     "header": {
+      "home": "Accueil",
       "features": "Fonctionnalités",
       "pricing": "Tarifs",
       "testimonials": "Témoignages",
@@ -1855,6 +1861,26 @@
         "value": "+320%",
         "label": "Croissance trimestrielle",
         "description": "Nouveaux utilisateurs ce trimestre"
+      }
+    },
+    "featuresSection": {
+      "title": "Des fonctionnalités pensées pour vous",
+      "subtitle": "De la création de factures à l'envoi par WhatsApp et au paiement mobile money, Facturly couvre tout le cycle de facturation. Conçu pour l'Afrique de l'Ouest.",
+      "card1": {
+        "title": "Facturez en quelques clics",
+        "description": "Créez des factures professionnelles en moins d'une minute. Catalogue, clients et modèles prêts à l'emploi."
+      },
+      "card2": {
+        "title": "Clients, factures et paiements",
+        "description": "Gérez vos clients, suivez vos factures et recevez les paiements. Tout centralisé dans une interface simple."
+      },
+      "card3": {
+        "title": "Découvrez Facturly en vidéo",
+        "description": "Création de facture, envoi WhatsApp, paiement mobile money… Regardez nos démos pour tout comprendre en quelques minutes."
+      },
+      "card4": {
+        "title": "Disponible en Afrique de l'Ouest",
+        "description": "Facturly est utilisable partout : Côte d'Ivoire, Sénégal, Mali, Burkina Faso, Bénin, Togo, Ghana, Nigeria et bien d'autres."
       }
     },
     "whyFacturly": {

@@ -5,6 +5,9 @@ import { LargeTestimonial } from "@/components/landing/large-testimonial"
 import { AnimatedSection } from "@/components/landing/animated-section"
 import { CTASection } from "@/components/landing/cta-section"
 import { Header } from "@/components/landing/header"
+import { TrustBadges } from "@/components/landing/trust-badges"
+import { SocialProof } from "@/components/landing/social-proof"
+
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL as string;
 
@@ -53,6 +56,12 @@ export default async function TestimonialsPage() {
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <TestimonialGridSection />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+            <SocialProof />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+            <TrustBadges />
           </AnimatedSection>
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <CTASection />

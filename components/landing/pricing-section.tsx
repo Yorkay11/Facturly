@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, ArrowRight } from "lucide-react"
+import { FaCheck, FaArrowRight } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import { Link, useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
@@ -198,7 +198,7 @@ export function PricingSection() {
                     }`}
                   >
                     {isAuthenticated ? plan.authenticatedText : plan.buttonText}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <FaArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
 
@@ -213,11 +213,10 @@ export function PricingSection() {
                         <div className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
                           plan.popular ? "bg-primary-foreground/20" : "bg-primary/10"
                         }`}>
-                          <Check
+                          <FaCheck
                             className={`h-3.5 w-3.5 ${
                               plan.popular ? "text-primary-foreground" : "text-primary"
                             }`}
-                            strokeWidth={3}
                           />
                         </div>
                         <span className={`text-xs leading-relaxed ${

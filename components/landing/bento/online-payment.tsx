@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CreditCard, Lock, CheckCircle2 } from "lucide-react"
+import { FaCreditCard, FaLock, FaCircleCheck } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
 
 const OnlinePayment: React.FC = () => {
@@ -14,7 +14,7 @@ const OnlinePayment: React.FC = () => {
           <div className="absolute top-[5%] left-[10%] w-[70%] h-[50%] rounded-lg border border-slate-300 bg-gradient-to-br from-primary/20 to-primary/5 shadow-sm p-2">
             <div className="flex justify-between items-start mb-2">
               <div className="h-4 w-8 rounded bg-primary/30" />
-              <Lock className="h-3 w-3 text-primary" />
+              <FaLock className="h-3 w-3 text-primary" />
             </div>
             <div className="space-y-1 mt-3">
               <div className="h-2 w-full rounded bg-slate-300/50" />
@@ -32,7 +32,7 @@ const OnlinePayment: React.FC = () => {
           <div className="space-y-1.5">
             {/* Header */}
             <div className="flex items-center gap-1.5 pb-1 border-b border-slate-200">
-              <CreditCard className="h-3 w-3 text-primary" />
+              <FaCreditCard className="h-3 w-3 text-primary" />
               <p className="text-[10px] font-semibold text-slate-900">{t('form.title')}</p>
             </div>
 
@@ -54,7 +54,7 @@ const OnlinePayment: React.FC = () => {
               <div>
                 <label className="text-[7px] text-slate-600 block mb-0.5">{t('form.method')}</label>
                 <div className="h-3 w-full rounded border border-primary/30 bg-primary/5 px-1 text-[8px] pointer-events-none flex items-center gap-0.5">
-                  <CreditCard className="h-2 w-2 text-primary" />
+                  <FaCreditCard className="h-2 w-2 text-primary" />
                   <span className="text-primary font-medium">{t('form.creditCard')}</span>
                 </div>
               </div>
@@ -63,14 +63,14 @@ const OnlinePayment: React.FC = () => {
             {/* Bouton de paiement */}
             <div className="pt-1 border-t border-slate-200">
               <div className="h-5 w-full rounded bg-primary flex items-center justify-center gap-1 pointer-events-none">
-                <CreditCard className="h-2.5 w-2.5 text-primary-foreground" />
+                <FaCreditCard className="h-2.5 w-2.5 text-primary-foreground" />
                 <span className="text-[9px] font-semibold text-primary-foreground">{t('form.payNow')}</span>
               </div>
             </div>
 
             {/* Badge de sécurité */}
             <div className="flex items-center justify-center gap-1 pt-0.5">
-              <Lock className="h-2 w-2 text-primary" />
+              <FaLock className="h-2 w-2 text-primary" />
               <p className="text-[7px] text-slate-500">{t('form.securePayment')}</p>
             </div>
           </div>
@@ -79,7 +79,7 @@ const OnlinePayment: React.FC = () => {
         {/* Confirmation de paiement */}
         <div className="absolute bottom-2 left-2 w-[45%] rounded border border-green-400 bg-green-50 shadow-md pointer-events-none z-20 p-1.5">
           <div className="flex items-center gap-1 mb-0.5">
-            <CheckCircle2 className="h-3 w-3 text-green-600" />
+            <FaCircleCheck className="h-3 w-3 text-green-600" />
             <p className="text-[8px] font-semibold text-green-700">{t('confirmation.title')}</p>
           </div>
           <div className="space-y-0.5 text-[7px] text-green-700">

@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Mail, Check } from "lucide-react"
+import { FaEnvelope, FaCheck } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
 
 const EmailSending: React.FC = () => {
@@ -47,7 +47,7 @@ const EmailSending: React.FC = () => {
           <div className="space-y-1.5">
             {/* Header */}
             <div className="flex items-center gap-1.5 pb-1 border-b border-slate-200">
-              <Mail className="h-3 w-3 text-primary" />
+              <FaEnvelope className="h-3 w-3 text-primary" />
               <p className="text-[10px] font-medium text-slate-900">{t('form.title')}</p>
             </div>
             
@@ -83,14 +83,14 @@ const EmailSending: React.FC = () => {
             {/* Bouton d'envoi */}
             <div className="pt-1 border-t border-slate-200">
               <div className="h-5 w-full rounded bg-primary flex items-center justify-center gap-1.5 pointer-events-none">
-                <Mail className="h-2.5 w-2.5 text-primary-foreground" />
+                <FaEnvelope className="h-2.5 w-2.5 text-primary-foreground" />
                 <span className="text-[9px] font-medium text-primary-foreground">{t('form.send')}</span>
               </div>
             </div>
             
             {/* Confirmation */}
             <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
-              <Check className="h-2 w-2 text-primary-foreground" />
+              <FaCheck className="h-2 w-2 text-primary-foreground" />
             </div>
           </div>
         </div>
@@ -98,7 +98,7 @@ const EmailSending: React.FC = () => {
         {/* Email envoyé (visualisation) */}
         <div className="absolute bottom-2 left-2 w-[45%] rounded border border-primary/20 bg-white shadow-md pointer-events-none z-20 p-1.5">
           <div className="flex items-center gap-1 mb-0.5">
-            <Mail className="h-2.5 w-2.5 text-primary" />
+            <FaEnvelope className="h-2.5 w-2.5 text-primary" />
             <p className="text-[8px] font-medium text-slate-900">{t('sent.title')}</p>
             <div className="ml-auto h-2 w-2 rounded-full bg-primary" />
           </div>

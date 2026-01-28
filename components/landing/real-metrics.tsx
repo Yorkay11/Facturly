@@ -1,35 +1,35 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { TrendingUp, Zap, Users, FileText, MessageCircle, DollarSign } from 'lucide-react'
+import { FaArrowTrendUp, FaBolt, FaUsers, FaFileLines, FaMessage, FaDollarSign } from 'react-icons/fa6'
 
 export function RealMetrics() {
   const t = useTranslations('landing.realMetrics')
 
   const metrics = [
     {
-      icon: Zap,
+      icon: FaBolt,
       value: t('speed.value'),
       label: t('speed.label'),
       description: t('speed.description'),
       color: 'text-yellow-500'
     },
     {
-      icon: MessageCircle,
+      icon: FaMessage,
       value: t('whatsapp.value'),
       label: t('whatsapp.label'),
       description: t('whatsapp.description'),
       color: 'text-green-500'
     },
     {
-      icon: DollarSign,
+      icon: FaDollarSign,
       value: t('payment.value'),
       label: t('payment.label'),
       description: t('payment.description'),
       color: 'text-blue-500'
     },
     {
-      icon: TrendingUp,
+      icon: FaArrowTrendUp,
       value: t('growth.value'),
       label: t('growth.label'),
       description: t('growth.description'),

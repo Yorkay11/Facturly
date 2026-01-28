@@ -4,23 +4,22 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  User, 
-  FileText, 
-  ShoppingCart, 
-  Calendar, 
-  Send, 
-  CheckCircle2,
-  ArrowRight,
-  Play,
-  Pause,
-  RotateCcw
-} from 'lucide-react'
+  FaUser, 
+  FaCartShopping, 
+  FaCalendar, 
+  FaPaperPlane, 
+  FaCircleCheck,
+  FaArrowRight,
+  FaPlay,
+  FaPause,
+  FaRotateLeft,
+} from 'react-icons/fa6'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface DemoStep {
   id: string
-  icon: typeof User
+  icon: typeof FaUser
   title: string
   description: string
   duration: number
@@ -35,35 +34,35 @@ export function InteractiveDemo() {
   const steps: DemoStep[] = [
     {
       id: 'client',
-      icon: User,
+      icon: FaUser,
       title: t('steps.client.title'),
       description: t('steps.client.description'),
       duration: 2000
     },
     {
       id: 'items',
-      icon: ShoppingCart,
+      icon: FaCartShopping,
       title: t('steps.items.title'),
       description: t('steps.items.description'),
       duration: 2500
     },
     {
       id: 'dates',
-      icon: Calendar,
+      icon: FaCalendar,
       title: t('steps.dates.title'),
       description: t('steps.dates.description'),
       duration: 1500
     },
     {
       id: 'send',
-      icon: Send,
+      icon: FaPaperPlane,
       title: t('steps.send.title'),
       description: t('steps.send.description'),
       duration: 2000
     },
     {
       id: 'complete',
-      icon: CheckCircle2,
+      icon: FaCircleCheck,
       title: t('steps.complete.title'),
       description: t('steps.complete.description'),
       duration: 3000
@@ -142,7 +141,7 @@ export function InteractiveDemo() {
                     variant="outline"
                     className="gap-2"
                   >
-                    <Play className="h-4 w-4" />
+                    <FaPlay className="h-4 w-4" />
                     {t('play')}
                   </Button>
                 )}
@@ -153,7 +152,7 @@ export function InteractiveDemo() {
                     variant="outline"
                     className="gap-2"
                   >
-                    <Pause className="h-4 w-4" />
+                    <FaPause className="h-4 w-4" />
                     {t('pause')}
                   </Button>
                 )}
@@ -163,7 +162,7 @@ export function InteractiveDemo() {
                   variant="ghost"
                   className="gap-2"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <FaRotateLeft className="h-4 w-4" />
                   {t('reset')}
                 </Button>
               </div>
@@ -209,7 +208,7 @@ export function InteractiveDemo() {
                         isFuture && "bg-muted text-muted-foreground"
                       )}>
                         {isPast ? (
-                          <CheckCircle2 className="h-6 w-6" />
+                          <FaCircleCheck className="h-6 w-6" />
                         ) : (
                           <Icon className="h-6 w-6" />
                         )}
@@ -324,7 +323,7 @@ export function InteractiveDemo() {
               className="mt-8 text-center"
             >
               <div className="inline-flex flex-col items-center gap-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
-                <CheckCircle2 className="h-12 w-12 text-primary" />
+                <FaCircleCheck className="h-12 w-12 text-primary" />
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-2">
                     {t('completed.title')}
@@ -338,7 +337,7 @@ export function InteractiveDemo() {
                     className="gap-2"
                   >
                     {t('completed.cta')}
-                    <ArrowRight className="h-5 w-5" />
+                    <FaArrowRight className="h-5 w-5" />
                   </Button>
                 </div>
               </div>

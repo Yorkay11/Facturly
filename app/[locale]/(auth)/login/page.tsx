@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { removeLocalePrefix } from '@/utils/path-utils';
+import { Redirect } from '@/components/navigation';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,9 @@ function LoginForm() {
     },
   });
 
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
+
   useEffect(() => {
     if (isSuccess && data) {
       if (typeof window !== "undefined") {
@@ -70,9 +74,10 @@ function LoginForm() {
 
       // Retirer le préfixe de locale si présent (router.push l'ajoute automatiquement)
       const cleanPath = removeLocalePrefix(redirectTo);
-      router.push(cleanPath);
+      setRedirectPath(cleanPath);
+      setShouldRedirect(true);
     }
-  }, [data, isSuccess, redirectTo, router]);
+  }, [data, isSuccess, redirectTo, router, t, tCommon]);
 
   useEffect(() => {
     if (isError && error) {
@@ -107,6 +112,20 @@ function LoginForm() {
   const onSubmit = (values: LoginFormValues) => {
     login(values);
   };
+
+  // Redirection après connexion réussie
+  if (shouldRedirect && redirectPath) {
+    return (
+      <Redirect
+        to={redirectPath}
+        type="replace"
+        checkUnsavedChanges={false}
+        showLoader={true}
+        loaderType="processing"
+        delay={500}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -293,6 +312,17 @@ function LoginForm() {
           </p>
         </div>
       </div>
+      
+      {shouldRedirect && redirectPath && (
+        <Redirect
+          to={redirectPath}
+          type="replace"
+          checkUnsavedChanges={false}
+          showLoader={true}
+          loaderType="processing"
+          delay={500}
+        />
+      )}
     </div>
   );
 }

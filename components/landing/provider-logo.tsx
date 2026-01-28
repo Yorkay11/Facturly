@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Smartphone } from "lucide-react"
+import { FaMobileScreen } from "react-icons/fa6"
 
 interface ProviderLogoProps {
   src: string
@@ -21,7 +21,7 @@ export function ProviderLogo({ src, alt, name }: ProviderLogoProps) {
         aria-label={name}
       >
         <div className="flex flex-col items-center gap-1">
-          <Smartphone className="h-5 w-5 text-muted-foreground" />
+          <FaMobileScreen className="h-5 w-5 text-muted-foreground" />
           <span className="text-xs font-medium text-muted-foreground leading-tight">
             {name}
           </span>

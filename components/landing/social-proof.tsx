@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
-import { Users, FileText, TrendingUp, Clock, Star } from 'lucide-react'
+import { FaUsers, FaFileExport, FaArrowTrendUp, FaClock, FaStar } from 'react-icons/fa6'
 
 export function SocialProof() {
   const t = useTranslations('landing.socialProof')
@@ -10,31 +10,31 @@ export function SocialProof() {
   
   const stats = [
     {
-      icon: Users,
+      icon: FaUsers,
       value: tStats('users'),
       label: tStats('usersLabel'),
       description: tStats('usersDescription')
     },
     {
-      icon: FileText,
+      icon: FaFileExport,
       value: tStats('invoices'),
       label: tStats('invoicesLabel'),
       description: tStats('invoicesDescription')
     },
     {
-      icon: Star,
+      icon: FaStar,
       value: tStats('satisfaction'),
       label: tStats('satisfactionLabel'),
       description: tStats('satisfactionDescription')
     },
     {
-      icon: Clock,
+      icon: FaClock,
       value: tStats('responseTime'),
       label: tStats('responseTimeLabel'),
       description: tStats('responseTimeDescription')
     },
     {
-      icon: TrendingUp,
+      icon: FaArrowTrendUp,
       value: tStats('growth'),
       label: tStats('growthLabel'),
       description: tStats('growthDescription')

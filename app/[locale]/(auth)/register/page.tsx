@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from 'next-intl';
 import { useMemo } from 'react';
+import { Redirect } from '@/components/navigation';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -68,6 +69,9 @@ export default function RegisterPage() {
     },
   });
 
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
+
   useEffect(() => {
     if (isSuccess && data) {
       if (typeof window !== "undefined") {
@@ -85,10 +89,11 @@ export default function RegisterPage() {
       // Vérifier si un workspace existe, sinon rediriger vers l'onboarding
       // Le backend retourne workspace: null si aucun workspace n'existe
       if (!data.workspace) {
-        router.push("/onboarding");
+        setRedirectPath("/onboarding");
       } else {
-        router.push("/dashboard");
+        setRedirectPath("/dashboard");
       }
+      setShouldRedirect(true);
     }
   }, [data, isSuccess, router, t]);
 
@@ -130,6 +135,20 @@ export default function RegisterPage() {
       });
     }
   }, [error, isError]);
+
+  // Redirection après inscription réussie
+  if (shouldRedirect && redirectPath) {
+    return (
+      <Redirect
+        to={redirectPath}
+        type="replace"
+        checkUnsavedChanges={false}
+        showLoader={true}
+        loaderType="processing"
+        delay={500}
+      />
+    );
+  }
 
   const handleNext = async () => {
     // Valider les champs de l'étape 1 avant de passer à l'étape 2
@@ -530,6 +549,17 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+      
+      {shouldRedirect && redirectPath && (
+        <Redirect
+          to={redirectPath}
+          type="replace"
+          checkUnsavedChanges={false}
+          showLoader={true}
+          loaderType="processing"
+          delay={500}
+        />
+      )}
     </div>
   );
 }

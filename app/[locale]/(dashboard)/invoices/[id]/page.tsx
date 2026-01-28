@@ -2,7 +2,7 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
-import { ArrowLeft, Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon, Copy } from "lucide-react";
+import { Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon, Copy, AlertCircle } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -124,6 +124,17 @@ export default function InvoiceDetailPage() {
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [paymentNotes, setPaymentNotes] = useState("");
 
+  // Réinitialiser les valeurs quand le modal s'ouvre
+  useEffect(() => {
+    if (showMarkPaidDialog && invoice) {
+      const remainingAmount = parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0");
+      setPaymentAmount(remainingAmount > 0 ? remainingAmount.toFixed(2) : "");
+      setPaymentDate(new Date().toISOString().split("T")[0]);
+      setPaymentMethod("bank_transfer");
+      setPaymentNotes("");
+    }
+  }, [showMarkPaidDialog, invoice]);
+
   const formatDate = (value: string) =>
     new Date(value).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
       day: "2-digit",
@@ -213,7 +224,7 @@ export default function InvoiceDetailPage() {
 
     // 5. Paiements reçus
     if (invoice.payments && invoice.payments.length > 0) {
-      invoice.payments
+      [...invoice.payments]
         .sort((a, b) => {
           const dateA = a.paymentDate || a.paidAt || a.createdAt || '';
           const dateB = b.paymentDate || b.paidAt || b.createdAt || '';
@@ -282,7 +293,7 @@ export default function InvoiceDetailPage() {
     }
 
     // Trier par date (plus récent en premier)
-    return events.sort((a, b) => b.timestamp - a.timestamp).map(({ timestamp, ...rest }) => rest);
+    return [...events].sort((a, b) => b.timestamp - a.timestamp).map(({ timestamp, ...rest }) => rest);
   }, [invoice]);
 
   const handleDelete = async () => {
@@ -770,33 +781,63 @@ export default function InvoiceDetailPage() {
       />
 
       <Dialog open={showMarkPaidDialog} onOpenChange={setShowMarkPaidDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>{t('markPaidDialog.title')}</DialogTitle>
             <DialogDescription>
               {t('markPaidDialog.description', { invoiceNumber: invoice.invoiceNumber })}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+
+          <div className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="payment-amount">{t('markPaidDialog.amountLabel')}</Label>
-              <Input
-                id="payment-amount"
-                type="number"
-                step="0.01"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                placeholder={invoice.totalAmount}
-              />
-              <p className="text-xs text-foreground/60">
-                {t('markPaidDialog.remaining', {
-                  amount: formatCurrency(
-                    (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString(),
+              <div className="relative">
+                <Input
+                  id="payment-amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max={parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")}
+                  value={paymentAmount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || value === "0" || value === "0.") {
+                      setPaymentAmount(value);
+                      return;
+                    }
+                    const numValue = parseFloat(value);
+                    const remaining = parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0");
+                    if (!isNaN(numValue) && numValue > 0 && numValue <= remaining) {
+                      setPaymentAmount(value);
+                    }
+                  }}
+                  className="pl-12"
+                  placeholder={formatCurrency(
+                    (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")).toString(),
                     invoice.currency
-                  )
-                })}
-              </p>
+                  )}
+                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                  {invoice.currency}
+                </span>
+              </div>
+              {paymentAmount &&
+                !isNaN(parseFloat(paymentAmount)) &&
+                parseFloat(paymentAmount) > 0 &&
+                parseFloat(paymentAmount) > (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")) && (
+                <p className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  {t('markPaidDialog.errorAmountExceeded', {
+                    amount: formatCurrency(
+                      (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")).toString(),
+                      invoice.currency
+                    ),
+                  })}
+                </p>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="payment-date">{t('markPaidDialog.dateLabel')}</Label>
               <Input
@@ -804,23 +845,26 @@ export default function InvoiceDetailPage() {
                 type="date"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="payment-method">{t('markPaidDialog.methodLabel')}</Label>
+              <Label>{t('markPaidDialog.methodLabel')}</Label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                 <SelectTrigger id="payment-method">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bank_transfer">{t('paymentMethods.bank_transfer')}</SelectItem>
-                  <SelectItem value="check">{t('paymentMethods.check')}</SelectItem>
                   <SelectItem value="cash">{t('paymentMethods.cash')}</SelectItem>
+                  <SelectItem value="check">{t('paymentMethods.check')}</SelectItem>
                   <SelectItem value="online_payment">{t('paymentMethods.online_payment')}</SelectItem>
                   <SelectItem value="card">{t('paymentMethods.card')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="payment-notes">{t('markPaidDialog.notesLabel')}</Label>
               <Textarea
@@ -828,16 +872,38 @@ export default function InvoiceDetailPage() {
                 placeholder={t('markPaidDialog.notesPlaceholder')}
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
-                rows={3}
+                rows={2}
+                className="resize-none"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMarkPaidDialog(false)} disabled={isMarkingPaid}>
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowMarkPaidDialog(false)}
+              disabled={isMarkingPaid}
+            >
               {t('markPaidDialog.cancel')}
             </Button>
-            <Button onClick={handleMarkPaid} disabled={isMarkingPaid || !paymentAmount || !paymentDate}>
-              {isMarkingPaid ? t('markPaidDialog.processing') : t('markPaidDialog.save')}
+            <Button
+              onClick={handleMarkPaid}
+              disabled={
+                isMarkingPaid ||
+                !paymentAmount ||
+                !paymentDate ||
+                parseFloat(paymentAmount) <= 0 ||
+                parseFloat(paymentAmount) > (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0"))
+              }
+            >
+              {isMarkingPaid ? (
+                <>
+                  <RefreshCcw className="h-4 w-4 animate-spin" />
+                  {t('markPaidDialog.processing')}
+                </>
+              ) : (
+                t('markPaidDialog.save')
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Maximize2,
-  X
-} from 'lucide-react'
+  FaChevronLeft, 
+  FaChevronRight, 
+  FaPlay,
+  FaPause,
+  FaVolumeHigh,
+  FaVolumeOff,
+  FaMaximize,
+  FaXmark
+} from 'react-icons/fa6'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -98,14 +98,14 @@ export function VideoCarousel() {
   const currentVideo = videos[currentIndex]
 
   return (
-    <section className="w-full py-16 md:py-24 px-4 md:px-6">
+    <section className="w-full py-10 sm:py-14 md:py-20 lg:py-24 px-4 sm:px-5 md:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+        <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 md:mb-4 px-1">
             {t('title')}
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-snug">
             {t('subtitle')}
           </p>
         </div>
@@ -113,7 +113,7 @@ export function VideoCarousel() {
         {/* Main Carousel */}
         <div className="relative">
           {/* Video Player */}
-          <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-border/50 shadow-2xl mb-8 group">
+          <div className="relative aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-black border border-border/50 shadow-xl sm:shadow-2xl mb-5 sm:mb-6 md:mb-8 group">
             {/* Background avec gradient subtil */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
             
@@ -131,15 +131,15 @@ export function VideoCarousel() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.button
                     onClick={() => setIsPlaying(!isPlaying)}
-                    className="group/play relative"
+                    className="group/play relative touch-manipulation"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all group-hover/play:bg-white/20 group-hover/play:border-white/30">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all group-hover/play:bg-white/20 group-hover/play:border-white/30">
                       {isPlaying ? (
-                        <Pause className="h-8 w-8 md:h-10 md:w-10 text-white" />
+                        <FaPause className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-white" />
                       ) : (
-                        <Play className="h-8 w-8 md:h-10 md:w-10 text-white ml-1" />
+                        <FaPlay className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 text-white ml-0.5 sm:ml-1" />
                       )}
                     </div>
                   </motion.button>
@@ -147,24 +147,24 @@ export function VideoCarousel() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Video Controls Overlay - Apparaît au hover */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1">
+            {/* Video Controls Overlay - Toujours visible au tactile, hover sur desktop */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-3 sm:p-4 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300">
+              <div className="flex items-center justify-between gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   <Button
                     onClick={() => setIsPlaying(!isPlaying)}
                     size="icon"
                     variant="ghost"
-                    className="text-white hover:bg-white/20 h-9 w-9 rounded-full border border-white/20"
+                    className="text-white hover:bg-white/20 h-8 w-8 sm:h-9 sm:w-9 rounded-full border border-white/20 flex-shrink-0 touch-manipulation"
                   >
                     {isPlaying ? (
-                      <Pause className="h-4 w-4" />
+                      <FaPause className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     ) : (
-                      <Play className="h-4 w-4 ml-0.5" />
+                      <FaPlay className="h-3.5 w-3.5 sm:h-4 sm:w-4 ml-0.5" />
                     )}
                   </Button>
                   
-                  <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 min-w-0 bg-white/20 rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-white rounded-full"
                       initial={{ width: 0 }}
@@ -173,37 +173,37 @@ export function VideoCarousel() {
                     />
                   </div>
                   
-                  <span className="text-white/70 text-xs font-mono min-w-[2.5rem] text-right">
+                  <span className="text-white/70 text-[10px] sm:text-xs font-mono min-w-[2rem] sm:min-w-[2.5rem] text-right flex-shrink-0">
                     {currentVideo.duration}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                   <Button
                     onClick={() => setIsMuted(!isMuted)}
                     size="icon"
                     variant="ghost"
-                    className="text-white/80 hover:text-white hover:bg-white/20 h-9 w-9 rounded-full"
+                    className="text-white/80 hover:text-white hover:bg-white/20 h-8 w-8 sm:h-9 sm:w-9 rounded-full touch-manipulation"
                   >
                     {isMuted ? (
-                      <VolumeX className="h-4 w-4" />
+                      <FaVolumeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     ) : (
-                      <Volume2 className="h-4 w-4" />
+                      <FaVolumeHigh className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     )}
                   </Button>
                   <Button
                     onClick={() => setIsFullscreen(!isFullscreen)}
                     size="icon"
                     variant="ghost"
-                    className="text-white/80 hover:text-white hover:bg-white/20 h-9 w-9 rounded-full"
+                    className="text-white/80 hover:text-white hover:bg-white/20 h-8 w-8 sm:h-9 sm:w-9 rounded-full touch-manipulation"
                   >
-                    <Maximize2 className="h-4 w-4" />
+                    <FaMaximize className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Video Info - Design épuré */}
+            {/* Video Info - Plus compact sur mobile */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentVideo.id}
@@ -211,13 +211,13 @@ export function VideoCarousel() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="absolute top-4 left-6 right-6 md:right-auto md:max-w-md"
+                className="absolute top-2 left-3 right-3 sm:top-4 sm:left-4 sm:right-4 md:right-auto md:max-w-md md:left-6 md:top-4"
               >
-                <div className="bg-black/40 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10">
-                  <h3 className="text-white font-semibold text-base md:text-lg mb-1.5">
+                <div className="bg-black/40 backdrop-blur-xl rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-white/10">
+                  <h3 className="text-white font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-1.5 leading-tight">
                     {currentVideo.title}
                   </h3>
-                  <p className="text-white/70 text-xs md:text-sm leading-relaxed">
+                  <p className="text-white/70 text-[11px] sm:text-xs md:text-sm leading-relaxed line-clamp-2 sm:line-clamp-none">
                     {currentVideo.description}
                   </p>
                 </div>
@@ -225,31 +225,30 @@ export function VideoCarousel() {
             </AnimatePresence>
           </div>
 
-          {/* Navigation Controls - Design épuré */}
-          <div className="flex items-center justify-between gap-4 mb-10">
+          {/* Navigation Controls - Plus compact sur mobile */}
+          <div className="flex items-center justify-between gap-2 sm:gap-4 mb-6 sm:mb-8 md:mb-10">
             <Button
               onClick={prevVideo}
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-full border border-border hover:border-primary/50 hover:bg-primary/5"
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-border hover:border-primary/50 hover:bg-primary/5 flex-shrink-0 touch-manipulation"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <FaChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
 
-            {/* Video Thumbnails - Design moderne */}
-            <div className="flex items-center gap-3 flex-1 justify-center overflow-x-auto scrollbar-hide px-4 py-2">
+            {/* Video Thumbnails - Scroll horizontal sur mobile */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 justify-center overflow-x-auto scrollbar-hide px-1 sm:px-4 py-2 -mx-1 sm:mx-0 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {videos.map((video, index) => (
                 <motion.button
                   key={video.id}
                   onClick={() => goToVideo(index)}
                   className={cn(
-                    "relative flex-shrink-0 w-28 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300",
-                    "hover:scale-105 hover:shadow-md",
+                    "relative flex-shrink-0 w-20 h-14 sm:w-24 sm:h-16 md:w-28 md:h-20 rounded-lg sm:rounded-xl overflow-hidden border-2 transition-all duration-300 snap-center touch-manipulation",
+                    "active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-md",
                     currentIndex === index
-                      ? "border-primary shadow-md scale-105 ring-2 ring-primary/20"
-                      : "border-border/50 opacity-70 hover:opacity-100 hover:border-primary/30"
+                      ? "border-primary shadow-md scale-[1.02] sm:scale-105 ring-2 ring-primary/20"
+                      : "border-border/50 opacity-70 sm:hover:opacity-100 sm:hover:border-primary/30"
                   )}
-                  whileHover={{ scale: currentIndex === index ? 1.05 : 1.03 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <div className={cn(
@@ -260,13 +259,13 @@ export function VideoCarousel() {
                   )} />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                      "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-colors",
                       currentIndex === index
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground"
                     )}>
-                      <Play className={cn(
-                        "h-4 w-4 ml-0.5 transition-colors",
+                      <FaPlay className={cn(
+                        "h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-4 md:w-4 ml-0.5 transition-colors",
                         currentIndex === index && "text-primary-foreground"
                       )} />
                     </div>
@@ -279,8 +278,8 @@ export function VideoCarousel() {
                       transition={{ duration: 3, ease: 'linear' }}
                     />
                   )}
-                  <div className="absolute bottom-1 right-1">
-                    <span className="text-[10px] font-mono text-muted-foreground bg-background/80 px-1.5 py-0.5 rounded">
+                  <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1">
+                    <span className="text-[9px] sm:text-[10px] font-mono text-muted-foreground bg-background/80 px-1 sm:px-1.5 py-0.5 rounded">
                       {video.duration}
                     </span>
                   </div>
@@ -292,14 +291,14 @@ export function VideoCarousel() {
               onClick={nextVideo}
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-full border border-border hover:border-primary/50 hover:bg-primary/5"
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-border hover:border-primary/50 hover:bg-primary/5 flex-shrink-0 touch-manipulation"
             >
-              <ChevronRight className="h-5 w-5" />
+              <FaChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
-          {/* Video List - Design épuré et moderne */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {/* Video List - Cachée sur mobile (thumbnails + prev/next suffisent) */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
             {videos.map((video, index) => (
               <motion.button
                 key={video.id}
@@ -321,7 +320,7 @@ export function VideoCarousel() {
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
                   )}>
-                    <Play className={cn(
+                    <FaPlay className={cn(
                       "h-4 w-4 ml-0.5 transition-colors",
                       currentIndex === index && "text-primary-foreground"
                     )} />

@@ -1,10 +1,10 @@
-import { Loader2Icon } from 'lucide-react'
+import { FaSpinner } from 'react-icons/fa6'
 
 import { cn } from '@/lib/utils'
 
 function Spinner({ className, ...props }: React.ComponentProps<'svg'>) {
   return (
-    <Loader2Icon
+    <FaSpinner
       role="status"
       aria-label="Loading"
       className={cn('size-4 animate-spin', className)}

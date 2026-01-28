@@ -100,9 +100,7 @@ export const {
   useDeleteRecurringInvoiceMutation,
   // Payments
   useGetInvoicePaymentsQuery,
-  useCreatePaymentMutation,
   useGetPaymentByIdQuery,
-  useUpdatePaymentMutation,
   // Settings
   useGetSettingsQuery,
   useUpdateSettingsMutation,

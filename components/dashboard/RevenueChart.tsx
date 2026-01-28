@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { useLocale } from 'next-intl';
@@ -27,18 +27,16 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
   }));
 
   // Formatter pour les montants
-      const amountFormatter = new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
-        style: "currency",
-        currency: workspaceCurrency,
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      });
+  const amountFormatter = new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
+    style: "currency",
+    currency: workspaceCurrency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
   // Couleur primaire (violet) basée sur le thème: hsl(266, 74%, 46%)
-  // Convertie en RGB: rgb(120, 53, 239) approximativement
-  const primaryColor = "rgb(120, 53, 239)"; // violet basé sur hsl(266, 74%, 46%)
-  const primaryColorLight = "rgba(120, 53, 239, 0.1)";
-  const primaryColorBorder = "rgba(120, 53, 239, 0.2)";
+  const primaryColor = "#7835ef"; // violet basé sur hsl(266, 74%, 46%)
+  const primaryColorLight = "rgba(120, 53, 239, 0.08)";
 
   const timeRanges: Array<{ value: TimeRange; label: string }> = [
     { value: "1d", label: t('timeRange.1d') },
@@ -52,7 +50,7 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
     <div className={cn("w-full", className)}>
       {/* Time Range Selector */}
       <div className="flex items-center justify-end mb-4">
-        <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+        <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1">
           {timeRanges.map((range) => (
             <button
               key={range.value}
@@ -60,8 +58,8 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
               className={cn(
                 "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
                 timeRange === range.value
-                  ? "bg-primary text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               {range.label}
@@ -69,63 +67,70 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
           ))}
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={250}>
-        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart 
+          data={chartData} 
+          margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+        >
           <defs>
             <linearGradient id="colorRevenus" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={primaryColor} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={primaryColor} stopOpacity={0.05} />
+              <stop offset="5%" stopColor={primaryColor} stopOpacity={0.15} />
+              <stop offset="95%" stopColor={primaryColor} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke={primaryColorLight} vertical={false} />
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            stroke="#f1f5f9" 
+            vertical={false} 
+          />
           <XAxis
             dataKey="name"
-            tick={{ fill: "#64748b", fontSize: 12, fontWeight: 500 }}
-            stroke="#e2e8f0"
+            tick={{ fill: "#64748b", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: "#64748b", fontSize: 12, fontWeight: 500 }}
-            stroke="#e2e8f0"
+            tick={{ fill: "#64748b", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            width={80}
+            width={75}
+            tickCount={6}
             tickFormatter={(value) => {
-              if (value >= 1000) {
-                // Pour les valeurs >= 1000, afficher en format "k" avec le symbole de devise
-                const parts = amountFormatter.formatToParts(value / 1000);
-                const numberPart = parts.find(p => p.type === 'integer' || p.type === 'decimal')?.value || '0';
-                const symbolPart = parts.find(p => p.type === 'currency')?.value || '';
-                const decimalPart = parts.find(p => p.type === 'decimal')?.value;
-                const formattedNumber = decimalPart ? parseFloat(`${numberPart}.${decimalPart}`).toFixed(1) : parseFloat(numberPart).toFixed(1);
-                // Construire le format selon la position du symbole (avant ou après)
-                const symbolIndex = parts.findIndex(p => p.type === 'currency');
-                const isSymbolBefore = symbolIndex < parts.findIndex(p => p.type === 'integer' || p.type === 'decimal');
-                return isSymbolBefore ? `${symbolPart}${formattedNumber}k` : `${formattedNumber}k${symbolPart}`;
+              if (value === 0) return "0";
+              
+              // Pour les grandes valeurs, utiliser un format simplifié
+              if (value >= 1000000) {
+                const millions = (value / 1000000).toFixed(value >= 10000000 ? 0 : 1);
+                return `${millions}M`;
               }
-              if (value === 0) return amountFormatter.format(0);
-              return amountFormatter.format(value);
+              
+              if (value >= 1000) {
+                const thousands = (value / 1000).toFixed(value >= 10000 ? 0 : 1);
+                return `${thousands}k`;
+              }
+              
+              // Pour les petites valeurs, afficher directement
+              return value.toString();
             }}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: "#ffffff",
-              border: `1px solid ${primaryColorBorder}`,
-              borderRadius: "8px",
-              padding: "10px 12px",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+              border: "1px solid #e2e8f0",
+              borderRadius: "6px",
+              padding: "8px 12px",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             }}
             labelStyle={{ 
               color: "#1e293b", 
-              fontWeight: 600, 
-              marginBottom: "6px",
-              fontSize: "13px",
+              fontWeight: 500, 
+              marginBottom: "4px",
+              fontSize: "12px",
             }}
             itemStyle={{
               color: primaryColor,
               fontWeight: 600,
-              fontSize: "14px",
+              fontSize: "13px",
             }}
             formatter={(value: number) => [
               amountFormatter.format(value),
@@ -136,13 +141,18 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
           <Area
             type="monotone"
             dataKey="revenus"
-            stroke={primaryColor}
-            strokeWidth={3}
             fill="url(#colorRevenus)"
-            dot={{ fill: primaryColor, strokeWidth: 2, r: 5 }}
-            activeDot={{ r: 7, stroke: primaryColor, strokeWidth: 2 }}
+            stroke="none"
           />
-        </AreaChart>
+          <Line 
+            type="monotone"
+            dataKey="revenus" 
+            stroke={primaryColor}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 5, stroke: primaryColor, strokeWidth: 2, fill: "#ffffff" }}
+          />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );

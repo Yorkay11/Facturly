@@ -1,31 +1,25 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from '@/i18n/routing';
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Redirect, ConditionalRedirect } from '@/components/navigation';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { data: workspace, isLoading, refetch } = useGetWorkspaceQuery();
+  const [shouldRedirectToInvoice, setShouldRedirectToInvoice] = useState(false);
 
-  // Si le profil est déjà complet, rediriger vers le dashboard
-  useEffect(() => {
-    if (!isLoading && workspace) {
-      const workspaceCompletion = workspace.profileCompletion ?? 0;
-      // PHASE 3.1 : Onboarding simplifié - Pour INDIVIDUAL, toujours complet (defaultCurrency a une valeur par défaut)
-      // Pour COMPANY, seulement le nom est requis
-      const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-        ? !workspace.name
-        : false; // INDIVIDUAL n'a plus besoin de defaultCurrency (valeur par défaut)
-      
-      // Si le profil est complet, rediriger
-      if (workspaceCompletion >= 100 && !hasMissingWorkspaceInfo) {
-        router.push('/dashboard');
-      }
-    }
-  }, [workspace, isLoading, router]);
+  // Vérifier si le profil est complet
+  const isProfileComplete = workspace && !isLoading ? (() => {
+    const workspaceCompletion = workspace.profileCompletion ?? 0;
+    const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
+      ? !workspace.name
+      : false;
+    return workspaceCompletion >= 100 && !hasMissingWorkspaceInfo;
+  })() : false;
 
   if (isLoading) {
     return (
@@ -52,29 +46,44 @@ export default function OnboardingPage() {
     );
   }
 
-  const workspaceCompletion = workspace.profileCompletion ?? 0;
-  // PHASE 3.1 : Onboarding simplifié - Pour INDIVIDUAL, toujours complet (defaultCurrency a une valeur par défaut)
-  // Pour COMPANY, seulement le nom est requis
-  const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-    ? !workspace.name
-    : false; // INDIVIDUAL n'a plus besoin de defaultCurrency (valeur par défaut)
-  
-  if (workspaceCompletion >= 100 && !hasMissingWorkspaceInfo) {
-    return null; // La redirection va se faire via useEffect
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
-      <div className="w-full max-w-4xl">
-        <OnboardingWizard 
-          workspace={workspace}
-          onComplete={async () => {
-            await refetch();
-            // Redirection guidée vers la création de la première facture
-            router.push('/invoices/new?from=onboarding');
-          }}
+    <>
+      {/* Redirection si le profil est déjà complet */}
+      <ConditionalRedirect
+        condition={isProfileComplete === true}
+        to="/dashboard"
+        type="replace"
+        checkUnsavedChanges={false}
+        showLoader={true}
+        loaderType="redirect"
+      />
+      
+      {/* Redirection après complétion de l'onboarding */}
+      {shouldRedirectToInvoice && (
+        <Redirect
+          to="/invoices/new?from=onboarding"
+          type="replace"
+          checkUnsavedChanges={false}
+          showLoader={true}
+          loaderType="processing"
+          delay={500}
         />
-      </div>
-    </div>
+      )}
+
+      {!isProfileComplete && (
+        <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
+          <div className="w-full max-w-4xl">
+            <OnboardingWizard 
+              workspace={workspace}
+              onComplete={async () => {
+                await refetch();
+                // Déclencher la redirection vers la création de la première facture
+                setShouldRedirectToInvoice(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

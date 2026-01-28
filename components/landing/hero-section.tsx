@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl'
 import { cn } from "@/lib/utils"
 import { HeroFeatures } from "./hero-features"
 import RippleGrid from "./ripple-grid"
+import SplitText from "@/components/ui/split-text"
 
 
 export function HeroSection() {
@@ -28,7 +29,7 @@ export function HeroSection() {
   return (
     <section
       className="flex flex-col items-center text-center relative mx-auto rounded-2xl overflow-hidden my-6 py-0 px-4
-         w-full min-h-[500px] md:w-[1220px] md:h-[600px] lg:h-[810px] md:px-0"
+         w-full min-h-[700px] md:w-[1220px] md:h-[800px] md:px-0"
     >
       {/* RippleGrid Background */}
       <div className="absolute inset-0 z-0">
@@ -472,12 +473,23 @@ export function HeroSection() {
       </div>
 
       <div className={cn(
-        "relative z-20 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4 mx-auto",
+        "relative z-20 space-y-6 md:space-y-8 lg:space-y-12 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4 mx-auto",
         "mt-32 md:mt-[120px] lg:mt-[160px]"
       )}>
-        <h1 className="text-foreground text-5xl md:text-6xl lg:text-7xl font-semibold leading-tight">
-          {t('title')}
-        </h1>
+        <SplitText
+          text={t('title')}
+          className="text-foreground text-5xl md:text-6xl lg:text-7xl font-semibold leading-tight"
+          tag="h1"
+          delay={50}
+          duration={1.25}
+          ease="power3.out"
+          splitType="chars"
+          from={{ opacity: 0, y: 40 }}
+          to={{ opacity: 1, y: 0 }}
+          threshold={0.1}
+          rootMargin="-100px"
+          textAlign="center"
+        />
         <p className="text-muted-foreground text-lg md:text-base lg:text-xl font-medium leading-relaxed max-w-xl mx-auto">
           {t('subtitle')}
         </p>

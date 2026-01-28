@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { Shield, Lock, CheckCircle2, Clock, Star, Award } from 'lucide-react'
+import { FaShield, FaLock, FaCircleCheck, FaClock, FaStar, FaAward } from 'react-icons/fa6'
 import CardSwap, { Card } from './card-swap'
 
 export function TrustBadges() {
@@ -9,32 +9,32 @@ export function TrustBadges() {
 
   const badges = [
     {
-      icon: Shield,
+      icon: FaShield,
       title: t('security.title'),
       description: t('security.description')
     },
     {
-      icon: Lock,
+      icon: FaLock,
       title: t('privacy.title'),
       description: t('privacy.description')
     },
     {
-      icon: CheckCircle2,
+      icon: FaCircleCheck,
       title: t('guarantee.title'),
       description: t('guarantee.description')
     },
     {
-      icon: Clock,
+      icon: FaClock,
       title: t('support.title'),
       description: t('support.description')
     },
     {
-      icon: Star,
+      icon: FaStar,
       title: t('satisfaction.title'),
       description: t('satisfaction.description')
     },
     {
-      icon: Award,
+      icon: FaAward,
       title: t('compliance.title'),
       description: t('compliance.description')
     }

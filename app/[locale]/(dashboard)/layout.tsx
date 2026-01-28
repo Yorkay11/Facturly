@@ -15,6 +15,7 @@ import { useRouter, usePathname } from '@/i18n/routing';
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
+import { ConditionalRedirect } from '@/components/navigation';
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -135,54 +136,39 @@ function NavigationBlockDialog() {
 
 // Composant pour gérer la redirection vers l'onboarding
 function OnboardingRedirect() {
-  const router = useRouter();
   const pathname = usePathname();
   const { data: workspace, isLoading, error } = useGetWorkspaceQuery();
-  const [hasChecked, setHasChecked] = useState(false);
 
-  useEffect(() => {
-    // Ne pas rediriger si on est déjà sur la page d'onboarding
-    if (pathname === '/onboarding') {
-      return;
-    }
+  // Ne pas rediriger si on est déjà sur la page d'onboarding
+  if (pathname === '/onboarding' || isLoading) {
+    return null;
+  }
 
-    // Attendre que les données soient chargées
-    if (isLoading) return;
+  // Vérifier si le profil doit être complété
+  const shouldRedirectToOnboarding = !workspace || 
+    (error && 'status' in error && error.status === 404) ||
+    (workspace && (() => {
+      const workspaceCompletion = workspace.profileCompletion ?? 0;
+      const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
+        ? !workspace.name
+        : false;
+      return workspaceCompletion < 100 || hasMissingWorkspaceInfo;
+    })());
 
-    // Ne vérifier qu'une seule fois
-    if (hasChecked) return;
+  if (!shouldRedirectToOnboarding) {
+    return null;
+  }
 
-    // Si l'utilisateur n'a pas de workspace (nouvel utilisateur Google OAuth)
-    // ou si une erreur 404 est retournée, rediriger vers l'onboarding
-    if (!workspace || (error && 'status' in error && error.status === 404)) {
-      router.push('/onboarding');
-      setHasChecked(true);
-      return;
-    }
-
-    // Vérifier si le profil n'est pas complet
-    const workspaceCompletion = workspace.profileCompletion ?? 0;
-    
-    // PHASE 3.1 : Onboarding simplifié - Pour INDIVIDUAL, toujours complet (defaultCurrency a une valeur par défaut)
-    // Pour COMPANY, seulement le nom est requis
-    const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
-      ? !workspace.name
-      : false; // INDIVIDUAL n'a plus besoin de defaultCurrency (valeur par défaut)
-    
-    // Rediriger vers l'onboarding si :
-    // 1. Le workspace n'est pas complet (< 100)
-    // 2. OU les champs essentiels manquent
-    const shouldRedirect = 
-      workspaceCompletion < 100 || 
-      hasMissingWorkspaceInfo;
-    
-    if (shouldRedirect) {
-      router.push('/onboarding');
-    }
-    setHasChecked(true);
-  }, [workspace, isLoading, error, hasChecked, pathname, router]);
-
-  return null;
+  return (
+    <ConditionalRedirect
+      condition={shouldRedirectToOnboarding}
+      to="/onboarding"
+      type="replace"
+      checkUnsavedChanges={false}
+      showLoader={true}
+      loaderType="redirect"
+    />
+  );
 }
 
 function DashboardLayoutContent({

@@ -1,5 +1,5 @@
 import type React from "react"
-import { Search } from "lucide-react"
+import { FaMagnifyingGlass } from "react-icons/fa6"
 
 interface McpConnectivityIllustrationProps {
   className?: string
@@ -66,7 +66,7 @@ const McpConnectivityIllustration: React.FC<McpConnectivityIllustrationProps> = 
                 flexShrink: 0,
               }}
             >
-              <Search className="w-full h-full text-muted-foreground" />
+              <FaMagnifyingGlass className="w-full h-full text-muted-foreground" />
             </div>
             <span
               style={{

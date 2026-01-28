@@ -337,7 +337,7 @@ export const ImportProductsModal = ({ open, onClose, onSuccess }: ImportProducts
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               className={cn(
-                "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                "border-2 border-dashed rounded-lg p-4 text-center transition-colors",
                 "hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
               )}
               onClick={() => fileInputRef.current?.click()}

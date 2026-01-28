@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
 import Image from "next/image";
 import { CheckCircle2, AlertCircle, FileText, XCircle, Check, X, Loader2, Maximize2 } from "lucide-react";
@@ -45,6 +45,7 @@ import { getFrontendTemplateFromBackend, invoiceTemplates } from "@/types/invoic
 
 export default function PublicInvoicePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations('public.invoice');
   const commonT = useTranslations('common');
@@ -74,6 +75,50 @@ export default function PublicInvoicePage() {
     token || "",
     { skip: !token }
   );
+
+  // Gérer le retour de Moneroo après paiement
+  useEffect(() => {
+    // Moneroo renvoie plusieurs paramètres dans l'URL de retour :
+    // - paymentStatus: statut réel du paiement (success, cancelled, failed, pending)
+    // - paymentId: ID du paiement Moneroo
+    const monerooStatus = searchParams?.get('paymentStatus');
+    const paymentId = searchParams?.get('paymentId');
+    
+    // Utiliser uniquement paymentStatus de Moneroo (source de vérité)
+    const finalStatus = monerooStatus;
+    
+    if (!finalStatus) return; // Pas de retour de paiement
+    
+    // Recharger les données de la facture pour voir le statut mis à jour
+    refetch();
+    
+    if (finalStatus === 'success') {
+      // Afficher un message de succès
+      toast.success(t('toasts.paymentSuccess') || 'Paiement réussi', {
+        description: t('toasts.paymentSuccessDescription') || 'Votre paiement a été traité avec succès. Merci !',
+        duration: 5000,
+      });
+    } else if (finalStatus === 'cancelled') {
+      toast.info(t('toasts.paymentCancelled') || 'Paiement annulé', {
+        description: t('toasts.paymentCancelledDescription') || 'Le paiement a été annulé. Vous pouvez réessayer à tout moment.',
+        duration: 5000,
+      });
+    } else if (finalStatus === 'failed') {
+      toast.error(t('toasts.paymentFailed') || 'Paiement échoué', {
+        description: t('toasts.paymentFailedDescription') || 'Le paiement a échoué. Veuillez réessayer ou contacter le support.',
+        duration: 5000,
+      });
+    } else if (finalStatus === 'pending') {
+      toast.info(t('toasts.paymentPending') || 'Paiement en attente', {
+        description: t('toasts.paymentPendingDescription') || 'Votre paiement est en cours de traitement. Vous serez notifié une fois confirmé.',
+        duration: 5000,
+      });
+    }
+    
+    // Nettoyer l'URL en retirant tous les paramètres de paiement
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }, [searchParams, refetch, t]);
   const [acceptInvoice, { isLoading: isAccepting }] = useAcceptPublicInvoiceMutation();
 
   const formatDate = (value: string) =>
@@ -97,19 +142,38 @@ export default function PublicInvoicePage() {
 
     try {
       const response = await acceptInvoice(token).unwrap();
+      
+      // Debug: log la réponse pour voir ce qui est retourné
+      console.log('Accept invoice response:', response);
+      
       toast.success(t('toasts.accepted'), {
         description: t('toasts.acceptedDescription'),
       });
-      // Rediriger vers la page de paiement
-      // Extraire le token du paymentLink (format: http://.../public/pay/:token)
-      // Le paymentLink peut être une URL complète ou juste le chemin
-      const paymentLink = response.paymentLink;
-      // Extraire le token du lien (format: /pay/:token ou /public/pay/:token)
-      const paymentTokenMatch = paymentLink.match(/\/pay\/([^/?]+)/);
-      const paymentToken = paymentTokenMatch ? paymentTokenMatch[1] : token;
       
-      // Rediriger vers la page de paiement
-      router.push(`/pay/${paymentToken}`);
+      // Rediriger vers le checkout Moneroo
+      // Priorité: checkoutUrl > paymentLink
+      const checkoutUrl = response.checkoutUrl || response.paymentLink;
+      
+      // Vérifier si c'est une URL Moneroo (contient checkout.moneroo.io ou api.moneroo.io)
+      const isMonerooUrl = checkoutUrl && (
+        checkoutUrl.includes('checkout.moneroo.io') || 
+        checkoutUrl.includes('api.moneroo.io') ||
+        checkoutUrl.includes('moneroo.io')
+      );
+      
+      console.log('Checkout URL:', checkoutUrl, 'Is Moneroo URL:', isMonerooUrl);
+      
+      if (checkoutUrl && isMonerooUrl) {
+        // Rediriger directement vers Moneroo
+        console.log('Redirecting to Moneroo:', checkoutUrl);
+        window.location.href = checkoutUrl;
+      } else {
+        // Erreur : pas d'URL Moneroo valide
+        console.error('No valid Moneroo checkout URL received:', checkoutUrl);
+        toast.error(commonT('error'), {
+          description: 'Impossible d\'initialiser le paiement. Veuillez contacter le support.',
+        });
+      }
     } catch (error) {
       let errorMessage = t('toasts.acceptError');
       if (error && typeof error === "object" && error !== null && "data" in error) {
@@ -164,7 +228,7 @@ export default function PublicInvoicePage() {
             </div>
           </div>
           <Card>
-            <CardContent className="pt-6 p-8">
+            <CardContent className="pt-6 p-4">
               <div className="space-y-6">
                 <div className="flex items-center justify-center gap-4">
                   <Skeleton className="h-12 w-12 rounded-md" />
@@ -225,14 +289,14 @@ export default function PublicInvoicePage() {
   // Fonction pour rendre la facture (réutilisable pour le plein écran)
   const renderInvoiceContent = () => (
     <div
-      className="rounded-md space-y-10 p-10 md:p-16 bg-white transition-all duration-300"
+      className="rounded-md space-y-10 p-6 md:p-8 bg-white transition-all duration-300"
       style={{
         backgroundColor: template.backgroundColor || "#fff",
         color: template.textColor || "#1F1B2E",
       }}
     >
       {/* Header avec émetteur et destinataire */}
-      <div className="flex flex-col gap-8 md:flex-row md:justify-between md:items-start">
+      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-start">
         <div className="space-y-6 flex-1">
           {/* Émetteur */}
           <div className="space-y-3">
@@ -444,7 +508,7 @@ export default function PublicInvoicePage() {
         </div>
 
         {/* Header avec statut - Design amélioré */}
-        <div className="text-center space-y-4 mb-8 animate-in fade-in slide-in-from-top-6 duration-700">
+        <div className="text-center space-y-4 mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-md bg-gradient-to-br from-primary/10 to-primary/5">
@@ -482,14 +546,14 @@ export default function PublicInvoicePage() {
         </div>
 
         {/* Invoice Template */}
-        <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_420px] animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="grid gap-4 lg:gap-4 lg:grid-cols-[1fr_420px] animate-in fade-in slide-in-from-bottom-8 duration-700">
           {/* Main Invoice Template - Style professionnel agrandi */}
           <div className="animate-in fade-in slide-in-from-left-8 duration-700">
             {renderInvoiceContent()}
           </div>
 
           {/* Actions Card - Design amélioré */}
-          <Card className="self-start sticky top-6 bg-white/95 backdrop-blur-sm rounded-md animate-in fade-in slide-in-from-right-8 duration-700">
+          <Card className="self-start sticky top-4 bg-white/95 backdrop-blur-sm rounded-md animate-in fade-in slide-in-from-right-8 duration-700">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-md bg-primary/10">
@@ -598,10 +662,20 @@ export default function PublicInvoicePage() {
               {canPay && !isPaid && !isRejected && (
                 <Button
                   className="w-full gap-2 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 transition-all duration-300"
-                  onClick={() => router.push(`/pay/${token}`)}
+                  onClick={handleAccept}
+                  disabled={isAccepting}
                   size="lg"
                 >
-                  💳 {t('actions.payNow')}
+                  {isAccepting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      {t('actions.accepting')}
+                    </>
+                  ) : (
+                    <>
+                      💳 {t('actions.payNow')}
+                    </>
+                  )}
                 </Button>
               )}
 
@@ -679,7 +753,7 @@ export default function PublicInvoicePage() {
                 </Button>
               </div>
             </SheetHeader>
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4">
               <div className="max-w-5xl mx-auto">
                 {renderInvoiceContent()}
               </div>

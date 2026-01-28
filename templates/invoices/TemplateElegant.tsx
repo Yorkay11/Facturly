@@ -15,7 +15,7 @@ const TemplateElegant = ({
 }: InvoiceTemplateProps) => {
   return (
     <div
-      className="max-w-[900px] mx-auto bg-white shadow-lg p-16 border border-[#e8e8e8]"
+      className="max-w-[900px] mx-auto bg-white shadow-lg p-8 border border-[#e8e8e8]"
       style={{
         fontFamily: "'Georgia', 'Times New Roman', serif",
         color: "#2c3e50",
@@ -32,7 +32,7 @@ const TemplateElegant = ({
       </div>
 
       {/* Info Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         {/* De */}
         <div>
           <h3 className="text-[11px] uppercase tracking-wide text-[#95a5a6] mb-4 font-semibold border-b border-[#ecf0f1] pb-2">

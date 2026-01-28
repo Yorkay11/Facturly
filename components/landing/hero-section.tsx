@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth"
 import { useTranslations } from 'next-intl'
 import { cn } from "@/lib/utils"
 import { HeroFeatures } from "./hero-features"
+import RippleGrid from "./ripple-grid"
+
 
 export function HeroSection() {
   const router = useRouter()
@@ -28,8 +30,22 @@ export function HeroSection() {
       className="flex flex-col items-center text-center relative mx-auto rounded-2xl overflow-hidden my-6 py-0 px-4
          w-full min-h-[500px] md:w-[1220px] md:h-[600px] lg:h-[810px] md:px-0"
     >
-      {/* SVG Background */}
+      {/* RippleGrid Background */}
       <div className="absolute inset-0 z-0">
+        <RippleGrid
+          enableRainbow={true}
+          gridColor="#D89EFF"
+          rippleIntensity={0.02}
+          gridSize={10}
+          gridThickness={200}
+          mouseInteraction={true}
+          mouseInteractionRadius={1.2}
+          opacity={0.3}
+        />
+      </div>
+      
+      {/* SVG Background Overlay (optional, can be removed if not needed) */}
+      <div className="absolute inset-0 z-[1] opacity-30 pointer-events-none">
         <svg
           width="100%"
           height="100%"
@@ -393,7 +409,7 @@ export function HeroSection() {
               gradientUnits="userSpaceOnUse"
             >
               <stop stopColor="hsl(var(--foreground))" stopOpacity="0" />
-              <stop offset="1" stopColor="hsl(var(--muted-foreground))" />
+              <stop offset="1" stopColor="hsl(var(--foreground))" stopOpacity="0" />
             </linearGradient>
             <linearGradient
               id="paint1_linear_186_1134"
@@ -451,24 +467,24 @@ export function HeroSection() {
       </div>
 
       {/* Header positioned at top of hero container */}
-      <div className={cn("absolute left-0 right-0 z-20 top-0")}>
+      <div className={cn("absolute left-0 right-0 z-30 top-0")}>
         <Header />
       </div>
 
       <div className={cn(
-        "relative z-10 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4 mx-auto",
+        "relative z-20 space-y-4 md:space-y-5 lg:space-y-6 mb-6 md:mb-7 lg:mb-9 max-w-md md:max-w-[500px] lg:max-w-[588px] px-4 mx-auto",
         "mt-32 md:mt-[120px] lg:mt-[160px]"
       )}>
-        <h1 className="text-foreground text-3xl md:text-4xl lg:text-6xl font-semibold leading-tight">
+        <h1 className="text-foreground text-5xl md:text-6xl lg:text-7xl font-semibold leading-tight">
           {t('title')}
         </h1>
-        <p className="text-muted-foreground text-base md:text-base lg:text-lg font-medium leading-relaxed max-w-lg mx-auto">
+        <p className="text-muted-foreground text-lg md:text-base lg:text-xl font-medium leading-relaxed max-w-xl mx-auto">
           {t('subtitle')}
         </p>
         <HeroFeatures />
       </div>
 
-      <Link href={buttonHref} onClick={handleClick} className="relative z-40 mt-4 md:mt-0">
+      <Link href={buttonHref} onClick={handleClick} className="relative z-20 mt-4 md:mt-0">
         <Button className="bg-gradient-to-r from-primary via-primary to-primary/90 text-primary-foreground hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 px-8 py-3 rounded-full font-medium text-base shadow-lg ring-1 ring-white/10 transition-all duration-300">
           {buttonText}
         </Button>

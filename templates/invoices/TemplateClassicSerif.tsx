@@ -40,7 +40,7 @@ const TemplateClassicSerif = ({
       </div>
 
       {/* Details Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         {/* Facturé à */}
         <div>
           <div className="text-[11px] font-bold uppercase tracking-wide mb-2.5 text-[#666666]">

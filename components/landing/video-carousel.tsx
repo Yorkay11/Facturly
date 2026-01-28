@@ -148,7 +148,7 @@ export function VideoCarousel() {
             </AnimatePresence>
 
             {/* Video Controls Overlay - Apparaît au hover */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 md:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
                   <Button
@@ -211,7 +211,7 @@ export function VideoCarousel() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="absolute top-6 left-6 right-6 md:right-auto md:max-w-md"
+                className="absolute top-4 left-6 right-6 md:right-auto md:max-w-md"
               >
                 <div className="bg-black/40 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-white/10">
                   <h3 className="text-white font-semibold text-base md:text-lg mb-1.5">
@@ -226,7 +226,7 @@ export function VideoCarousel() {
           </div>
 
           {/* Navigation Controls - Design épuré */}
-          <div className="flex items-center justify-between gap-6 mb-10">
+          <div className="flex items-center justify-between gap-4 mb-10">
             <Button
               onClick={prevVideo}
               variant="ghost"

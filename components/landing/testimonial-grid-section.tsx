@@ -15,7 +15,7 @@ const TestimonialCard = ({ quote, name, company, avatar, type }: TestimonialCard
   const isLargeCard = type.startsWith("large")
   const avatarSize = isLargeCard ? 48 : 36
   const avatarBorderRadius = isLargeCard ? "rounded-[41px]" : "rounded-[30.75px]"
-  const padding = isLargeCard ? "p-6" : "p-[30px]"
+  const padding = isLargeCard ? "p-4" : "p-[30px]"
 
   let cardClasses = `flex flex-col justify-between items-start overflow-hidden rounded-[10px] shadow-[0px_2px_4px_rgba(0,0,0,0.08)] relative ${padding}`
   let quoteClasses = ""
@@ -117,17 +117,17 @@ export function TestimonialGridSection() {
           </p>
         </div>
       </div>
-      <div className="w-full pt-0.5 pb-4 md:pb-6 lg:pb-10 flex flex-col md:flex-row justify-center items-start gap-4 md:gap-4 lg:gap-6 max-w-[1100px] mx-auto">
-        <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-6">
+      <div className="w-full pt-0.5 pb-4 md:pb-6 lg:pb-10 flex flex-col md:flex-row justify-center items-start gap-4 md:gap-4 lg:gap-4 max-w-[1100px] mx-auto">
+        <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-4">
           <TestimonialCard {...testimonials[0]} />
           <TestimonialCard {...testimonials[1]} />
         </div>
-        <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-6">
+        <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-4">
           <TestimonialCard {...testimonials[2]} />
           <TestimonialCard {...testimonials[3]} />
           <TestimonialCard {...testimonials[4]} />
         </div>
-        <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-6">
+        <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-4">
           <TestimonialCard {...testimonials[5]} />
           <TestimonialCard {...testimonials[6]} />
         </div>

@@ -214,7 +214,7 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen">
       {/* Section gauche : Logo avec fond sombre */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
         <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-md">
           <Image
@@ -237,7 +237,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Section droite : Formulaire */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-white">
         <div className="w-full max-w-md">
           <Card className="border-primary/20 shadow-lg">
             <CardHeader className="space-y-4 text-center">

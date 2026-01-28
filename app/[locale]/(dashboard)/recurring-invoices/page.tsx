@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import { Plus, Pause, Play, Edit, Trash2, Calendar, Repeat } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Table,
   TableBody,
@@ -40,7 +40,7 @@ import { fr, enUS } from "date-fns/locale";
 export default function RecurringInvoicesPage() {
   const t = useTranslations('recurringInvoices');
   const router = useRouter();
-  const locale = useTranslations('common').raw('locale') || 'fr';
+  const locale = useLocale();
   const dateLocale = locale === 'fr' ? fr : enUS;
   
   const { data: recurringInvoices, isLoading, isError } = useGetRecurringInvoicesQuery();

@@ -25,7 +25,7 @@ const TemplateMinimal = ({
 
   return (
     <div
-      className="max-w-[768px] mx-auto bg-white p-10"
+      className="max-w-[768px] mx-auto bg-white p-6"
       style={{
         color: template.textColor || "#1F1B2E",
       }}
@@ -47,7 +47,7 @@ const TemplateMinimal = ({
       </div>
 
       {/* Details Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 text-xs">
         <div>
           <p className="font-semibold mb-1">Entreprise</p>
           <p className="mb-1">{workspace?.name || "Nom de l'entreprise"}</p>

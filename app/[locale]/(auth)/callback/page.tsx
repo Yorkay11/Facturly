@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import { removeLocalePrefix } from '@/utils/path-utils';
 
 function CallbackHandler() {
   const router = useRouter();
@@ -46,8 +47,9 @@ function CallbackHandler() {
           description: t('oauthSuccess'),
         });
 
-        // Rediriger vers la page demandée
-        router.push(redirectTo);
+        // Retirer le préfixe de locale si présent (router.push l'ajoute automatiquement)
+        const cleanPath = removeLocalePrefix(redirectTo);
+        router.push(cleanPath);
       } else {
         // Pas de token, rediriger vers login
         toast.error(t('loginError'), {
@@ -63,7 +65,7 @@ function CallbackHandler() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100">
       <Card className="border-primary/20 shadow-lg">
-        <CardContent className="p-8">
+        <CardContent className="p-4">
           <div className="flex flex-col items-center justify-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-foreground/60">
@@ -81,7 +83,7 @@ export default function CallbackPage() {
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
         <Card className="border-primary/20 shadow-lg">
-          <CardContent className="p-8">
+          <CardContent className="p-4">
             <div className="flex flex-col items-center justify-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>

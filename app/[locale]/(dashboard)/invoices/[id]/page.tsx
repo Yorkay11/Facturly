@@ -1,9 +1,9 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
 import { ArrowLeft, Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon, Copy } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslations, useLocale } from 'next-intl';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +48,7 @@ export default function InvoiceDetailPage() {
   const commonT = useTranslations('common');
   const locale = useLocale();
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   
   // Dans Next.js 16, useParams retourne directement les paramètres
@@ -60,10 +61,53 @@ export default function InvoiceDetailPage() {
   // Ne pas appeler le hook si invoiceId n'est pas valide
   const shouldSkip = !invoiceId;
   
-  const { data: invoice, isLoading, isError } = useGetInvoiceByIdQuery(
+  const { data: invoice, isLoading, isError, refetch } = useGetInvoiceByIdQuery(
     invoiceId || "",
     { skip: shouldSkip }
   );
+
+  // Gérer le retour de Moneroo après paiement
+  useEffect(() => {
+    // Moneroo renvoie plusieurs paramètres dans l'URL de retour :
+    // - paymentStatus: statut réel du paiement (success, cancelled, failed, pending)
+    // - paymentId: ID du paiement Moneroo
+    const monerooStatus = searchParams?.get('paymentStatus');
+    const paymentId = searchParams?.get('paymentId');
+    
+    // Utiliser uniquement paymentStatus de Moneroo (source de vérité)
+    const finalStatus = monerooStatus;
+    
+    if (!finalStatus) return; // Pas de retour de paiement
+    
+    // Recharger les données de la facture pour voir le statut mis à jour
+    refetch();
+    
+    if (finalStatus === 'success') {
+      toast.success(t('toasts.paymentSuccess') || 'Paiement réussi', {
+        description: t('toasts.paymentSuccessDescription') || 'Le paiement a été traité avec succès.',
+        duration: 5000,
+      });
+    } else if (finalStatus === 'cancelled') {
+      toast.info(t('toasts.paymentCancelled') || 'Paiement annulé', {
+        description: t('toasts.paymentCancelledDescription') || 'Le paiement a été annulé. Vous pouvez réessayer à tout moment.',
+        duration: 5000,
+      });
+    } else if (finalStatus === 'failed') {
+      toast.error(t('toasts.paymentFailed') || 'Paiement échoué', {
+        description: t('toasts.paymentFailedDescription') || 'Le paiement a échoué. Veuillez réessayer ou contacter le support.',
+        duration: 5000,
+      });
+    } else if (finalStatus === 'pending') {
+      toast.info(t('toasts.paymentPending') || 'Paiement en attente', {
+        description: t('toasts.paymentPendingDescription') || 'Le paiement est en cours de traitement. Vous serez notifié une fois confirmé.',
+        duration: 5000,
+      });
+    }
+    
+    // Nettoyer l'URL en retirant tous les paramètres de paiement
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }, [searchParams, refetch, t]);
   const { data: reminders, isLoading: isLoadingReminders } = useGetInvoiceRemindersQuery(
     invoiceId || "",
     { skip: shouldSkip }
@@ -336,7 +380,7 @@ export default function InvoiceDetailPage() {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">{t('errors.invalidId')}</p>
           <p className="mb-4">{t('errors.invalidIdDescription')}</p>
           <Button variant="outline" onClick={() => router.push('/invoices')}>
@@ -367,7 +411,7 @@ export default function InvoiceDetailPage() {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">{t('errors.loadingError')}</p>
           <p className="mb-4">{t('errors.loadingErrorDescription')}</p>
           <Button variant="outline" onClick={() => router.push('/invoices')}>
@@ -550,7 +594,7 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card className="border-primary/20">
           <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>

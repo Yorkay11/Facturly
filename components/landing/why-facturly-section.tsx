@@ -51,13 +51,13 @@ export function WhyFacturlySection() {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4">
           {reasons.map((reason, index) => {
             const Icon = reason.icon
             return (
               <div
                 key={index}
-                className="p-6 rounded-lg border border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+                className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">

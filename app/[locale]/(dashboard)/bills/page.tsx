@@ -203,12 +203,12 @@ export default function BillsPage() {
               <Skeleton className="h-12 w-full" />
             </div>
           ) : isError ? (
-            <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+            <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
               <p className="font-semibold">{t('errors.loadingError')}</p>
               <p>{t('errors.loadingErrorDescription')}</p>
             </div>
           ) : filteredBills.length === 0 ? (
-            <div className="rounded-xl border border-border bg-secondary/60 p-12 text-center">
+            <div className="rounded-xl border border-border bg-secondary/60 p-6 text-center">
               <FileText className="h-12 w-12 mx-auto mb-4 text-foreground/40" />
               <p className="text-sm font-medium text-foreground/70 mb-1">{t('empty.title')}</p>
               <p className="text-xs text-foreground/50">

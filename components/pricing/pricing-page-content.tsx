@@ -124,7 +124,7 @@ export function PricingPageContent() {
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-4 max-w-6xl mx-auto">
         {pricingPlans.map((plan) => {
           const price = isAnnual ? plan.annualPrice : plan.monthlyPrice
           const monthlyEquivalent = isAnnual ? (parseFloat(plan.annualPrice) / 12).toFixed(2) : plan.monthlyPrice
@@ -145,7 +145,7 @@ export function PricingPageContent() {
                 </div>
               )}
               
-              <div className="p-6 md:p-8 flex flex-col gap-6 h-full">
+              <div className="p-4 md:p-4 flex flex-col gap-4 h-full">
                 {/* Icon & Name */}
                 <div className="flex items-center gap-3">
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${

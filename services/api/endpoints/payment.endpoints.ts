@@ -16,8 +16,6 @@ import type {
   AcceptInvoiceResponse,
   RejectInvoicePayload,
   RejectInvoiceResponse,
-  PublicPayPayload,
-  PublicPayResponse,
 } from '../types';
 import type { TagTypes } from '../base';
 
@@ -108,13 +106,6 @@ export const paymentEndpoints = (
   rejectPublicInvoice: builder.mutation<RejectInvoiceResponse, { token: string; payload: RejectInvoicePayload }>({
     query: ({ token, payload }) => ({
       url: `/public/invoice/${token}/reject`,
-      method: "POST",
-      body: payload,
-    }),
-  }),
-  payPublicInvoice: builder.mutation<PublicPayResponse, { token: string; payload: PublicPayPayload }>({
-    query: ({ token, payload }) => ({
-      url: `/public/pay/${token}`,
       method: "POST",
       body: payload,
     }),

@@ -1,7 +1,9 @@
 "use client";
 
 import { ReactNode, useState, useEffect } from "react";
+import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import { BottomTabs } from "@/components/layout/BottomTabs";
 import { NavigationBlockProvider, useNavigationBlock } from "@/contexts/NavigationBlockContext";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
@@ -11,6 +13,8 @@ import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
+import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { cn } from "@/lib/utils";
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -188,8 +192,11 @@ function DashboardLayoutContent({
 }) {
   const pathname = usePathname();
   const isOnboardingPage = pathname === '/onboarding';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const { isCollapsed } = useSidebar();
 
-  // Sur la page d'onboarding, ne pas afficher la topbar et le layout normal
+  // Sur la page d'onboarding, ne pas afficher la sidebar et le layout normal
   if (isOnboardingPage) {
     return (
       <>
@@ -201,9 +208,30 @@ function DashboardLayoutContent({
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
+      {/* Mobile Header */}
+      <MobileHeader 
+        onMenuClick={() => setSidebarOpen(true)}
+        onProfileClick={() => setProfileOpen(true)}
+      />
+      
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onOpenChange={setSidebarOpen}
+        profileOpen={profileOpen}
+        onProfileOpenChange={setProfileOpen}
+      />
+      
+      {/* Topbar (Desktop) */}
       <Topbar />
-      <main className="px-4 py-6 md:px-6 md:py-8 lg:px-10 lg:py-8 pb-20 md:pb-24 lg:pb-6">
-        <div className="mx-auto max-w-7xl space-y-6">
+      
+      {/* Main content */}
+      <main className={cn(
+        " mt-12 transition-all duration-300 px-3 py-4 md:px-4 md:py-5 lg:px-6 lg:py-6 pb-20 md:pb-24 lg:pb-6",
+        "lg:pt-14", // Ajusté pour la nouvelle hauteur du topbar (h-12)
+        isCollapsed ? "lg:pl-16" : "lg:pl-64"
+      )}>
+        <div className="mx-10 space-y-4">
           {children}
         </div>
       </main>
@@ -222,9 +250,11 @@ export default function DashboardLayout({
   return (
     <LoadingProvider>
       <NavigationBlockProvider>
-        <DashboardLayoutContent>
-          {children}
-        </DashboardLayoutContent>
+        <SidebarProvider>
+          <DashboardLayoutContent>
+            {children}
+          </DashboardLayoutContent>
+        </SidebarProvider>
       </NavigationBlockProvider>
     </LoadingProvider>
   );

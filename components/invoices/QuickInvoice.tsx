@@ -39,6 +39,8 @@ import { useRouter } from "next/navigation";
 import ClientModal from "@/components/modals/ClientModal";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { WhatsAppMessageStyleSelector } from "@/components/whatsapp/WhatsAppMessageStyleSelector";
+import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types";
 
 const quickInvoiceSchema = z.object({
   clientId: z.string().min(1, "Client requis"),
@@ -64,6 +66,7 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [whatsappMessageStyle, setWhatsappMessageStyle] = useState<WhatsAppMessageStyle>('professional_warm');
   const amountInputRef = useRef<HTMLInputElement>(null);
 
   const { data: clientsResponse, isLoading: isLoadingClients } = useGetClientsQuery({ page: 1, limit: 100 });
@@ -447,6 +450,13 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
           <InvoiceTemplateSelector
             value={form.watch("templateId")}
             onChange={(templateId) => form.setValue("templateId", templateId)}
+            className={isMobile ? "space-y-2" : ""}
+          />
+
+          {/* Sélection du style de message WhatsApp */}
+          <WhatsAppMessageStyleSelector
+            value={whatsappMessageStyle}
+            onChange={setWhatsappMessageStyle}
             className={isMobile ? "space-y-2" : ""}
           />
 

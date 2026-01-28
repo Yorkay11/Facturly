@@ -38,7 +38,7 @@ export default async function TermsPage() {
       />
 
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
           {/* Table of Contents - Sidebar */}
           <aside className="lg:col-span-1 order-2 lg:order-1">
             <div className="lg:sticky lg:top-24 pt-4 lg:pt-4">

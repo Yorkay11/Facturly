@@ -10,6 +10,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from 'next-intl';
+import { removeLocalePrefix } from '@/utils/path-utils';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,7 +68,9 @@ function LoginForm() {
         description: `${tCommon('welcome')} ${userName}`,
       });
 
-      router.push(redirectTo);
+      // Retirer le préfixe de locale si présent (router.push l'ajoute automatiquement)
+      const cleanPath = removeLocalePrefix(redirectTo);
+      router.push(cleanPath);
     }
   }, [data, isSuccess, redirectTo, router]);
 
@@ -108,7 +111,7 @@ function LoginForm() {
   return (
     <div className="flex min-h-screen">
       {/* Section gauche : Logo avec fond sombre */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
         <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-md">
           <Image
@@ -131,7 +134,7 @@ function LoginForm() {
       </div>
 
       {/* Section droite : Formulaire */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-white">
         <div className="w-full max-w-md">
           <Card className="border-primary/20 shadow-lg">
             <CardHeader className="space-y-4 text-center">
@@ -298,7 +301,7 @@ export default function LoginPage() {
   return (
     <Suspense fallback={
       <div className="flex min-h-screen">
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-12">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-6">
           <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-md">
             <Image
               src="/logos/logo.png"
@@ -310,10 +313,10 @@ export default function LoginPage() {
             />
           </div>
         </div>
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-white">
+        <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-white">
           <div className="w-full max-w-md">
             <Card className="border-primary/20 shadow-lg">
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>

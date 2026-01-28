@@ -17,7 +17,7 @@ const TemplateProfessional = ({
     <div className="max-w-[950px] mx-auto bg-white shadow-md">
       {/* Professional Header */}
       <div
-        className="bg-[#2c3e50] text-white p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+        className="bg-[#2c3e50] text-white p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
         style={{
           backgroundColor: template.accentColor || "#2c3e50",
         }}
@@ -38,9 +38,9 @@ const TemplateProfessional = ({
         </div>
       </div>
 
-      <div className="p-10">
+      <div className="p-6">
         {/* Workspace & Client Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-10 pb-8 border-b-2 border-[#ecf0f1]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 pb-8 border-b-2 border-[#ecf0f1]">
           {/* Émetteur */}
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#7f8c8d] mb-4 font-semibold">

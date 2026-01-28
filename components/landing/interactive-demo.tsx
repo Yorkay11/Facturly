@@ -179,7 +179,7 @@ export function InteractiveDemo() {
           </div>
 
           {/* Steps Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-4 mb-12">
             {steps.map((step, index) => {
               const Icon = step.icon
               const isActive = currentStep === index
@@ -191,7 +191,7 @@ export function InteractiveDemo() {
                   key={step.id}
                   onClick={() => handleStepClick(index)}
                   className={cn(
-                    "relative p-6 rounded-xl border-2 transition-all duration-300 text-left",
+                    "relative p-4 rounded-xl border-2 transition-all duration-300 text-left",
                     "hover:shadow-lg hover:scale-105",
                     isActive && "border-primary bg-primary/10 shadow-lg scale-105",
                     isPast && "border-green-500/50 bg-green-500/5",
@@ -252,7 +252,7 @@ export function InteractiveDemo() {
           </div>
 
           {/* Demo Preview */}
-          <div className="relative bg-card border border-border rounded-2xl p-8 md:p-12 overflow-hidden">
+          <div className="relative bg-card border border-border rounded-2xl p-4 md:p-6 overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
             
             <AnimatePresence mode="wait">
@@ -264,7 +264,7 @@ export function InteractiveDemo() {
                 transition={{ duration: 0.3 }}
                 className="relative z-10"
               >
-                <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex flex-col md:flex-row items-center gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
                       <div className={cn(
@@ -323,7 +323,7 @@ export function InteractiveDemo() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-8 text-center"
             >
-              <div className="inline-flex flex-col items-center gap-4 p-6 rounded-xl bg-primary/10 border border-primary/20">
+              <div className="inline-flex flex-col items-center gap-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
                 <CheckCircle2 className="h-12 w-12 text-primary" />
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-2">

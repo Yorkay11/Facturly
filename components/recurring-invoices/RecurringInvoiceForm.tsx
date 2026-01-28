@@ -322,9 +322,9 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="monthly">{t("frequency.monthly")}</SelectItem>
-                      <SelectItem value="quarterly">{t("frequency.quarterly")}</SelectItem>
-                      <SelectItem value="yearly">{t("frequency.yearly")}</SelectItem>
+                      <SelectItem value="monthly">{t("frequencyOptions.monthly")}</SelectItem>
+                      <SelectItem value="quarterly">{t("frequencyOptions.quarterly")}</SelectItem>
+                      <SelectItem value="yearly">{t("frequencyOptions.yearly")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

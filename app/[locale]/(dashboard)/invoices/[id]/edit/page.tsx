@@ -62,7 +62,7 @@ const InvoiceEditPage = () => {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">ID de facture invalide</p>
           <p className="mb-4">L&apos;identifiant de la facture est manquant ou invalide.</p>
         </div>
@@ -90,7 +90,7 @@ const InvoiceEditPage = () => {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">Facture introuvable</p>
           <p className="mb-4">La facture demandée n&apos;existe pas ou vous n&apos;avez pas les permissions pour la modifier.</p>
         </div>
@@ -110,7 +110,7 @@ const InvoiceEditPage = () => {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">Impossible de modifier cette facture</p>
           <p className="mb-4">Seules les factures en brouillon peuvent être modifiées. Cette facture est actuellement en statut &quot;{invoice.status}&quot;.</p>
         </div>
@@ -134,7 +134,7 @@ const InvoiceEditPage = () => {
           <p className='text-2xl font-bold text-primary lg:text-3xl'>Modifier la facture</p>
           <p className='text-sm text-foreground/70'>Modifiez les informations et visualisez le rendu en temps réel.</p>
         </div>
-        <div className='flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] xl:items-start'>
+        <div className='flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] xl:items-start'>
           <div className='w-full order-1 xl:order-none'>
             <Suspense fallback={<div className="space-y-4"><Skeleton className="h-64 w-full" /><Skeleton className="h-64 w-full" /></div>}>
               <InvoiceDetails invoiceId={invoiceId} />

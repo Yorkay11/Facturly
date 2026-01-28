@@ -26,14 +26,14 @@ const TemplateModern = ({
 
   return (
     <div
-      className="max-w-[900px] mx-auto border border-slate-200 rounded-lg p-6 shadow-sm"
+      className="max-w-[900px] mx-auto border border-slate-200 rounded-lg p-4 shadow-sm"
       style={{
         backgroundColor: template.backgroundColor || "#ffffff",
         color: template.textColor || "#1F1B2E",
       }}
     >
       {/* Header Section */}
-      <div className="flex flex-col gap-6 mb-6 md:flex-row md:justify-between">
+      <div className="flex flex-col gap-4 mb-6 md:flex-row md:justify-between">
         {/* Header Left */}
         <div className="flex flex-col gap-4">
           <div>

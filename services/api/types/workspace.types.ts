@@ -15,8 +15,11 @@ export interface Workspace {
   city?: string;
   country?: string;
   defaultCurrency: string;
+  defaultTaxRate?: string; // Taux de TVA par défaut (ex: "0.18" pour 18%)
   logoUrl?: string | null;
   profileCompletion?: number;
+  balance?: string; // Solde retirable du workspace
+  balanceCurrency?: string; // Devise du solde
   createdAt?: string;
   updatedAt?: string;
 }

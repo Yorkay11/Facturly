@@ -100,7 +100,7 @@ export default function RecurringInvoiceDetailPage() {
         ]}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         {/* Informations principales */}
         <Card>
           <CardHeader>

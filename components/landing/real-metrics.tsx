@@ -49,13 +49,13 @@ export function RealMetrics() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4">
           {metrics.map((metric, index) => {
             const Icon = metric.icon
             return (
               <div
                 key={index}
-                className="group relative p-6 rounded-xl bg-card border border-border hover:border-primary/40 hover:shadow-lg transition-all duration-300"
+                className="group relative p-4 rounded-xl bg-card border border-border hover:border-primary/40 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex flex-col items-center text-center">
                   <div className={`w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors`}>

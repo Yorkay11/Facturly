@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Loader2, Building2, User, CheckCircle2, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InteractiveDemo } from "./InteractiveDemo";
+import Stepper, { Step } from "@/components/ui/stepper";
 
 interface OnboardingWizardProps {
   workspace: Workspace;
@@ -28,6 +29,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
   const [selectedType, setSelectedType] = useState<WorkspaceType>(workspace?.type || 'INDIVIDUAL');
   const [showAdvanced, setShowAdvanced] = useState(false); // Masquer les options avancées par défaut
   const [showDemo, setShowDemo] = useState(true); // Afficher la démo par défaut
+  const [currentStep, setCurrentStep] = useState(1);
   const [updateWorkspace, { isLoading }] = useUpdateWorkspaceMutation();
   const { refetch } = useGetWorkspaceQuery();
 
@@ -75,6 +77,24 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
     form.setValue('type', type, { shouldValidate: true });
     if (type === 'INDIVIDUAL') {
       form.setValue('name', null, { shouldValidate: true });
+      // Pour INDIVIDUAL, réinitialiser à l'étape 1 (on aura 2 étapes au total)
+      if (currentStep > 2) {
+        setCurrentStep(1);
+      }
+    } else {
+      // Pour COMPANY, on reste sur l'étape 1 (on aura 3 étapes au total)
+      if (currentStep > 3) {
+        setCurrentStep(1);
+      }
+    }
+  };
+
+  const handleStepChange = (step: number) => {
+    // Pour INDIVIDUAL, sauter l'étape 2
+    if (selectedType === 'INDIVIDUAL' && step === 2) {
+      setCurrentStep(3);
+    } else {
+      setCurrentStep(step);
     }
   };
 
@@ -117,6 +137,17 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
     }
   };
 
+  // Gérer le changement d'étape quand le type change
+  useEffect(() => {
+    if (selectedType === 'INDIVIDUAL' && currentStep === 2) {
+      // Si on est sur l'étape 2 et qu'on passe à INDIVIDUAL, sauter à l'étape 3
+      setCurrentStep(3);
+    } else if (selectedType === 'COMPANY' && currentStep > 3) {
+      // Si on est au-delà de l'étape 3 et qu'on passe à COMPANY, revenir à l'étape 2
+      setCurrentStep(2);
+    }
+  }, [selectedType, currentStep]);
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
       {/* Démonstration interactive */}
@@ -124,124 +155,163 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
         <InteractiveDemo onSkip={() => setShowDemo(false)} />
       )}
 
-      {/* Formulaire d'onboarding */}
+      {/* Stepper d'onboarding */}
       <div className="w-full max-w-2xl mx-auto">
-        {/* Header avec progression visuelle */}
         <div className="mb-6 text-center space-y-2">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <div className="h-1 w-8 bg-primary rounded-full" />
-          <CheckCircle2 className="h-4 w-4 text-primary" />
-          <div className="h-1 w-8 bg-muted rounded-full" />
+          <h1 className="text-2xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+            {t('description')}
+          </p>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-          {t('description')}
-        </p>
-      </div>
 
-      <Card className="border shadow-lg">
-        <CardContent className="pt-6 pb-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Section Type de profil */}
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold">{t('type.title')}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t('type.description')}
-                </p>
-              </div>
+        <Stepper
+          currentStep={currentStep}
+          onStepChange={(step) => {
+            setCurrentStep(step);
+          }}
+          onFinalStepCompleted={handleSubmit}
+          backButtonText="Précédent"
+          nextButtonText="Suivant"
+          stepCircleContainerClassName="bg-card"
+          contentClassName="min-h-[300px]"
+          nextButtonProps={{
+            onClick: async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
               
-              <div className="grid gap-3 md:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => handleTypeSelect('INDIVIDUAL')}
-                  className={cn(
-                    "group relative p-4 rounded-lg border-2 text-left transition-all duration-200 h-full",
-                    selectedType === 'INDIVIDUAL'
-                      ? "border-primary bg-primary/5 shadow-md"
-                      : "border-border hover:border-primary/30 hover:shadow-sm bg-card"
-                  )}
-                >
-                  {selectedType === 'INDIVIDUAL' && (
-                    <div className="absolute top-3 right-3">
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+              // Validation avant de passer à l'étape suivante
+              if (currentStep === 2 && selectedType === 'COMPANY') {
+                const isValid = await form.trigger('name');
+                if (!isValid) {
+                  toast.error(t('validation.nameMin'));
+                  return;
+                }
+              }
+              
+              // Déterminer la prochaine étape
+              let nextStep = currentStep + 1;
+              
+              // Pour INDIVIDUAL, sauter l'étape 2
+              if (selectedType === 'INDIVIDUAL' && nextStep === 2) {
+                nextStep = 3;
+              }
+              
+              const totalSteps = 3; // Toujours 3 étapes affichées
+              const isLastStep = nextStep > totalSteps;
+              
+              if (isLastStep) {
+                // Dernière étape - soumettre le formulaire
+                handleSubmit();
+              } else {
+                // Passer à l'étape suivante
+                setCurrentStep(nextStep);
+              }
+            }
+          }}
+        >
+          {/* Étape 1 : Type de profil */}
+          <Step>
+            <div className="space-y-6 py-4">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-base font-semibold">{t('type.title')}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('type.description')}
+                  </p>
+                </div>
+                
+                <div className="grid gap-3 md:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTypeSelect('INDIVIDUAL')}
+                    className={cn(
+                      "group relative p-4 rounded-lg border-2 text-left transition-all duration-200 h-full",
+                      selectedType === 'INDIVIDUAL'
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-primary/30 hover:shadow-sm bg-card"
+                    )}
+                  >
+                    {selectedType === 'INDIVIDUAL' && (
+                      <div className="absolute top-3 right-3">
+                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "p-2 rounded-lg transition-colors flex-shrink-0",
+                        selectedType === 'INDIVIDUAL' ? "bg-primary/10" : "bg-muted"
+                      )}>
+                        <User className={cn(
+                          "h-5 w-5 transition-colors",
+                          selectedType === 'INDIVIDUAL' ? "text-primary" : "text-muted-foreground"
+                        )} />
+                      </div>
+                      <div className="flex-1 space-y-0.5 min-w-0">
+                        <h3 className="font-semibold text-sm">{t('type.individual.title')}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {t('type.individual.subtitle')}
+                        </p>
                       </div>
                     </div>
-                  )}
-                  <div className="flex items-start gap-3">
-                    <div className={cn(
-                      "p-2 rounded-lg transition-colors flex-shrink-0",
-                      selectedType === 'INDIVIDUAL' ? "bg-primary/10" : "bg-muted"
-                    )}>
-                      <User className={cn(
-                        "h-5 w-5 transition-colors",
-                        selectedType === 'INDIVIDUAL' ? "text-primary" : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <div className="flex-1 space-y-0.5 min-w-0">
-                      <h3 className="font-semibold text-sm">{t('type.individual.title')}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {t('type.individual.subtitle')}
-                      </p>
-                    </div>
-                  </div>
-                </button>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleTypeSelect('COMPANY')}
-                  className={cn(
-                    "group relative p-4 rounded-lg border-2 text-left transition-all duration-200 h-full",
-                    selectedType === 'COMPANY'
-                      ? "border-primary bg-primary/5 shadow-md"
-                      : "border-border hover:border-primary/30 hover:shadow-sm bg-card"
-                  )}
-                >
-                  {selectedType === 'COMPANY' && (
-                    <div className="absolute top-3 right-3">
-                      <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                        <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+                  <button
+                    type="button"
+                    onClick={() => handleTypeSelect('COMPANY')}
+                    className={cn(
+                      "group relative p-4 rounded-lg border-2 text-left transition-all duration-200 h-full",
+                      selectedType === 'COMPANY'
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-primary/30 hover:shadow-sm bg-card"
+                    )}
+                  >
+                    {selectedType === 'COMPANY' && (
+                      <div className="absolute top-3 right-3">
+                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                          <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "p-2 rounded-lg transition-colors flex-shrink-0",
+                        selectedType === 'COMPANY' ? "bg-primary/10" : "bg-muted"
+                      )}>
+                        <Building2 className={cn(
+                          "h-5 w-5 transition-colors",
+                          selectedType === 'COMPANY' ? "text-primary" : "text-muted-foreground"
+                        )} />
+                      </div>
+                      <div className="flex-1 space-y-0.5 min-w-0">
+                        <h3 className="font-semibold text-sm">{t('type.workspaceCompany.title')}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {t('type.workspaceCompany.subtitle')}
+                        </p>
                       </div>
                     </div>
-                  )}
-                  <div className="flex items-start gap-3">
-                    <div className={cn(
-                      "p-2 rounded-lg transition-colors flex-shrink-0",
-                      selectedType === 'COMPANY' ? "bg-primary/10" : "bg-muted"
-                    )}>
-                      <Building2 className={cn(
-                        "h-5 w-5 transition-colors",
-                        selectedType === 'COMPANY' ? "text-primary" : "text-muted-foreground"
-                      )} />
-                    </div>
-                    <div className="flex-1 space-y-0.5 min-w-0">
-                      <h3 className="font-semibold text-sm">{t('type.workspaceCompany.title')}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {t('type.workspaceCompany.subtitle')}
-                      </p>
-                    </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
               </div>
             </div>
+          </Step>
 
-            {/* Section Informations - Seulement le nom pour COMPANY */}
-            {workspaceType === 'COMPANY' && (
-              <>
-                <div className="border-t" />
+          {/* Étape 2 : Informations de base (seulement pour COMPANY, mais toujours présente) */}
+          <Step>
+            {selectedType === 'COMPANY' ? (
+              <div className="space-y-6 py-4">
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <Label className="text-sm font-semibold">{t('basic.title')}</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <Label className="text-base font-semibold">{t('basic.title')}</Label>
+                    <p className="text-sm text-muted-foreground">
                       {t('basic.description')}
                     </p>
                   </div>
 
-                  <div className="grid gap-4">
-                    {/* Nom - Requis pour COMPANY */}
+                  <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="name" className="text-xs font-medium">
+                      <Label htmlFor="name" className="text-sm font-medium">
                         {t('basic.fields.nameLabelCompany')}
                         <span className="text-destructive ml-1">*</span>
                       </Label>
@@ -251,7 +321,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                         placeholder={t('basic.fields.namePlaceholder')}
                         disabled={isLoading}
                         className={cn(
-                          "h-10 text-sm",
+                          "h-10",
                           form.formState.errors.name && "border-destructive focus-visible:ring-destructive"
                         )}
                       />
@@ -263,30 +333,36 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                     </div>
                   </div>
                 </div>
-              </>
+              </div>
+            ) : (
+              <div className="space-y-6 py-4">
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {t('basic.note')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Vous pouvez passer directement aux options avancées.
+                  </p>
+                </div>
+              </div>
             )}
+          </Step>
 
-            {/* Options avancées (devise, pays) - Masquées par défaut */}
-            <div className="border-t" />
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center justify-between w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <span>{t('basic.advancedOptions')}</span>
-                {showAdvanced ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </button>
+          {/* Étape 3 : Options avancées */}
+          <Step>
+            <div className="space-y-6 py-4">
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Label className="text-base font-semibold">{t('basic.advancedOptions')}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('basic.note')}
+                  </p>
+                </div>
 
-              {showAdvanced && (
-                <div className="grid gap-4 pt-2">
+                <div className="grid gap-4">
                   {/* Devise - Optionnel avec valeur par défaut */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="defaultCurrency" className="text-xs font-medium">
+                    <Label htmlFor="defaultCurrency" className="text-sm font-medium">
                       {t('basic.fields.defaultCurrency')} <span className="text-muted-foreground text-xs">(optionnel)</span>
                     </Label>
                     <Controller
@@ -298,7 +374,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                           value={field.value || 'XOF'} 
                           disabled={isLoading}
                         >
-                          <SelectTrigger className="h-10 text-sm">
+                          <SelectTrigger className="h-10">
                             <SelectValue placeholder={t('basic.fields.defaultCurrencyPlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
@@ -316,7 +392,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
 
                   {/* Pays */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="country" className="text-xs font-medium">
+                    <Label htmlFor="country" className="text-sm font-medium">
                       {t('basic.fields.country')} <span className="text-muted-foreground text-xs">(optionnel)</span>
                     </Label>
                     <Controller
@@ -328,7 +404,7 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                           value={field.value || 'none'} 
                           disabled={isLoading}
                         >
-                          <SelectTrigger className="h-10 text-sm">
+                          <SelectTrigger className="h-10">
                             <SelectValue placeholder={t('basic.fields.countryPlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
@@ -352,71 +428,42 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                     />
                   </div>
                 </div>
-              )}
+              </div>
             </div>
+          </Step>
+        </Stepper>
+      </div>
 
-            {/* Message informatif */}
-            <div className="bg-muted/50 rounded-md p-3 border border-border/50">
-              <p className="text-xs text-muted-foreground text-center">
-                {t('basic.note')}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-between items-center pt-3 border-t gap-3">
-              {/* Bouton Skip - Passer l'onboarding */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="default"
-                disabled={isLoading}
-                onClick={async () => {
-                  try {
-                    // Mettre à jour avec les valeurs minimales (type INDIVIDUAL, XOF par défaut)
-                    await updateWorkspace({
-                      type: 'INDIVIDUAL',
-                      defaultCurrency: 'XOF',
-                    }).unwrap();
-                    
-                    toast.success(t('success.skipped'), {
-                      description: t('success.skippedDescription'),
-                    });
-                    
-                    await refetch();
-                    onComplete();
-                  } catch (error: any) {
-                    toast.error(t('errors.title'), {
-                      description: error?.data?.message || t('errors.description'),
-                    });
-                  }
-                }}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {t('buttons.skip')}
-              </Button>
+      {/* Bouton Skip - en dehors du stepper */}
+      <div className="flex justify-center">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={isLoading}
+          onClick={async () => {
+            try {
+              await updateWorkspace({
+                type: 'INDIVIDUAL',
+                defaultCurrency: 'XOF',
+              }).unwrap();
               
-              <Button
-                type="submit"
-                size="default"
-                disabled={isLoading || !isFormValid}
-                className="min-w-[120px]"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t('buttons.finishing')}
-                  </>
-                ) : (
-                  <>
-                    {t('buttons.finish')}
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              toast.success(t('success.skipped'), {
+                description: t('success.skippedDescription'),
+              });
+              
+              await refetch();
+              onComplete();
+            } catch (error: any) {
+              toast.error(t('errors.title'), {
+                description: error?.data?.message || t('errors.description'),
+              });
+            }
+          }}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          {t('buttons.skip')}
+        </Button>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ export interface DashboardActivity {
   date: string;
   title: string;
   description?: string;
+  clientName?: string; // Nom du client pour l'interpolation
   amount?: string;
   currency?: string;
   status?: string;

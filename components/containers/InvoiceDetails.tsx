@@ -76,6 +76,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { getBackendTemplateName, getFrontendTemplateFromBackend } from "@/types/invoiceTemplate"
 import { CommandPalette } from "@/components/invoices/CommandPalette"
+import { WhatsAppMessageStyleSelector } from "@/components/whatsapp/WhatsAppMessageStyleSelector"
+import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types"
 
 interface InvoiceDetailsProps {
     invoiceId?: string;
@@ -98,7 +100,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const [lastSavedAt, setLastSavedAt] = React.useState<Date | undefined>(undefined);
     const [isSavingDraft, setIsSavingDraft] = React.useState(false);
     const clientSearchRef = React.useRef<HTMLButtonElement>(null);
-    const { items, setItems, removeItem, clearItems } = useItemsStore();
+    const { items, setItems, removeItem, clearItems, addItem, updateItem } = useItemsStore();
     const metadataStore = useInvoiceMetadata();
     const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
     
@@ -110,6 +112,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const defaultCurrency = storedCurrency || workspaceCurrency;
     const [value, setValue] = useState(defaultCurrency);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [whatsappMessageStyle, setWhatsappMessageStyle] = useState<WhatsAppMessageStyle>('professional_warm');
     const { openCreate, openEdit } = useItemModalControls();
     const { data: clientsResponse, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsQuery({ page: 1, limit: 100 });
     const { data: clientFromUrl, isLoading: isLoadingClientFromUrl } = useGetClientByIdQuery(clientIdFromUrl || "", {
@@ -594,6 +597,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     payload: {
                         sendEmail: true,
                         emailTo: selectedClient?.email || undefined,
+                        whatsappMessageStyle,
                     },
                 }).unwrap();
 
@@ -1037,7 +1041,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex w-full flex-col gap-4">
                 {/* Indicateur de progression (uniquement en mode création) */}
                 {!isEditMode && (
                     <InvoiceProgress
@@ -1047,7 +1051,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                         isEditMode={isEditMode}
                     />
                 )}
-                <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <section className="space-y-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div>
                         <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceInfo.title')}</p>
                         <p className="text-sm text-slate-500">{t('sections.invoiceInfo.description')}</p>
@@ -1380,13 +1384,25 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     </div>
                 </section>
 
-                <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div>
                             <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
                             <p className="text-sm text-slate-500">{t('sections.invoiceLines.description')}</p>
                         </div>
-                        <Button type="button" size="sm" className="gap-2" onClick={openCreate}>
+                        <Button 
+                            type="button" 
+                            size="sm" 
+                            className="gap-2" 
+                            onClick={() => {
+                                addItem({
+                                    description: '',
+                                    quantity: 1,
+                                    unitPrice: 0,
+                                    vatRate: workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18,
+                                });
+                            }}
+                        >
                             <PlusIcon className="h-4 w-4" />
                             {t('lines.add')}
                         </Button>
@@ -1394,56 +1410,174 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
 
                     <Separator />
 
-                    {items.length ? (
-                        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                            <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-                                <div className="flex flex-col gap-3">
-                                    {items.map((item) => (
-                                        <SortableItem key={item.id} id={item.id}>
-                                            <Card className="flex flex-col gap-4 rounded-lg border border-slate-200 p-4 shadow-sm">
-                                                <div className="flex flex-wrap items-start justify-between gap-4">
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-slate-900">{item.description}</p>
-                                                        <p className="text-xs text-slate-500">{item.quantity} × {item.unitPrice} {form.getValues("currency") || ""}</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button variant="ghost" size="icon" onClick={() => openEdit(item)} aria-label={t('lines.edit', { description: item.description })}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)} aria-label={t('lines.delete', { description: item.description })}>
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 md:grid-cols-4">
-                                                    <div>
-                                                        <p className="font-medium text-slate-700">{t('lines.unitPrice')}</p>
-                                                        <p>{item.unitPrice}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-slate-700">{t('lines.quantity')}</p>
-                                                        <p>{item.quantity}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-slate-700">{t('lines.vat')}</p>
-                                                        <p>{item.vatRate}%</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-slate-700">{t('lines.lineTotal')}</p>
-                                                        <p>{(item.unitPrice * item.quantity).toFixed(2)}</p>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        </SortableItem>
-                                    ))}
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+                            <div className="flex flex-col gap-2">
+                                {/* En-têtes du tableau */}
+                                <div className="hidden md:grid md:grid-cols-12 gap-2 px-2 py-1.5 text-[10px] font-semibold text-slate-600 border-b border-slate-200 bg-slate-50/50 rounded-t-md">
+                                    <div className="col-span-5">{t('lines.description')}</div>
+                                    <div className="col-span-1">{t('lines.quantity')}</div>
+                                    <div className="col-span-2">{t('lines.unitPrice')}</div>
+                                    <div className="col-span-1">{t('lines.vat')}</div>
+                                    <div className="col-span-2 text-right">{t('lines.lineTotal')}</div>
+                                    <div className="col-span-1"></div>
                                 </div>
-                            </SortableContext>
-                        </DndContext>
-                    ) : (
-                        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-12 text-center">
-                            <p className="text-lg font-semibold text-slate-600">{t('sections.invoiceLines.empty.title')}</p>
-                            <p className="text-sm text-slate-500">{t('sections.invoiceLines.empty.description')}</p>
-                            <Button variant="outline" size="sm" className="gap-2" onClick={openCreate}>
+                                
+                                {/* Lignes de produits */}
+                                {items.length > 0 ? (
+                                    items.map((item) => {
+                                        const lineTotal = (parseFloat(item.unitPrice.toString()) || 0) * (parseFloat(item.quantity.toString()) || 0);
+                                        return (
+                                            <SortableItem key={item.id} id={item.id}>
+                                                <Card className="rounded-md border border-slate-200 p-2 shadow-sm hover:shadow-md transition-all hover:border-primary/30 bg-white">
+                                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+                                                        {/* Description */}
+                                                        <div className="col-span-1 md:col-span-3">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.description')}
+                                                            </label>
+                                                            <Input
+                                                                value={item.description}
+                                                                onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                                                                placeholder={t('lines.description')}
+                                                                className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1"
+                                                            />
+                                                        </div>
+                                                        
+                                                        {/* Quantité */}
+                                                        <div className="col-span-1 md:col-span-2">
+                                                            <label className="text-[10px]  font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.quantity')}
+                                                            </label>
+                                                            <Input
+                                                                type="number"
+                                                                step="1"
+                                                                min="0"
+                                                                value={item.quantity}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0)) {
+                                                                        updateItem(item.id, { quantity: val === '' ? 0 : parseFloat(val) });
+                                                                    }
+                                                                }}
+                                                                className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 "
+                                                            />
+                                                        </div>
+                                                        
+                                                        {/* Prix unitaire */}
+                                                        <div className="col-span-1 md:col-span-2">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.unitPrice')}
+                                                            </label>
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type="text"
+                                                                    value={item.unitPrice}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0)) {
+                                                                            updateItem(item.id, { unitPrice: val === '' ? 0 : parseFloat(val) });
+                                                                        }
+                                                                    }}
+                                                                    className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 pr-7"
+                                                                />
+                                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 font-medium">
+                                                                    {form.getValues("currency") || ""}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* TVA */}
+                                                        <div className="col-span-1 md:col-span-2">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.vat')}
+                                                            </label>
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type="text"
+                                                                    
+                                                                    value={item.vatRate}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 100)) {
+                                                                            updateItem(item.id, { vatRate: val === '' ? 0 : parseFloat(val) });
+                                                                        }
+                                                                    }}
+                                                                    className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 pr-5"
+                                                                />
+                                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 font-medium">%</span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Total ligne */}
+                                                        <div className="col-span-1 md:col-span-2 text-right">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.lineTotal')}
+                                                            </label>
+                                                            <p className="text-xs font-semibold text-slate-900">
+                                                                {lineTotal.toFixed(2)} {form.getValues("currency") || ""}
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        {/* Actions */}
+                                                        <div className="col-span-1 md:col-span-1 flex justify-end">
+                                                            <Button 
+                                                                variant="destructive" 
+                                                                size="icon" 
+                                                                className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
+                                                                onClick={() => removeItem(item.id)} 
+                                                                aria-label={t('lines.delete', { description: item.description })}
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </SortableItem>
+                                        );
+                                    })
+                                ) : null}
+                                
+                                {/* Bouton pour ajouter une nouvelle ligne */}
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-2 h-9 border-dashed border-slate-300 hover:border-primary hover:bg-primary/5"
+                                    onClick={() => {
+                                        addItem({
+                                            description: '',
+                                            quantity: 1,
+                                            unitPrice: 0,
+                                            vatRate: workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18,
+                                        });
+                                    }}
+                                >
+                                    <PlusIcon className="h-3.5 w-3.5" />
+                                    <span className="text-xs">{t('lines.add')}</span>
+                                </Button>
+                            </div>
+                        </SortableContext>
+                    </DndContext>
+                    
+                    {items.length === 0 && (
+                        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-6 text-center">
+                            <p className="text-sm font-semibold text-slate-600">{t('sections.invoiceLines.empty.title')}</p>
+                            <p className="text-xs text-slate-500">{t('sections.invoiceLines.empty.description')}</p>
+                            <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm" 
+                                className="gap-2" 
+                                onClick={() => {
+                                    addItem({
+                                        description: '',
+                                        quantity: 1,
+                                        unitPrice: 0,
+                                        vatRate: workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18,
+                                    });
+                                }}
+                            >
                                 <PlusIcon className="h-4 w-4" />
                                 {t('lines.add')}
                             </Button>
@@ -1451,7 +1585,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     )}
                 </section>
 
-                <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-2">
                             <Checkbox id="discount" />
@@ -1597,6 +1731,13 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             )}
                         </div>
                     )}
+                    {/* Sélection du style de message WhatsApp */}
+                    <div className="pt-4 border-t">
+                        <WhatsAppMessageStyleSelector
+                            value={whatsappMessageStyle}
+                            onChange={setWhatsappMessageStyle}
+                        />
+                    </div>
                     <div className="flex items-center justify-end gap-3">
                         <Button 
                             type="button" 

@@ -27,7 +27,7 @@ const TemplateInvoice = ({
     <div className="grid overflow-hidden rounded-xl border border-slate-200 shadow-sm md:grid-cols-[220px_1fr] bg-white">
       {/* LEFT PANEL - Sidebar */}
       <div
-        className="flex flex-col gap-6 p-6 text-white"
+        className="flex flex-col gap-4 p-4 text-white"
         style={{
           backgroundColor: template.accentColor,
         }}
@@ -64,7 +64,7 @@ const TemplateInvoice = ({
 
       {/* RIGHT PANEL - Content */}
       <div
-        className="space-y-6 p-6 bg-white"
+        className="space-y-6 p-4 bg-white"
         style={{ color: template.textColor || "#1F1B2E" }}
       >
         {/* Header Row */}

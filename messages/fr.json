@@ -194,6 +194,14 @@
     "paymentRate": "Taux de paiement",
     "averageRevenue": "Revenus moyens",
     "quickNavigation": "Navigation rapide",
+    "timeRange": {
+      "1d": "1 Jour",
+      "1w": "1 Semaine",
+      "1m": "1 Mois",
+      "1y": "1 An",
+      "all": "Tout"
+    },
+    "seeMore": "Voir plus",
     "allInvoices": "Toutes les factures",
     "viewAndManage": "Voir et gérer",
     "myClients": "Mes clients",
@@ -206,6 +214,8 @@
     "support": "Support",
     "new": "Nouveau",
     "automatedRemindersAvailable": "Relances automatisées disponibles",
+    "aiSuggestions": "Suggestions IA",
+    "aiSuggestionsDescription": "Recommandations basées sur vos données",
     "open": "Ouvrir",
     "launch": "Lancer"
   },
@@ -260,9 +270,12 @@
     "planFree": "Gratuit",
     "planPro": "Pro",
     "planEnterprise": "Enterprise",
+    "planPayAsYouGo": "Pay-as-you-go",
     "userProfile": "Profil utilisateur",
     "accountInfo": "Informations de votre compte",
     "workspace": "Espace de travail",
+    "workspaceTypeCompany": "Entreprise",
+    "workspaceTypeIndividual": "Individuel",
     "preferences": "Préférences",
     "preferencesDescription": "Notifications, mentions légales, branding",
     "manageAccount": "Gérer mon compte",
@@ -504,6 +517,7 @@
         "add": "Ajouter une ligne",
         "edit": "Modifier la ligne {description}",
         "delete": "Supprimer la ligne {description}",
+        "description": "Description",
         "unitPrice": "Prix unitaire",
         "quantity": "Quantité",
         "vat": "TVA",
@@ -569,11 +583,11 @@
           "service": "Prestation",
           "product": "Produit"
         },
-      "buttons": {
-        "cancel": "Annuler",
-        "add": "Ajouter l'article",
-        "update": "Mettre à jour"
-      },
+        "buttons": {
+          "cancel": "Annuler",
+          "add": "Ajouter l'article",
+          "update": "Mettre à jour"
+        },
         "saveDialog": {
           "title": "Sauvegarder dans le catalogue ?",
           "description": "Voulez-vous sauvegarder cet article dans votre catalogue de produits ? Il pourra être réutilisé pour d'autres factures.",
@@ -1359,8 +1373,8 @@
   },
   "landing": {
     "hero": {
-      "title": "Créez et envoyez vos factures en 60 secondes, payez avec mobile money",
-      "subtitle": "Facturly est la plateforme de facturation mobile-first pour l'Afrique de l'Ouest. Créez vos factures en 60 secondes, envoyez-les par WhatsApp, et recevez les paiements via Orange Money, MTN, Wave et plus de 60 méthodes de paiement mobile money.",
+      "title": "Facturation en 60 secondes",
+      "subtitle": "La plateforme mobile-first pour créer, envoyer et recevoir vos paiements en Afrique de l'Ouest.",
       "ctaAuthenticated": "Accéder au tableau de bord",
       "ctaGuest": "Commencer gratuitement",
       "features": {
@@ -3128,6 +3142,49 @@
     },
     "errors": {
       "loadingError": "Erreur lors du chargement des factures récurrentes"
+    },
+    "form": {
+      "createTitle": "Créer une facture récurrente",
+      "editTitle": "Modifier la facture récurrente",
+      "description": "Configurez votre facture récurrente pour automatiser vos facturations",
+      "client": "Client",
+      "selectClient": "Sélectionner un client",
+      "searchClient": "Rechercher un client...",
+      "noClient": "Aucun client trouvé",
+      "createClient": "Créer un client",
+      "name": "Nom",
+      "namePlaceholder": "Ex: Facture mensuelle - Abonnement",
+      "frequency": "Fréquence",
+      "frequencyOptions": {
+        "monthly": "Mensuelle",
+        "quarterly": "Trimestrielle",
+        "yearly": "Annuelle"
+      },
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "selectDate": "Sélectionner une date",
+      "dayOfMonth": "Jour du mois",
+      "autoSend": "Envoi automatique",
+      "autoSendDescription": "Envoyer automatiquement la facture générée par email",
+      "recipientEmail": "Email destinataire",
+      "recipientEmailPlaceholder": "email@exemple.com",
+      "notificationDaysBefore": "Notification avant génération",
+      "notificationDaysBeforeDescription": "Nombre de jours avant la génération pour envoyer une notification",
+      "items": "Articles",
+      "addItem": "Ajouter un article",
+      "item": "Article",
+      "product": "Produit",
+      "selectProduct": "Sélectionner un produit",
+      "noProduct": "Aucun produit",
+      "descriptionPlaceholder": "Description de l'article",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "cancel": "Annuler",
+      "create": "Créer",
+      "update": "Mettre à jour",
+      "createSuccess": "Facture récurrente créée avec succès",
+      "updateSuccess": "Facture récurrente mise à jour avec succès",
+      "error": "Erreur lors de l'enregistrement"
     }
   },
   "reports": {
@@ -3174,6 +3231,35 @@
       "success": "Export réussi",
       "error": "Erreur d'export",
       "errorDescription": "Une erreur est survenue lors de l'export. Veuillez réessayer."
+    }
+  },
+  "whatsapp": {
+    "messageStyles": {
+      "label": "Style de message WhatsApp",
+      "helperText": "Choisissez le ton de vos messages WhatsApp selon votre type de clientèle",
+      "selected": "Sélectionné",
+      "styles": {
+        "professionalWarm": {
+          "label": "Professionnelle & Chaleureuse",
+          "description": "Un ton sérieux mais humain, idéal pour garder une relation de confiance avec vos clients."
+        },
+        "direct": {
+          "label": "Directe",
+          "description": "Court, clair et sans détour. Parfait pour aller à l’essentiel et encourager un paiement rapide."
+        },
+        "premium": {
+          "label": "Premium",
+          "description": "Un style formel et structuré, adapté aux entreprises et aux relations professionnelles établies."
+        },
+        "humane": {
+          "label": "Humaine",
+          "description": "Plus personnel et proche, comme si vous écriviez directement à votre client."
+        },
+        "compact": {
+          "label": "Compacte",
+          "description": "Un message très court, idéal pour WhatsApp et les échanges rapides."
+        }
+      }
     }
   }
 }

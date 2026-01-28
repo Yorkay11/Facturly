@@ -109,7 +109,7 @@ export function InteractiveDemo({ onSkip }: { onSkip?: () => void }) {
 
   return (
     <Card className="border-2 border-primary/20 shadow-lg">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">

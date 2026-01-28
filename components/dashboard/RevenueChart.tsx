@@ -1,18 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { cn } from "@/lib/utils";
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 interface RevenueChartProps {
   data: Array<{ label: string; value: number }>;
   className?: string;
 }
 
+type TimeRange = "1d" | "1w" | "1m" | "1y" | "all";
+
 export const RevenueChart = ({ data, className }: RevenueChartProps) => {
+  const [timeRange, setTimeRange] = useState<TimeRange>("1m");
   const { data: workspace } = useGetWorkspaceQuery();
   const locale = useLocale();
+  const t = useTranslations('dashboard');
   const workspaceCurrency = workspace?.defaultCurrency || "EUR";
   
   const chartData = data.map((item) => ({
@@ -34,8 +40,35 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
   const primaryColorLight = "rgba(120, 53, 239, 0.1)";
   const primaryColorBorder = "rgba(120, 53, 239, 0.2)";
 
+  const timeRanges: Array<{ value: TimeRange; label: string }> = [
+    { value: "1d", label: t('timeRange.1d') },
+    { value: "1w", label: t('timeRange.1w') },
+    { value: "1m", label: t('timeRange.1m') },
+    { value: "1y", label: t('timeRange.1y') },
+    { value: "all", label: t('timeRange.all') },
+  ];
+
   return (
     <div className={cn("w-full", className)}>
+      {/* Time Range Selector */}
+      <div className="flex items-center justify-end mb-4">
+        <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+          {timeRanges.map((range) => (
+            <button
+              key={range.value}
+              onClick={() => setTimeRange(range.value)}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                timeRange === range.value
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              )}
+            >
+              {range.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height={250}>
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
           <defs>

@@ -103,8 +103,8 @@ const InvoiceBuilderPage = () => {
 
   return (
     <ItemModalContext.Provider value={{ openCreate, openEdit, close: closeModal, mode: modalMode, item: currentItem }}>
-      <div className='space-y-8 pb-10 lg:space-y-10'>
-        <div className="flex items-center space-x-2 text-xs">
+      <div className='space-y-4 pb-6 lg:space-y-5'>
+        <div className="flex items-center space-x-1.5 text-[10px]">
           <Link 
             href="/dashboard" 
             onClick={(e) => {
@@ -129,27 +129,35 @@ const InvoiceBuilderPage = () => {
           <span className="text-foreground/40">/</span>
           <span className="text-foreground">{t('breadcrumb.newInvoice')}</span>
         </div>
-        <div className='space-y-2 text-center lg:text-left'>
-          <p className='text-2xl font-bold text-primary lg:text-3xl'>{t('title')}</p>
-          <p className='text-sm text-foreground/70'>{t('description')}</p>
+        <div className='space-y-1 text-center lg:text-left'>
+          <p className='text-xl font-bold text-primary lg:text-2xl'>{t('title')}</p>
+          <p className='text-xs text-foreground/70'>{t('description')}</p>
         </div>
 
         {/* Toggle entre mode rapide et mode complet */}
         <Tabs value={invoiceMode} onValueChange={(value) => setInvoiceMode(value as 'quick' | 'full')} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="quick" className="gap-2">
-              <Zap className="h-4 w-4" />
-              {t('modes.quick')}
-            </TabsTrigger>
-            <TabsTrigger value="full" className="gap-2">
-              <FileText className="h-4 w-4" />
-              {t('modes.full')}
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-center w-full mb-4">
+            <TabsList className="grid w-full max-w-lg grid-cols-2 h-10 bg-slate-50/80 backdrop-blur-sm border border-slate-200/60 shadow-sm">
+              <TabsTrigger 
+                value="quick" 
+                className="gap-2 text-xs font-semibold transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/10 data-[state=active]:to-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-primary/20 hover:bg-slate-100/50"
+              >
+                <Zap className="h-4 w-4 data-[state=active]:text-primary" />
+                <span>{t('modes.quick')}</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="full" 
+                className="gap-2 text-xs font-semibold transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/10 data-[state=active]:to-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-primary/20 hover:bg-slate-100/50"
+              >
+                <FileText className="h-4 w-4 data-[state=active]:text-primary" />
+                <span>{t('modes.full')}</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Mode Rapide */}
-          <TabsContent value="quick" className="mt-6">
-            <div className="max-w-2xl mx-auto">
+          <TabsContent value="quick" className="mt-4">
+            <div className="w-full">
               <QuickInvoice onSwitchToFullMode={() => setInvoiceMode('full')} />
               {showTutorial && (
                 <InvoiceTutorial
@@ -168,18 +176,42 @@ const InvoiceBuilderPage = () => {
           </TabsContent>
 
           {/* Mode Complet */}
-          <TabsContent value="full" className="mt-6">
-            <div className='flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] xl:items-start'>
+          <TabsContent value="full" className="mt-4">
+            <div className='flex flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-start'>
               <div className='w-full order-1 xl:order-none'>
-                <Suspense fallback={<div className="space-y-4"><Skeleton className="h-64 w-full" /><Skeleton className="h-64 w-full" /></div>}>
+                <Suspense fallback={<div className="space-y-3"><Skeleton className="h-48 w-full" /><Skeleton className="h-48 w-full" /></div>}>
                   <InvoiceDetails 
                     onSaveDraftReady={handleSaveDraftReady}
                     onHasUnsavedChanges={handleHasUnsavedChanges}
                   />
                 </Suspense>
               </div>
-              <div className='w-full order-2 xl:order-none'>
-                <Preview />
+              <div className='w-full order-2 xl:order-none relative p-4 rounded-lg bg-slate-50 min-h-[600px]'>
+                {/* Fond canvas avec grille */}
+                <div 
+                  className="absolute inset-0 rounded-lg pointer-events-none"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(to right, #d1d5db 1px, transparent 1px),
+                      linear-gradient(to bottom, #d1d5db 1px, transparent 1px)
+                    `,
+                    backgroundSize: '24px 24px',
+                    opacity: 0.5
+                  }}
+                ></div>
+                {/* Points en overlay */}
+                <div 
+                  className="absolute inset-0 rounded-lg pointer-events-none"
+                  style={{
+                    backgroundImage: 'radial-gradient(circle, #9ca3af 1.5px, transparent 1.5px)',
+                    backgroundSize: '20px 20px',
+                    opacity: 0.4
+                  }}
+                ></div>
+                {/* Contenu Preview */}
+                <div className="relative z-10">
+                  <Preview />
+                </div>
               </div>
             </div>
           </TabsContent>

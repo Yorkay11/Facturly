@@ -20,6 +20,7 @@ export function interpolateMessage(
   if (!message) return message;
   
   // Remplacer {variable} et {{variable}} par leurs valeurs
+  // Priorité aux variables avec données, sinon supprimer les variables vides
   let result = message.replace(/\{\{?\s*([a-zA-Z0-9_.]+)\s*\}\}?/g, (match, key) => {
     // Si on a des données, chercher la valeur
     if (data) {

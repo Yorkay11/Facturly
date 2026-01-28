@@ -154,7 +154,7 @@ export default function BillDetailPage() {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">{t('errors.invalidId')}</p>
           <p className="mb-4">{t('errors.invalidIdDescription')}</p>
           <Button variant="outline" onClick={() => router.push("/bills")}>
@@ -185,7 +185,7 @@ export default function BillDetailPage() {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">{t('errors.loadingError')}</p>
           <p className="mb-4">{t('errors.loadingErrorDescription')}</p>
           <Button variant="outline" onClick={() => router.push("/bills")}>
@@ -231,7 +231,7 @@ export default function BillDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card className="border-primary/20">
           <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>

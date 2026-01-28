@@ -193,6 +193,14 @@
     "paymentRate": "Payment Rate",
     "averageRevenue": "Average Revenue",
     "quickNavigation": "Quick Navigation",
+    "timeRange": {
+      "1d": "1 Day",
+      "1w": "1 Week",
+      "1m": "1 Month",
+      "1y": "1 Year",
+      "all": "All time"
+    },
+    "seeMore": "See more",
     "allInvoices": "All Invoices",
     "viewAndManage": "View and manage",
     "myClients": "My Clients",
@@ -205,6 +213,8 @@
     "support": "Support",
     "new": "New",
     "automatedRemindersAvailable": "Automated reminders available",
+    "aiSuggestions": "AI Suggestions",
+    "aiSuggestionsDescription": "Recommendations based on your data",
     "open": "Open",
     "launch": "Launch"
   },
@@ -259,9 +269,12 @@
     "planFree": "Free",
     "planPro": "Pro",
     "planEnterprise": "Enterprise",
+    "planPayAsYouGo": "Pay-as-you-go",
     "userProfile": "User Profile",
     "accountInfo": "Your account information",
     "workspace": "Workspace",
+    "workspaceTypeCompany": "Company",
+    "workspaceTypeIndividual": "Individual",
     "preferences": "Preferences",
     "preferencesDescription": "Notifications, legal notices, branding",
     "manageAccount": "Manage my account",
@@ -503,6 +516,7 @@
         "add": "Add line",
         "edit": "Edit line {description}",
         "delete": "Delete line {description}",
+        "description": "Description",
         "unitPrice": "Unit price",
         "quantity": "Quantity",
         "vat": "VAT",
@@ -1352,8 +1366,8 @@
   },
   "landing": {
     "hero": {
-      "title": "Create and send your invoices in 60 seconds, pay with mobile money",
-      "subtitle": "Facturly is the mobile-first invoicing platform for West Africa. Create your invoices in 60 seconds, send them via WhatsApp, and receive payments via Orange Money, MTN, Wave and 60+ mobile money payment methods.",
+      "title": "Invoicing in 60 seconds",
+      "subtitle": "The mobile-first platform to create, send and receive payments in West Africa.",
       "ctaAuthenticated": "Access dashboard",
       "ctaGuest": "Get started for free",
       "features": {
@@ -3122,6 +3136,50 @@
     },
     "errors": {
       "loadingError": "Error loading recurring invoices"
+    },
+    "form": {
+      "createTitle": "Create recurring invoice",
+      "editTitle": "Edit recurring invoice",
+      "description": "Configure your recurring invoice to automate your billing",
+      "client": "Client",
+      "selectClient": "Select a client",
+      "searchClient": "Search for a client...",
+      "noClient": "No client found",
+      "createClient": "Create a client",
+      "name": "Name",
+      "namePlaceholder": "Ex: Monthly invoice - Subscription",
+      "frequency": "Frequency",
+      "frequencyOptions": {
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly"
+      },
+      "startDate": "Start date",
+      "endDate": "End date",
+      "selectDate": "Select a date",
+      "dayOfMonth": "Day of month",
+      "autoSend": "Auto send",
+      "autoSendDescription": "Automatically send the generated invoice by email",
+      "recipientEmail": "Recipient email",
+      "recipientEmailPlaceholder": "email@example.com",
+      "notificationDaysBefore": "Notification before generation",
+      "notificationDaysBeforeDescription": "Number of days before generation to send a notification",
+      "items": "Items",
+      "addItem": "Add item",
+      "item": "Item",
+      "product": "Product",
+      "selectProduct": "Select a product",
+      "noProduct": "No product",
+      "description": "Description",
+      "descriptionPlaceholder": "Item description",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "cancel": "Cancel",
+      "create": "Create",
+      "update": "Update",
+      "createSuccess": "Recurring invoice created successfully",
+      "updateSuccess": "Recurring invoice updated successfully",
+      "error": "Error saving"
     }
   },
   "reports": {
@@ -3168,6 +3226,35 @@
       "success": "Export successful",
       "error": "Export error",
       "errorDescription": "An error occurred during export. Please try again."
+    }
+  },
+  "whatsapp": {
+    "messageStyles": {
+      "label": "WhatsApp Message Style",
+      "helperText": "Choose the tone of your WhatsApp messages based on your client type",
+      "selected": "Selected",
+        "styles": {
+          "professionalWarm": {
+            "label": "Professional & Warm",
+            "description": "A professional tone with a human touch, perfect for maintaining trust and a strong client relationship."
+          },
+          "direct": {
+            "label": "Direct",
+            "description": "Clear, concise, and straight to the point. Ideal for encouraging quick payments."
+          },
+          "premium": {
+            "label": "Premium",
+            "description": "A formal and structured tone, well suited for corporate clients and established business relationships."
+          },
+          "humane": {
+            "label": "Human",
+            "description": "More personal and friendly, as if you were writing directly to your client."
+          },
+          "compact": {
+            "label": "Compact",
+            "description": "Short and minimal. Perfect for WhatsApp or quick message exchanges."
+        }
+      }
     }
   }
 }

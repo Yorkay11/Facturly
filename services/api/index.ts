@@ -131,7 +131,6 @@ export const {
   useGetPublicInvoiceQuery,
   useAcceptPublicInvoiceMutation,
   useRejectPublicInvoiceMutation,
-  usePayPublicInvoiceMutation,
   // Notifications
   useGetNotificationsQuery,
   useGetUnreadNotificationsCountQuery,

@@ -27,7 +27,7 @@ export function GlobalLoader({
     >
       <div
         className={cn(
-          "flex flex-col items-center gap-6",
+          "flex flex-col items-center gap-4",
           "animate-loader-fade-in"
         )}
       >

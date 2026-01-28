@@ -85,7 +85,7 @@ export default function ProductDetailPage() {
           ]}
           className="text-xs"
         />
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold">{t('errors.missingId')}</p>
           <p className="mt-2">{t('errors.missingIdDescription')}</p>
           <Button
@@ -111,7 +111,7 @@ export default function ProductDetailPage() {
 
   if (isError || !product) {
     return (
-      <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+      <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
         {t('errors.notFound')}
       </div>
     );
@@ -199,7 +199,7 @@ export default function ProductDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
         <Card className="self-start">
           <CardHeader>
             <CardTitle>{t('description.title')}</CardTitle>

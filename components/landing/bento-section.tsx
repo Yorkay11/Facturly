@@ -32,7 +32,7 @@ const BentoCard = ({ title, description, Component }: BentoCardProps) => (
     {/* Glow effect on hover */}
     <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
 
-    <div className="self-stretch p-6 flex flex-col justify-start items-start gap-2 relative z-10 transition-transform duration-300 group-hover:translate-y-[-2px]">
+    <div className="self-stretch p-4 flex flex-col justify-start items-start gap-2 relative z-10 transition-transform duration-300 group-hover:translate-y-[-2px]">
       <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
         <p className="self-stretch text-foreground text-lg font-normal leading-7 transition-colors duration-300 group-hover:text-primary/90">
           {title} <br />
@@ -84,7 +84,7 @@ export function BentoSection() {
 
   return (
     <section className="w-full px-5 flex flex-col justify-center items-center overflow-visible bg-transparent">
-      <div className="w-full py-8 md:py-16 relative flex flex-col justify-start items-start gap-6">
+      <div className="w-full py-8 md:py-16 relative flex flex-col justify-start items-start gap-4">
         <div className="w-[547px] h-[938px] absolute top-[614px] left-[80px] origin-top-left rotate-[-33.39deg] bg-primary/10 blur-[130px] z-0" />
         <div className="self-stretch py-8 md:py-14 flex flex-col justify-center items-center gap-2 z-10">
           <div className="flex flex-col justify-start items-center gap-4">
@@ -96,7 +96,7 @@ export function BentoSection() {
             </p>
           </div>
         </div>
-        <div className="self-stretch grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 z-10">
+        <div className="self-stretch grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 z-10">
           {cards.map((card) => (
             <BentoCard key={card.title} {...card} />
           ))}

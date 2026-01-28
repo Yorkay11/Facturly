@@ -6,16 +6,10 @@ import { Link, useRouter } from '@/i18n/routing';
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -175,110 +169,167 @@ export default function ClientsPage() {
 
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-48 w-full" />
+          <Card className="border-primary/20">
+            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-10 w-full max-w-sm" />
+            </CardHeader>
+          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Card key={i} className="border-slate-200">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           {t('loadError')}
         </div>
       ) : clients && clients.length ? (
-        <Card className="border-primary/20">
-          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle className="text-primary">{t('directory')}</CardTitle>
-              <p className="text-sm text-foreground/60">{t('directoryDescription')}</p>
-            </div>
-            <Input placeholder={t('searchPlaceholder')} className="max-w-sm" />
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-primary/5">
-                <TableRow>
-                  <TableHead>{t('client')}</TableHead>
-                  <TableHead>{t('email')}</TableHead>
-                  <TableHead>{t('phone')}</TableHead>
-                  <TableHead>{t('city')}</TableHead>
-                  <TableHead>{t('country')}</TableHead>
-                  <TableHead className="text-right">{t('addDate')}</TableHead>
-                  <TableHead className="w-[100px] text-right">{t('actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {clients
-                  .filter((client) => client.id) // Filtrer les clients sans ID
-                  .map((client) => (
-                    <TableRow 
-                      key={client.id} 
-                      className="hover:bg-primary/5 cursor-pointer"
-                      onClick={() => handleRowClick(client.id)}
-                    >
-                      <TableCell className="font-medium text-primary">
-                        {client.name}
-                      </TableCell>
-                    <TableCell className="text-sm text-foreground/70">
-                      {client.email ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-foreground/60">
-                      {client.phone ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-foreground/60">
-                      {client.city ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-foreground/60">
-                      {client.country ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right text-sm text-foreground/60">
-                      {client.createdAt ? formatDate(client.createdAt) : "—"}
-                    </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => handleDeleteClick(e, client)}
-                        disabled={isDeleting}
-                        title={t('deleteAction')}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
+        <div className="space-y-4">
+          <Card className="border-primary/20">
+            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="text-primary">{t('directory')}</CardTitle>
+                <p className="text-sm text-foreground/60">{t('directoryDescription')}</p>
+              </div>
+              <Input placeholder={t('searchPlaceholder')} className="max-w-sm" />
+            </CardHeader>
+          </Card>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {clients
+              .filter((client) => client.id)
+              .map((client) => {
+                const getInitials = () => {
+                  if (!client.name) return "?";
+                  const parts = client.name.trim().split(/\s+/);
+                  if (parts.length >= 2) {
+                    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+                  }
+                  return client.name.substring(0, 2).toUpperCase();
+                };
+
+                return (
+                  <Card
+                    key={client.id}
+                    className="group relative border-slate-200 hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+                    onClick={() => handleRowClick(client.id)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3 mb-3">
+                        <Avatar className="h-12 w-12 shrink-0">
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                            {getInitials()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-slate-900 truncate group-hover:text-primary transition-colors">
+                            {client.name}
+                          </h3>
+                          {client.city && client.country && (
+                            <p className="text-xs text-slate-500 truncate">
+                              {client.city}, {client.country}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-slate-400 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(e, client);
+                          }}
+                          disabled={isDeleting}
+                          title={t('deleteAction')}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {client.email && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600">
+                            <FaEnvelope className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{client.email}</span>
+                          </div>
+                        )}
+                        {client.phone && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600">
+                            <FaPhone className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{client.phone}</span>
+                          </div>
+                        )}
+                        {client.city && !client.country && (
+                          <div className="flex items-center gap-2 text-xs text-slate-600">
+                            <FaMapMarkerAlt className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{client.city}</span>
+                          </div>
+                        )}
+                        {client.createdAt && (
+                          <div className="flex items-center gap-2 text-xs text-slate-500 pt-1 border-t border-slate-100">
+                            <FaCalendarAlt className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span>{formatDate(client.createdAt)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+          </div>
+
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t px-6 py-4">
-              <div className="text-sm text-muted-foreground">
-                {t('pageInfo', { current: currentPage, total: totalPages, count: totalClients })}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1 || isLoading}
-                >
-                  <IoChevronBackOutline className="h-4 w-4" />
-                  {t('previous')}
-                </Button>
-                <div className="text-sm font-medium px-3">
-                  {currentPage} / {totalPages}
+            <Card className="border-primary/20">
+              <CardContent className="px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    {t('pageInfo', { current: currentPage, total: totalPages, count: totalClients })}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1 || isLoading}
+                    >
+                      <IoChevronBackOutline className="h-4 w-4" />
+                      {t('previous')}
+                    </Button>
+                    <div className="text-sm font-medium px-3">
+                      {currentPage} / {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages || isLoading}
+                    >
+                      {t('next')}
+                      <IoChevronForwardOutline className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages || isLoading}
-                >
-                  {t('next')}
-                  <IoChevronForwardOutline className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
-        </Card>
+        </div>
       ) : (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
           <p className="text-xl font-semibold text-primary">{t('noClients')}</p>

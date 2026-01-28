@@ -5,25 +5,18 @@ import { useState, useMemo } from "react";
 import StatCard from "@/components/dashboard/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  IoDocumentTextOutline,
-  IoRefreshOutline,
-  IoPeopleOutline,
-  IoPieChartOutline,
-  IoWalletOutline,
-  IoTrendingUpOutline,
-  IoTrendingDownOutline,
-  IoHelpCircleOutline,
-  IoBookOutline,
-  IoMailOutline,
-  IoOpenOutline,
-  IoArrowForwardOutline,
-  IoBarChartOutline,
-  IoListOutline,
-  IoCubeOutline,
-  IoSettingsOutline,
-  IoRepeatOutline,
-} from "react-icons/io5";
-import { FaMagic } from "react-icons/fa";
+  FaFileInvoice,
+  FaUsers,
+  FaChartPie,
+  FaWallet,
+  FaArrowTrendUp,
+  FaArrowTrendDown,
+  FaChartBar,
+  FaList,
+  FaBox,
+  FaGear,
+  FaArrowRight,
+} from "react-icons/fa6";
 import QuickActionCard from "@/components/dashboard/QuickActionCard";
 import RevenueChart from "@/components/dashboard/RevenueChart";
 import RecentActivity from "@/components/dashboard/RecentActivity";
@@ -41,11 +34,13 @@ import {
 } from "@/services/facturlyApi";
 import { InvoiceLimitBanner } from "@/components/dashboard/InvoiceLimitBanner";
 import { Skeleton } from "@/components/ui/skeleton";
+import Breadcrumb from "@/components/ui/breadcrumb";
 import { formatDistanceToNow } from "date-fns";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { fr, enUS } from "date-fns/locale";
 import { interpolateMessage } from "@/utils/interpolation";
+import AISuggestionsPanel from '@/components/dashboard/AISuggestionsPanel';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -151,18 +146,36 @@ export default function DashboardPage() {
         status = "warning";
       }
 
+      // Extraire le numéro de facture depuis le titre si disponible
+      const invoiceNumberMatch = activity.title.match(/#?([A-Z0-9-]+)/);
+      const invoiceNumber = invoiceNumberMatch ? invoiceNumberMatch[1] : undefined;
+      
       // Préparer les données pour l'interpolation
+      // Utiliser clientName depuis l'activité si disponible, sinon essayer de l'extraire depuis description
+      const clientName = activity.clientName || 
+        (activity.description ? activity.description.replace(/^Client:\s*/i, '').replace(/\{\{clientName\}\}/g, '').trim() : '') ||
+        '';
+      
       const activityData: Record<string, unknown> = {
-        invoiceNumber: activity.entityType === 'invoice' ? activity.title.match(/#([A-Z0-9-]+)/)?.[1] : undefined,
-        clientName: activity.description || '',
+        invoiceNumber,
+        clientName,
         amount: activity.amount,
         currency: activity.currency,
       };
 
+      // Interpoler les messages seulement s'ils contiennent des variables
+      const title = activity.title.includes('{{') || activity.title.includes('{') 
+        ? interpolateMessage(activity.title, activityData, locale)
+        : activity.title;
+      
+      const description = activity.description && (activity.description.includes('{{') || activity.description.includes('{'))
+        ? interpolateMessage(activity.description, activityData, locale)
+        : activity.description || '';
+
       return {
         id: activity.entityId,
-        title: interpolateMessage(activity.title, activityData, locale),
-        description: interpolateMessage(activity.description || "", activityData, locale),
+        title,
+        description,
         time: timeAgo,
         status,
       };
@@ -290,14 +303,13 @@ export default function DashboardPage() {
   const isLoading = isLoadingStats || isLoadingInvoices;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-          {t('title')}
-        </h1>
-        <p className="mt-2 text-sm md:text-base text-slate-500">
-          {t('subtitle')}
-        </p>
+    <div className="space-y-6 pb-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-primary">{t('title')}</h1>
+          <p className="mt-1 text-sm text-foreground/70">{t('subtitle')}</p>
+        </div>
       </div>
 
       {/* Banner pour les utilisateurs du plan gratuit */}
@@ -308,49 +320,8 @@ export default function DashboardPage() {
         planCode={subscription?.plan || "free"}
       />
 
-      <Card className="border border-primary/20 bg-white shadow-sm">
-        <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-base text-primary">
-              {t('quickActions')}
-            </CardTitle>
-            <p className="text-xs text-primary/70">
-              {t('quickActionsDescription')}
-            </p>
-          </div>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          <QuickActionCard
-            icon={<IoDocumentTextOutline className="h-5 w-5" />}
-            title={t('createInvoice')}
-            description={t('createInvoiceDescription')}
-            onClick={() => router.push("/invoices/new")}
-            color="blue"
-          />
-          <QuickActionCard
-            icon={<IoRepeatOutline className="h-5 w-5" />}
-            title={t('recurringInvoices')}
-            description={t('recurringInvoicesDescription')}
-            onClick={() => router.push("/recurring-invoices")}
-            color="purple"
-          />
-          <QuickActionCard
-            icon={<IoRefreshOutline className="h-5 w-5" />}
-            title={t('remindPayment')}
-            description={t('remindPaymentDescription')}
-            onClick={() => router.push("/reminders")}
-            color="orange"
-          />
-          <QuickActionCard
-            icon={<IoPeopleOutline className="h-5 w-5" />}
-            title={t('addClient')}
-            description={t('addClientDescription')}
-            onClick={() => setClientModalOpen(true)}
-            color="green"
-          />
-        </CardContent>
-      </Card>
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+      {/* KPIs Principaux */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={t('monthlyRevenue')}
           value={
@@ -367,13 +338,13 @@ export default function DashboardPage() {
                 }).format(stats.monthlyRevenue)
           }
           helper={isLoading ? commonT('loading') : undefined}
-          icon={<IoWalletOutline className="h-5 w-5" />}
+          icon={<FaWallet className="h-5 w-5" />}
         />
         <StatCard
           title={t('invoicesSent')}
           value={isLoading ? "--" : stats.invoicesSent.toString()}
           helper={isLoading ? commonT('loading') : undefined}
-          icon={<IoPieChartOutline className="h-5 w-5" />}
+          icon={<FaChartPie className="h-5 w-5" />}
         />
         <StatCard
           title={t('totalPaid')}
@@ -391,7 +362,7 @@ export default function DashboardPage() {
                 }).format(stats.totalPaid)
           }
           helper={isLoading ? commonT('loading') : undefined}
-          icon={<IoTrendingUpOutline className="h-5 w-5" />}
+          icon={<FaArrowTrendUp className="h-5 w-5" />}
         />
         <StatCard
           title={t('unpaid')}
@@ -409,21 +380,25 @@ export default function DashboardPage() {
                 }).format(stats.totalUnpaid)
           }
           helper={isLoading ? commonT('loading') : undefined}
-          icon={<IoTrendingDownOutline className="h-5 w-5" />}
-          variant="accent"
+          icon={<FaArrowTrendDown className="h-5 w-5" />}
+          variant="danger"
         />
       </div>
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[1.8fr_1fr] xl:grid-cols-[2fr_1fr]">
-        <div className="space-y-6">
-          <Card className="border-primary/20 shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-primary">
-                <IoBarChartOutline className="h-5 w-5" />
-                {t('revenueTrends')}
-              </CardTitle>
-              <p className="text-xs text-foreground/60">
-                {t('revenueTrendsDescription')}
-              </p>
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-[1.8fr_1fr] xl:grid-cols-[2fr_1fr]">
+        <div className="space-y-4">
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+                    <FaChartBar className="h-4 w-4 text-primary" />
+                    {t('revenueTrends')}
+                  </CardTitle>
+                  <p className="text-[10px] text-slate-600 mt-0.5">
+                    {t('revenueTrendsDescription')}
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -437,7 +412,7 @@ export default function DashboardPage() {
                 </div>
               ) : monthlyRevenue.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <IoBarChartOutline className="h-12 w-12 text-foreground/30 mb-3" />
+                  <FaChartBar className="h-12 w-12 text-foreground/30 mb-3" />
                   <p className="text-sm font-medium text-foreground/70 mb-1">
                     {t('noDataAvailable')}
                   </p>
@@ -448,10 +423,10 @@ export default function DashboardPage() {
               ) : (
                 <>
                   <RevenueChart data={monthlyRevenue} />
-                  <div className="mt-4 grid grid-cols-2 gap-3 rounded-md border border-primary/10 bg-primary/5 p-3 text-xs">
+                  <div className="mt-6 grid grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-4">
                     <div>
-                      <p className="text-foreground/60">{t('totalPaidLabel')}</p>
-                      <p className="mt-1 text-base font-semibold text-primary">
+                      <p className="text-xs font-medium text-slate-600 mb-1.5">{t('totalPaidLabel')}</p>
+                      <p className="text-xl font-bold text-emerald-600">
                         {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                           style: "currency",
                           currency:
@@ -464,8 +439,8 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-foreground/60">{t('pendingLabel')}</p>
-                      <p className="mt-1 text-base font-semibold text-foreground/80">
+                      <p className="text-[10px] font-medium text-slate-600 mb-1">{t('pendingLabel')}</p>
+                      <p className="text-base font-bold text-amber-600">
                         {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                           style: "currency",
                           currency:
@@ -482,13 +457,23 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
-          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-        <Card className="border-primary/20 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-primary">{t('recentActivity')}</CardTitle>
-            <p className="text-xs text-foreground/60">
-              {t('activityDescription')}
-            </p>
+          <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-slate-900">{t('recentActivity')}</CardTitle>
+                <p className="text-xs text-slate-600 mt-1">
+                  {t('activityDescription')}
+                </p>
+              </div>
+              <a
+                href="/invoices"
+                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                {t('seeMore')} →
+              </a>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoadingActivities ? (
@@ -500,8 +485,8 @@ export default function DashboardPage() {
             ) : activities.length > 0 ? (
               <RecentActivity items={activities.slice(0, 3)} />
             ) : (
-              <div className="rounded-md border border-dashed border-primary/30 bg-white py-8 text-center">
-                <p className="text-sm text-foreground/60">
+              <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 py-8 text-center">
+                <p className="text-xs text-slate-600">
                   {t('noRecentActivity')}
                 </p>
               </div>
@@ -509,7 +494,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         {isLoadingAlerts ? (
-          <Card className="border-primary/20 shadow-sm">
+          <Card className="border-slate-200 shadow-sm">
             <CardContent className="pt-6">
               <div className="space-y-3">
                 <Skeleton className="h-16 w-full" />
@@ -532,29 +517,66 @@ export default function DashboardPage() {
                     },
                   ]
             }
+            seeMoreLink="/invoices?status=overdue"
+            seeMoreLabel={t('seeMore') || "Voir plus"}
           />
         )}
       </div>
         </div>
 
-        <div className="space-y-4">
+        {/* Sidebar */}
+        <div className="space-y-3">
           {/* Rapports - Top Clients */}
           <TopClientsCard limit={5} />
           
           {/* Rapports - Prévisions */}
           <RevenueForecastCard />
 
+          {/* AI Suggestions */}
+          {(() => {
+            const suggestions = [];
+            if (dashboardStats && stats.totalUnpaid > 0) {
+              const unpaidRate = Math.round((stats.totalUnpaid / (stats.totalPaid + stats.totalUnpaid)) * 100);
+              suggestions.push({
+                id: "1",
+                category: t('recentActivity'),
+                message: locale === 'fr' 
+                  ? `${unpaidRate}% de vos factures sont impayées. Envisagez d'envoyer des rappels.`
+                  : `${unpaidRate}% of your invoices are unpaid. Consider sending reminders.`,
+                actionLabel: locale === 'fr' ? "Voir les factures" : "View invoices",
+                actionLink: "/invoices",
+              });
+            }
+            if (alertsData?.overdueInvoices && alertsData.overdueInvoices.length > 0) {
+              suggestions.push({
+                id: "2",
+                category: t('toWatch'),
+                message: locale === 'fr'
+                  ? `${alertsData.overdueInvoices.length} facture${alertsData.overdueInvoices.length > 1 ? 's' : ''} en retard nécessitent votre attention.`
+                  : `${alertsData.overdueInvoices.length} overdue invoice${alertsData.overdueInvoices.length > 1 ? 's' : ''} require your attention.`,
+                actionLabel: locale === 'fr' ? "Voir les alertes" : "View alerts",
+                actionLink: "/invoices?status=overdue",
+              });
+            }
+            return suggestions.length > 0 ? (
+              <AISuggestionsPanel
+                title={t('aiSuggestions')}
+                suggestions={suggestions}
+              />
+            ) : null;
+          })()}
+
           {/* Statistiques rapides */}
-          <Card className="border-primary/20 shadow-sm">
+          <Card className="border-slate-200 shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-primary">
+              <CardTitle className="text-sm font-semibold text-slate-900">
                 {t('quickSummary')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-0">
               <div className="flex items-center justify-between border-b border-primary/10 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <IoPieChartOutline className="h-3.5 w-3.5 text-foreground/40" />
+                  <FaChartPie className="h-3.5 w-3.5 text-foreground/40" />
                   <span className="text-xs text-foreground/60">
                     {t('invoicesThisMonth')}
                   </span>
@@ -565,7 +587,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center justify-between border-b border-primary/10 pb-2.5">
                 <div className="flex items-center gap-2">
-                  <IoTrendingUpOutline className="h-3.5 w-3.5 text-foreground/40" />
+                  <FaArrowTrendUp className="h-3.5 w-3.5 text-foreground/40" />
                   <span className="text-xs text-foreground/60">
                     {t('paymentRate')}
                   </span>
@@ -582,7 +604,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <IoWalletOutline className="h-3.5 w-3.5 text-foreground/40" />
+                  <FaWallet className="h-3.5 w-3.5 text-foreground/40" />
                   <span className="text-xs text-foreground/60">
                     {t('averageRevenue')}
                   </span>
@@ -603,138 +625,82 @@ export default function DashboardPage() {
           </Card>
 
           {/* Actions rapides */}
-          <Card className="border-primary/20 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-primary">
-                <IoListOutline className="h-4 w-4" />
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900">
+                <FaList className="h-4 w-4 text-slate-600" />
                 {t('quickNavigation')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
               <button
                 onClick={() => router.push("/invoices")}
-                className="group w-full flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/10 text-left"
+                className="group w-full flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm text-left"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-100 text-blue-600">
-                  <IoDocumentTextOutline className="h-3.5 w-3.5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                  <FaFileInvoice className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-sm font-semibold text-slate-900">
                     {t('allInvoices')}
                   </p>
-                  <p className="text-[10px] text-foreground/60 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5">
                     {t('viewAndManage')}
                   </p>
                 </div>
-                <IoArrowForwardOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5" />
+                <FaArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-primary shrink-0" />
               </button>
               <button
                 onClick={() => router.push("/clients")}
-                className="group w-full flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/10 text-left"
+                className="group w-full flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm text-left"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-100 text-emerald-600">
-                  <IoPeopleOutline className="h-3.5 w-3.5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                  <FaUsers className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-sm font-semibold text-slate-900">
                     {t('myClients')}
                   </p>
-                  <p className="text-[10px] text-foreground/60 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5">
                     {t('manageAddressBook')}
                   </p>
                 </div>
-                <IoArrowForwardOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5" />
+                <FaArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-primary shrink-0" />
               </button>
               <button
                 onClick={() => router.push("/items")}
-                className="group w-full flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/10 text-left"
+                className="group w-full flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm text-left"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-purple-100 text-purple-600">
-                  <IoCubeOutline className="h-3.5 w-3.5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+                  <FaBox className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-sm font-semibold text-slate-900">
                     {t('products')}
                   </p>
-                  <p className="text-[10px] text-foreground/60 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5">
                     {t('catalogAndPricing')}
                   </p>
                 </div>
-                <IoArrowForwardOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5" />
+                <FaArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-primary shrink-0" />
               </button>
               <button
                 onClick={() => router.push("/settings")}
-                className="group w-full flex items-center gap-2.5 rounded-md border border-primary/20 bg-primary/5 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/10 text-left"
+                className="group w-full flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm text-left"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-slate-600">
-                  <IoSettingsOutline className="h-3.5 w-3.5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                  <FaGear className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-sm font-semibold text-slate-900">
                     {t('settings')}
                   </p>
-                  <p className="text-[10px] text-foreground/60 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5">
                     {t('configuration')}
                   </p>
                 </div>
-                <IoArrowForwardOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5" />
+                <FaArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-primary shrink-0" />
               </button>
-            </CardContent>
-          </Card>
-
-          {/* Support & Ressources */}
-          <Card className="border-primary/20 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-primary">
-                <IoHelpCircleOutline className="h-4 w-4" />
-                {t('resources')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 pt-0">
-              <a
-                href="https://docs.facturly.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/10"
-              >
-                <IoBookOutline className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-primary truncate">
-                    {t('documentation')}
-                  </p>
-                </div>
-                <IoOpenOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5" />
-              </a>
-              <a
-                href="mailto:support@facturly.app?subject=Demande d'assistance"
-                className="group flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/10"
-              >
-                <IoMailOutline className="h-3.5 w-3.5 flex-shrink-0 text-primary" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-primary truncate">
-                    {t('support')}
-                  </p>
-                </div>
-                <IoArrowForwardOutline className="h-3 w-3 text-primary/60 transition-transform group-hover:translate-x-0.5" />
-              </a>
-              <div className="rounded-md border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-2.5">
-                <div className="flex items-start gap-2">
-                  <FaMagic className="h-3.5 w-3.5 flex-shrink-0 text-primary mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <p className="text-xs font-semibold text-primary">
-                        {t('new')}
-                      </p>
-                      <span className="rounded-md bg-primary/20 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                        !
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-foreground/70 leading-tight">
-                      {t('automatedRemindersAvailable')}
-                    </p>
-                  </div>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>

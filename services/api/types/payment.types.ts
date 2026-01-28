@@ -158,31 +158,12 @@ export interface PublicInvoiceResponse {
   isPaid: boolean;
 }
 
-export interface PublicPayPayload {
-  method: string;
-  notes?: string;
-  email?: string;
-}
-
-export interface PublicPayResponse {
-  success: boolean;
-  payment: {
-    id: string;
-    amount: string;
-    currency: string;
-    paidAt: string;
-  };
-  invoice: {
-    id: string;
-    invoiceNumber: string;
-    status: string;
-  };
-}
-
 export interface AcceptInvoiceResponse {
   success: boolean;
   message: string;
-  paymentLink: string;
+  paymentLink: string; // Pour compatibilité
+  checkoutUrl?: string; // URL de checkout Moneroo
+  paymentId?: string; // Référence du paiement Moneroo
   remainingAmount: string;
   currency: string;
 }

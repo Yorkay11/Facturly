@@ -79,7 +79,7 @@ export default function NotificationsPage() {
     return (
       <div className="p-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <p className="text-destructive">
               {t('toasts.loadError')}
             </p>
@@ -90,7 +90,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4">
       <Breadcrumb
         items={[
           { label: dashboardT('title'), href: '/dashboard' },

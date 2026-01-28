@@ -119,9 +119,17 @@ export interface UpdateInvoicePayload {
   status?: "draft" | "sent" | "paid" | "cancelled";
 }
 
+export type WhatsAppMessageStyle = 
+  | 'professional_warm' 
+  | 'direct' 
+  | 'premium' 
+  | 'humane' 
+  | 'compact';
+
 export interface SendInvoicePayload {
   sendEmail?: boolean;
   emailTo?: string;
+  whatsappMessageStyle?: WhatsAppMessageStyle;
 }
 
 export interface MarkInvoicePaidPayload {

@@ -77,9 +77,9 @@ export function MobileMoneySection() {
   return (
     <section className="w-full py-16 md:py-24 px-4 md:px-6 relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 z-[1]" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 z-[1]" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 z-[1]" />
       
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
@@ -96,13 +96,13 @@ export function MobileMoneySection() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-4 mb-16 md:mb-20">
           {features.map((feature, index) => {
             const Icon = feature.icon
             return (
               <div
                 key={index}
-                className="group relative p-8 rounded-2xl border border-border bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
+                className="group relative p-4 rounded-2xl border border-border bg-card/50 backdrop-blur-sm hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
               >
                 <div className="flex flex-col gap-4">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -127,7 +127,7 @@ export function MobileMoneySection() {
 
         {/* CTA */}
         <div className="text-center">
-          <div className="inline-flex flex-col items-center gap-6 p-8 md:p-12 rounded-2xl border border-border bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-xl">
+          <div className="inline-flex flex-col items-center gap-4 p-4 md:p-6 rounded-2xl border border-border bg-gradient-to-br from-card to-card/50 backdrop-blur-sm shadow-xl">
             <div>
               <h3 className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
                 {t('cta.title')}

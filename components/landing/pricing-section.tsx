@@ -118,7 +118,7 @@ export function PricingSection() {
           </div>
         </div>
       </div>
-      <div className="self-stretch px-5 flex flex-col md:flex-row justify-center items-stretch gap-6 md:gap-8 mt-10 max-w-[1200px] mx-auto">
+      <div className="self-stretch px-5 flex flex-col md:flex-row justify-center items-stretch gap-4 md:gap-4 mt-10 max-w-[1200px] mx-auto">
         {pricingPlans.map((plan) => {
           const price = isAnnual ? plan.annualPrice : plan.monthlyPrice
           const monthlyEquivalent = isAnnual ? (parseFloat(plan.annualPrice) / 12).toFixed(2) : plan.monthlyPrice
@@ -138,7 +138,7 @@ export function PricingSection() {
                 </div>
               )}
               
-              <div className="p-6 md:p-8 flex flex-col gap-6">
+              <div className="p-4 md:p-4 flex flex-col gap-4">
                 {/* En-tête */}
                 <div className="flex flex-col gap-3">
                   <h3 className={`text-lg font-semibold ${plan.popular ? "text-primary-foreground" : "text-foreground"}`}>

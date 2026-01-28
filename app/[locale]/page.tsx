@@ -160,7 +160,8 @@ export default async function LandingPage() {
           __html: JSON.stringify(breadcrumbSchema),
         }}
       />
-      <div className="min-h-screen bg-background relative overflow-hidden pb-0 mt-20">
+        <CountriesBanner />
+      <div className="min-h-screen bg-background relative overflow-hidden pb-0 pt-16 md:pt-20">
           <div className="relative z-10">
           <main className="max-w-[1320px] mx-auto relative px-4 md:px-0 mb-20" id="hero-container">
             <HeroSection />
@@ -168,7 +169,6 @@ export default async function LandingPage() {
               <DashboardPreview />
             </div>
           </main>
-          <CountriesBanner />
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto px-6 mt-20 md:mt-40" delay={0.1}>
             <SocialProof />
           </AnimatedSection>

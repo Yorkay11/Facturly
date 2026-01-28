@@ -186,8 +186,8 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
   };
 
   return (
-    <Card className="w-full flex-1 space-y-6 border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="w-full flex-1 space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-slate-200/50 shadow-sm">
         <div className="space-y-1">
           <p className="text-lg font-semibold text-slate-900">{t('title')}</p>
           <p className="text-xs text-slate-500">{t('description')}</p>
@@ -207,7 +207,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
       </div>
 
       {isHydrated ? (
-        <div data-invoice-preview>
+        <div data-invoice-preview className="bg-white rounded-lg shadow-sm p-6 border border-slate-200/50">
           <TemplateComponent
             metadata={metadata}
             workspace={workspace}
@@ -222,7 +222,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
           />
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 bg-white rounded-lg p-6">
           <Skeleton className="h-6 w-48" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-[280px] rounded-xl" />
@@ -233,7 +233,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
       {/* Dialog pour petits écrans */}
       {!isLargeScreen && (
         <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-          <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-6 overflow-y-auto translate-x-[-50%] translate-y-[-50%] left-[50%] top-[50%]">
+          <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] p-4 overflow-y-auto translate-x-[-50%] translate-y-[-50%] left-[50%] top-[50%]">
             <DialogHeader>
               <DialogTitle>{t('fullscreenTitle')}</DialogTitle>
             </DialogHeader>
@@ -242,7 +242,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                 <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
               </div>
               {isHydrated ? (
-                <div className="bg-white p-8 rounded-lg shadow-sm">
+                <div className="bg-white p-4 rounded-lg shadow-sm">
                   <TemplateComponent
                     metadata={metadata}
                     workspace={workspace}
@@ -271,7 +271,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
       {/* Sheet pour grands écrans */}
       {isLargeScreen && (
         <Sheet open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-y-auto p-6">
+          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-y-auto p-4">
             <SheetHeader>
               <SheetTitle>{t('fullscreenTitle')}</SheetTitle>
             </SheetHeader>
@@ -280,7 +280,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                 <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
               </div>
               {isHydrated ? (
-                <div className="bg-white p-8 rounded-lg shadow-sm max-w-5xl mx-auto">
+                <div className="bg-white p-4 rounded-lg shadow-sm max-w-5xl mx-auto">
                   <TemplateComponent
                     metadata={metadata}
                     workspace={workspace}
@@ -305,7 +305,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
           </SheetContent>
         </Sheet>
       )}
-    </Card>
+    </div>
   );
 };
 

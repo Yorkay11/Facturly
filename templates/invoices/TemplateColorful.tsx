@@ -27,7 +27,7 @@ const TemplateColorful = ({
     <div className="max-w-[850px] mx-auto bg-white rounded-[20px] overflow-hidden shadow-2xl">
       {/* Colorful Header */}
       <div
-        className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white p-10 text-center"
+        className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white p-6 text-center"
         style={{
           background: template.accentColor
             ? `linear-gradient(135deg, ${template.accentColor}, ${template.accentColor}dd)`
@@ -38,7 +38,7 @@ const TemplateColorful = ({
         <p className="text-base opacity-90 tracking-wide">N° {metadata.subject || "N/A"}</p>
       </div>
 
-      <div className="p-10">
+      <div className="p-6">
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
           {/* Entreprise Card */}
@@ -126,7 +126,7 @@ const TemplateColorful = ({
 
         {/* Totals Card */}
         <div
-          className="bg-gradient-to-br from-[#fa709a] to-[#fee140] rounded-[15px] p-6 mt-8 text-white"
+          className="bg-gradient-to-br from-[#fa709a] to-[#fee140] rounded-[15px] p-4 mt-8 text-white"
           style={{
             background: template.accentColor
               ? `linear-gradient(135deg, ${template.accentColor}cc, ${template.accentColor}99)`

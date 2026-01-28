@@ -193,7 +193,7 @@ export default function ItemsPage() {
           <Skeleton className="h-48 w-full" />
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           {t('errors.loadingError')}
         </div>
       ) : products && products.length ? (

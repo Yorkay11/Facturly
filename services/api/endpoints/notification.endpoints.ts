@@ -11,9 +11,26 @@ import type {
 } from '../types';
 import type { TagTypes } from '../base';
 
+export interface VapidPublicKeyResponse {
+  vapidPublicKey: string | null;
+}
+
+export interface RegisterPushSubscriptionPayload {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  locale?: string;
+}
+
+export interface UnregisterPushSubscriptionPayload {
+  endpoint: string;
+}
+
 export const notificationEndpoints = (
   builder: EndpointBuilder<BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>, TagTypes, 'facturlyApi'>
 ) => ({
+  getVapidPublicKey: builder.query<VapidPublicKeyResponse, void>({
+    query: () => '/notifications/vapid-public-key',
+  }),
   getNotifications: builder.query<PaginatedResponse<Notification>, NotificationListQueryParams | void>({
     query: (params) => {
       const searchParams = new URLSearchParams();
@@ -51,5 +68,26 @@ export const notificationEndpoints = (
       method: "DELETE",
     }),
     invalidatesTags: ["Notification"],
+  }),
+  registerPushSubscription: builder.mutation<{ success: boolean }, RegisterPushSubscriptionPayload>({
+    query: (body) => ({
+      url: '/notifications/push-subscribe',
+      method: 'POST',
+      body,
+    }),
+  }),
+  unregisterPushSubscription: builder.mutation<{ success: boolean }, UnregisterPushSubscriptionPayload>({
+    query: (body) => ({
+      url: '/notifications/push-unsubscribe',
+      method: 'POST',
+      body,
+    }),
+  }),
+  testPushNotification: builder.mutation<{ success: boolean }, void>({
+    query: () => ({
+      url: '/notifications/test-push',
+      method: 'POST',
+    }),
+    invalidatesTags: ['Notification'],
   }),
 });

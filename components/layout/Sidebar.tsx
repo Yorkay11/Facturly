@@ -17,6 +17,7 @@ import {
   FaXmark,
   FaChevronLeft,
   FaBuilding,
+  FaPlus,
 } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -28,12 +29,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
-import { useGetMeQuery, useGetWorkspaceQuery, useGetSubscriptionQuery, useLogoutMutation } from "@/services/facturlyApi";
+import { useGetMeQuery, useLogoutMutation } from "@/services/facturlyApi";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { CreateWorkspaceModal } from "@/components/workspace/CreateWorkspaceModal";
+import { clearWorkspaceIdCookie } from "@/lib/workspace-cookie";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useTranslations } from 'next-intl';
-import { Badge } from "@/components/ui/badge";
 import { useSidebar } from "@/contexts/SidebarContext";
 import {
   Popover,
@@ -211,9 +214,17 @@ export const Sidebar = ({
   const commonT = useTranslations('common');
   
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
-  const { data: workspace } = useGetWorkspaceQuery();
-  const { data: subscription, isLoading: isLoadingSubscription } = useGetSubscriptionQuery();
+  const {
+    currentWorkspace: workspace,
+    workspaces,
+    currentWorkspaceId,
+    setCurrentWorkspaceId,
+    isLoadingWorkspaces,
+  } = useWorkspace();
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [workspacePopoverOpen, setWorkspacePopoverOpen] = useState(false);
+  const isChangingWorkspaceRef = useRef(false);
   
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -225,6 +236,14 @@ export const Sidebar = ({
   
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const { isCollapsed, toggleCollapsed } = useSidebar();
+  const effectiveCollapsed = isCollapsed && !isMobile;
+  
+  // Fermer le popover quand le workspace change
+  useEffect(() => {
+    if (currentWorkspaceId) {
+      setWorkspacePopoverOpen(false);
+    }
+  }, [currentWorkspaceId]);
 
   // Navigation items
   const navItems = [
@@ -321,23 +340,15 @@ export const Sidebar = ({
     return parts.length > 0 ? parts.join(" ") : user.email;
   };
 
-  const getSubscriptionPlanName = () => {
-    if (!subscription) return tTopbar('noPlan');
-    const planNames: Record<"free" | "pro" | "enterprise" | "pay_as_you_go", string> = {
-      free: tTopbar('planFree'),
-      pro: tTopbar('planPro'),
-      enterprise: tTopbar('planEnterprise'),
-      pay_as_you_go: tTopbar('planPayAsYouGo') || 'Pay-as-you-go'
-    };
-    return planNames[subscription.plan] || tTopbar('noPlan');
-  };
-
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-white min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="flex h-12 items-center justify-between border-b border-slate-200 px-2">
-        {!isCollapsed && (
-          <Link href="/dashboard" className="flex items-center flex-1 min-w-0">
+      <div className={cn(
+        "flex items-center justify-between border-b border-slate-200 px-2",
+        isMobile ? "h-14 min-h-14" : "h-12"
+      )}>
+        {!effectiveCollapsed && (
+          <Link href="/dashboard" className="flex items-center flex-1 min-w-0" onClick={() => isMobile && setIsOpen(false)}>
             <Image
               src="/logos/logo.png"
               alt="Facturly"
@@ -347,7 +358,7 @@ export const Sidebar = ({
             />
           </Link>
         )}
-        {isCollapsed && (
+        {effectiveCollapsed && (
           <Link href="/dashboard" className="flex items-center justify-center w-full">
             <Image
               src="/logos/icon.png"
@@ -377,29 +388,36 @@ export const Sidebar = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-9 w-9 -mr-1 touch-manipulation"
             onClick={() => setIsOpen(false)}
+            aria-label="Fermer le menu"
           >
-            <FaXmark className="h-4 w-4" />
+            <FaXmark className="h-5 w-5" />
           </Button>
         )}
       </div>
 
       {/* Workspace Selection */}
-      {!isCollapsed && workspace && (
-        <div className="border-b border-slate-200 px-2 py-1.5">
-          <Popover>
+      {!effectiveCollapsed && (workspace || isLoadingWorkspaces) && (
+        <div className={cn(
+          "border-b border-slate-200 flex-shrink-0",
+          isMobile ? "px-3 py-2" : "px-2 py-1.5"
+        )}>
+          <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
-              <button className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors hover:bg-slate-50 text-left">
+              <button className={cn(
+                "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors hover:bg-slate-50 text-left touch-manipulation",
+                isMobile ? "px-3 py-2.5" : "px-2 py-1.5"
+              )}>
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                   <FaBuilding className="h-3 w-3" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-semibold text-slate-900 truncate leading-tight">
-                    {workspace.name || tTopbar('workspace')}
+                    {workspace?.name || tTopbar('workspace')}
                   </p>
                   <p className="text-[9px] text-slate-500 truncate leading-tight mt-0.5">
-                    {workspace.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
+                    {workspace ? (workspace.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')) : '…'}
                   </p>
                 </div>
                 <FaChevronDown className="h-3 w-3 text-slate-400 shrink-0" />
@@ -407,39 +425,74 @@ export const Sidebar = ({
             </PopoverTrigger>
             <PopoverContent className="w-64 p-3" align="start">
               <div className="space-y-2">
-                <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <FaBuilding className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate">
-                      {workspace.name || tTopbar('workspace')}
-                    </p>
-                    <p className="text-xs text-slate-500 truncate">
-                      {workspace.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
-                    </p>
-                  </div>
+                <p className="text-xs font-semibold text-slate-500 px-1">{tTopbar('yourWorkspaces')}</p>
+                {workspaces.map((w) => (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => {
+                      if (isChangingWorkspaceRef.current || w.id === currentWorkspaceId) return;
+                      isChangingWorkspaceRef.current = true;
+                      setWorkspacePopoverOpen(false);
+                      setCurrentWorkspaceId(w.id);
+                      if (isMobile) setIsOpen(false);
+                      setTimeout(() => {
+                        isChangingWorkspaceRef.current = false;
+                      }, 500);
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
+                      w.id === currentWorkspaceId
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-slate-100 text-slate-700"
+                    )}
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <FaBuilding className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {w.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                <div className="border-t border-slate-200 pt-2 space-y-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs"
+                    onClick={() => {
+                      setCreateModalOpen(true);
+                      setWorkspacePopoverOpen(false);
+                    }}
+                  >
+                    <FaPlus className="h-3.5 w-3.5 mr-2" />
+                    {tTopbar('createWorkspace')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs"
+                    onClick={() => {
+                      handleNavigation("/settings?tab=workspace");
+                      setWorkspacePopoverOpen(false);
+                      if (isMobile) setIsOpen(false);
+                    }}
+                  >
+                    <FaGear className="h-3.5 w-3.5 mr-2" />
+                    {tTopbar('manageAccount')}
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-xs"
-                  onClick={() => {
-                    handleNavigation("/settings?tab=workspace");
-                    if (isMobile) setIsOpen(false);
-                  }}
-                >
-                  <FaGear className="h-3.5 w-3.5 mr-2" />
-                  {tTopbar('manageAccount')}
-                </Button>
               </div>
             </PopoverContent>
           </Popover>
         </div>
       )}
-      {isCollapsed && workspace && (
+      {effectiveCollapsed && (workspace || isLoadingWorkspaces) && (
         <div className="border-b border-slate-200 px-2 py-1.5 flex justify-center">
-          <Popover>
+          <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
               <button className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
                 <FaBuilding className="h-3.5 w-3.5" />
@@ -447,31 +500,66 @@ export const Sidebar = ({
             </PopoverTrigger>
             <PopoverContent className="w-64 p-3" align="start">
               <div className="space-y-2">
-                <div className="flex items-center gap-3 pb-2 border-b border-slate-200">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <FaBuilding className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate">
-                      {workspace.name || tTopbar('workspace')}
-                    </p>
-                    <p className="text-xs text-slate-500 truncate">
-                      {workspace.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
-                    </p>
-                  </div>
+                <p className="text-xs font-semibold text-slate-500 px-1">{tTopbar('yourWorkspaces')}</p>
+                {workspaces.map((w) => (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => {
+                      if (isChangingWorkspaceRef.current || w.id === currentWorkspaceId) return;
+                      isChangingWorkspaceRef.current = true;
+                      setWorkspacePopoverOpen(false);
+                      setCurrentWorkspaceId(w.id);
+                      if (isMobile) setIsOpen(false);
+                      setTimeout(() => {
+                        isChangingWorkspaceRef.current = false;
+                      }, 500);
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
+                      w.id === currentWorkspaceId
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-slate-100 text-slate-700"
+                    )}
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <FaBuilding className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {w.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                <div className="border-t border-slate-200 pt-2 space-y-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs"
+                    onClick={() => {
+                      setCreateModalOpen(true);
+                      setWorkspacePopoverOpen(false);
+                    }}
+                  >
+                    <FaPlus className="h-3.5 w-3.5 mr-2" />
+                    {tTopbar('createWorkspace')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs"
+                    onClick={() => {
+                      handleNavigation("/settings?tab=workspace");
+                      setWorkspacePopoverOpen(false);
+                      if (isMobile) setIsOpen(false);
+                    }}
+                  >
+                    <FaGear className="h-3.5 w-3.5 mr-2" />
+                    {tTopbar('manageAccount')}
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-xs"
-                  onClick={() => {
-                    handleNavigation("/settings?tab=workspace");
-                    if (isMobile) setIsOpen(false);
-                  }}
-                >
-                  <FaGear className="h-3.5 w-3.5 mr-2" />
-                  {tTopbar('manageAccount')}
-                </Button>
               </div>
             </PopoverContent>
           </Popover>
@@ -479,7 +567,10 @@ export const Sidebar = ({
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-1.5 space-y-0.5">
+      <nav className={cn(
+        "flex-1 overflow-y-auto overscroll-contain px-2 py-1.5 space-y-0.5",
+        isMobile && "py-2 space-y-1"
+      )}>
         {navItems.map((item) => {
           const active = isActive(item.href, item.children);
           const Icon = active ? item.iconActive : item.icon;
@@ -488,108 +579,38 @@ export const Sidebar = ({
             pathname === child.href || pathname?.startsWith(`${child.href}/`)
           );
 
-          // Mode collapsed: afficher avec tooltip/popover
-          if (isCollapsed) {
-            const [isHovered, setIsHovered] = useState(false);
-            
+          if (effectiveCollapsed) {
             if (item.children) {
-              // Item avec enfants en mode collapsed: popover au survol
               return (
-                <Popover key={item.href} open={isHovered} onOpenChange={setIsHovered}>
-                  <PopoverTrigger asChild>
-                    <button
-                      onMouseEnter={() => setIsHovered(true)}
-                      onMouseLeave={() => setIsHovered(false)}
-                      className={cn(
-                        "w-full flex items-center justify-center rounded-md p-2 text-xs font-medium transition-colors",
-                        active || hasActiveChild
-                          ? "bg-primary/10 text-primary"
-                          : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                      )}
-                      title={item.label}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    side="right" 
-                    align="start"
-                    className="w-56 p-2"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                  >
-                    <div className="space-y-1">
-                      <div className="px-2 py-1.5 text-xs font-semibold text-slate-900 border-b border-slate-200">
-                        {item.label}
-                      </div>
-                      {item.children.map((child) => {
-                        const childActive = pathname === child.href || pathname?.startsWith(`${child.href}/`);
-                        return (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleNavClick(child.href);
-                              setIsHovered(false);
-                            }}
-                            className={cn(
-                              "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors",
-                              childActive
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                            )}
-                          >
-                            {child.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              );
-            } else {
-              // Item simple en mode collapsed: tooltip au survol
-              return (
-                <Popover key={item.href} open={isHovered} onOpenChange={setIsHovered}>
-                  <PopoverTrigger asChild>
-                    <Link
-                      href={item.href}
-                      onMouseEnter={() => setIsHovered(true)}
-                      onMouseLeave={() => setIsHovered(false)}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleNavClick(item.href);
-                        setIsHovered(false);
-                      }}
-                      className={cn(
-                        "w-full flex items-center justify-center rounded-md p-2 text-xs font-medium transition-colors",
-                        active
-                          ? "bg-primary/10 text-primary"
-                          : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                      )}
-                      title={item.label}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </Link>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    side="right" 
-                    align="center"
-                    className="px-2 py-1.5 text-xs font-medium"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                  >
-                    {item.label}
-                  </PopoverContent>
-                </Popover>
+                <CollapsedNavItemWithChildren
+                  key={item.href}
+                  item={{ ...item, children: item.children }}
+                  Icon={Icon}
+                  active={active || !!hasActiveChild}
+                  pathname={pathname ?? ""}
+                  handleNavClick={handleNavClick}
+                />
               );
             }
+            return (
+              <CollapsedNavItem
+                key={item.href}
+                item={item}
+                Icon={Icon}
+                active={active}
+                handleNavClick={handleNavClick}
+              />
+            );
           }
 
-          // Mode expanded: affichage normal
+          const btnCls = "w-full flex items-center justify-between rounded-md text-xs font-medium transition-colors touch-manipulation";
+          const linkCls = "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors touch-manipulation";
+          const navClsActive = "bg-primary/10 text-primary";
+          const navClsInactive = "text-slate-700 hover:bg-slate-100 hover:text-slate-900";
+          const padY = isMobile ? "py-3 px-3" : "px-2 py-1.5";
+          const childPadY = isMobile ? "py-2.5 px-3" : "px-2 py-1";
+          const childMl = isMobile ? "ml-4" : "ml-6";
+
           return (
             <div key={item.href}>
               {item.children ? (
@@ -597,25 +618,23 @@ export const Sidebar = ({
                   <button
                     onClick={() => toggleExpanded(item.href)}
                     className={cn(
-                      "w-full flex items-center justify-between rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
-                      active || hasActiveChild
-                        ? "bg-primary/10 text-primary"
-                        : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                      btnCls, padY,
+                      active || hasActiveChild ? navClsActive : navClsInactive
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-[16px] w-[16px] shrink-0" />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>
                     </div>
                     <FaChevronDown 
                       className={cn(
-                        "h-3 w-3 shrink-0 transition-transform duration-200",
+                        "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
                         isExpanded ? "rotate-180" : ""
                       )} 
                     />
                   </button>
                   {isExpanded && (
-                    <div className="ml-6 mt-0.5 space-y-0.5">
+                    <div className={cn(childMl, "mt-0.5 space-y-0.5")}>
                       {item.children.map((child) => {
                         const childActive = pathname === child.href || pathname?.startsWith(`${child.href}/`);
                         return (
@@ -627,7 +646,8 @@ export const Sidebar = ({
                               handleNavClick(child.href);
                             }}
                             className={cn(
-                              "block rounded-md px-2 py-1 text-[11px] transition-colors",
+                              "block rounded-md text-[11px] transition-colors touch-manipulation",
+                              childPadY,
                               childActive
                                 ? "bg-primary/10 text-primary font-medium"
                                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -648,13 +668,11 @@ export const Sidebar = ({
                     handleNavClick(item.href);
                   }}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors",
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                    linkCls, padY,
+                    active ? navClsActive : navClsInactive
                   )}
                 >
-                  <Icon className="h-[16px] w-[16px] shrink-0" />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{item.label}</span>
                 </Link>
               )}
@@ -664,8 +682,11 @@ export const Sidebar = ({
       </nav>
 
       {/* User profile */}
-      <div className="border-t border-slate-200 p-2">
-        {isCollapsed ? (
+      <div className={cn(
+        "border-t border-slate-200 p-2 flex-shrink-0",
+        isMobile && "p-3"
+      )}>
+        {effectiveCollapsed ? (
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -698,9 +719,6 @@ export const Sidebar = ({
                     <p className="text-xs font-semibold text-slate-900 truncate">
                       {isLoadingUser ? "..." : getUserDisplayName()}
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">
-                      {isLoadingSubscription ? "..." : getSubscriptionPlanName()}
-                    </p>
                   </div>
                 </div>
                 <Button
@@ -721,19 +739,25 @@ export const Sidebar = ({
           <button
             type="button"
             onClick={() => setProfileOpen(true)}
-            className="w-full flex items-center gap-2 rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
+            className={cn(
+              "w-full flex items-center gap-2 rounded-md border border-slate-200 bg-white transition-colors hover:bg-slate-50 touch-manipulation",
+              isMobile ? "p-3" : "p-2"
+            )}
           >
-            <Avatar className="h-7 w-7 shrink-0">
-              <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+            <Avatar className={cn("shrink-0", isMobile ? "h-9 w-9" : "h-7 w-7")}>
+              <AvatarFallback className={cn(
+                "bg-primary text-primary-foreground",
+                isMobile ? "text-xs" : "text-[10px]"
+              )}>
                 {isLoadingUser ? "..." : getInitials()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-[11px] font-semibold text-slate-900 truncate leading-tight">
+              <p className={cn(
+                "font-semibold text-slate-900 truncate leading-tight",
+                isMobile ? "text-sm" : "text-[11px]"
+              )}>
                 {isLoadingUser ? "..." : getUserDisplayName()}
-              </p>
-              <p className="text-[9px] text-slate-500 truncate leading-tight mt-0.5">
-                {isLoadingSubscription ? "..." : getSubscriptionPlanName()}
               </p>
             </div>
           </button>
@@ -770,9 +794,6 @@ export const Sidebar = ({
                 </p>
                 <p className="text-sm text-foreground/60">{user?.email}</p>
               </div>
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                {isLoadingSubscription ? commonT('loading') : getSubscriptionPlanName()}
-              </Badge>
             </div>
             <div className="space-y-3 text-sm">
               {workspace && (
@@ -821,6 +842,7 @@ export const Sidebar = ({
                 if (typeof window !== "undefined") {
                   document.cookie = "facturly_access_token=; path=/; max-age=0";
                   document.cookie = "facturly_refresh_token=; path=/; max-age=0";
+                  clearWorkspaceIdCookie();
                 }
                 toast.error(tTopbar('logoutError'), {
                   description: tTopbar('logoutErrorDescription'),
@@ -852,11 +874,17 @@ export const Sidebar = ({
     return (
       <>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetContent side="left" className="w-[280px] p-0">
-            <SidebarContent />
+          <SheetContent
+            side="left"
+            className="w-[85vw] max-w-[300px] p-0 gap-0 [&>button]:hidden h-full flex flex-col overflow-hidden"
+          >
+            <div className="flex flex-col h-full overflow-hidden min-h-0">
+              <SidebarContent />
+            </div>
           </SheetContent>
         </Sheet>
         <ProfileSheet />
+        <CreateWorkspaceModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
       </>
     );
   }
@@ -870,6 +898,7 @@ export const Sidebar = ({
         <SidebarContent />
       </aside>
       <ProfileSheet />
+      <CreateWorkspaceModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
     </>
   );
 };

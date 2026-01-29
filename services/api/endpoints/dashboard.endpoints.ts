@@ -30,11 +30,12 @@ export const dashboardEndpoints = (
   getDashboardStats: builder.query<DashboardStats, DashboardStatsQueryParams | void>({
     query: (params) => {
       const searchParams = new URLSearchParams();
-      if (params && params.month) searchParams.append("month", params.month.toString());
-      if (params && params.year) searchParams.append("year", params.year.toString());
+      if (params?.month) searchParams.append("month", params.month.toString());
+      if (params?.year) searchParams.append("year", params.year.toString());
+      if (params?.range) searchParams.append("range", params.range);
       const queryString = searchParams.toString();
       return `/dashboard/stats${queryString ? `?${queryString}` : ""}`;
     },
-    providesTags: ["Invoice", "Payment"],
+    providesTags: ["Invoice", "Payment", "Dashboard"],
   }),
 });

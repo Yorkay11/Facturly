@@ -6,7 +6,7 @@ import { IoMenuOutline, IoAddOutline, IoNotificationsOutline } from "react-icons
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useGetMeQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
+import { useGetMeQuery } from "@/services/facturlyApi";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useTranslations } from 'next-intl';
 import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
@@ -21,7 +21,6 @@ export const MobileHeader = ({ onMenuClick, onProfileClick }: MobileHeaderProps)
   const isMobile = useIsMobile();
   const { handleNavigation } = useNavigationBlock();
   const { data: user, isLoading: isLoadingUser } = useGetMeQuery();
-  const { data: subscription } = useGetSubscriptionQuery();
   const t = useTranslations('navigation');
   const tTopbar = useTranslations('topbar');
   

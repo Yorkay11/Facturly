@@ -321,13 +321,13 @@ export default function InvoicesPage() {
             <Button className="gap-2" asChild>
               <Link href="/invoices/new">
                 <Plus className="h-4 w-4" />
-                {t('new')}
+                {t('new.label')}
               </Link>
             </Button>
             <Button variant="outline" size="sm" className="gap-2" asChild>
               <Link href="/invoices/templates">
                 <Palette className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('templates') || 'Templates'}</span>
+                <span className="hidden sm:inline">{t('templates.breadcrumb.templates')}</span>
               </Link>
             </Button>
           </div>

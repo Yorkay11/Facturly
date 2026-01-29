@@ -10,11 +10,11 @@ import { productEndpoints } from './endpoints/product.endpoints';
 import { invoiceEndpoints } from './endpoints/invoice.endpoints';
 import { recurringInvoiceEndpoints } from './endpoints/recurring-invoice.endpoints';
 import { paymentEndpoints } from './endpoints/payment.endpoints';
-import { billingEndpoints } from './endpoints/billing.endpoints';
 import { dashboardEndpoints } from './endpoints/dashboard.endpoints';
 import { reportsEndpoints } from './endpoints/reports.endpoints';
 import { settingsEndpoints } from './endpoints/settings.endpoints';
 import { notificationEndpoints } from './endpoints/notification.endpoints';
+import { billingEndpoints } from './endpoints/billing.endpoints';
 import { invoiceTemplateEndpoints } from './endpoints/invoice-template.endpoints';
 
 // Export all types
@@ -35,11 +35,11 @@ export const facturlyApi = createApi({
     ...invoiceEndpoints(builder),
     ...recurringInvoiceEndpoints(builder),
     ...paymentEndpoints(builder),
-    ...billingEndpoints(builder),
     ...dashboardEndpoints(builder),
     ...reportsEndpoints(builder),
     ...settingsEndpoints(builder),
     ...notificationEndpoints(builder),
+    ...billingEndpoints(builder),
     ...invoiceTemplateEndpoints(builder),
   }),
 });
@@ -58,6 +58,7 @@ export const {
   useUpdateUserMutation,
   // Workspaces
   useGetWorkspaceQuery,
+  useGetWorkspacesQuery,
   useCreateWorkspaceMutation,
   useUpdateWorkspaceMutation,
   // Clients
@@ -104,19 +105,6 @@ export const {
   // Settings
   useGetSettingsQuery,
   useUpdateSettingsMutation,
-  // Plans & Subscriptions
-  useGetSubscriptionQuery,
-  useCreateSubscriptionMutation,
-  usePreviewSubscriptionMutation,
-  useCancelSubscriptionMutation,
-  // Stripe
-  useCreateCheckoutSessionMutation,
-  useChangePlanMutation,
-  useCreatePortalSessionMutation,
-  // PHASE 4 : Pay-as-you-go (Crédits)
-  useGetPlansQuery,
-  usePurchaseCreditsMutation,
-  usePurchasePackMutation,
   // Dashboard
   useGetDashboardActivitiesQuery,
   useGetDashboardAlertsQuery,
@@ -134,7 +122,11 @@ export const {
   useGetUnreadNotificationsCountQuery,
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
-        useDeleteNotificationMutation,
+  useDeleteNotificationMutation,
+  useGetVapidPublicKeyQuery,
+  useRegisterPushSubscriptionMutation,
+  useUnregisterPushSubscriptionMutation,
+  useTestPushNotificationMutation,
         // Reports
         useGetRevenueByClientQuery,
         useGetRevenueByMonthQuery,
@@ -148,6 +140,10 @@ export const {
         useInitMonerooPaymentMutation,
   useGetMonerooPaymentMethodsQuery,
   useCheckMonerooPaymentStatusQuery,
+  // Billing / Credits
+  useGetPlansQuery,
+  usePurchaseCreditsMutation,
+  usePurchasePackMutation,
   // Invoice Templates
   useGetInvoiceTemplatesQuery,
   useGetDefaultInvoiceTemplateQuery,

@@ -23,13 +23,13 @@ if (!BASE_URL) {
 }
 
 // Fonction pour nettoyer les cookies et rediriger vers la page de connexion
+export const WORKSPACE_ID_COOKIE = "facturly_workspace_id";
+
 function logoutAndRedirect() {
   if (typeof window !== "undefined") {
-    // Supprimer les cookies
     document.cookie = "facturly_access_token=; path=/; max-age=0";
     document.cookie = "facturly_refresh_token=; path=/; max-age=0";
-    
-    // Rediriger vers la page de connexion
+    document.cookie = `${WORKSPACE_ID_COOKIE}=; path=/; max-age=0`;
     window.location.href = "/login";
   }
 }
@@ -47,12 +47,14 @@ const baseQuery = fetchBaseQuery({
         headers.set("authorization", `Bearer ${token}`);
       }
 
-      // Ajouter la locale depuis l'URL
-      // La locale est le premier segment du chemin (ex: /fr/dashboard ou /en/dashboard)
       const pathname = window.location.pathname;
       const localeMatch = pathname.match(/^\/(fr|en)(\/|$)/);
-      const locale = localeMatch ? localeMatch[1] : 'fr'; // Par défaut 'fr' si non trouvé
+      const locale = localeMatch ? localeMatch[1] : 'fr';
       headers.set("x-locale", locale);
+
+      const widCookie = cookies.find((c) => c.startsWith(`${WORKSPACE_ID_COOKIE}=`));
+      const wid = widCookie?.split("=")[1]?.trim();
+      if (wid) headers.set("x-workspace-id", wid);
     }
     return headers;
   },
@@ -129,21 +131,26 @@ export const baseQueryWithAuth: BaseQueryFn<
     return { data: undefined };
   }
   
-  // Gérer les erreurs d'authentification
+  // Gérer les erreurs d'authentification (sauf pour la requête login elle‑même)
   if (result.error && result.error.status === 401) {
+    const url = typeof args === "string" ? args : (args as FetchArgs).url ?? "";
+    const isLoginRequest = String(url).endsWith("/auth/login");
+    if (isLoginRequest) {
+      // Mauvaise auth sur la page login : ne pas rediriger, laisser l’erreur au formulaire
+      return result;
+    }
+
     const errorData = result.error.data as { code?: string; message?: string };
     const errorCode = errorData?.code;
-    
-    // Codes qui nécessitent une déconnexion
+
     const logoutCodes = [
       "AUTH_TOKEN_EXPIRED",
       "AUTH_TOKEN_INVALID",
       "AUTH_TOKEN_MISSING",
       "AUTH_UNAUTHORIZED",
     ];
-    
+
     if (errorCode && logoutCodes.includes(errorCode)) {
-      // Nettoyer les cookies et rediriger vers la page de connexion
       logoutAndRedirect();
     }
   }

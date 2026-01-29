@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2, FileDown, Lock, ArrowRight, Clock, CheckCircle2, AlertCircle, Info } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2, FileDown, Clock, CheckCircle2, AlertCircle, Info } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import {
@@ -64,7 +64,7 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetSubscriptionQuery, useGetWorkspaceQuery, useGetProductsQuery, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetWorkspaceQuery, useGetProductsQuery, type Invoice } from "@/services/facturlyApi"
 import { invoiceTemplates } from "@/types/invoiceTemplate"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
@@ -108,7 +108,6 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const metadataStore = useInvoiceMetadata();
     const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
     
-    // Récupérer les données du workspace et de la subscription pour le PDF
     const { data: workspace } = useGetWorkspaceQuery();
     const workspaceCurrency = workspace?.defaultCurrency || "EUR";
     
@@ -129,14 +128,9 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
     const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
-    const { data: subscription } = useGetSubscriptionQuery();
     const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
         skip: !metadataStore.clientId,
     });
-    
-    // Vérifier si l'utilisateur peut générer des PDF (Pro ou Enterprise uniquement)
-    const canGeneratePDF = subscription?.plan === "pro" || subscription?.plan === "enterprise";
-    const isFreePlan = subscription?.plan === "free";
     
     // Charger les données de la facture si on est en mode édition
     const { data: existingInvoice, isLoading: isLoadingInvoice } = useGetInvoiceByIdQuery(
@@ -1632,29 +1626,13 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                 <div className="flex flex-col gap-3">
                     {isEditMode && invoiceId && (
                         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-                            {isFreePlan && (
-                                <Alert className="mb-2 border-amber-200 bg-amber-50">
-                                    <Lock className="h-4 w-4 text-amber-600" />
-                                    <AlertTitle className="text-amber-800">{previewT('pdf.restricted.title')}</AlertTitle>
-                                    <AlertDescription className="text-amber-700">
-                                        {previewT('pdf.restricted.description')}
-                                        <Link 
-                                            href="/settings?tab=subscription" 
-                                            className="ml-1 inline-flex items-center gap-1 font-semibold text-amber-800 hover:text-amber-900 underline"
-                                        >
-                                            {previewT('pdf.restricted.upgrade')}
-                                            <ArrowRight className="h-3 w-3" />
-                                        </Link>
-                                    </AlertDescription>
-                                </Alert>
-                            )}
                             <Button 
                                 type="button"
                                 variant="outline" 
                                 size="sm" 
                                 className="w-full sm:w-auto gap-2"
                                 onClick={handleGeneratePDF}
-                                disabled={!workspace || !client || isGeneratingPDF || !canGeneratePDF}
+                                disabled={!workspace || !client || isGeneratingPDF}
                             >
                                 <FileDown className={`h-4 w-4 ${isGeneratingPDF ? "animate-spin" : ""}`} />
                                 {isGeneratingPDF ? previewT('pdf.generating') : previewT('pdf.generate')}

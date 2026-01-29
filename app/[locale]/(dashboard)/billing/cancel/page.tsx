@@ -41,7 +41,7 @@ export default function BillingCancelPage() {
 
             <div className="flex gap-4 justify-center pt-4">
               <Button asChild>
-                <Link href="/settings?tab=subscription">
+                <Link href="/settings">
                   Retour aux paramètres
                 </Link>
               </Button>

@@ -283,6 +283,9 @@
     "preferences": "Préférences",
     "preferencesDescription": "Notifications, mentions légales, branding",
     "manageAccount": "Gérer mon compte",
+    "switchWorkspace": "Changer d'espace",
+    "createWorkspace": "Créer un espace",
+    "yourWorkspaces": "Vos espaces",
     "logout": "Déconnexion",
     "loggingOut": "Déconnexion...",
     "logoutSuccess": "Déconnexion réussie",
@@ -349,6 +352,50 @@
     "empty": {
       "title": "Aucune facture pour le moment",
       "description": "Créez votre première facture pour expédier des documents professionnels et suivre vos paiements."
+    },
+    "templates": {
+      "breadcrumb": {
+        "home": "Tableau de bord",
+        "invoices": "Factures",
+        "templates": "Modèles"
+      },
+      "title": "Modèles de factures",
+      "description": "Créez et gérez des modèles réutilisables pour vos factures.",
+      "create": "Créer un modèle",
+      "createDescription": "Définissez la mise en page, les couleurs et le contenu par défaut de vos modèles.",
+      "noTemplates": "Aucun modèle pour l'instant. Créez-en un pour personnaliser l'apparence de vos factures.",
+      "created": "Modèle créé avec succès",
+      "createError": "Erreur lors de la création",
+      "updated": "Modèle mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour",
+      "deleted": "Modèle supprimé avec succès",
+      "deleteError": "Erreur lors de la suppression",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce modèle ?",
+      "duplicated": "Modèle dupliqué avec succès",
+      "duplicateError": "Erreur lors de la duplication",
+      "duplicatePrompt": "Nom du nouveau modèle :",
+      "edit": "Modifier le modèle",
+      "editDescription": "Modifiez les paramètres du modèle.",
+      "name": "Nom du modèle",
+      "baseTemplate": "Modèle de base",
+      "setAsDefault": "Définir comme modèle par défaut",
+      "logo": "Logo",
+      "logoUrl": "URL du logo",
+      "showLogo": "Afficher le logo",
+      "colors": "Couleurs",
+      "accentColor": "Couleur d'accent",
+      "textColor": "Couleur du texte",
+      "backgroundColor": "Couleur de fond",
+      "layout": "Mise en page",
+      "headerText": "Texte en-tête",
+      "footerText": "Texte pied de page",
+      "showCompanyDetails": "Afficher les détails de l'entreprise",
+      "showPaymentTerms": "Afficher les conditions de paiement",
+      "customHtml": "HTML personnalisé (optionnel)",
+      "customHtmlDescription": "Insérez du HTML personnalisé pour une mise en page avancée (à utiliser avec précaution).",
+      "cancel": "Annuler",
+      "saving": "Enregistrement...",
+      "update": "Mettre à jour"
     },
     "new": {
       "label": "Nouvelle facture",
@@ -2765,6 +2812,15 @@
       "updateError": "Erreur lors de la mise à jour",
       "deleteError": "Erreur lors de la suppression",
       "loadError": "Erreur lors du chargement des notifications. Veuillez réessayer."
+    },
+    "push": {
+      "enable": "Activer les notifications",
+      "test": "Envoyer une notif test",
+      "testSuccess": "Notification test envoyée — vérifiez votre système (ou l'onglet).",
+      "testError": "Échec de l'envoi du test.",
+      "enableSuccess": "Notifications activées.",
+      "enableError": "Impossible d'activer les notifications.",
+      "unsupported": "Push non supporté (HTTPS + Service Worker requis)."
     }
   },
   "metadata": {

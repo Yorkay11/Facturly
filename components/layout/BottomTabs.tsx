@@ -22,10 +22,8 @@ export function BottomTabs() {
   const isMobile = useIsMobile();
   const t = useTranslations('navigation');
 
-  // Récupérer le nombre de notifications non lues
-  const { data: unreadCountResponse } = useGetUnreadNotificationsCountQuery(undefined, {
-    pollingInterval: 30000,
-  });
+  // Récupérer le nombre de notifications non lues (rafraîchi via push SSE)
+  const { data: unreadCountResponse } = useGetUnreadNotificationsCountQuery(undefined);
   const unreadCount = unreadCountResponse?.count ?? 0;
 
   // Ne pas afficher sur certaines pages

@@ -25,15 +25,10 @@ export default function NotificationsPage() {
   }>({});
 
   const { data: notificationsResponse, isLoading, error } = useGetNotificationsQuery(
-    { page: currentPage, limit: 20, ...filters },
-    {
-      pollingInterval: 30000,
-    }
+    { page: currentPage, limit: 20, ...filters }
   );
 
-  const { data: unreadCountResponse } = useGetUnreadNotificationsCountQuery(undefined, {
-    pollingInterval: 30000,
-  });
+  const { data: unreadCountResponse } = useGetUnreadNotificationsCountQuery(undefined);
 
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();

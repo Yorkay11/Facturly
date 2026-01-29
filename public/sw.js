@@ -1,6 +1,6 @@
 // Service Worker for Facturly PWA
-const CACHE_NAME = 'facturly-v2';
-const STATIC_CACHE_NAME = 'facturly-static-v2';
+const CACHE_NAME = 'facturly-v3';
+const STATIC_CACHE_NAME = 'facturly-static-v3';
 const urlsToCache = [
   '/',
   '/fr',
@@ -31,28 +31,38 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches, then claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          // Supprimer les anciennes versions de cache
           if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
-            console.log('Service Worker: Deleting old cache', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  return self.clients.claim();
 });
+
+// Ne jamais mettre en cache les requêtes API (même origine /api ou cross-origin backend)
+function shouldSkipCache(request, url) {
+  if (request.method !== 'GET') return true;
+  if (url.pathname.startsWith('/api/')) return true;
+  if (url.origin !== self.location.origin) return true;
+  return false;
+}
 
 // Fetch event - serve from cache, fallback to network with cache strategy
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  if (shouldSkipCache(request, url)) {
+    event.respondWith(fetch(request));
+    return;
+  }
 
   // Stratégie Cache First pour les assets statiques
   if (
@@ -67,16 +77,11 @@ self.addEventListener('fetch', (event) => {
   ) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+        if (cachedResponse) return cachedResponse;
         return fetch(request).then((response) => {
-          // Ne mettre en cache que les réponses valides
-          if (response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(STATIC_CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
-            });
+          if (response.status === 200 && response.type === 'basic') {
+            const clone = response.clone();
+            caches.open(STATIC_CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return response;
         });
@@ -85,29 +90,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stratégie Network First pour les pages et API
+  // Stratégie Network First pour les pages HTML (same-origin uniquement)
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Mettre en cache les réponses réussies
-        if (response.status === 200 && request.method === 'GET') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
+        if (response.status === 200 && request.method === 'GET' && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
         return response;
       })
       .catch(() => {
-        // Fallback sur le cache si le réseau échoue
-        return caches.match(request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Si c'est une page et qu'on a un cache, retourner la page d'accueil
-          if (request.destination === 'document') {
-            return caches.match('/');
-          }
+        return caches.match(request).then((cached) => {
+          if (cached) return cached;
+          if (request.mode === 'navigate') return caches.match('/') || caches.match('/fr');
+          return null;
         });
       })
   );
@@ -158,23 +155,20 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification click event
+// Notification click event – URLs avec locale (default /fr)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
   const notificationData = event.notification.data || {};
-  let url = '/';
-  
-  // Rediriger vers la page appropriée selon le type de notification
+  const locale = notificationData.locale || 'fr';
+  let path = '/';
   if (notificationData.type === 'invoice_paid' && notificationData.invoiceId) {
-    url = `/invoices/${notificationData.invoiceId}`;
+    path = `/${locale}/invoices/${notificationData.invoiceId}`;
   } else if (notificationData.type === 'unsent_invoices') {
-    url = '/invoices?status=draft';
+    path = `/${locale}/invoices?status=draft`;
   } else if (notificationData.type === 'overdue_invoice' && notificationData.invoiceId) {
-    url = `/invoices/${notificationData.invoiceId}`;
+    path = `/${locale}/invoices/${notificationData.invoiceId}`;
+  } else {
+    path = `/${locale}`;
   }
-  
-  event.waitUntil(
-    clients.openWindow(url)
-  );
+  event.waitUntil(clients.openWindow(path));
 });

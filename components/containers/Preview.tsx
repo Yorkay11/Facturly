@@ -19,7 +19,7 @@ import {
   TemplateClassicSerif,
   type InvoiceTemplateProps,
 } from "@/templates/invoices";
-import { useGetWorkspaceQuery, useGetClientByIdQuery, useGetSubscriptionQuery } from "@/services/facturlyApi";
+import { useGetWorkspaceQuery, useGetClientByIdQuery } from "@/services/facturlyApi";
 import { getBackendTemplateName } from "@/types/invoiceTemplate";
 import Skeleton from "@/components/ui/skeleton";
 import { toast } from "sonner";

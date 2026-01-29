@@ -36,6 +36,8 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/public") ||
     pathname === "/sitemap.xml" ||
     pathname === "/robots.txt" ||
+    pathname === "/sw.js" ||
+    pathname === "/site.webmanifest" ||
     pathname.endsWith(".xml") ||
     pathname.endsWith(".txt") ||
     pathname.match(/\.(svg|png|jpg|jpeg|gif|webp)$/)

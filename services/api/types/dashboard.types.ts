@@ -51,28 +51,37 @@ export interface MonthlyRevenueData {
   revenue: string;
 }
 
+export interface ChartDataPoint {
+  label: string;
+  revenue: string;
+  month?: number;
+  year?: number;
+}
+
 export interface DashboardStats {
   period: {
     month: number;
     year: number;
+    range?: '1d' | '1w' | '1m' | '1y' | 'all';
+    startDate?: string;
+    endDate?: string;
   };
-  currency?: string; // Devise de l'entreprise - tous les montants sont dans cette devise
-  monthlyRevenue: {
-    currency: string;
-    amount: string;
-  }[];
+  currency?: string;
+  monthlyRevenue: string | { currency: string; amount: string }[];
   invoicesSent: number;
   totalPaid: string;
   totalUnpaid: string;
   invoicesByStatus: InvoiceStatusCount[];
   monthlyRevenues: MonthlyRevenueData[];
-  invoiceLimit?: InvoiceLimit; // Informations sur la limite de factures
+  chartData?: ChartDataPoint[];
+  invoiceLimit?: InvoiceLimit;
 }
 
 // Query parameters
 export interface DashboardStatsQueryParams {
   month?: number;
   year?: number;
+  range?: '1d' | '1w' | '1m' | '1y' | 'all';
 }
 
 export interface DashboardActivitiesQueryParams {

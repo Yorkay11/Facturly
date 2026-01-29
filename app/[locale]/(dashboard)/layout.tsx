@@ -9,13 +9,18 @@ import { NavigationBlockProvider, useNavigationBlock } from "@/contexts/Navigati
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 import { GlobalLoader } from "@/components/ui/global-loader";
 import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
+import { RedirectLoader } from "@/components/navigation/RedirectLoader";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { WorkspaceProvider, useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
 import { ConditionalRedirect } from '@/components/navigation';
+import { useNotificationsPush } from '@/hooks/useNotificationsPush';
+import { useWebPushSubscribe } from '@/hooks/useWebPushSubscribe';
+import { useLocale } from 'next-intl';
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -181,6 +186,11 @@ function DashboardLayoutContent({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { isCollapsed } = useSidebar();
+  const { isChangingWorkspace } = useWorkspace();
+  const locale = useLocale();
+
+  useNotificationsPush();
+  useWebPushSubscribe(locale);
 
   // Sur la page d'onboarding, ne pas afficher la sidebar et le layout normal
   if (isOnboardingPage) {
@@ -213,17 +223,24 @@ function DashboardLayoutContent({
       
       {/* Main content */}
       <main className={cn(
-        " mt-12 transition-all duration-300 px-3 py-4 md:px-4 md:py-5 lg:px-6 lg:py-6 pb-20 md:pb-24 lg:pb-6",
+        " mt-12 transition-all duration-300  py-4 md:px-4 md:py-5 lg:px-6 lg:py-6 pb-20 md:pb-24 lg:pb-6",
         "lg:pt-14", // Ajusté pour la nouvelle hauteur du topbar (h-12)
         isCollapsed ? "lg:pl-16" : "lg:pl-64"
       )}>
-        <div className="mx-10 space-y-4">
+        <div className="mx-2 md:mx-10 space-y-4">
           {children}
         </div>
       </main>
       <BottomTabs />
       <NavigationBlockDialog />
       <OnboardingRedirect />
+      {isChangingWorkspace && (
+        <RedirectLoader 
+          text="Chargement du workspace..."
+          backgroundColor="rgba(255, 255, 255, 1)"
+          color="hsl(var(--primary))"
+        />
+      )}
     </div>
   );
 }
@@ -237,9 +254,11 @@ export default function DashboardLayout({
     <LoadingProvider>
       <NavigationBlockProvider>
         <SidebarProvider>
-          <DashboardLayoutContent>
-            {children}
-          </DashboardLayoutContent>
+          <WorkspaceProvider>
+            <DashboardLayoutContent>
+              {children}
+            </DashboardLayoutContent>
+          </WorkspaceProvider>
         </SidebarProvider>
       </NavigationBlockProvider>
     </LoadingProvider>

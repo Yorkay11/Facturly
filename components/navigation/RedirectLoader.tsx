@@ -9,19 +9,19 @@ interface RedirectLoaderProps {
    * @default "Redirecting"
    */
   text?: string;
-  
+
   /**
    * Couleur de fond
    * @default "#ffffff"
    */
   backgroundColor?: string;
-  
+
   /**
    * Couleur de la fusée et du texte
    * @default "hsl(var(--primary))"
    */
   color?: string;
-  
+
   /**
    * Contenu personnalisé à afficher à la place du texte par défaut
    */
@@ -44,11 +44,11 @@ export function RedirectLoader({
   children,
 }: RedirectLoaderProps) {
   return (
-    <div 
-      className="redirect-loader-container"
-      style={{ 
+    <div
+      className="redirect-loader-container "
+      style={{
         backgroundColor,
-        '--rocket-color': color 
+        '--rocket-color': color
       } as React.CSSProperties & { '--rocket-color': string }}
     >
       <div className="redirect-loader-body">
@@ -59,16 +59,16 @@ export function RedirectLoader({
           <span style={{ backgroundColor: color }}></span>
         </span>
         <div className="redirect-loader-base">
-          <span 
-            style={{ 
+          <span
+            style={{
               borderRightColor: color,
             }}
           >
-            <div 
+            <div
               className="redirect-loader-face"
               style={{ backgroundColor: color }}
             >
-              <div 
+              <div
                 className="redirect-loader-face-after"
                 style={{ backgroundColor: color }}
               ></div>
@@ -83,8 +83,8 @@ export function RedirectLoader({
         <span style={{ backgroundColor: color }}></span>
       </div>
       {children || (
-        <h1 style={{ color }}>{text}</h1>
-      )}
+          <p style={{ color }} className="text-xs md:text-sm mt-20">{text}</p>
+        )}
     </div>
   );
 }

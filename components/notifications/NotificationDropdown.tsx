@@ -15,15 +15,10 @@ export function NotificationDropdown() {
 
   const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery(
     { page: 1, limit: 10 },
-    {
-      pollingInterval: 30000, // Polling toutes les 30 secondes
-      skip: !isOpen, // Ne pas charger si le dropdown est fermé
-    }
+    { skip: !isOpen }
   );
 
-  const { data: unreadCountResponse } = useGetUnreadNotificationsCountQuery(undefined, {
-    pollingInterval: 30000,
-  });
+  const { data: unreadCountResponse } = useGetUnreadNotificationsCountQuery(undefined);
 
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead] = useMarkAllNotificationsAsReadMutation();

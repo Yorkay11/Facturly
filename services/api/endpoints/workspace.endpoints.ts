@@ -12,6 +12,10 @@ export const workspaceEndpoints = (
     query: () => "/workspaces/me",
     providesTags: ["Workspace"],
   }),
+  getWorkspaces: builder.query<Workspace[], void>({
+    query: () => "/workspaces",
+    providesTags: ["Workspace"],
+  }),
   createWorkspace: builder.mutation<Workspace, CreateWorkspacePayload>({
     query: (body) => ({
       url: "/workspaces",

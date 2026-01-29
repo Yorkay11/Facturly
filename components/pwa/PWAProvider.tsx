@@ -25,8 +25,11 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if app is already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    // Check if app is already installed (standalone / Add to Home Screen)
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true;
+    if (standalone) {
       setIsInstalled(true);
       return;
     }

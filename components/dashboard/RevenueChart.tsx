@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 
+type TimeRange = "1d" | "1w" | "1m" | "1y" | "all";
+
 interface RevenueChartProps {
   data: Array<{ label: string; value: number }>;
+  range?: TimeRange;
+  onRangeChange?: (r: TimeRange) => void;
   className?: string;
 }
 
-type TimeRange = "1d" | "1w" | "1m" | "1y" | "all";
-
-export const RevenueChart = ({ data, className }: RevenueChartProps) => {
-  const [timeRange, setTimeRange] = useState<TimeRange>("1m");
+export const RevenueChart = ({ data, range, onRangeChange, className }: RevenueChartProps) => {
+  const showFilters = range != null && onRangeChange != null;
   const { data: workspace } = useGetWorkspaceQuery();
   const locale = useLocale();
   const t = useTranslations('dashboard');
@@ -26,7 +27,6 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
     revenus: Math.round(item.value),
   }));
 
-  // Formatter pour les montants
   const amountFormatter = new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
     style: "currency",
     currency: workspaceCurrency,
@@ -34,8 +34,7 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
     maximumFractionDigits: 0,
   });
 
-  // Couleur primaire (violet) basée sur le thème: hsl(266, 74%, 46%)
-  const primaryColor = "#7835ef"; // violet basé sur hsl(266, 74%, 46%)
+  const primaryColor = "#7835ef";
   const primaryColorLight = "rgba(120, 53, 239, 0.08)";
 
   const timeRanges: Array<{ value: TimeRange; label: string }> = [
@@ -48,25 +47,26 @@ export const RevenueChart = ({ data, className }: RevenueChartProps) => {
 
   return (
     <div className={cn("w-full", className)}>
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-end mb-4">
-        <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1">
-          {timeRanges.map((range) => (
-            <button
-              key={range.value}
-              onClick={() => setTimeRange(range.value)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
-                timeRange === range.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              {range.label}
-            </button>
-          ))}
+      {showFilters && (
+        <div className="flex items-center justify-end mb-4">
+          <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1">
+            {timeRanges.map((r) => (
+              <button
+                key={r.value}
+                onClick={() => onRangeChange!(r.value)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200",
+                  range === r.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart 
           data={chartData} 

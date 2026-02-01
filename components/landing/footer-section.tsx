@@ -32,14 +32,20 @@ export function FooterSection() {
             <a href="#features-section" className="text-foreground text-sm font-normal leading-5 hover:underline">
               {t('features')}
             </a>
-            <a href="#pricing-section" className="text-foreground text-sm font-normal leading-5 hover:underline">
+            <Link href="/how-it-works" className="text-foreground text-sm font-normal leading-5 hover:underline">
+              {t('howItWorks')}
+            </Link>
+            <Link href="/pricing" className="text-foreground text-sm font-normal leading-5 hover:underline">
               {t('pricing')}
-            </a>
+            </Link>
           </div>
         </div>
         <div className="flex flex-col justify-start items-start gap-3">
           <h3 className="text-muted-foreground text-sm font-medium leading-5">{t('legal')}</h3>
           <div className="flex flex-col justify-center items-start gap-2">
+            <Link href="/legal" className="text-foreground text-sm font-normal leading-5 hover:underline">
+              {t('legalMentions')}
+            </Link>
             <Link href="/terms" className="text-foreground text-sm font-normal leading-5 hover:underline">
               {t('terms')}
             </Link>

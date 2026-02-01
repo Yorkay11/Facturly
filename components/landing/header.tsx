@@ -21,6 +21,7 @@ export function Header() {
 
   const navItems = [
     { name: t('home'), href: "/" },
+    { name: t('howItWorks'), href: "/how-it-works" },
     { name: t('features'), href: "/features" },
     { name: t('pricing'), href: "/pricing" },
     { name: t('testimonials'), href: "/testimonials" },
@@ -34,7 +35,7 @@ export function Header() {
   }
 
   return (
-    <header className="w-full py-3 md:py-4 px-4 md:px-6">
+    <header className="w-full py-3 md:py-4 px-1 md:px-2">
       <div className="max-w-[1320px] mx-auto flex items-center justify-between px-2 md:px-6">
         <div className="flex items-center gap-4">
           <Link href="/" className="flex items-center gap-3 shrink-0">
@@ -52,7 +53,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-black hover:text-foreground px-4 py-2 rounded-full font-medium transition-colors"
+                className="text-black text-sm hover:text-foreground px-4 py-2 rounded-full font-medium transition-colors"
               >
                 {item.name}
               </Link>

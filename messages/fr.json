@@ -347,11 +347,13 @@
       "dueDate": "Date échéance",
       "status": "Statut",
       "amount": "Montant",
-      "actions": "Actions"
+      "actions": "Actions",
+      "view": "Voir"
     },
     "empty": {
       "title": "Aucune facture pour le moment",
-      "description": "Créez votre première facture pour expédier des documents professionnels et suivre vos paiements."
+      "description": "Créez votre première facture pour expédier des documents professionnels et suivre vos paiements.",
+      "folderEmpty": "Aucune facture"
     },
     "templates": {
       "breadcrumb": {
@@ -1437,6 +1439,7 @@
     },
     "header": {
       "home": "Accueil",
+      "howItWorks": "Comment ça marche",
       "features": "Fonctionnalités",
       "pricing": "Tarifs",
       "testimonials": "Témoignages",
@@ -1566,8 +1569,8 @@
           "send": "Envoyer"
         },
         "sent": {
-          "title": "Email envoyé",
-          "from": "De: facturly@example.com",
+          "title": "Envoyé par WhatsApp",
+          "from": "De: Facturly",
           "to": "À: contact@acmecorp.com",
           "timeAgo": "Il y a 2 minutes"
         }
@@ -1663,9 +1666,9 @@
           "question": "Puis-je intégrer Facturly avec mes outils existants ?",
           "answer": "Oui ! Facturly offre des intégrations avec les outils comptables les plus populaires. Notre API permet également de connecter Facturly à votre système existant. Nous travaillons constamment à ajouter de nouvelles intégrations pour faciliter votre workflow."
         },
-        "freePlan": {
-          "question": "Que comprend le plan gratuit ?",
-          "answer": "Le plan gratuit comprend jusqu'à 10 factures par mois, une gestion illimitée de clients, l'envoi par WhatsApp, un tableau de bord de base et le support par email. C'est parfait pour démarrer et tester la plateforme. Aucune carte bancaire requise, vous pouvez commencer immédiatement."
+        "credits": {
+          "question": "Comment fonctionnent les crédits ?",
+          "answer": "Facturly utilise un système de crédits : vous achetez des crédits à l'unité ou par pack (Starter, Pro, Business). Chaque envoi de facture consomme 1 crédit. Les crédits sont valables tant qu'ils ne sont pas utilisés. Aucun abonnement récurrent : vous achetez uniquement quand vous en avez besoin. Paiement via mobile money (Orange Money, MTN, Wave, etc.)."
         },
         "onlinePayment": {
           "question": "Comment fonctionne le paiement mobile money ?",
@@ -1680,157 +1683,104 @@
     "cta": {
       "title": "Créez votre première facture en 60 secondes",
       "subtitle": "Rejoignez les entrepreneurs africains qui utilisent Facturly pour créer, envoyer et être payés rapidement via mobile money",
+      "socialProof": "Déjà utilisé par +100 entrepreneurs en Côte d'Ivoire et au Sénégal",
       "betaFull": "Bêta complète ({current}/{max} utilisateurs)",
       "betaAvailable": "{remaining} place{plural} disponible{plural} ({current}/{max})",
       "ctaAuthenticated": "Accéder au tableau de bord",
       "ctaGuest": "Commencer gratuitement"
     },
     "pricing": {
-      "title": "Tarifs adaptés à votre activité",
-      "subtitle": "Choisissez un plan qui correspond à vos besoins, avec WhatsApp et mobile money inclus dans tous les plans.",
-      "monthly": "Mensuel",
-      "annual": "Annuel",
-      "save": "Économisez {percent}%",
+      "title": "Crédits pour vos factures",
+      "subtitle": "Achetez des crédits à l'unité ou par pack. 1 crédit = 1 envoi de facture. Paiement par mobile money.",
       "popular": "POPULAIRE",
-      "included": "Inclus :",
-      "includesFree": "Tout du plan Gratuit +",
+      "credits": "crédits",
+      "perCredit": "~{price} FCFA/crédit",
       "ctaAuthenticated": "Accéder au tableau de bord",
-      "perMonth": "/mois",
-      "perYear": "/an",
-      "monthlyEquivalent": "{price}€/mois en paiement annuel",
-      "plans": {
-        "free": {
-          "name": "Gratuit",
-          "description": "Parfait pour démarrer votre activité.",
-          "cta": "Commencer gratuitement",
+      "ctaBuy": "Acheter des crédits",
+      "ctaStart": "Commencer gratuitement",
+      "included": "Inclus :",
+      "packs": {
+        "starter": {
+          "name": "Starter",
+          "description": "Parfait pour démarrer.",
+          "credits": "60",
+          "price": "5 000",
+          "pricePerCredit": "~83",
           "features": {
-            "invoices": "Jusqu'à 10 factures par mois",
-            "clients": "Gestion de clients illimitée",
             "whatsapp": "Envoi par WhatsApp",
-            "dashboard": "Tableau de bord de base",
+            "mobileMoney": "Paiement mobile money",
+            "dashboard": "Tableau de bord",
             "support": "Support par email"
           }
         },
         "pro": {
           "name": "Pro",
-          "description": "Idéal pour les professionnels indépendants.",
-          "cta": "Essayer Pro",
+          "description": "Idéal pour les professionnels.",
+          "credits": "150",
+          "price": "10 000",
+          "pricePerCredit": "~66",
+          "savings": "Économisez 20%",
           "features": {
-            "invoices": "100 factures par mois",
-            "mobileMoney": "Paiement mobile money intégré",
+            "whatsapp": "Envoi par WhatsApp",
+            "mobileMoney": "Paiement mobile money",
             "reminders": "Rappels automatiques",
             "statistics": "Statistiques avancées",
-            "customization": "Personnalisation de factures",
-            "pdfExport": "Export PDF illimité",
+            "pdfExport": "Export PDF",
             "support": "Support prioritaire"
           }
         },
-        "enterprise": {
-          "name": "Entreprise",
-          "description": "Pour les équipes et entreprises en croissance.",
-          "cta": "Nous contacter",
+        "business": {
+          "name": "Business",
+          "description": "Pour les entreprises actives.",
+          "credits": "400",
+          "price": "25 000",
+          "pricePerCredit": "~62",
+          "savings": "Économisez 25%",
           "features": {
-            "invoices": "Factures illimitées",
-            "team": "Gestion d'équipe",
-            "api": "API complète",
-            "customBranding": "Branding personnalisé",
-            "dedicatedSupport": "Support dédié",
-            "advancedAnalytics": "Analyses avancées",
-            "sla": "SLA garanti"
+            "whatsapp": "Envoi par WhatsApp",
+            "mobileMoney": "Paiement mobile money",
+            "reminders": "Rappels automatiques",
+            "statistics": "Statistiques avancées",
+            "customization": "Personnalisation",
+            "pdfExport": "Export PDF",
+            "support": "Support prioritaire"
           }
         }
       },
-      "trustMessage": "Tous les plans incluent WhatsApp et mobile money. Aucun engagement. Annulez à tout moment.",
+      "trustMessage": "Gratuit pour créer des factures. Payez uniquement pour l'envoi (1 crédit = 1 facture). Pas d'abonnement. Paiement par Orange Money, MTN, Wave.",
       "metadata": {
-        "title": "Tarifs - Facturly | Facturation mobile-first pour l'Afrique",
-        "description": "Choisissez le plan qui correspond à vos besoins. Plans Gratuit, Pro et Entreprise avec WhatsApp et mobile money inclus. Essai gratuit de 30 jours."
+        "title": "Tarifs - Facturly | Crédits et packs pour la facturation",
+        "description": "Achetez des crédits pour envoyer vos factures. Packs Starter, Pro et Business. Paiement mobile money."
       },
       "comparison": {
-        "title": "Comparaison des plans",
-        "subtitle": "Comparez les fonctionnalités de chaque plan pour trouver celui qui vous convient",
+        "title": "Comparaison des packs",
+        "subtitle": "Plus vous achetez de crédits, plus le prix unitaire baisse",
         "feature": "Fonctionnalité",
-        "free": "Gratuit",
+        "credits": "Crédits",
+        "price": "Prix (FCFA)",
+        "pricePerCredit": "Prix/crédit",
+        "starter": "Starter",
         "pro": "Pro",
-        "enterprise": "Entreprise",
-        "features": {
-          "invoices": "Factures par mois",
-          "clients": "Gestion de clients",
-          "whatsapp": "Envoi par WhatsApp",
-          "mobileMoney": "Paiement mobile money",
-          "reminders": "Rappels automatiques",
-          "statistics": "Statistiques avancées",
-          "pdfExport": "Export PDF",
-          "customization": "Personnalisation",
-          "team": "Gestion d'équipe",
-          "api": "API complète",
-          "support": "Support",
-          "free": {
-            "invoices": "10",
-            "clients": "true",
-            "whatsapp": "true",
-            "mobileMoney": "false",
-            "reminders": "false",
-            "statistics": "false",
-            "pdfExport": "false",
-            "customization": "false",
-            "team": "false",
-            "api": "false",
-            "support": "Email"
-          },
-          "pro": {
-            "invoices": "100",
-            "clients": "true",
-            "whatsapp": "true",
-            "mobileMoney": "true",
-            "reminders": "true",
-            "statistics": "true",
-            "pdfExport": "true",
-            "customization": "true",
-            "team": "false",
-            "api": "false",
-            "support": "Prioritaire"
-          },
-          "enterprise": {
-            "invoices": "Illimité",
-            "clients": "true",
-            "whatsapp": "true",
-            "mobileMoney": "true",
-            "reminders": "true",
-            "statistics": "true",
-            "pdfExport": "true",
-            "customization": "true",
-            "team": "true",
-            "api": "true",
-            "support": "Dédié"
-          }
-        }
+        "business": "Business"
       },
       "faq": {
-        "title": "Questions fréquentes sur les tarifs",
-        "subtitle": "Tout ce que vous devez savoir sur nos plans et tarifs",
-        "freeTrial": {
-          "question": "Y a-t-il une période d'essai gratuite ?",
-          "answer": "Oui ! Tous nos plans incluent une période d'essai gratuite de 30 jours. Vous pouvez tester toutes les fonctionnalités sans engagement. Si vous n'êtes pas satisfait, nous vous remboursons intégralement."
+        "title": "Questions fréquentes sur les crédits",
+        "subtitle": "Tout ce que vous devez savoir sur nos packs et crédits",
+        "howCreditsWork": {
+          "question": "Comment fonctionnent les crédits ?",
+          "answer": "1 crédit = 1 envoi de facture (par WhatsApp ou email). Vous achetez des crédits à l'unité ou par pack. Les crédits restent valides jusqu'à utilisation. Pas d'abonnement, pas d'engagement."
         },
         "paymentMethods": {
           "question": "Quels modes de paiement acceptez-vous ?",
-          "answer": "Nous acceptons tous les modes de paiement mobile money (Orange Money, MTN, Wave, Moov Money, etc.) ainsi que les cartes bancaires. Les paiements sont sécurisés et traités instantanément."
+          "answer": "Paiement par mobile money : Orange Money, MTN, Wave, Moov Money, Airtel Money, T-Money, etc. Les paiements sont sécurisés et les crédits sont ajoutés instantanément après validation."
         },
-        "cancelAnyTime": {
-          "question": "Puis-je annuler à tout moment ?",
-          "answer": "Absolument ! Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun engagement, aucune pénalité. Votre accès reste actif jusqu'à la fin de la période payée."
-        },
-        "switchPlans": {
-          "question": "Puis-je changer de plan ?",
-          "answer": "Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. Les changements sont appliqués immédiatement, et nous ajustons votre facturation au prorata."
+        "noExpiration": {
+          "question": "Les crédits expirent-ils ?",
+          "answer": "Non. Vos crédits restent valides tant qu'ils ne sont pas utilisés. Aucune date d'expiration."
         },
         "refund": {
           "question": "Quelle est votre politique de remboursement ?",
-          "answer": "Nous offrons une garantie satisfait ou remboursé de 30 jours. Si vous n'êtes pas satisfait de notre service dans les 30 premiers jours, contactez-nous et nous vous rembourserons intégralement."
-        },
-        "annualSavings": {
-          "question": "Combien puis-je économiser avec le plan annuel ?",
-          "answer": "En choisissant le paiement annuel, vous économisez 20% sur le prix mensuel. Par exemple, le plan Pro coûte 5€/mois en mensuel (60€/an) mais seulement 48€/an en paiement annuel, soit une économie de 12€ par an."
+          "answer": "En cas de problème avec un achat, contactez notre support. Nous étudions chaque cas et pouvons rembourser les crédits non utilisés si nécessaire."
         }
       }
     },
@@ -1956,6 +1906,18 @@
       "growth": {
         "title": "Faites grandir votre business",
         "description": "Suivez vos revenus en temps réel, relancez automatiquement les impayés, et optimisez votre trésorerie. Prenez des décisions basées sur des données."
+      },
+      "multiWorkspace": {
+        "title": "Multi-entreprises",
+        "description": "Gérez plusieurs sociétés ou activités depuis un seul compte. Basculez entre vos espaces de travail en un clic."
+      },
+      "pwa": {
+        "title": "App installable",
+        "description": "Installez Facturly sur votre téléphone ou ordinateur comme une app native. Accès rapide, icône sur l'écran d'accueil."
+      },
+      "notifications": {
+        "title": "Notifications en temps réel",
+        "description": "Recevez des alertes push dès qu'un client paie ou ouvre une facture. Restez informé où que vous soyez."
       }
     },
     "mobileMoney": {
@@ -2036,74 +1998,87 @@
       "product": "Prestation",
       "legal": "Légal",
       "features": "Fonctionnalités",
+      "howItWorks": "Comment ça marche",
       "pricing": "Tarifs",
+      "legalMentions": "Mentions légales",
       "terms": "Conditions d'utilisation",
       "privacy": "Politique de confidentialité"
     }
   },
   "pricing": {
-    "title": "Tarifs adaptés à votre activité",
-    "subtitle": "Choisissez un plan qui correspond à vos besoins, avec WhatsApp et mobile money inclus dans tous les plans.",
-    "monthly": "Mensuel",
-    "annual": "Annuel",
-    "save": "Économisez {percent}%",
+    "title": "Crédits pour vos factures",
+    "subtitle": "Achetez des crédits à l'unité ou par pack. 1 crédit = 1 envoi de facture. Paiement par mobile money.",
     "popular": "POPULAIRE",
-    "included": "Inclus :",
-    "includesFree": "Tout du plan Gratuit +",
+    "credits": "crédits",
+    "perCredit": "~{price} FCFA/crédit",
     "ctaAuthenticated": "Accéder au tableau de bord",
-    "perMonth": "/mois",
-    "perYear": "/an",
-    "monthlyEquivalent": "{price}€/mois en paiement annuel",
-    "trustMessage": "Tous les plans incluent WhatsApp et mobile money. Aucun engagement. Annulez à tout moment.",
+    "ctaBuy": "Acheter des crédits",
+    "included": "Inclus :",
+    "trustMessage": "Gratuit pour créer des factures. Payez uniquement pour l'envoi (1 crédit = 1 facture). Pas d'abonnement. Paiement par Orange Money, MTN, Wave.",
     "metadata": {
-      "title": "Tarifs - Facturly | Facturation mobile-first pour l'Afrique",
-      "description": "Choisissez le plan qui correspond à vos besoins. Plans Gratuit, Pro et Entreprise avec WhatsApp et mobile money inclus. Essai gratuit de 30 jours."
+      "title": "Tarifs - Facturly | Crédits et packs pour la facturation",
+      "description": "Achetez des crédits pour envoyer vos factures. Packs Starter, Pro et Business. Paiement mobile money."
     },
-    "plans": {
-      "free": {
-        "name": "Gratuit",
-        "description": "Parfait pour démarrer votre activité.",
-        "cta": "Commencer gratuitement",
+    "packs": {
+      "starter": {
+        "name": "Starter",
+        "description": "Parfait pour démarrer.",
+        "credits": "60",
+        "price": "5 000",
+        "pricePerCredit": "83",
         "features": {
-          "invoices": "Jusqu'à 10 factures par mois",
-          "clients": "Gestion de clients illimitée",
           "whatsapp": "Envoi par WhatsApp",
-          "dashboard": "Tableau de bord de base",
+          "mobileMoney": "Paiement mobile money",
+          "dashboard": "Tableau de bord",
           "support": "Support par email"
         }
       },
       "pro": {
         "name": "Pro",
-        "description": "Idéal pour les professionnels indépendants.",
-        "cta": "Essayer Pro",
+        "description": "Idéal pour les professionnels.",
+        "credits": "150",
+        "price": "10 000",
+        "pricePerCredit": "66",
+        "savings": "Économisez 20%",
         "features": {
-          "invoices": "100 factures par mois",
-          "mobileMoney": "Paiement mobile money intégré",
+          "whatsapp": "Envoi par WhatsApp",
+          "mobileMoney": "Paiement mobile money",
           "reminders": "Rappels automatiques",
           "statistics": "Statistiques avancées",
-          "customization": "Personnalisation de factures",
-          "pdfExport": "Export PDF illimité",
+          "pdfExport": "Export PDF",
           "support": "Support prioritaire"
         }
       },
-      "enterprise": {
-        "name": "Entreprise",
-        "description": "Pour les équipes et entreprises en croissance.",
-        "cta": "Nous contacter",
+      "business": {
+        "name": "Business",
+        "description": "Pour les entreprises actives.",
+        "credits": "400",
+        "price": "25 000",
+        "pricePerCredit": "62",
+        "savings": "Économisez 25%",
         "features": {
-          "invoices": "Factures illimitées",
-          "team": "Gestion d'équipe",
-          "api": "API complète",
-          "customBranding": "Branding personnalisé",
-          "dedicatedSupport": "Support dédié",
-          "advancedAnalytics": "Analyses avancées",
-          "sla": "SLA garanti"
+          "whatsapp": "Envoi par WhatsApp",
+          "mobileMoney": "Paiement mobile money",
+          "reminders": "Rappels automatiques",
+          "statistics": "Statistiques avancées",
+          "customization": "Personnalisation",
+          "pdfExport": "Export PDF",
+          "support": "Support prioritaire"
         }
       }
     },
     "comparison": {
-      "title": "Comparaison des plans",
-      "subtitle": "Comparez les fonctionnalités de chaque plan pour trouver celui qui vous convient",
+      "title": "Comparaison des packs",
+      "subtitle": "Plus vous achetez de crédits, plus le prix unitaire baisse",
+      "feature": "Fonctionnalité",
+      "credits": "Crédits",
+      "price": "Prix (FCFA)",
+      "pricePerCredit": "Prix/crédit",
+      "starter": "Starter",
+      "pro": "Pro",
+      "business": "Business"
+    },
+    "comparisonLegacy": {
       "feature": "Fonctionnalité",
       "free": "Gratuit",
       "pro": "Pro",
@@ -2162,31 +2137,23 @@
       }
     },
     "faq": {
-      "title": "Questions fréquentes sur les tarifs",
-      "subtitle": "Tout ce que vous devez savoir sur nos plans et tarifs",
-      "freeTrial": {
-        "question": "Y a-t-il une période d'essai gratuite ?",
-        "answer": "Oui ! Tous nos plans incluent une période d'essai gratuite de 30 jours. Vous pouvez tester toutes les fonctionnalités sans engagement. Si vous n'êtes pas satisfait, nous vous remboursons intégralement."
+      "title": "Questions fréquentes sur les crédits",
+      "subtitle": "Tout ce que vous devez savoir sur nos packs et crédits",
+      "howCreditsWork": {
+        "question": "Comment fonctionnent les crédits ?",
+        "answer": "1 crédit = 1 envoi de facture (par WhatsApp ou email). Vous achetez des crédits à l'unité ou par pack. Les crédits restent valides jusqu'à utilisation. Pas d'abonnement, pas d'engagement."
       },
       "paymentMethods": {
         "question": "Quels modes de paiement acceptez-vous ?",
-        "answer": "Nous acceptons tous les modes de paiement mobile money (Orange Money, MTN, Wave, Moov Money, etc.) ainsi que les cartes bancaires. Les paiements sont sécurisés et traités instantanément."
+        "answer": "Paiement par mobile money : Orange Money, MTN, Wave, Moov Money, Airtel Money, T-Money, etc. Les paiements sont sécurisés et les crédits sont ajoutés instantanément après validation."
       },
-      "cancelAnyTime": {
-        "question": "Puis-je annuler à tout moment ?",
-        "answer": "Absolument ! Vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord. Aucun engagement, aucune pénalité. Votre accès reste actif jusqu'à la fin de la période payée."
-      },
-      "switchPlans": {
-        "question": "Puis-je changer de plan ?",
-        "answer": "Oui, vous pouvez passer à un plan supérieur ou inférieur à tout moment. Les changements sont appliqués immédiatement, et nous ajustons votre facturation au prorata."
+      "noExpiration": {
+        "question": "Les crédits expirent-ils ?",
+        "answer": "Non. Vos crédits restent valides tant qu'ils ne sont pas utilisés. Aucune date d'expiration."
       },
       "refund": {
         "question": "Quelle est votre politique de remboursement ?",
-        "answer": "Nous offrons une garantie satisfait ou remboursé de 30 jours. Si vous n'êtes pas satisfait de notre service dans les 30 premiers jours, contactez-nous et nous vous rembourserons intégralement."
-      },
-      "annualSavings": {
-        "question": "Combien puis-je économiser avec le plan annuel ?",
-        "answer": "En choisissant le paiement annuel, vous économisez 20% sur le prix mensuel. Par exemple, le plan Pro coûte 5€/mois en mensuel (60€/an) mais seulement 48€/an en paiement annuel, soit une économie de 12€ par an."
+        "answer": "En cas de problème avec un achat, contactez notre support. Nous étudions chaque cas et pouvons rembourser les crédits non utilisés si nécessaire."
       }
     }
   },
@@ -2815,12 +2782,9 @@
     },
     "push": {
       "enable": "Activer les notifications",
-      "test": "Envoyer une notif test",
-      "testSuccess": "Notification test envoyée — vérifiez votre système (ou l'onglet).",
-      "testError": "Échec de l'envoi du test.",
-      "enableSuccess": "Notifications activées.",
+      "enableSuccess": "Notifications activées. Vous recevrez les alertes même fenêtre fermée.",
       "enableError": "Impossible d'activer les notifications.",
-      "unsupported": "Push non supporté (HTTPS + Service Worker requis)."
+      "unsupported": "Notifications push non disponibles (HTTPS requis)."
     }
   },
   "metadata": {
@@ -2830,6 +2794,44 @@
     "landingDescription": "Facturly est la plateforme de facturation mobile-first pour l'Afrique de l'Ouest. Créez vos factures en 60 secondes, envoyez-les par WhatsApp, et recevez les paiements via Orange Money, MTN, Wave et plus de 60 méthodes de paiement mobile money.",
     "home": "Accueil",
     "organizationDescription": "Plateforme de facturation mobile-first pour l'Afrique de l'Ouest"
+  },
+  "howItWorks": {
+    "title": "Comment ça marche ?",
+    "subtitle": "De la création de votre facture à la réception des fonds, découvrez le processus complet en 4 étapes simples.",
+    "metadata": {
+      "title": "Comment ça marche - Facturly",
+      "description": "Créez des factures, envoyez-les par WhatsApp, recevez les paiements via mobile money. Découvrez le processus Facturly en 4 étapes."
+    },
+    "steps": {
+      "step1": {
+        "badge": "Étape 1",
+        "title": "Création & Personnalisation",
+        "description": "Entrez vos produits ou services, vos taxes locales et les informations de votre entreprise. Personnalisez votre facture en quelques clics.\n\nLes factures générées sont professionnelles et conformes aux devises locales (XOF, XAF, GHS, NGN, etc.).",
+        "extra": ""
+      },
+      "step2": {
+        "badge": "Étape 2",
+        "title": "L'envoi WhatsApp",
+        "description": "Une fois la facture générée, un bouton vous permet de l'envoyer directement sur le WhatsApp de votre client.\n\nPas d'e-mail perdu, pas de délai. Votre client reçoit la facture instantanément là où il communique déjà.",
+        "extra": ""
+      },
+      "step3": {
+        "badge": "Étape 3",
+        "title": "Le Paiement (côté client)",
+        "description": "Votre client clique sur le lien sécurisé reçu.\n\nIl choisit son mode de paiement (Wave, Orange Money, MTN, etc.), valide sur son téléphone via son code secret habituel. Simple et familier pour lui.",
+        "extra": ""
+      },
+      "step4": {
+        "badge": "Étape 4",
+        "title": "Réception des fonds",
+        "description": "Les fonds sont encaissés via notre partenaire de paiement agréé (Moneroo).\n\nVous pouvez demander le virement de votre solde vers votre propre compte Mobile Money ou bancaire. Les retraits sont traités sous 24 à 48 heures ouvrées.",
+        "extra": "Facturly ne stocke aucune information bancaire ni code PIN de vos clients."
+      }
+    },
+    "security": {
+      "title": "Sécurité des fonds",
+      "description": "Vos paiements sont traités par Moneroo, intermédiaire de paiement agréé. Facturly ne stocke aucune donnée bancaire sensible. Les fonds transitent par des circuits sécurisés et conformes aux réglementations en vigueur."
+    }
   },
   "onboarding": {
     "title": "Créez votre profil de facturation",
@@ -2987,6 +2989,26 @@
     }
   },
   "legal": {
+    "mentions": {
+      "title": "Mentions légales",
+      "backToHome": "Retour à l'accueil",
+      "metadata": {
+        "title": "Mentions légales - Facturly",
+        "description": "Informations légales sur le service Facturly."
+      },
+      "publisher": {
+        "title": "1. Éditeur du service",
+        "content": "Le site facturly.online est édité par [Nom de l'entreprise ou auto-entrepreneur], [Forme juridique], immatriculé au Registre du Commerce de [Ville, Pays] sous le numéro [RCCM].\n\n• Siège social : [Adresse]\n• Contact : support@facturly.app"
+      },
+      "hosting": {
+        "title": "2. Hébergement",
+        "content": "Le site est hébergé par Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis."
+      },
+      "payment": {
+        "title": "3. Partenaire de paiement",
+        "content": "Les services de paiement sont assurés par la plateforme Moneroo, intermédiaire de paiement agréé. Facturly ne stocke aucune information bancaire ou code PIN des utilisateurs."
+      }
+    },
     "terms": {
       "title": "Conditions d'utilisation",
       "description": "Conditions d'utilisation de Facturly",

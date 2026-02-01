@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGetNotificationsQuery, useGetUnreadNotificationsCountQuery, useMarkNotificationAsReadMutation, useMarkAllNotificationsAsReadMutation, useDeleteNotificationMutation, NotificationType, NotificationPriority } from '@/services/facturlyApi';
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { NotificationBadge } from '@/components/notifications/NotificationBadge';
@@ -8,16 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Breadcrumb from '@/components/ui/breadcrumb';
-import { IoCheckmarkDoneOutline } from 'react-icons/io5';
+import { IoCheckmarkDoneOutline, IoNotificationsOutline } from 'react-icons/io5';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
+import { useWebPushSubscribe } from '@/hooks/useWebPushSubscribe';
 
 export default function NotificationsPage() {
   const t = useTranslations('notifications');
   const commonT = useTranslations('common');
   const dashboardT = useTranslations('dashboard');
+  const locale = useLocale();
+  const { requestAndSubscribe, vapidReady } = useWebPushSubscribe(locale);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | null>(null);
+  const [pushEnabling, setPushEnabling] = useState(false);
   const [filters, setFilters] = useState<{
     read?: boolean;
     type?: NotificationType;
@@ -37,6 +42,34 @@ export default function NotificationsPage() {
   const notifications = notificationsResponse?.data ?? [];
   const unreadCount = unreadCountResponse?.count ?? 0;
   const totalPages = notificationsResponse?.meta?.totalPages ?? 1;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setPushPermission(Notification.permission);
+    }
+  }, []);
+
+  const pushSupported =
+    typeof window !== 'undefined' &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window;
+  const showEnablePush =
+    pushSupported && vapidReady && pushPermission === 'default';
+
+  const handleEnablePush = async () => {
+    if (!requestAndSubscribe) return;
+    setPushEnabling(true);
+    try {
+      const ok = await requestAndSubscribe();
+      setPushPermission(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : null);
+      if (ok) toast.success(t('push.enableSuccess'));
+      else toast.error(t('push.enableError'));
+    } catch {
+      toast.error(t('push.enableError'));
+    } finally {
+      setPushEnabling(false);
+    }
+  };
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
@@ -103,6 +136,18 @@ export default function NotificationsPage() {
         </div>
         <div className="flex items-center gap-3">
           <NotificationBadge count={unreadCount} />
+          {showEnablePush && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEnablePush}
+              disabled={pushEnabling}
+              className="gap-2"
+            >
+              <IoNotificationsOutline className="h-4 w-4" />
+              {t('push.enable')}
+            </Button>
+          )}
           {unreadCount > 0 && (
             <Button
               variant="outline"

@@ -1,79 +1,17 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { Check, X } from 'lucide-react'
+import { Check } from 'lucide-react'
 
 export function PricingComparison() {
   const t = useTranslations('pricing.comparison')
+  const tPacks = useTranslations('pricing.packs')
 
-  const features = [
-    {
-      name: t('features.invoices'),
-      free: t('features.free.invoices'),
-      pro: t('features.pro.invoices'),
-      enterprise: t('features.enterprise.invoices'),
-    },
-    {
-      name: t('features.clients'),
-      free: t('features.free.clients'),
-      pro: t('features.pro.clients'),
-      enterprise: t('features.enterprise.clients'),
-    },
-    {
-      name: t('features.whatsapp'),
-      free: t('features.free.whatsapp'),
-      pro: t('features.pro.whatsapp'),
-      enterprise: t('features.enterprise.whatsapp'),
-    },
-    {
-      name: t('features.mobileMoney'),
-      free: t('features.free.mobileMoney'),
-      pro: t('features.pro.mobileMoney'),
-      enterprise: t('features.enterprise.mobileMoney'),
-    },
-    {
-      name: t('features.reminders'),
-      free: t('features.free.reminders'),
-      pro: t('features.pro.reminders'),
-      enterprise: t('features.enterprise.reminders'),
-    },
-    {
-      name: t('features.statistics'),
-      free: t('features.free.statistics'),
-      pro: t('features.pro.statistics'),
-      enterprise: t('features.enterprise.statistics'),
-    },
-    {
-      name: t('features.pdfExport'),
-      free: t('features.free.pdfExport'),
-      pro: t('features.pro.pdfExport'),
-      enterprise: t('features.enterprise.pdfExport'),
-    },
-    {
-      name: t('features.customization'),
-      free: t('features.free.customization'),
-      pro: t('features.pro.customization'),
-      enterprise: t('features.enterprise.customization'),
-    },
-    {
-      name: t('features.team'),
-      free: t('features.free.team'),
-      pro: t('features.pro.team'),
-      enterprise: t('features.enterprise.team'),
-    },
-    {
-      name: t('features.api'),
-      free: t('features.free.api'),
-      pro: t('features.pro.api'),
-      enterprise: t('features.enterprise.api'),
-    },
-    {
-      name: t('features.support'),
-      free: t('features.free.support'),
-      pro: t('features.pro.support'),
-      enterprise: t('features.enterprise.support'),
-    },
-  ]
+  const packs = [
+    { key: 'starter', credits: '60', price: '5 000', pricePerCredit: '~83' },
+    { key: 'pro', credits: '150', price: '10 000', pricePerCredit: '~66' },
+    { key: 'business', credits: '400', price: '25 000', pricePerCredit: '~62' },
+  ] as const
 
   return (
     <div className="w-full">
@@ -95,54 +33,41 @@ export function PricingComparison() {
                   {t('feature')}
                 </th>
                 <th className="text-center p-4 font-semibold text-foreground">
-                  {t('free')}
+                  {t('starter')}
                 </th>
                 <th className="text-center p-4 font-semibold text-primary">
                   {t('pro')}
                 </th>
                 <th className="text-center p-4 font-semibold text-foreground">
-                  {t('enterprise')}
+                  {t('business')}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {features.map((feature, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-border hover:bg-muted/30 transition-colors"
-                >
-                  <td className="p-4 font-medium text-foreground">
-                    {feature.name}
+              <tr className="border-b border-border">
+                <td className="p-4 font-medium text-foreground">{t('credits')}</td>
+                {packs.map((p) => (
+                  <td key={p.key} className="p-4 text-center text-muted-foreground">
+                    {p.credits}
                   </td>
-                  <td className="p-4 text-center">
-                    {feature.free === 'true' ? (
-                      <Check className="h-5 w-5 text-green-500 mx-auto" />
-                    ) : feature.free === 'false' ? (
-                      <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">{feature.free}</span>
-                    )}
+                ))}
+              </tr>
+              <tr className="border-b border-border">
+                <td className="p-4 font-medium text-foreground">{t('price')}</td>
+                {packs.map((p) => (
+                  <td key={p.key} className="p-4 text-center text-muted-foreground">
+                    {p.price} FCFA
                   </td>
-                  <td className="p-4 text-center bg-primary/5">
-                    {feature.pro === 'true' ? (
-                      <Check className="h-5 w-5 text-primary mx-auto" />
-                    ) : feature.pro === 'false' ? (
-                      <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">{feature.pro}</span>
-                    )}
+                ))}
+              </tr>
+              <tr className="border-b border-border">
+                <td className="p-4 font-medium text-foreground">{t('pricePerCredit')}</td>
+                {packs.map((p) => (
+                  <td key={p.key} className="p-4 text-center text-muted-foreground">
+                    {p.pricePerCredit} FCFA
                   </td>
-                  <td className="p-4 text-center">
-                    {feature.enterprise === 'true' ? (
-                      <Check className="h-5 w-5 text-green-500 mx-auto" />
-                    ) : feature.enterprise === 'false' ? (
-                      <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">{feature.enterprise}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>

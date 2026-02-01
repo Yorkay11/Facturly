@@ -1,12 +1,12 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { Plus, Download, Trash2, Copy, Repeat, Palette, Eye, FileText, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, Copy, Repeat, Palette, Eye, ArrowLeft } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import Folder from "@/components/ui/folder";
+import InteractiveFolder from "@/components/ui/interactive-folder";
 
 import {
   Table,
@@ -43,106 +43,6 @@ import { toast } from "sonner";
 
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
 
-// Composant pour une carte de dossier client avec animation hover
-function ClientFolderCard({ 
-  clientId, 
-  client, 
-  clientInvoices, 
-  previewInvoices, 
-  formatCurrency 
-}: { 
-  clientId: string; 
-  client: { name: string } | null; 
-  clientInvoices: any[]; 
-  previewInvoices: any[]; 
-  formatCurrency: (value: string | number, currency: string) => string;
-}) {
-  
-  return (
-    <div className="group w-auto transition-all duration-300">
-  
-      <div className="flex flex-col items-center gap-10 p-6">
-  
-        {/* Folder */}
-        <div className="flex-shrink-0">
-          <Folder
-            color="hsl(var(--primary))"
-            size={2}
-            items={previewInvoices.map((inv) => (
-              <div
-                key={inv.id}
-                className="flex flex-col items-center justify-center 
-                           h-full px-2 text-[9px] text-slate-700 font-medium"
-              >
-                <div className="font-semibold truncate w-full text-center">
-                  {inv.invoiceNumber}
-                </div>
-                <div className="text-[8px] text-slate-500">
-                  {formatCurrency(inv.totalAmount, inv.currency)}
-                </div>
-              </div>
-            ))}
-          />
-        </div>
-  
-        {/* Client Info / Actions */}
-        <div className="relative h-20 w-full overflow-hidden">
-  
-          {/* Client Info */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center
-                          transition-all duration-300 ease-out
-                          group-hover:opacity-0 group-hover:-translate-y-3
-                          group-focus-within:opacity-0 group-focus-within:-translate-y-3">
-  
-            <h3 className="text-sm font-semibold text-foreground truncate">
-              {client?.name || "Client inconnu"}
-            </h3>
-  
-            <p className="text-xs text-muted-foreground">
-              {clientInvoices.length}{" "}
-              {clientInvoices.length > 1 ? "factures" : "facture"}
-            </p>
-          </div>
-  
-          {/* Actions */}
-          <div className="absolute inset-0 flex items-center justify-center
-                          opacity-0 translate-y-3
-                          transition-all duration-300 ease-out
-                          group-hover:opacity-100 group-hover:translate-y-0
-                          group-focus-within:opacity-100 group-focus-within:translate-y-0">
-  
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3 text-xs hover:bg-primary/10 hover:text-primary"
-                asChild
-              >
-                <Link href={`/invoices?client=${clientId}`}>
-                  <Eye className="h-3.5 w-3.5 mr-1.5" />
-                  Voir tout
-                </Link>
-              </Button>
-  
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3 text-xs hover:bg-primary/10 hover:text-primary"
-                asChild
-              >
-                <Link href={`/invoices/new?clientId=${clientId}`}>
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Nouvelle
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function InvoicesPage() {
   const t = useTranslations('invoices');
   const commonT = useTranslations('common');
@@ -157,8 +57,6 @@ export default function InvoicesPage() {
   const [createInvoice, { isLoading: isDuplicating }] = useCreateInvoiceMutation();
   const [invoiceToDelete, setInvoiceToDelete] = useState<{ id: string; number: string; status: string } | null>(null);
   const [invoiceToDuplicate, setInvoiceToDuplicate] = useState<string | null>(null);
-  const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
-  
   const invoices = invoicesResponse?.data ?? [];
   const totalInvoices = invoicesResponse?.meta?.total ?? 0;
 
@@ -432,6 +330,17 @@ export default function InvoicesPage() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                            asChild
+                            title={t('table.view') || 'Voir'}
+                          >
+                            <Link href={`/invoices/${invoice.id}`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
                             onClick={(e) => {
                               e.stopPropagation();
                               setInvoiceToDuplicate(invoice.id);
@@ -467,19 +376,13 @@ export default function InvoicesPage() {
 
         {/* Vue par défaut - Dossiers par client */}
         {!isLoading && !isError && !clientId && invoices && invoices.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-32">
+          <div className="flex flex-wrap gap-4 mt-8">
             {Object.entries(invoicesByClient).map(([id, clientInvoices]) => {
               const client = clientInvoices[0]?.client;
-              const previewInvoices = clientInvoices.slice(0, 3);
-              
               return (
-                <ClientFolderCard
+                <InteractiveFolder
                   key={id}
-                  clientId={id}
-                  client={client}
-                  clientInvoices={clientInvoices}
-                  previewInvoices={previewInvoices}
-                  formatCurrency={formatCurrency}
+                  folderName={client?.name ?? 'Client inconnu'}
                 />
               );
             })}

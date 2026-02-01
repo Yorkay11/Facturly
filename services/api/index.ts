@@ -126,7 +126,6 @@ export const {
   useGetVapidPublicKeyQuery,
   useRegisterPushSubscriptionMutation,
   useUnregisterPushSubscriptionMutation,
-  useTestPushNotificationMutation,
         // Reports
         useGetRevenueByClientQuery,
         useGetRevenueByMonthQuery,

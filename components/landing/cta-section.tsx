@@ -132,24 +132,17 @@ export function CTASection() {
           </p>
         </div>
         
-        {/* Compteur bêta */}
-        {betaInfo && betaInfo.enabled && betaInfo.maxUsers !== null && (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-            <FaUsers className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">
-              {betaInfo.isFull ? (
-                t('betaFull', { current: betaInfo.currentUsers, max: betaInfo.maxUsers ?? 0 })
-              ) : (
-                t('betaAvailable', { 
-                  remaining: betaInfo.remaining ?? 0, 
-                  plural: (betaInfo.remaining ?? 0) !== 1 ? 's' : '',
-                  current: betaInfo.currentUsers, 
-                  max: betaInfo.maxUsers ?? 0 
-                })
-              )}
-            </span>
-          </div>
-        )}
+        {/* Preuve sociale (remplace le compteur "places disponibles") */}
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+          <FaUsers className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-primary">
+            {betaInfo?.isFull && betaInfo?.enabled ? (
+              t('betaFull', { current: betaInfo.currentUsers, max: betaInfo.maxUsers ?? 0 })
+            ) : (
+              t('socialProof')
+            )}
+          </span>
+        </div>
         
         <Link href={buttonHref} onClick={handleClick}>
           <Button

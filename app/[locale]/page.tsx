@@ -17,9 +17,14 @@ import { AnimatedSection } from "@/components/landing/animated-section"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('metadata');
-  
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+
   return {
     title: t('landingTitle'),
     description: t('landingDescription'),
@@ -81,8 +86,8 @@ export default async function LandingPage() {
       answer: tFaq('integrations.answer'),
     },
     {
-      question: tFaq('freePlan.question'),
-      answer: tFaq('freePlan.answer'),
+      question: tFaq('credits.question'),
+      answer: tFaq('credits.answer'),
     },
     {
       question: tFaq('onlinePayment.question'),

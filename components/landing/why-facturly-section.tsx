@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { FaMessage, FaMobileScreen, FaGlobe, FaBolt, FaShield, FaArrowTrendUp } from 'react-icons/fa6'
+import { FaMessage, FaMobileScreen, FaGlobe, FaBolt, FaShield, FaArrowTrendUp, FaBriefcase, FaMobile, FaBell } from 'react-icons/fa6'
 
 export function WhyFacturlySection() {
   const t = useTranslations('landing.whyFacturly')
@@ -36,6 +36,21 @@ export function WhyFacturlySection() {
       icon: FaArrowTrendUp,
       title: t('growth.title'),
       description: t('growth.description')
+    },
+    {
+      icon: FaBriefcase,
+      title: t('multiWorkspace.title'),
+      description: t('multiWorkspace.description')
+    },
+    {
+      icon: FaMobile,
+      title: t('pwa.title'),
+      description: t('pwa.description')
+    },
+    {
+      icon: FaBell,
+      title: t('notifications.title'),
+      description: t('notifications.description')
     }
   ]
 

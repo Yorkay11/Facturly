@@ -83,11 +83,4 @@ export const notificationEndpoints = (
       body,
     }),
   }),
-  testPushNotification: builder.mutation<{ success: boolean }, void>({
-    query: () => ({
-      url: '/notifications/test-push',
-      method: 'POST',
-    }),
-    invalidatesTags: ['Notification'],
-  }),
 });

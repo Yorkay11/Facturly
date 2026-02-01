@@ -11,28 +11,20 @@ export function PricingFAQ() {
 
   const faqs = [
     {
-      question: t('freeTrial.question'),
-      answer: t('freeTrial.answer'),
+      question: t('howCreditsWork.question'),
+      answer: t('howCreditsWork.answer'),
     },
     {
       question: t('paymentMethods.question'),
       answer: t('paymentMethods.answer'),
     },
     {
-      question: t('cancelAnyTime.question'),
-      answer: t('cancelAnyTime.answer'),
-    },
-    {
-      question: t('switchPlans.question'),
-      answer: t('switchPlans.answer'),
+      question: t('noExpiration.question'),
+      answer: t('noExpiration.answer'),
     },
     {
       question: t('refund.question'),
       answer: t('refund.answer'),
-    },
-    {
-      question: t('annualSavings.question'),
-      answer: t('annualSavings.answer'),
     },
   ]
 

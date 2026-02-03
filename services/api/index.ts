@@ -16,6 +16,7 @@ import { settingsEndpoints } from './endpoints/settings.endpoints';
 import { notificationEndpoints } from './endpoints/notification.endpoints';
 import { billingEndpoints } from './endpoints/billing.endpoints';
 import { invoiceTemplateEndpoints } from './endpoints/invoice-template.endpoints';
+import { waitlistEndpoints } from './endpoints/waitlist.endpoints';
 
 // Export all types
 export * from './types';
@@ -41,6 +42,7 @@ export const facturlyApi = createApi({
     ...notificationEndpoints(builder),
     ...billingEndpoints(builder),
     ...invoiceTemplateEndpoints(builder),
+    ...waitlistEndpoints(builder),
   }),
 });
 
@@ -49,6 +51,7 @@ export const facturlyApi = createApi({
 export const {
   // Public
   useGetBetaAccessInfoQuery,
+  useJoinWaitlistMutation,
   // Auth
   useRegisterMutation,
   useLoginMutation,

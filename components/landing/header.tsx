@@ -11,13 +11,15 @@ import { useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { useWaitlist } from "@/contexts/WaitlistContext"
 
 export function Header() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
+  const { openWaitlist } = useWaitlist()
   const t = useTranslations('landing.header')
   const buttonText = isAuthenticated ? t('dashboard') : t('tryFree')
-  const buttonHref = isAuthenticated ? "/dashboard" : "/login"
+  const buttonHref = isAuthenticated ? "/dashboard" : "#"
 
   const navItems = [
     { name: t('home'), href: "/" },
@@ -31,6 +33,9 @@ export function Header() {
     if (isAuthenticated) {
       e.preventDefault()
       router.push("/dashboard")
+    } else {
+      e.preventDefault()
+      openWaitlist()
     }
   }
 

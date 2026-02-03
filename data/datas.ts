@@ -92,11 +92,11 @@ export const devises = [
   },
   {
       value: "XOF",
-      label: "Franc CFA (XOF) - Afrique de l'Ouest",
+      label: "FCFA (XOF) - UEMOA — Afrique de l'Ouest",
   },
   {
       value: "XAF",
-      label: "Franc CFA (XAF) - Afrique Centrale",
+      label: "FCFA (XAF) - CEMAC — Afrique Centrale",
   },
   {
       value: "NGN",

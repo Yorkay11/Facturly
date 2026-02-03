@@ -92,9 +92,10 @@ export function TestimonialGridSection() {
     "/images/avatars/darlene-robertson.png",
     "/images/avatars/cody-fisher.png",
     "/images/avatars/albert-flores.png",
+    "/images/avatars/cody-fisher.png",
   ]
   
-  const types = ["large-teal", "small-dark", "small-dark", "small-dark", "small-dark", "small-dark", "large-light"]
+  const types = ["large-teal", "small-dark", "small-dark", "small-dark", "small-dark", "small-dark", "large-light", "small-dark"]
   
   const testimonials = testimonialsData.map((item, index) => ({
     quote: item.quote,
@@ -126,6 +127,7 @@ export function TestimonialGridSection() {
           <TestimonialCard {...testimonials[2]} />
           <TestimonialCard {...testimonials[3]} />
           <TestimonialCard {...testimonials[4]} />
+          {testimonials[7] && <TestimonialCard {...testimonials[7]} />}
         </div>
         <div className="flex-1 flex flex-col justify-start items-start gap-4 md:gap-4 lg:gap-4">
           <TestimonialCard {...testimonials[5]} />

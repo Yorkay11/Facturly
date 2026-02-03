@@ -268,6 +268,23 @@ function LoginForm() {
                 )}
                 {t('continueWithGoogle')}
               </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                {locale === 'fr' ? (
+                  <>
+                    En continuant avec Google, vous acceptez notre{' '}
+                    <Link href="/privacy" className="text-primary hover:underline">
+                      politique de confidentialité
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    By continuing with Google, you agree to our{' '}
+                    <Link href="/privacy" className="text-primary hover:underline">
+                      privacy policy
+                    </Link>
+                  </>
+                )}
+              </p>
 
               <div className="space-y-3 text-center text-sm text-foreground/60">
                 <Link href="#" className="text-primary hover:underline">

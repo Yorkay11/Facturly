@@ -10,9 +10,11 @@ import { FeaturesSection } from "@/components/landing/features-section"
 import { WhyFacturlySection } from "@/components/landing/why-facturly-section"
 import { MobileMoneySection } from "@/components/landing/mobile-money-section"
 import { FAQSection } from "@/components/landing/faq-section"
+import { SupportedCountriesSection } from "@/components/landing/supported-countries-section"
 import { CTASection } from "@/components/landing/cta-section"
 import { FooterSection } from "@/components/landing/footer-section"
 import { AnimatedSection } from "@/components/landing/animated-section"
+import { WaitlistProvider } from "@/contexts/WaitlistContext"
 
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
@@ -145,7 +147,7 @@ export default async function LandingPage() {
   
 
   return (
-    <>
+    <WaitlistProvider>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -192,7 +194,9 @@ export default async function LandingPage() {
           <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <RealMetrics />
           </AnimatedSection>
-          
+          <AnimatedSection className="relative z-10 mt-8 md:mt-16" delay={0.2}>
+            <SupportedCountriesSection />
+          </AnimatedSection>
           <AnimatedSection id="faq-section" className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
             <FAQSection />
           </AnimatedSection>
@@ -204,7 +208,7 @@ export default async function LandingPage() {
           </AnimatedSection>
         </div>
       </div>
-    </>
+    </WaitlistProvider>
   )
 }
 

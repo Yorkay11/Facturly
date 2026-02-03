@@ -23,6 +23,9 @@ export function FooterSection() {
         <p className="text-foreground/90 text-sm font-medium leading-[18px] text-left max-w-sm">
           {t('tagline')}
         </p>
+        <p className="text-muted-foreground text-xs font-medium leading-4 text-left max-w-sm">
+          {t('lomeAnchor')}
+        </p>
       </div>
       {/* Right Section: Links */}
       <div className="grid grid-cols-2 gap-4 md:gap-6 p-4 md:p-4 w-full md:w-auto">

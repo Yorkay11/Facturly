@@ -62,7 +62,7 @@
     "welcomeBack": "Welcome back!",
     "createAccount": "Create account",
     "heroTitle": "Create and send your invoices in 60 seconds",
-    "heroDescription": "Mobile-first invoicing for West Africa with WhatsApp and mobile money",
+    "heroDescription": "The mobile-first Fintech simplifying invoicing and payments in Africa",
     "orContinueWith": "Or continue with",
     "continueWithGoogle": "Continue with Google",
     "processing": "Processing",
@@ -170,7 +170,7 @@
     "recurringInvoicesDescription": "Manage your automatic and recurring invoices",
     "addItem": "Add item",
     "monthlyRevenue": "Monthly Revenue",
-    "invoicesSent": "Invoices Sent",
+    "invoicesSent": "Active Invoices",
     "totalPaid": "Total Paid",
     "unpaid": "Unpaid",
     "revenueTrends": "Revenue Trends",
@@ -265,7 +265,9 @@
     "openNavigation": "Open navigation",
     "openUserProfile": "Open user profile",
     "support": "Support",
-    "new": "New"
+    "new": "New",
+    "spotlightPlaceholder": "Search pages...",
+    "spotlightEmpty": "No results found."
   },
   "topbar": {
     "user": "User",
@@ -702,6 +704,8 @@
       "success": {
         "clientCreated": "Client created and selected",
         "clientCreatedDescription": "{name} has been created and selected as recipient.",
+        "draftRestored": "Draft restored",
+        "draftRestoredDescription": "Your data was recovered automatically. You won't lose anything if the connection drops.",
         "invoiceSent": "Invoice sent",
         "invoiceSentDescription": "Invoice #{number} has been sent to {email}.",
         "draftUpdated": "Draft updated",
@@ -1424,7 +1428,7 @@
       "title": "Invoicing in 60 seconds",
       "subtitle": "The mobile-first platform to create, send and receive payments in West Africa.",
       "ctaAuthenticated": "Access dashboard",
-      "ctaGuest": "Get started for free",
+      "ctaGuest": "Join the waitlist",
       "features": {
         "sixtySeconds": "to create an invoice",
         "whatsapp": "penetration in Africa",
@@ -1437,7 +1441,7 @@
       "features": "Features",
       "pricing": "Pricing",
       "testimonials": "Testimonials",
-      "tryFree": "Try for free",
+      "tryFree": "Join the waitlist",
       "dashboard": "Dashboard",
       "navigation": "Navigation"
     },
@@ -1660,6 +1664,10 @@
           "question": "Can I integrate Facturly with my existing tools?",
           "answer": "Yes! Facturly offers integrations with the most popular accounting tools. Our API also allows you to connect Facturly to your existing system. We're constantly working to add new integrations to make your workflow easier."
         },
+        "freePlan": {
+          "question": "Is it really free?",
+          "answer": "Yes, creating invoices is 100% free and unlimited. You only pay at the time of sending (via the credit system). It's ideal for testing the tool without any risk."
+        },
         "credits": {
           "question": "How do credits work?",
           "answer": "Facturly uses a credit system: you buy credits individually or in packs (Starter, Pro, Business). Each invoice sent consumes 1 credit. Credits remain valid until used. No recurring subscription: you only buy when you need them. Pay via mobile money (Orange Money, MTN, Wave, etc.)."
@@ -1681,7 +1689,26 @@
       "betaFull": "Beta full ({current}/{max} users)",
       "betaAvailable": "{remaining} spot{plural} available ({current}/{max})",
       "ctaAuthenticated": "Access dashboard",
-      "ctaGuest": "Get started for free"
+      "ctaGuest": "Join the waitlist"
+    },
+    "waitlist": {
+      "title": "Join the waitlist",
+      "subtitle": "We are opening access progressively to ensure the best experience. Be among the first to be notified.",
+      "cta": "Join the waitlist",
+      "fields": {
+        "name": "Your business name (optional)",
+        "email": "Your email address",
+        "country": "Your country"
+      },
+      "success": {
+        "title": "Got it!",
+        "description": "Thank you for your interest. We will contact you as soon as a spot opens up for you."
+      },
+      "error": {
+        "alreadyExists": "This email is already on the waitlist.",
+        "generic": "An error occurred. Please try again."
+      },
+      "privacyNote": "We respect your privacy. No spam, promised."
     },
     "pricing": {
       "title": "Credits for your invoices",
@@ -1691,7 +1718,7 @@
       "perCredit": "~{price} FCFA/credit",
       "ctaAuthenticated": "Access dashboard",
       "ctaBuy": "Buy credits",
-      "ctaStart": "Get started for free",
+      "ctaStart": "Join the waitlist",
       "included": "Included:",
       "packs": {
         "starter": {
@@ -1778,28 +1805,40 @@
         }
       }
     },
+    "supportedCountries": {
+      "title": "Supported countries",
+      "subtitle": "Invoice across the Franc Zone. Precisely choose FCFA (XOF) or FCFA (XAF) depending on your zone.",
+      "uemoa": "UEMOA Zone — BCEAO",
+      "uemoaDesc": "CFA Franc (XOF)",
+      "cemac": "CEMAC Zone — BEAC",
+      "cemacDesc": "CFA Franc (XAF)",
+      "crossBorder": "Sell everywhere in UEMOA and CEMAC, receive your funds locally."
+    },
     "socialProof": {
       "title": "Join the businesses that trust us",
       "subtitle": "Facturly is available in several countries across West and Central Africa",
       "stats": {
-        "users": "Growing",
-        "usersLabel": "active users",
-        "usersDescription": "Join us today",
-        "invoices": "Increasing",
-        "invoicesLabel": "invoices created",
-        "invoicesDescription": "Simplify your invoicing",
+        "tMoneyMoov": "T-Money, Flooz, Orange, MTN",
+        "tMoneyMoovLabel": "Integrated mobile money",
+        "tMoneyMoovDescription": "T-Money, Flooz (Moov), Orange Money, MTN, Wave and 50+ methods",
+        "uemoa": "UEMOA",
+        "uemoaLabel": "BCEAO Compliant",
+        "uemoaDescription": "West African Franc Zone standards",
+        "cemac": "CEMAC",
+        "cemacLabel": "BEAC Compliant",
+        "cemacDescription": "Central African Franc Zone standards",
+        "mobileMoney": "Mobile Money",
+        "mobileMoneyLabel": "Orange, MTN, Wave",
+        "mobileMoneyDescription": "60+ payment methods integrated",
         "countries": "12",
         "countriesLabel": "countries covered",
         "countriesDescription": "Ivory Coast, Senegal, Mali, Burkina Faso, Benin, Togo, Ghana, Nigeria, Cameroon, Gabon, Congo, DRC",
-        "satisfaction": "In progress",
-        "satisfactionLabel": "customer satisfaction",
-        "satisfactionDescription": "We are committed to providing you with the best service",
         "responseTime": "< 24h",
         "responseTimeLabel": "response time",
         "responseTimeDescription": "customer support available",
-        "growth": "New",
-        "growthLabel": "platform",
-        "growthDescription": "Join us from launch"
+        "growth": "Native FCFA",
+        "growthLabel": "XOF & XAF",
+        "growthDescription": "Franc Zone currencies integrated"
       }
     },
     "trustBadges": {
@@ -1822,12 +1861,12 @@
         "description": "Dedicated team available in French and English. Response guaranteed within 2 hours."
       },
       "satisfaction": {
-        "title": "4.8/5 on average",
-        "description": "Rated by over 1,200 clients. We constantly improve our service."
+        "title": "T-Money, Flooz, Orange, MTN, Wave",
+        "description": "Integrated mobile money: T-Money, Flooz (Moov), Orange Money, MTN, Wave and 50+ methods. Invoice and collect with all operators."
       },
       "compliance": {
-        "title": "Compliant with standards",
-        "description": "Respect for local regulations, legal invoices, guaranteed tax compliance."
+        "title": "UEMOA & CEMAC Compliant",
+        "description": "BCEAO and BEAC standards. Native FCFA (XOF/XAF) currencies. Invoices compliant with Franc Zone."
       }
     },
     "realMetrics": {
@@ -1936,7 +1975,7 @@
       "cta": {
         "title": "Ready to receive payments?",
         "description": "Create your first invoice and receive your first payment in 60 seconds via mobile money",
-        "buttonGuest": "Get started for free",
+        "buttonGuest": "Join the waitlist",
         "buttonAuthenticated": "Create an invoice"
       }
     },
@@ -1984,11 +2023,17 @@
           "quote": "Our startup in Ghana has been using Facturly for 6 months. The time savings are huge, but most importantly, our clients love receiving invoices on WhatsApp and paying with MTN Mobile Money. It's become a competitive advantage!",
           "name": "Kwame Mensah",
           "company": "Co-founder, TechHub Accra"
+        },
+        {
+          "quote": "As a consultant in Douala, I invoice clients in Cameroon and Gabon. Facturly handles FCFA (XAF) and MTN/Orange mobile money perfectly. The tool crosses CEMAC borders.",
+          "name": "Jean Mballa",
+          "company": "Consultant, Douala"
         }
       ]
     },
     "footer": {
-      "tagline": "Mobile-first Invoicing for Africa",
+      "tagline": "The Fintech simplifying financial management for entrepreneurs in Africa.",
+      "lomeAnchor": "Based in Lomé, at the heart of West African finance.",
       "product": "Service",
       "legal": "Legal",
       "features": "Features",
@@ -1996,7 +2041,8 @@
       "pricing": "Pricing",
       "legalMentions": "Legal Notice",
       "terms": "Terms of Service",
-      "privacy": "Privacy Policy"
+      "privacy": "Privacy Policy",
+      "lomeAnchor": "Based in Lomé, at the heart of West African finance."
     }
   },
   "pricing": {
@@ -2785,7 +2831,7 @@
     "title": "Facturly - Mobile-first Invoicing for Africa",
     "description": "Create and send your invoices in 60 seconds, pay with mobile money. Mobile-first invoicing platform for West Africa with WhatsApp and 60+ mobile money payment methods.",
     "landingTitle": "Create and send your invoices in 60 seconds, pay with mobile money",
-    "landingDescription": "Facturly is the mobile-first invoicing platform for West Africa. Create your invoices in 60 seconds, send them via WhatsApp, and receive payments via Orange Money, MTN, Wave and 60+ mobile money payment methods.",
+    "landingDescription": "Facturly is the mobile-first invoicing Fintech for Africa. Create your invoices in 60 seconds, send them via WhatsApp, and receive payments via Orange Money, MTN, Wave and 60+ local methods.",
     "home": "Home",
     "organizationDescription": "Mobile-first invoicing platform for West Africa"
   },
@@ -3013,167 +3059,165 @@
       "tableOfContents": "Table of Contents",
       "sections": {
         "introduction": {
-          "title": "1. Introduction",
-          "content": "Welcome to Facturly. By accessing and using our online invoicing platform, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service."
+          "title": "1. Welcome to Facturly",
+          "content": "Thanks for using Facturly! By accessing our platform, you're joining a community of entrepreneurs simplifying their management. By using our services, you agree to these common-sense rules that help us protect everyone.\n\nFacturly is operated by Devone Consulting, based in Lomé (Togo). Our relationship is governed by Togolese law and OHADA standards, ensuring transparency for your transactions within the Franc Zone."
         },
         "acceptance": {
-          "title": "2. Acceptance of Terms",
-          "content": "By creating an account or using Facturly, you confirm that:",
+          "title": "2. What to know before you start",
+          "content": "By creating your account, you simply confirm that:",
           "items": {
-            "1": "You are at least 18 years old or the legal age in your jurisdiction",
-            "2": "You have the legal capacity to enter into contracts",
-            "3": "You agree to comply with all applicable laws and regulations"
+            "1": "You are an adult (18 years or older)",
+            "2": "You have the right to represent your business or activity",
+            "3": "You will use the tool honestly and legally"
           }
         },
         "service": {
-          "title": "3. Service Description",
-          "content": "Facturly is an online invoicing platform that allows users to:",
+          "title": "3. What Facturly does for you",
+          "content": "Our mission is to save you time. With Facturly, you can:",
           "features": {
-            "1": "Create and manage invoices",
-            "2": "Track payments and reminders",
-            "3": "Manage clients and products",
-            "4": "Generate financial reports",
-            "5": "Access advanced invoicing features based on their subscription plan"
+            "1": "Create pro invoices in seconds",
+            "2": "Track your payments without chasing clients",
+            "3": "Manage your product catalogs and address book",
+            "4": "Visualize your business health with simple reports",
+            "5": "Access advanced tools according to your needs (credit system)"
           }
         },
         "accounts": {
-          "title": "4. User Accounts",
-          "content": "You are responsible for:",
+          "title": "4. Your account, your responsibility",
+          "content": "For everything to work smoothly, we count on you to:",
           "responsibilities": {
-            "1": "Maintaining the confidentiality of your login credentials",
-            "2": "All activities that occur under your account",
-            "3": "Providing accurate and up-to-date information",
-            "4": "Notifying us immediately of any unauthorized use of your account"
+            "1": "Keep your access secret (don't share your password)",
+            "2": "Take responsibility for actions made from your account",
+            "3": "Give us true info for your invoices (it's for your credibility!)",
+            "4": "Let us know if you think someone else is using your account"
           }
         },
         "payment": {
-          "title": "5. Payment Terms",
-          "content": "Paid subscriptions are billed at the current rates. You agree that:",
+          "title": "5. Payments and Credits",
+          "content": "Facturly works without hidden subscriptions. You pay for what you use:",
           "terms": {
-            "1": "Payments are made in advance for the subscription period",
-            "2": "Prices may be changed with 30 days notice",
-            "3": "No refunds are provided for partially used periods",
-            "4": "Subscriptions automatically renew unless cancelled"
+            "1": "Credit pack purchases are made in advance",
+            "2": "Prices are transparent and displayed before each purchase",
+            "3": "A credit used to send an invoice is final",
+            "4": "Your credits don't expire as long as your account is active"
           }
         },
         "intellectual": {
-          "title": "6. Intellectual Property",
-          "content": "All content, features, and technology of Facturly are the exclusive property of Facturly or its licensors. You may not copy, modify, distribute, or create derivative works without written authorization."
+          "title": "6. Ownership and respect",
+          "content": "The Facturly interface, logo, and technology belong to us. We give you the right to use them for your business, but you cannot copy or resell them as your own."
         },
         "liability": {
-          "title": "7. Limitation of Liability",
-          "content": "Facturly is provided \"as is\" without warranty of any kind. We will not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use our service."
+          "title": "7. Liability limits",
+          "content": "We do everything to keep Facturly available 24/7, but we cannot guarantee the total absence of bugs or outages (especially network-related). Facturly is a management aid tool; you remain solely responsible for the accounting and tax compliance of your invoices."
         },
         "termination": {
-          "title": "8. Termination",
-          "content": "We reserve the right to suspend or terminate your account at any time for:",
-          "reasons": {
-            "1": "Violation of these Terms of Service",
-            "2": "Fraudulent or suspicious activity",
-            "3": "Non-payment of subscription fees"
-          }
+          "title": "8. End of the adventure",
+          "content": "You can stop using Facturly whenever you want. On our side, we might suspend an account in case of clear fraud or harmful behavior to the platform."
         },
         "changes": {
-          "title": "9. Changes to Terms",
-          "content": "We reserve the right to modify these terms at any time. Changes will take effect immediately upon publication on this page. It is your responsibility to regularly review these terms."
+          "title": "9. Evolutions",
+          "content": "The world changes, Facturly too. If we modify these rules, we'll update this page. Continuing to use the app after an update means you agree with the new rules."
         },
         "contact": {
-          "title": "10. Contact",
-          "content": "For any questions regarding these Terms of Service, please contact us at:",
+          "title": "10. Let's talk",
+          "content": "A question? A doubt? Write to us, we're here to help:",
           "email": "Email"
         }
       }
     },
     "privacy": {
-      "title": "Privacy Policy",
-      "description": "Facturly Privacy Policy",
+      "title": "Your Privacy",
+      "description": "How we protect your data at Facturly",
       "backToHome": "Back to home",
       "lastUpdated": "Last updated",
-      "lastUpdatedDate": "January 1, 2026",
+      "lastUpdatedDate": "February 1, 2026",
       "tableOfContents": "Table of Contents",
+      "dataController": "Responsible: Devone Consulting, registered at RCCM Lomé under number TG-LOM 2024 A 001 (Lomé, Togo)",
       "sections": {
         "introduction": {
-          "title": "1. Introduction",
-          "content": "Facturly is committed to protecting your privacy. This privacy policy explains how we collect, use, share, and protect your personal information when you use our service."
+          "title": "1. We respect your privacy",
+          "content": "At Facturly, we know your business data is precious. This page explains transparently what we collect and why. No useless jargon, just the truth about your data."
+        },
+        "googleData": {
+          "title": "2. Specific Section: Google API Services Usage",
+          "content": "This section complements our commitments for users signing in via Google.",
+          "scopes": {
+            "title": "Data Collected (Scopes)",
+            "content": "By using Google Sign-in, Facturly accesses exclusively your public profile information (name, photo) and your email address (Scopes: https://www.googleapis.com/auth/userinfo.profile and https://www.googleapis.com/auth/userinfo.email)."
+          },
+          "usage": {
+            "title": "Limited Use",
+            "content": "The use of this information is strictly limited to creating your account and personalizing your invoices. We strictly comply with the Google API Services User Data Policy, including the \"Limited Use\" requirements."
+          },
+          "sharing": {
+            "title": "No Transfer",
+            "content": "No data from Google is transferred to third parties, unless strictly necessary to provide the application's features or to comply with applicable laws."
+          },
+          "ai": {
+            "title": "AI and Advertising",
+            "content": "We certify that Google data is never used for advertising purposes, nor for training machine learning models (AI/Machine Learning)."
+          },
+          "retention": {
+            "title": "Deletion",
+            "content": "Your data stays with us as long as you use the app. If you want to delete everything, send a quick email to support@facturly.online and we'll erase everything within 48h."
+          }
         },
         "collection": {
-          "title": "2. Information Collected",
-          "content": "We collect the following types of information:",
+          "title": "3. What we keep in mind",
+          "content": "To serve you, we need some info:",
           "types": {
-            "1": "Identification information: name, email address, phone number",
-            "2": "Billing information: address, payment information",
-            "3": "Usage data: login history, features used",
-            "4": "Invoicing data: invoices created, clients, products",
-            "5": "Technical data: IP address, browser type, device used"
+            "1": "Who you are (name, email, phone)",
+            "2": "Your billing info (your business address)",
+            "3": "Your invoices and clients (so you can find them)",
+            "4": "Some technical info (your IP) to secure your connections"
           }
         },
         "usage": {
-          "title": "3. Use of Information",
-          "content": "We use your information to:",
+          "title": "4. Why do we need it?",
+          "content": "It's simple:",
           "purposes": {
-            "1": "Provide and improve our services",
-            "2": "Process your transactions and payments",
-            "3": "Send you important notifications",
-            "4": "Personalize your user experience",
-            "5": "Ensure security and prevent fraud"
+            "1": "So you can create and send your invoices",
+            "2": "To process your mobile money payments",
+            "3": "To notify you when a client has paid you",
+            "4": "To improve the tool based on your feedback"
           }
         },
         "protection": {
-          "title": "4. Data Protection",
-          "content": "We implement appropriate security measures to protect your data:",
+          "title": "5. It's solid",
+          "content": "We don't joke with security:",
           "measures": {
-            "1": "Encryption of data in transit and at rest",
-            "2": "Strict access controls",
-            "3": "Continuous security monitoring",
-            "4": "Regular data backups"
+            "1": "All data is encrypted",
+            "2": "Connections are secure (HTTPS/TLS)",
+            "3": "We do backups every day",
+            "4": "Server access is ultra-limited"
           }
         },
         "sharing": {
-          "title": "5. Information Sharing",
-          "content": "We never sell your data. We may share your information only in the following cases:",
-          "cases": {
-            "1": "With your explicit consent",
-            "2": "With trusted service providers (hosting, payment)",
-            "3": "To comply with legal obligations",
-            "4": "In case of merger, acquisition, or asset sale"
-          }
+          "title": "6. No resale",
+          "content": "We will NEVER sell your data. Period. We share it only with essential services (payment, hosting) for Facturly to run."
         },
         "rights": {
-          "title": "6. Your Rights",
-          "content": "You have the right to:",
-          "list": {
-            "1": "Access your personal data",
-            "2": "Correct inaccurate information",
-            "3": "Request deletion of your data",
-            "4": "Object to the processing of your data",
-            "5": "Request data portability"
-          }
+          "title": "7. You're the boss",
+          "content": "It's your data, you have all the rights: see what we have on you, correct an error, or ask us to delete everything."
         },
         "cookies": {
-          "title": "7. Cookies",
-          "content": "We use cookies and similar technologies to improve your experience, analyze service usage, and personalize content. You can manage your cookie preferences in your browser settings."
+          "title": "8. Cookies",
+          "content": "We use small files (cookies) just so you don't have to sign in every time and to understand how people use the site."
         },
         "thirdParty": {
-          "title": "8. Third-Party Services",
-          "content": "We use third-party services for:",
-          "services": {
-            "1": "Payment processing (Moneroo)",
-            "2": "Analytics and tracking (Google Analytics)",
-            "3": "Hosting and infrastructure"
-          }
+          "title": "9. Our partners",
+          "content": "We work with serious people like Moneroo for payments or Google for visit stats. They have their own rules, but we chose them because they are reliable."
         },
-        "children": {
-          "title": "9. Children's Privacy",
-          "content": "Our service is not intended for persons under 18 years of age. We do not knowingly collect personal information from children."
-        },
-        "changes": {
-          "title": "10. Policy Changes",
-          "content": "We may update this privacy policy from time to time. We will notify you of any significant changes by email or via a notification on our website."
+        "applicableLaw": {
+          "title": "10. Applicable Law",
+          "content": "This policy is governed by Law No. 2019-014 on the protection of personal data in Togo."
         },
         "contact": {
-          "title": "11. Contact",
-          "content": "For any questions regarding this privacy policy or to exercise your rights, contact us at:",
-          "email": "Email"
+          "title": "11. Let's stay in touch",
+          "content": "Need to delete your data or just want to talk security? Write to us or visit us:",
+          "address": "Address: Administrative District, Rue des Hydrocarbures, Lomé, Togo",
+          "email": "Email",
+          "deletionEmail": "support@facturly.online"
         }
       }
     }

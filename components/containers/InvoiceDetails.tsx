@@ -80,6 +80,7 @@ import { getBackendTemplateName, getFrontendTemplateFromBackend } from "@/types/
 import { CommandPalette } from "@/components/invoices/CommandPalette"
 import { WhatsAppMessageStyleSelector } from "@/components/whatsapp/WhatsAppMessageStyleSelector"
 import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types"
+import { useInvoiceDraftPersistence, clearInvoiceDraft } from "@/hooks/useInvoiceDraftPersistence"
 
 interface InvoiceDetailsProps {
     invoiceId?: string;
@@ -220,6 +221,27 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     const formValues = form.watch();
     const formErrors = form.formState.errors;
     const isFormValid = form.formState.isValid;
+
+    // Persistence locale (localStorage) : brouillon auto-sauvegardé en cas de coupure de connexion
+    const { didRestoreDraft } = useInvoiceDraftPersistence({
+        form,
+        items,
+        metadata: {
+            clientId: storedClientId,
+            templateId: metadataStore.templateId,
+            receiver: storedReceiver,
+            subject,
+            currency: storedCurrency,
+        },
+        isEditMode,
+        setItems,
+        setMetadata,
+        onRestored: () => {
+            toast.success(t('success.draftRestored'), {
+                description: t('success.draftRestoredDescription'),
+            });
+        },
+    });
     
     const getCompletenessInfo = () => {
         const requiredFields = ['receiver', 'subject', 'issueDate', 'dueDate', 'currency'];
@@ -358,72 +380,60 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         setIsClientModalOpen(false);
     };
     
-    // Pré-remplir le client si clientId est dans l'URL
+    // Pré-remplir le client si clientId est dans l'URL (sauf si brouillon restauré)
     useEffect(() => {
-        if (clientFromUrl && !isLoadingClientFromUrl) {
+        if (didRestoreDraft || !clientFromUrl || isLoadingClientFromUrl) return;
+        const currentReceiver = form.getValues("receiver");
+        if (!currentReceiver || currentReceiver !== clientFromUrl.name) {
+            form.setValue("receiver", clientFromUrl.name);
+            
+            // Générer automatiquement le sujet
+            const autoSubject = `Facture ${clientFromUrl.name}`;
+            form.setValue("subject", autoSubject);
+            
+            setMetadata({
+                receiver: clientFromUrl.name,
+                clientId: clientFromUrl.id,
+                subject: autoSubject,
+            });
+            
+            // Sauvegarder le dernier client utilisé dans localStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('facturly_last_client_id', clientFromUrl.id);
+            }
+        }
+    }, [didRestoreDraft, clientFromUrl, isLoadingClientFromUrl, form, setMetadata]);
+    
+    // Si un client est déjà sélectionné dans le store ou localStorage, le pré-remplir (sauf si brouillon restauré)
+    useEffect(() => {
+        if (didRestoreDraft || clientIdFromUrl || clients.length === 0 || isLoadingClients || isEditMode || existingInvoice) return;
+        let clientToUse: (typeof clients)[0] | null = null;
+        if (storedClientId) {
+            clientToUse = clients.find((c) => c.id === storedClientId) ?? null;
+        }
+        if (!clientToUse) {
+            const lastClientId = getLastUsedClientId();
+            if (lastClientId) {
+                clientToUse = clients.find((c) => c.id === lastClientId) ?? null;
+            }
+        }
+        if (clientToUse) {
             const currentReceiver = form.getValues("receiver");
-            if (!currentReceiver || currentReceiver !== clientFromUrl.name) {
-                form.setValue("receiver", clientFromUrl.name);
-                
-                // Générer automatiquement le sujet
-                const autoSubject = `Facture ${clientFromUrl.name}`;
+            if (!currentReceiver || currentReceiver !== clientToUse.name) {
+                form.setValue("receiver", clientToUse.name);
+                const autoSubject = `Facture ${clientToUse.name}`;
                 form.setValue("subject", autoSubject);
-                
                 setMetadata({
-                    receiver: clientFromUrl.name,
-                    clientId: clientFromUrl.id,
+                    receiver: clientToUse.name,
+                    clientId: clientToUse.id,
                     subject: autoSubject,
                 });
-                
-                // Sauvegarder le dernier client utilisé dans localStorage
                 if (typeof window !== 'undefined') {
-                    localStorage.setItem('facturly_last_client_id', clientFromUrl.id);
+                    localStorage.setItem('facturly_last_client_id', clientToUse.id);
                 }
             }
         }
-    }, [clientFromUrl, isLoadingClientFromUrl, form, setMetadata]);
-    
-    // Si un client est déjà sélectionné dans le store ou localStorage, le pré-remplir
-    useEffect(() => {
-        if (!clientIdFromUrl && clients.length > 0 && !isLoadingClients && !isEditMode && !existingInvoice) {
-            let clientToUse = null;
-            
-            // Priorité 1: Client dans le store
-            if (storedClientId) {
-                clientToUse = clients.find((c) => c.id === storedClientId);
-            }
-            
-            // Priorité 2: Dernier client utilisé (localStorage)
-            if (!clientToUse) {
-                const lastClientId = getLastUsedClientId();
-                if (lastClientId) {
-                    clientToUse = clients.find((c) => c.id === lastClientId);
-                }
-            }
-            
-            if (clientToUse) {
-                const currentReceiver = form.getValues("receiver");
-                if (!currentReceiver || currentReceiver !== clientToUse.name) {
-                    form.setValue("receiver", clientToUse.name);
-                    
-                    // Générer automatiquement le sujet
-                    const autoSubject = `Facture ${clientToUse.name}`;
-                    form.setValue("subject", autoSubject);
-                    
-                    setMetadata({
-                        receiver: clientToUse.name,
-                        clientId: clientToUse.id,
-                        subject: autoSubject,
-                    });
-                    
-                    // Sauvegarder le dernier client utilisé dans localStorage
-                    if (typeof window !== 'undefined') {
-                        localStorage.setItem('facturly_last_client_id', clientToUse.id);
-                    }
-                }
-            }
-        }
-    }, [storedClientId, clients, isLoadingClients, form, setMetadata, clientIdFromUrl, isEditMode, existingInvoice]);
+    }, [didRestoreDraft, storedClientId, clients, isLoadingClients, form, setMetadata, clientIdFromUrl, isEditMode, existingInvoice]);
     
     // Charger les données de la facture existante dans le formulaire si on est en mode édition
     useEffect(() => {
@@ -606,9 +616,10 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     }),
                 });
 
-                // Réinitialiser les stores
+                // Réinitialiser les stores et le brouillon local
                 resetMetadata();
                 clearItems();
+                clearInvoiceDraft();
 
                 // Rediriger vers la page de détails de la facture
                 router.replace(`/invoices/${invoiceIdToSend}`);
@@ -779,11 +790,12 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     // Mettre à jour la date de dernière sauvegarde
                     setLastSavedAt(new Date());
                     
-                    // Réinitialiser les stores après la création réussie seulement si skipRedirect est false
+                    // Réinitialiser les stores et le brouillon local après la création réussie seulement si skipRedirect est false
                     // Si skipRedirect est true, on laisse le parent gérer la navigation et la réinitialisation
                     if (!skipRedirect) {
                         resetMetadata();
                         clearItems();
+                        clearInvoiceDraft();
                         
                         // Déclencher la redirection avec loader
                         setRedirectAfterSave(`/invoices/${newInvoiceId}`);

@@ -7,9 +7,12 @@ import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from '@/i18n/routing'
 import { PaymentMethodsGallery } from '@/components/payments/PaymentMethodsGallery'
 
+import { useWaitlist } from '@/contexts/WaitlistContext'
+
 export function MobileMoneySection() {
   const t = useTranslations('landing.mobileMoney')
   const { isAuthenticated } = useAuth()
+  const { openWaitlist } = useWaitlist()
   const router = useRouter()
   
   const providers = [
@@ -70,7 +73,7 @@ export function MobileMoneySection() {
     if (isAuthenticated) {
       router.push("/dashboard")
     } else {
-      router.push("/login")
+      openWaitlist()
     }
   }
 

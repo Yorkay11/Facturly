@@ -10,19 +10,24 @@ import { cn } from "@/lib/utils"
 import { HeroFeatures } from "./hero-features"
 import RippleGrid from "./ripple-grid"
 import SplitText from "@/components/ui/split-text"
+import { useWaitlist } from "@/contexts/WaitlistContext"
 
 
 export function HeroSection() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
+  const { openWaitlist } = useWaitlist()
   const t = useTranslations('landing.hero')
   const buttonText = isAuthenticated ? t('ctaAuthenticated') : t('ctaGuest')
-  const buttonHref = isAuthenticated ? "/dashboard" : "/login"
+  const buttonHref = isAuthenticated ? "/dashboard" : "#"
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isAuthenticated) {
       e.preventDefault()
       router.push("/dashboard")
+    } else {
+      e.preventDefault()
+      openWaitlist()
     }
   }
 

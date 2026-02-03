@@ -3,8 +3,11 @@ import { getTranslations } from 'next-intl/server';
 import { Shield, Lock } from "lucide-react";
 import { LegalPageHeader } from "@/components/layout/LegalPageHeader";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('legal.privacy');
+export async function generateMetadata({
+  params,
+}: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'legal.privacy' });
   return {
     title: t('title'),
     description: t('description'),
@@ -13,6 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const sections = [
   'introduction',
+  'googleData',
   'collection',
   'usage',
   'protection',
@@ -20,8 +24,7 @@ const sections = [
   'rights',
   'cookies',
   'thirdParty',
-  'children',
-  'changes',
+  'applicableLaw',
   'contact',
 ] as const;
 
@@ -77,21 +80,63 @@ export default async function PrivacyPage() {
                 <p className="text-muted-foreground text-sm sm:text-base lg:text-lg leading-relaxed">
                   {t('sections.introduction.content')}
                 </p>
+                <p className="text-sm font-semibold text-foreground mt-3">
+                  {t('dataController')}
+                </p>
               </div>
 
               {/* Content */}
               <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-8 sm:space-y-10 lg:space-y-12">
-                {/* Data Collection */}
+                {/* Google Data Section */}
                 <section id="section-2" className="scroll-mt-20 sm:scroll-mt-24">
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 sm:p-6 lg:p-8">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+                      <span className="text-primary font-mono text-base sm:text-lg">2.</span>
+                      {t('sections.googleData.title')}
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
+                      {t('sections.googleData.content')}
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-1">{t('sections.googleData.scopes.title')}</h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed">{t('sections.googleData.scopes.content')}</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-1">{t('sections.googleData.usage.title')}</h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed">{t('sections.googleData.usage.content')}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-1">{t('sections.googleData.sharing.title')}</h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed">{t('sections.googleData.sharing.content')}</p>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-1">{t('sections.googleData.ai.title')}</h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed">{t('sections.googleData.ai.content')}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-6 pt-6 border-t border-primary/10">
+                      <h3 className="text-sm font-semibold text-foreground mb-1">{t('sections.googleData.retention.title')}</h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{t('sections.googleData.retention.content')}</p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Data Collection */}
+                <section id="section-3" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-                    <span className="text-primary font-mono text-base sm:text-lg">2.</span>
+                    <span className="text-primary font-mono text-base sm:text-lg">3.</span>
                     {t('sections.collection.title')}
                   </h2>
                   <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
                     {t('sections.collection.content')}
                   </p>
                   <ul className="space-y-2 sm:space-y-3 ml-4 sm:ml-8">
-                    {[1, 2, 3, 4, 5].map((i) => (
+                    {[1, 2, 3, 4].map((i) => (
                       <li key={i} className="text-muted-foreground leading-relaxed flex items-start gap-3">
                         <span className="text-primary mt-1.5">•</span>
                         <span>{t(`sections.collection.types.${i}`)}</span>
@@ -101,16 +146,16 @@ export default async function PrivacyPage() {
                 </section>
 
                 {/* Data Usage */}
-                <section id="section-3" className="scroll-mt-20 sm:scroll-mt-24">
+                <section id="section-4" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-                    <span className="text-primary font-mono text-base sm:text-lg">3.</span>
+                    <span className="text-primary font-mono text-base sm:text-lg">4.</span>
                     {t('sections.usage.title')}
                   </h2>
                   <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
                     {t('sections.usage.content')}
                   </p>
                   <ul className="space-y-2 sm:space-y-3 ml-4 sm:ml-8">
-                    {[1, 2, 3, 4, 5].map((i) => (
+                    {[1, 2, 3, 4].map((i) => (
                       <li key={i} className="text-muted-foreground leading-relaxed flex items-start gap-3">
                         <span className="text-primary mt-1.5">•</span>
                         <span>{t(`sections.usage.purposes.${i}`)}</span>
@@ -120,9 +165,9 @@ export default async function PrivacyPage() {
                 </section>
 
                 {/* Data Protection */}
-                <section id="section-4" className="scroll-mt-20 sm:scroll-mt-24">
+                <section id="section-5" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-                    <span className="text-primary font-mono text-base sm:text-lg">4.</span>
+                    <span className="text-primary font-mono text-base sm:text-lg">5.</span>
                     {t('sections.protection.title')}
                   </h2>
                   <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
@@ -139,47 +184,31 @@ export default async function PrivacyPage() {
                 </section>
 
                 {/* Data Sharing */}
-                <section id="section-5" className="scroll-mt-20 sm:scroll-mt-24">
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-                    <span className="text-primary font-mono text-base sm:text-lg">5.</span>
-                    {t('sections.sharing.title')}
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-                    {t('sections.sharing.content')}
-                  </p>
-                  <ul className="space-y-2 sm:space-y-3 ml-4 sm:ml-8">
-                    {[1, 2, 3, 4].map((i) => (
-                      <li key={i} className="text-muted-foreground leading-relaxed flex items-start gap-3">
-                        <span className="text-primary mt-1.5">•</span>
-                        <span>{t(`sections.sharing.cases.${i}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                {/* User Rights */}
                 <section id="section-6" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
                     <span className="text-primary font-mono text-base sm:text-lg">6.</span>
-                    {t('sections.rights.title')}
+                    {t('sections.sharing.title')}
                   </h2>
-                  <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-                    {t('sections.rights.content')}
+                  <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                    {t('sections.sharing.content')}
                   </p>
-                  <ul className="space-y-2 sm:space-y-3 ml-4 sm:ml-8">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <li key={i} className="text-muted-foreground leading-relaxed flex items-start gap-3">
-                        <span className="text-primary mt-1.5">•</span>
-                        <span>{t(`sections.rights.list.${i}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </section>
 
-                {/* Cookies */}
+                {/* User Rights */}
                 <section id="section-7" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
                     <span className="text-primary font-mono text-base sm:text-lg">7.</span>
+                    {t('sections.rights.title')}
+                  </h2>
+                  <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                    {t('sections.rights.content')}
+                  </p>
+                </section>
+
+                {/* Cookies */}
+                <section id="section-8" className="scroll-mt-20 sm:scroll-mt-24">
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
+                    <span className="text-primary font-mono text-base sm:text-lg">8.</span>
                     {t('sections.cookies.title')}
                   </h2>
                   <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
@@ -188,43 +217,24 @@ export default async function PrivacyPage() {
                 </section>
 
                 {/* Third-Party Services */}
-                <section id="section-8" className="scroll-mt-20 sm:scroll-mt-24">
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
-                    <span className="text-primary font-mono text-base sm:text-lg">8.</span>
-                    {t('sections.thirdParty.title')}
-                  </h2>
-                  <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
-                    {t('sections.thirdParty.content')}
-                  </p>
-                  <ul className="space-y-2 sm:space-y-3 ml-4 sm:ml-8">
-                    {[1, 2, 3].map((i) => (
-                      <li key={i} className="text-muted-foreground leading-relaxed flex items-start gap-3">
-                        <span className="text-primary mt-1.5">•</span>
-                        <span>{t(`sections.thirdParty.services.${i}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                {/* Children Privacy */}
                 <section id="section-9" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
                     <span className="text-primary font-mono text-base sm:text-lg">9.</span>
-                    {t('sections.children.title')}
+                    {t('sections.thirdParty.title')}
                   </h2>
                   <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                    {t('sections.children.content')}
+                    {t('sections.thirdParty.content')}
                   </p>
                 </section>
 
-                {/* Changes to Policy */}
+                {/* Applicable Law */}
                 <section id="section-10" className="scroll-mt-20 sm:scroll-mt-24">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
                     <span className="text-primary font-mono text-base sm:text-lg">10.</span>
-                    {t('sections.changes.title')}
+                    {t('sections.applicableLaw.title')}
                   </h2>
                   <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                    {t('sections.changes.content')}
+                    {t('sections.applicableLaw.content')}
                   </p>
                 </section>
 
@@ -237,12 +247,15 @@ export default async function PrivacyPage() {
                   <p className="text-muted-foreground leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
                     {t('sections.contact.content')}
                   </p>
-                  <div className="bg-muted/50 rounded-lg p-3 sm:p-4 border">
+                  <div className="bg-muted/50 rounded-lg p-3 sm:p-4 border space-y-2">
                     <p className="text-foreground text-sm sm:text-base">
                       <span className="font-semibold">{t('sections.contact.email')}:</span>{' '}
-                      <a href="mailto:privacy@facturly.online" className="text-primary hover:underline break-all">
-                        privacy@facturly.online
+                      <a href="mailto:support@facturly.online" className="text-primary hover:underline break-all">
+                        support@facturly.online
                       </a>
+                    </p>
+                    <p className="text-muted-foreground text-sm sm:text-base">
+                      {t('sections.contact.address')}
                     </p>
                   </div>
                 </section>

@@ -7,19 +7,24 @@ import { useAuth } from "@/hooks/useAuth"
 import { useGetBetaAccessInfoQuery } from "@/services/facturlyApi"
 import { useTranslations } from 'next-intl'
 import { FaUsers } from "react-icons/fa6"
+import { useWaitlist } from "@/contexts/WaitlistContext"
 
 export function CTASection() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
+  const { openWaitlist } = useWaitlist()
   const { data: betaInfo } = useGetBetaAccessInfoQuery()
   const t = useTranslations('landing.cta')
   const buttonText = isAuthenticated ? t('ctaAuthenticated') : t('ctaGuest')
-  const buttonHref = isAuthenticated ? "/dashboard" : "/login"
+  const buttonHref = isAuthenticated ? "/dashboard" : "#"
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (isAuthenticated) {
       e.preventDefault()
       router.push("/dashboard")
+    } else {
+      e.preventDefault()
+      openWaitlist()
     }
   }
 
@@ -148,9 +153,8 @@ export function CTASection() {
           <Button
             className="px-[30px] py-2 bg-secondary text-secondary-foreground text-base font-medium leading-6 rounded-[99px] shadow-[0px_0px_0px_4px_rgba(255,255,255,0.13)] hover:bg-secondary/90 transition-all duration-200"
             size="lg"
-            disabled={betaInfo?.isFull && !isAuthenticated}
           >
-            {betaInfo?.isFull && !isAuthenticated ? t('betaFull', { current: betaInfo.currentUsers, max: betaInfo.maxUsers ?? 0 }) : buttonText}
+            {buttonText}
           </Button>
         </Link>
       </div>

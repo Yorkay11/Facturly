@@ -180,17 +180,9 @@ export default async function TermsPage() {
                     <span className="text-primary font-mono text-base sm:text-lg">8.</span>
                     {t('sections.termination.title')}
                   </h2>
-                  <p className="text-muted-foreground leading-relaxed mb-4 sm:mb-6 text-sm sm:text-base">
+                  <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                     {t('sections.termination.content')}
                   </p>
-                  <ul className="space-y-2 sm:space-y-3 ml-4 sm:ml-8">
-                    {[1, 2, 3].map((i) => (
-                      <li key={i} className="text-muted-foreground leading-relaxed flex items-start gap-3">
-                        <span className="text-primary mt-1.5">•</span>
-                        <span>{t(`sections.termination.reasons.${i}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </section>
 
                 {/* Changes to Terms */}

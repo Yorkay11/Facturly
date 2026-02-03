@@ -2,7 +2,7 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
-import { Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon, Copy, AlertCircle } from "lucide-react";
+import { Mail, RefreshCcw, Edit, Trash2, Link as LinkIcon, Copy, AlertCircle, Calendar, User, DollarSign, FileText, Clock, CheckCircle2, XCircle, Building2, CreditCard, Receipt } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -150,6 +150,15 @@ export default function InvoiceDetailPage() {
       maximumFractionDigits: 2,
     }).format(numValue);
   };
+
+  // Fonction pour vérifier si la date d'échéance est dépassée
+  const isOverdue = (dueDate: string, status: string) => {
+    if (status === 'paid' || status === 'cancelled') return false;
+    return new Date(dueDate) < new Date();
+  };
+
+  // Vérifier si on peut relancer (date d'échéance dépassée ET facture non payée)
+  const canSendReminder = invoice && invoice.status !== "draft" && invoice.status !== "paid" && invoice.status !== "cancelled" && isOverdue(invoice.dueDate, invoice.status);
 
   // Timeline dynamique basée sur les données réelles de la facture
   // Doit être appelé AVANT tous les return conditionnels pour respecter les règles des Hooks
@@ -433,21 +442,24 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const items = invoice.items ?? [];
-  const clientName = invoice.client.name;
-  const clientEmail = invoice.client.email;
+  // À ce point, invoice est garanti d'exister (vérifié ci-dessus)
+  // Utiliser une assertion non-null pour TypeScript
+  const invoiceData = invoice!;
+  const items = invoiceData.items ?? [];
+  const clientName = invoiceData.client.name;
+  const clientEmail = invoiceData.client.email;
 
   // Construire le lien public de visualisation depuis le token
   const getPublicInvoiceLink = () => {
-    if (!invoice.paymentLinkToken) return null;
+    if (!invoiceData.paymentLinkToken) return null;
     // Utiliser window.location.origin pour l'URL du frontend
     const frontendUrl = typeof window !== "undefined" ? window.location.origin : "";
-    return `${frontendUrl}/invoice/${invoice.paymentLinkToken}`;
+    return `${frontendUrl}/invoice/${invoiceData.paymentLinkToken}`;
   };
 
   const handleCopyPaymentLink = () => {
-    if (invoice.paymentLink) {
-      navigator.clipboard.writeText(invoice.paymentLink);
+    if (invoiceData.paymentLink) {
+      navigator.clipboard.writeText(invoiceData.paymentLink);
       toast.success(t('toasts.linkCopied'), {
         description: t('toasts.paymentLinkCopied'),
       });
@@ -465,10 +477,10 @@ export default function InvoiceDetailPage() {
   };
 
   const handleMarkPaid = async () => {
-    if (!invoiceId || !invoice) return;
+    if (!invoiceId || !invoiceData) return;
 
-    const amount = paymentAmount || invoice.totalAmount;
-    const remainingAmount = parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid);
+    const amount = paymentAmount || invoiceData.totalAmount;
+    const remainingAmount = parseFloat(invoiceData.totalAmount) - parseFloat(invoiceData.amountPaid || "0");
 
     if (parseFloat(amount) > remainingAmount) {
       toast.error(commonT('error'), {
@@ -491,7 +503,7 @@ export default function InvoiceDetailPage() {
       }).unwrap();
       toast.success(t('markPaidDialog.success'), {
         description: t('markPaidDialog.successDescription', { 
-          amount: formatCurrency(amount, invoice.currency) 
+          amount: formatCurrency(amount, invoiceData.currency) 
         }),
       });
       setShowMarkPaidDialog(false);
@@ -509,270 +521,441 @@ export default function InvoiceDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <Breadcrumb
-        items={[
-          { label: invoicesT('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: invoicesT('breadcrumb.invoices'), href: "/invoices" },
-          { label: invoice.invoiceNumber }]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-2">
-          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-            <h1 className="text-3xl font-semibold tracking-tight">{invoice.invoiceNumber}</h1>
-            <InvoiceStatusBadge status={invoice.status} />
-          </div>
-          <p className="text-sm text-foreground/70">
-            {t('title.description', { 
-              clientName, 
-              amount: formatCurrency(invoice.totalAmount, invoice.currency) 
-            })}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {invoice.status === "draft" && (
-            <Button 
-              className="gap-2 bg-primary hover:bg-primary/90"
-              onClick={() => router.push(`/invoices/${invoiceId}/edit`)}
-            >
-              <Edit className="h-4 w-4" />
-              {t('buttons.edit')}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-            onClick={handleDuplicate}
-            disabled={isDuplicating}
-          >
-            <Copy className="h-4 w-4" />
-            {invoicesT('duplicate.button') || 'Dupliquer'}
-          </Button>
-          {invoice.status !== "draft" && invoice.paymentLinkToken && (
-            <>
-              <Button
-                variant="outline"
-                className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-                onClick={handleCopyPublicLink}
-              >
-                <LinkIcon className="h-4 w-4" />
-                {t('buttons.copyPublicLink')}
-              </Button>
-              {invoice.paymentLink && (
-                <Button
-                  variant="outline"
-                  className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-                  onClick={handleCopyPaymentLink}
-                >
-                  <LinkIcon className="h-4 w-4" />
-                  {t('buttons.copyPaymentLink')}
-                </Button>
-              )}
-            </>
-          )}
-          {invoice.status !== "draft" && invoice.status !== "paid" && invoice.status !== "cancelled" && (
-            <>
-              <Button 
-                variant="outline" 
-                className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
-                onClick={() => setShowReminderModal(true)}
-              >
-                <Mail className="h-4 w-4" />
-                {t('buttons.sendReminder')}
-              </Button>
-              <Button 
-                className="gap-2"
-                onClick={() => {
-                  setPaymentAmount((parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid)).toString());
-                  setShowMarkPaidDialog(true);
-                }}
-              >
-                <RefreshCcw className="h-4 w-4" />
-                {t('buttons.markAsPaid')}
-              </Button>
-            </>
-          )}
-          <Button
-            variant="destructive"
-            className="gap-2"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={isDeleting || isCancelling || invoice.status === "cancelled"}
-          >
-            <Trash2 className="h-4 w-4" />
-            {invoice.status === "draft" ? t('buttons.delete') : t('buttons.cancel')}
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <Card className="border-primary/20">
-          <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <div>
-              <CardTitle className="text-primary">{t('summary.title')}</CardTitle>
-              <CardDescription>{t('summary.description')}</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
-              <p className="text-xs uppercase text-foreground/50">{t('summary.client')}</p>
-              <p className="text-sm font-semibold text-foreground">{clientName}</p>
-              <p className="text-xs text-foreground/60">{clientEmail ?? t('summary.emailNotAvailable')}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase text-foreground/50">{t('summary.amount')}</p>
-              <p className="text-sm font-semibold text-primary">
-                {formatCurrency(invoice.totalAmount, invoice.currency)}
-              </p>
-              <p className="text-xs text-foreground/60">{t('summary.taxIncluded', { taxAmount: formatCurrency(invoice.taxAmount, invoice.currency) })}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase text-foreground/50">{t('summary.issueDate')}</p>
-              <p className="text-sm text-foreground">{formatDate(invoice.issueDate)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs uppercase text-foreground/50">{t('summary.dueDate')}</p>
-              <p className="text-sm text-foreground">{formatDate(invoice.dueDate)}</p>
-            </div>
-          </CardContent>
-          <Separator className="mx-6" />
-          <CardContent className="space-y-4">
-            <Table>
-              <TableHeader className="bg-primary/5">
-                <TableRow>
-                  <TableHead>{t('items.description')}</TableHead>
-                  <TableHead className="text-right">{t('items.quantity')}</TableHead>
-                  <TableHead className="text-right">{t('items.unitPrice')}</TableHead>
-                  <TableHead className="text-right">{t('items.total')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.length > 0 ? (
-                  items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="text-sm text-foreground/80">{item.description}</TableCell>
-                      <TableCell className="text-right text-sm text-foreground/60">{item.quantity}</TableCell>
-                      <TableCell className="text-right text-sm text-foreground/60">
-                        {formatCurrency(item.unitPrice, invoice.currency)}
-                      </TableCell>
-                      <TableCell className="text-right text-sm font-semibold text-primary">
-                        {formatCurrency(item.totalAmount, invoice.currency)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-sm text-foreground/60">
-                      {t('items.empty')}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card className="border-primary/20 self-start">
-          <CardHeader>
-            <CardTitle className="text-primary">{t('timeline.title')}</CardTitle>
-            <CardDescription>{t('timeline.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {timeline.map((event, index) => (
-              <div key={index} className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <p className="text-sm font-semibold text-primary">{event.title}</p>
-                <p className="text-xs text-foreground/60">{event.date}</p>
-                <p className="text-xs text-foreground/70">{event.description}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {reminders && reminders.length > 0 && (
-          <Card className="border-primary/20 self-start">
-            <CardHeader>
-              <CardTitle className="text-primary">{t('reminders.title')}</CardTitle>
-              <CardDescription>
-                {t('reminders.description', { 
-                  count: reminders.length, 
-                  plural: reminders.length > 1 ? 's' : '' 
-                })}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {reminders.map((reminder) => (
-                <div key={reminder.id} className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-primary">
-                      {t('reminders.reminderNumber', { number: reminder.reminderNumber })}
-                    </p>
-                    <Badge variant={reminder.reminderType === "manual" ? "default" : "secondary"}>
-                      {reminder.reminderType === "manual" ? t('reminders.manual') : t('reminders.automatic')}
-                    </Badge>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="container mx-auto px-4 py-8 space-y-8 max-w-7xl">
+        {/* Header */}
+        <div className="space-y-4">
+          <Breadcrumb
+            items={[
+              { label: invoicesT('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: invoicesT('breadcrumb.invoices'), href: "/invoices" },
+              { label: invoiceData.invoiceNumber }]}
+            className="text-xs"
+          />
+          
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 shadow-sm">
+                  <Receipt className="h-7 w-7 text-primary" />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      {invoiceData.invoiceNumber}
+                    </h1>
+                    <InvoiceStatusBadge status={invoiceData.status} />
                   </div>
-                  <p className="text-xs text-foreground/60">
-                    {t('reminders.sentOn', { 
-                      date: formatDate(reminder.sentAt),
-                      days: reminder.daysAfterDue,
-                      plural: reminder.daysAfterDue > 1 ? 's' : ''
+                  <p className="text-sm text-muted-foreground">
+                    {t('title.description', { 
+                      clientName, 
+                      amount: formatCurrency(invoiceData.totalAmount, invoiceData.currency) 
                     })}
                   </p>
-                  <p className="text-xs text-foreground/70">
-                    {t('reminders.recipient', { email: reminder.recipientEmail })}
-                  </p>
                 </div>
-              ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {invoiceData.status === "draft" && (
+                <Button 
+                  size="sm"
+                  className="gap-2 shadow-sm"
+                  onClick={() => router.push(`/invoices/${invoiceId}/edit`)}
+                >
+                  <Edit className="h-4 w-4" />
+                  {t('buttons.edit')}
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2 shadow-sm"
+                onClick={handleDuplicate}
+                disabled={isDuplicating}
+              >
+                <Copy className="h-4 w-4" />
+                {invoicesT('duplicate.button') || 'Dupliquer'}
+              </Button>
+              {invoiceData.status !== "draft" && invoiceData.paymentLinkToken && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 shadow-sm"
+                    onClick={handleCopyPublicLink}
+                  >
+                    <LinkIcon className="h-4 w-4" />
+                    {t('buttons.copyPublicLink')}
+                  </Button>
+                  {invoiceData.paymentLink && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2 shadow-sm"
+                      onClick={handleCopyPaymentLink}
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                      {t('buttons.copyPaymentLink')}
+                    </Button>
+                  )}
+                </>
+              )}
+              {canSendReminder && (
+                <>
+                  <Button 
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 shadow-sm"
+                    onClick={() => setShowReminderModal(true)}
+                  >
+                    <Mail className="h-4 w-4" />
+                    {t('buttons.sendReminder')}
+                  </Button>
+                  <Button 
+                    size="sm"
+                    className="gap-2 shadow-sm"
+                    onClick={() => {
+                      setPaymentAmount((parseFloat(invoiceData.totalAmount) - parseFloat(invoiceData.amountPaid || "0")).toString());
+                      setShowMarkPaidDialog(true);
+                    }}
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    {t('buttons.markAsPaid')}
+                  </Button>
+                </>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                className="gap-2 shadow-sm"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeleting || isCancelling || invoiceData.status === "cancelled"}
+              >
+                <Trash2 className="h-4 w-4" />
+                {invoiceData.status === "draft" ? t('buttons.delete') : t('buttons.cancel')}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+          {/* Invoice Details Card */}
+          <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl font-bold">{t('summary.title')}</CardTitle>
+                  <CardDescription className="text-sm">{t('summary.description')}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Key Information Grid */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="group relative overflow-hidden rounded-xl border bg-gradient-to-br from-muted/50 to-muted/30 p-5 transition-all hover:shadow-md hover:border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Building2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {t('summary.client')}
+                      </p>
+                      <p className="text-base font-semibold">{clientName}</p>
+                      {clientEmail && (
+                        <p className="text-xs text-muted-foreground">{clientEmail}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="group relative overflow-hidden rounded-xl border bg-gradient-to-br from-primary/10 to-primary/5 p-5 transition-all hover:shadow-md hover:border-primary/30">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                      <DollarSign className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {t('summary.amount')}
+                      </p>
+                      <p className="text-2xl font-bold text-primary">
+                        {formatCurrency(invoiceData.totalAmount, invoiceData.currency)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('summary.taxIncluded', { taxAmount: formatCurrency(invoiceData.taxAmount, invoiceData.currency) })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="group relative overflow-hidden rounded-xl border bg-gradient-to-br from-muted/50 to-muted/30 p-5 transition-all hover:shadow-md hover:border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Calendar className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {t('summary.issueDate')}
+                      </p>
+                      <p className="text-base font-semibold">{formatDate(invoiceData.issueDate)}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="group relative overflow-hidden rounded-xl border bg-gradient-to-br from-muted/50 to-muted/30 p-5 transition-all hover:shadow-md hover:border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Clock className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        {t('summary.dueDate')}
+                      </p>
+                      <p className="text-base font-semibold">{formatDate(invoiceData.dueDate)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              {/* Items Table */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground">{t('items.title') || 'Articles'}</h3>
+                <div className="rounded-xl border bg-muted/30 overflow-hidden">
+                  <Table>
+                    <TableHeader className="bg-muted/50">
+                      <TableRow className="border-b">
+                        <TableHead className="font-semibold">{t('items.description')}</TableHead>
+                        <TableHead className="text-right font-semibold">{t('items.quantity')}</TableHead>
+                        <TableHead className="text-right font-semibold">{t('items.unitPrice')}</TableHead>
+                        <TableHead className="text-right font-semibold">{t('items.total')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.length > 0 ? (
+                        items.map((item, idx) => (
+                          <TableRow key={item.id} className={idx % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                            <TableCell className="font-medium">{item.description}</TableCell>
+                            <TableCell className="text-right text-muted-foreground">{item.quantity}</TableCell>
+                            <TableCell className="text-right text-muted-foreground">
+                              {formatCurrency(item.unitPrice, invoiceData.currency)}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold text-primary">
+                              {formatCurrency(item.totalAmount, invoiceData.currency)}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-8">
+                            {t('items.empty')}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Timeline Card */}
+            <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                    <Clock className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg font-bold">{t('timeline.title')}</CardTitle>
+                    <CardDescription className="text-xs">{t('timeline.description')}</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="relative space-y-4">
+                  {timeline.length > 0 ? (
+                    timeline.map((event, index) => (
+                      <div key={index} className="relative pl-8">
+                        {index < timeline.length - 1 && (
+                          <div className="absolute left-3 top-6 h-full w-0.5 bg-gradient-to-b from-primary/30 to-transparent" />
+                        )}
+                        <div className="absolute left-0 top-1.5 h-6 w-6 rounded-full border-2 border-primary bg-background shadow-sm flex items-center justify-center">
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        </div>
+                        <div className="rounded-lg border bg-gradient-to-br from-muted/50 to-muted/30 p-4 space-y-1.5">
+                          <p className="text-sm font-semibold">{event.title}</p>
+                          <p className="text-xs text-muted-foreground font-medium">{event.date}</p>
+                          <p className="text-xs text-muted-foreground/80 leading-relaxed">{event.description}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      {t('timeline.empty') || 'Aucun événement'}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reminders Card */}
+            {reminders && reminders.length > 0 && (
+              <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                      <Mail className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg font-bold">{t('reminders.title')}</CardTitle>
+                      <CardDescription className="text-xs">
+                        {t('reminders.description', { 
+                          count: reminders.length, 
+                          plural: reminders.length > 1 ? 's' : '' 
+                        })}
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {reminders.map((reminder) => (
+                      <div key={reminder.id} className="rounded-lg border bg-gradient-to-br from-muted/50 to-muted/30 p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 space-y-2">
+                            <p className="text-sm font-semibold">
+                              {t('reminders.reminderNumber', { number: reminder.reminderNumber })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {t('reminders.sentOn', { 
+                                date: formatDate(reminder.sentAt),
+                                days: reminder.daysAfterDue,
+                                plural: reminder.daysAfterDue > 1 ? 's' : ''
+                              })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {t('reminders.recipient', { email: reminder.recipientEmail })}
+                            </p>
+                          </div>
+                          <Badge variant={reminder.reminderType === "manual" ? "default" : "secondary"} className="shrink-0">
+                            {reminder.reminderType === "manual" ? t('reminders.manual') : t('reminders.automatic')}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Notes Section */}
+        {invoiceData.notes && (
+          <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold">{t('notes.title')}</CardTitle>
+                  <CardDescription className="text-xs">{t('notes.description')}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-lg border bg-gradient-to-br from-muted/50 to-muted/30 p-5">
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {invoiceData.notes}
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
-      </div>
 
-      {invoice.notes && (
-        <Card className="border-primary/20">
-          <CardHeader>
-            <CardTitle className="text-primary">{t('notes.title')}</CardTitle>
-            <CardDescription>{t('notes.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm text-foreground/70">
-            <p className="whitespace-pre-wrap">{invoice.notes}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {invoice.payments && invoice.payments.length > 0 && (
-        <Card className="border-primary/20">
-          <CardHeader>
-            <CardTitle className="text-primary">{t('payments.title')}</CardTitle>
-            <CardDescription>{t('payments.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {invoice.payments.map((payment) => (
-                <div key={payment.id} className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-primary">
-                      {formatCurrency(payment.amount, invoice.currency)}
-                    </p>
-                    <Badge variant={payment.status === "completed" ? "secondary" : "outline"}>
-                      {payment.status === "completed" ? t('payments.completed') : payment.status}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1 text-xs text-foreground/60">
-                    {(() => {
-                      const paymentDate = payment.paymentDate || payment.paidAt || payment.createdAt;
-                      return paymentDate ? (
-                        <p>{t('payments.date', { date: formatDate(paymentDate) })}</p>
-                      ) : null;
-                    })()}
-                    <p>{t('payments.method', { method: payment.method })}</p>
-                    {payment.notes && <p>{t('payments.notes', { notes: payment.notes })}</p>}
-                  </div>
+        {/* Payments Section */}
+        {invoiceData.payments && invoiceData.payments.length > 0 && (
+          <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                  <CreditCard className="h-5 w-5 text-primary" />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <div>
+                  <CardTitle className="text-lg font-bold">{t('payments.title')}</CardTitle>
+                  <CardDescription className="text-xs">{t('payments.description')}</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {invoiceData.payments.map((payment) => {
+                  const paymentDate = payment.paymentDate || payment.paidAt || payment.createdAt;
+                  return (
+                    <div key={payment.id} className="rounded-xl border bg-gradient-to-br from-muted/50 to-muted/30 p-5 transition-all hover:shadow-md hover:border-primary/20">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                            <CheckCircle2 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <p className="text-xl font-bold">
+                                {formatCurrency(payment.amount, invoiceData.currency)}
+                              </p>
+                              <Badge 
+                                variant={payment.status === "completed" ? "default" : "secondary"}
+                                className="shrink-0"
+                              >
+                                {payment.status === "completed" ? (
+                                  <span className="flex items-center gap-1.5">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    {t('payments.completed')}
+                                  </span>
+                                ) : (
+                                  payment.status
+                                )}
+                              </Badge>
+                            </div>
+                            <div className="space-y-1.5 text-xs text-muted-foreground">
+                              {paymentDate && (
+                                <p className="flex items-center gap-2">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {t('payments.date', { date: formatDate(paymentDate) })}
+                                </p>
+                              )}
+                              <p className="flex items-center gap-2">
+                                <CreditCard className="h-3.5 w-3.5" />
+                                {t('payments.method', { method: payment.method })}
+                              </p>
+                              {payment.notes && (
+                                <div className="mt-3 pt-3 border-t">
+                                  <p className="text-xs text-muted-foreground leading-relaxed">{payment.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+    </div>
 
       <ReminderModal
         open={showReminderModal}
@@ -893,7 +1076,7 @@ export default function InvoiceDetailPage() {
                 !paymentAmount ||
                 !paymentDate ||
                 parseFloat(paymentAmount) <= 0 ||
-                parseFloat(paymentAmount) > (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0"))
+                parseFloat(paymentAmount) > (parseFloat(invoiceData.totalAmount) - parseFloat(invoiceData.amountPaid || "0"))
               }
             >
               {isMarkingPaid ? (
@@ -913,12 +1096,12 @@ export default function InvoiceDetailPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {invoice.status === "draft" ? t('deleteDialog.deleteTitle') : t('deleteDialog.cancelTitle')}
+              {invoiceData.status === "draft" ? t('deleteDialog.deleteTitle') : t('deleteDialog.cancelTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {invoice.status === "draft"
-                ? t('deleteDialog.deleteDescription', { number: invoice.invoiceNumber })
-                : t('deleteDialog.cancelDescription', { number: invoice.invoiceNumber })}
+              {invoiceData.status === "draft"
+                ? t('deleteDialog.deleteDescription', { number: invoiceData.invoiceNumber })
+                : t('deleteDialog.cancelDescription', { number: invoiceData.invoiceNumber })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -928,7 +1111,7 @@ export default function InvoiceDetailPage() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isDeleting || isCancelling}
             >
-              {isDeleting || isCancelling ? t('deleteDialog.processing') : invoice.status === "draft" ? t('deleteDialog.delete') : t('deleteDialog.cancelAction')}
+              {isDeleting || isCancelling ? t('deleteDialog.processing') : invoiceData.status === "draft" ? t('deleteDialog.delete') : t('deleteDialog.cancelAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

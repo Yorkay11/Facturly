@@ -85,6 +85,36 @@ export function formatErrorMessage(
             description: 'Un client avec cet email existe déjà pour ce workspace.',
             actionnable: true,
           },
+          'errors.INVOICES.INVOICE_NOT_FOUND': {
+            title: 'Facture introuvable',
+            description: 'La facture demandée n\'existe pas ou a été supprimée.',
+            actionnable: false,
+          },
+          'errors.BILLING.FREE_LIMIT_REACHED': {
+            title: 'Limite atteinte',
+            description: 'Vous avez atteint la limite de factures gratuites pour ce mois. Achetez des crédits pour continuer.',
+            actionnable: true,
+          },
+          'errors.BILLING.NO_CREDITS': {
+            title: 'Crédits insuffisants',
+            description: 'Vous n\'avez plus de crédits pour envoyer cette facture. Veuillez en acheter.',
+            actionnable: true,
+          },
+          'errors.AUTH.INVALID_CREDENTIALS': {
+            title: 'Connexion échouée',
+            description: 'Email ou mot de passe incorrect. Veuillez réessayer.',
+            actionnable: true,
+          },
+          'errors.AUTH.ACCOUNT_DISABLED': {
+            title: 'Compte désactivé',
+            description: 'Votre compte a été désactivé. Contactez le support pour plus d\'informations.',
+            actionnable: false,
+          },
+          'errors.WORKSPACE.NOT_FOUND': {
+            title: 'Workspace introuvable',
+            description: 'Le workspace demandé n\'existe pas.',
+            actionnable: false,
+          },
         };
         
         if (errorCode && specificMessages[errorCode]) {

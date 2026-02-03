@@ -126,8 +126,8 @@ export function CreateWorkspaceModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="XOF">XOF (CFA)</SelectItem>
-                <SelectItem value="XAF">XAF (CFA)</SelectItem>
+                <SelectItem value="XOF">FCFA (XOF) - UEMOA</SelectItem>
+                <SelectItem value="XAF">FCFA (XAF) - CEMAC</SelectItem>
                 <SelectItem value="NGN">NGN</SelectItem>
                 <SelectItem value="GHS">GHS</SelectItem>
                 <SelectItem value="EUR">EUR</SelectItem>

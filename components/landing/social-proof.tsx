@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
-import { FaUsers, FaFileExport, FaArrowTrendUp, FaClock, FaStar } from 'react-icons/fa6'
+import { FaMobileScreen, FaGlobe, FaCoins, FaClock } from 'react-icons/fa6'
 
 export function SocialProof() {
   const t = useTranslations('landing.socialProof')
@@ -10,22 +10,28 @@ export function SocialProof() {
   
   const stats = [
     {
-      icon: FaUsers,
-      value: tStats('users'),
-      label: tStats('usersLabel'),
-      description: tStats('usersDescription')
+      icon: FaMobileScreen,
+      value: tStats('tMoneyMoov'),
+      label: tStats('tMoneyMoovLabel'),
+      description: tStats('tMoneyMoovDescription')
     },
     {
-      icon: FaFileExport,
-      value: tStats('invoices'),
-      label: tStats('invoicesLabel'),
-      description: tStats('invoicesDescription')
+      icon: FaGlobe,
+      value: tStats('uemoa'),
+      label: tStats('uemoaLabel'),
+      description: tStats('uemoaDescription')
     },
     {
-      icon: FaStar,
-      value: tStats('satisfaction'),
-      label: tStats('satisfactionLabel'),
-      description: tStats('satisfactionDescription')
+      icon: FaGlobe,
+      value: tStats('cemac'),
+      label: tStats('cemacLabel'),
+      description: tStats('cemacDescription')
+    },
+    {
+      icon: FaMobileScreen,
+      value: tStats('mobileMoney'),
+      label: tStats('mobileMoneyLabel'),
+      description: tStats('mobileMoneyDescription')
     },
     {
       icon: FaClock,
@@ -34,7 +40,7 @@ export function SocialProof() {
       description: tStats('responseTimeDescription')
     },
     {
-      icon: FaArrowTrendUp,
+      icon: FaCoins,
       value: tStats('growth'),
       label: tStats('growthLabel'),
       description: tStats('growthDescription')

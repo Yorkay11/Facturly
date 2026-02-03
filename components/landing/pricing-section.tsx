@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Link, useRouter } from '@/i18n/routing'
 import { useAuth } from "@/hooks/useAuth"
 import { useTranslations } from 'next-intl'
+import { useWaitlist } from "@/contexts/WaitlistContext"
 
 export function PricingSection() {
   const router = useRouter()
+  const { openWaitlist } = useWaitlist()
   const [isAnnual, setIsAnnual] = useState(true)
   const { isAuthenticated } = useAuth()
   const t = useTranslations('landing.pricing')
@@ -179,12 +181,15 @@ export function PricingSection() {
 
                 {/* Bouton */}
                 <Link 
-                  href={isAuthenticated ? (plan.authenticatedHref || "/dashboard") : (plan.buttonHref || "/register")} 
+                  href={isAuthenticated ? (plan.authenticatedHref || "/dashboard") : "#"} 
                   className="w-full"
                   onClick={(e) => {
                     if (isAuthenticated) {
                       e.preventDefault()
                       router.push(plan.authenticatedHref || "/dashboard")
+                    } else {
+                      e.preventDefault()
+                      openWaitlist()
                     }
                   }}
                 >

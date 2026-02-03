@@ -378,8 +378,8 @@ export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProp
                             <SelectValue placeholder={t('basic.fields.defaultCurrencyPlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="XOF">XOF (CFA) - Franc CFA (Afrique de l'Ouest)</SelectItem>
-                            <SelectItem value="XAF">XAF (CFA) - Franc CFA (Afrique Centrale)</SelectItem>
+                            <SelectItem value="XOF">FCFA (XOF) - UEMOA — Afrique de l'Ouest</SelectItem>
+                            <SelectItem value="XAF">FCFA (XAF) - CEMAC — Afrique Centrale</SelectItem>
                             <SelectItem value="NGN">NGN (₦) - Naira nigérian</SelectItem>
                             <SelectItem value="GHS">GHS (₵) - Cedi ghanéen</SelectItem>
                             <SelectItem value="EUR">EUR (€) - Euro</SelectItem>

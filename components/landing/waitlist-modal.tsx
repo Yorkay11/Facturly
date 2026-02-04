@@ -13,7 +13,10 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
   const t = useTranslations("landing.waitlist")
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={onClose} 
+      >
       <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-xl border-primary/20">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">{t("title")}</DialogTitle>

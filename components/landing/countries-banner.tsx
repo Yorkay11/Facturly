@@ -36,6 +36,8 @@ const countriesWithFlags: Record<string, string> = {
   "central african republic": "/images/countries/flag-for-flag-central-african-republic-svgrepo-com.svg",
   "tchad": "/images/countries/flag-for-flag-tchad-svgrepo-com.svg",
   "chad": "/images/countries/flag-for-flag-tchad-svgrepo-com.svg",
+  "guinee-bissau": "/images/countries/flag-for-flag-guinea-svgrepo-com.svg",
+  "guinea-bissau": "/images/countries/flag-for-flag-guinea-svgrepo-com.svg",
 }
 
 function normalize(str: string) {
@@ -72,14 +74,14 @@ export function CountriesBanner() {
   }, [countriesList])
 
   return (
-    <section className="w-full fixed top-0 left-0 right-0 z-[100] overflow-hidden bg-purple-800 to-b from-background via-primary/10 to-background shadow-sm">
+    <section className="w-full  fixed top-0 left-0 right-0 z-[100] overflow-hidden bg-purple-800 to-b from-background via-primary/10 to-background shadow-sm">
       <Marquee
         speed={50}
         gradient
         gradientColor="#1A1A1A"
         gradientWidth={80}
         pauseOnHover
-        className=""
+        className="overflow-hidden"
       >
         {countries.map((country, index) => (
           <div

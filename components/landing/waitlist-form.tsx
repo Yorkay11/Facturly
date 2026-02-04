@@ -12,6 +12,20 @@ import { motion } from "framer-motion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FaCheckCircle } from "react-icons/fa"
 
+const COUNTRY_FLAGS: Record<string, string> = {
+  TG: "/images/countries/flag-for-flag-togo-svgrepo-com.svg",
+  CI: "/images/countries/flag-for-flag-cote-divoire-svgrepo-com.svg",
+  SN: "/images/countries/flag-for-flag-senegal-svgrepo-com.svg",
+  BJ: "/images/countries/flag-for-flag-benin-svgrepo-com.svg",
+  BF: "/images/countries/flag-for-flag-burkina-faso-svgrepo-com.svg",
+  ML: "/images/countries/flag-for-flag-mali-svgrepo-com.svg",
+  NE: "/images/countries/flag-for-flag-niger-svgrepo-com.svg",
+  CM: "/images/countries/flag-for-flag-cameroon-svgrepo-com.svg",
+  GA: "/images/countries/flag-for-flag-gabon-svgrepo-com.svg",
+  CG: "/images/countries/flag-for-flag-congo-brazzaville-svgrepo-com.svg",
+  CD: "/images/countries/flag-for-flag-republic-of-the-congo-svgrepo-com.svg",
+}
+
 export function WaitlistForm() {
   const t = useTranslations("landing.waitlist")
   const [email, setEmail] = useState("")
@@ -95,11 +109,28 @@ export function WaitlistForm() {
             <SelectValue placeholder={t("fields.country")} />
           </SelectTrigger>
           <SelectContent className="max-h-[300px]">
-            {countries.map((c) => (
-              <SelectItem key={c.code} value={c.name}>
-                {c.name}
-              </SelectItem>
-            ))}
+            {countries.map((c) => {
+              const flagSrc = c.code !== "OTHER" ? COUNTRY_FLAGS[c.code] : null
+              return (
+                <SelectItem key={c.code} value={c.name}>
+                  <span className="flex items-center gap-2">
+                    {flagSrc ? (
+                      <img
+                        src={flagSrc}
+                        alt=""
+                        width={20}
+                        height={20}
+                        className="w-5 h-5 flex-shrink-0 object-contain rounded-sm"
+                        role="presentation"
+                      />
+                    ) : (
+                      <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-base" aria-hidden="true">🌍</span>
+                    )}
+                    <span>{c.name}</span>
+                  </span>
+                </SelectItem>
+              )
+            })}
           </SelectContent>
         </Select>
       </div>

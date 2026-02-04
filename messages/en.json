@@ -2041,8 +2041,7 @@
       "pricing": "Pricing",
       "legalMentions": "Legal Notice",
       "terms": "Terms of Service",
-      "privacy": "Privacy Policy",
-      "lomeAnchor": "Based in Lomé, at the heart of West African finance."
+      "privacy": "Privacy Policy"
     }
   },
   "pricing": {
@@ -2894,7 +2893,9 @@
     },
     "success": {
       "skipped": "Onboarding skipped",
-      "skippedDescription": "You can complete your profile later in settings."
+      "skippedDescription": "You can complete your profile later in settings.",
+      "title": "Profile completed",
+      "description": "Your workspace has been configured successfully."
     },
     "demo": {
       "title": "Interactive Demo",
@@ -2942,7 +2943,6 @@
       "title": "Essential Information",
       "description": "Set up basic information to get started",
       "note": "💡 You can add your legal information and address later in settings",
-      "description": "Configure the essential information for your profile",
       "fields": {
         "name": "Workspace name",
         "nameLabelIndividual": "Name displayed on invoices",
@@ -3020,14 +3020,14 @@
       "nameMin": "Name must contain at least 2 characters",
       "currencyRequired": "Currency is required"
     },
-    "success": {
-      "title": "Profile completed",
-      "description": "Your workspace has been configured successfully."
-    },
     "errors": {
       "title": "Error",
       "description": "Unable to update your workspace."
     }
+  },
+  "testimonials": {
+    "title": "Mobile-first invoicing for Africa",
+    "description": "Discover how our clients create invoices in 60 seconds and get paid quickly via mobile money."
   },
   "legal": {
     "mentions": {
@@ -3319,7 +3319,6 @@
       "product": "Product",
       "selectProduct": "Select a product",
       "noProduct": "No product",
-      "description": "Description",
       "descriptionPlaceholder": "Item description",
       "quantity": "Quantity",
       "unitPrice": "Unit price",

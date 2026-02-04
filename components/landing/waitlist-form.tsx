@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useCallback, useMemo, useState } from "react"
 import { useTranslations } from "next-intl"
 import { useJoinWaitlistMutation } from "@/services/api"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,7 @@ const COUNTRY_FLAGS: Record<string, string> = {
   CD: "/images/countries/flag-for-flag-republic-of-the-congo-svgrepo-com.svg",
 }
 
-export function WaitlistForm() {
+function WaitlistFormComponent() {
   const t = useTranslations("landing.waitlist")
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
@@ -34,22 +34,25 @@ export function WaitlistForm() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [joinWaitlist, { isLoading }] = useJoinWaitlistMutation()
 
-  const countries = [
-    { code: "TG", name: "Togo" },
-    { code: "CI", name: "Côte d'Ivoire" },
-    { code: "SN", name: "Sénégal" },
-    { code: "BJ", name: "Bénin" },
-    { code: "BF", name: "Burkina Faso" },
-    { code: "ML", name: "Mali" },
-    { code: "NE", name: "Niger" },
-    { code: "CM", name: "Cameroun" },
-    { code: "GA", name: "Gabon" },
-    { code: "CG", name: "Congo" },
-    { code: "CD", name: "RDC" },
-    { code: "OTHER", name: "Autre" }
-  ]
+  const countries = useMemo(
+    () => [
+      { code: "TG", name: "Togo" },
+      { code: "CI", name: "Côte d'Ivoire" },
+      { code: "SN", name: "Sénégal" },
+      { code: "BJ", name: "Bénin" },
+      { code: "BF", name: "Burkina Faso" },
+      { code: "ML", name: "Mali" },
+      { code: "NE", name: "Niger" },
+      { code: "CM", name: "Cameroun" },
+      { code: "GA", name: "Gabon" },
+      { code: "CG", name: "Congo" },
+      { code: "CD", name: "RDC" },
+      { code: "OTHER", name: "Autre" }
+    ],
+    []
+  )
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email) return
 
@@ -66,7 +69,7 @@ export function WaitlistForm() {
         toast.error(t("error.generic"))
       }
     }
-  }
+  }, [email, name, country, joinWaitlist, t])
 
   if (isSubmitted) {
     return (
@@ -122,6 +125,7 @@ export function WaitlistForm() {
                         height={20}
                         className="w-5 h-5 flex-shrink-0 object-contain rounded-sm"
                         role="presentation"
+                        loading="lazy"
                       />
                     ) : (
                       <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-base" aria-hidden="true">🌍</span>
@@ -154,3 +158,5 @@ export function WaitlistForm() {
     </form>
   )
 }
+
+export default memo(WaitlistFormComponent)

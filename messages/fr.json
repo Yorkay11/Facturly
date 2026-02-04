@@ -2899,7 +2899,9 @@
     },
     "success": {
       "skipped": "Onboarding ignoré",
-      "skippedDescription": "Vous pouvez compléter votre profil plus tard dans les paramètres."
+      "skippedDescription": "Vous pouvez compléter votre profil plus tard dans les paramètres.",
+      "title": "Profil complété",
+      "description": "Votre workspace a été configuré avec succès."
     },
     "demo": {
       "title": "Démonstration interactive",
@@ -3024,14 +3026,14 @@
       "nameMin": "Le nom doit contenir au moins 2 caractères",
       "currencyRequired": "La devise est obligatoire"
     },
-    "success": {
-      "title": "Profil complété",
-      "description": "Votre workspace a été configuré avec succès."
-    },
     "errors": {
       "title": "Erreur",
       "description": "Impossible de mettre à jour votre workspace."
     }
+  },
+  "testimonials": {
+    "title": "Facturation mobile-first pour l'Afrique",
+    "description": "Découvrez comment nos clients créent leurs factures en 60 secondes et sont payés rapidement via mobile money."
   },
   "legal": {
     "mentions": {

@@ -55,7 +55,7 @@ export function WhyFacturlySection() {
   ]
 
   return (
-    <section className="w-full py-12 md:py-20 px-4 md:px-6 bg-gradient-to-b from-background to-muted/30">
+    <section className="w-full py-12 md:py-20 px-4 md:px-6 bg-gradient-to-b from-background to-muted/30 my-12 md:my-20">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground mb-4">

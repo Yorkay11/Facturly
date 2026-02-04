@@ -1,12 +1,16 @@
 import { cn } from "@/lib/utils";
 
 const statusMap: Record<
-  "draft" | "sent" | "paid" | "overdue" | "cancelled",
+  "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled",
   { label: string; className: string }
 > = {
   draft: {
     label: "Brouillon",
     className: "bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-900/20 dark:text-amber-400",
+  },
+  quote: {
+    label: "Devis envoyé",
+    className: "bg-sky-100 text-sky-800 border border-sky-300 dark:bg-sky-900/20 dark:text-sky-400",
   },
   sent: {
     label: "Envoyée",
@@ -27,7 +31,7 @@ const statusMap: Record<
 };
 
 interface InvoiceStatusBadgeProps {
-  status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
+  status: "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled";
 }
 
 export const InvoiceStatusBadge = ({ status }: InvoiceStatusBadgeProps) => {

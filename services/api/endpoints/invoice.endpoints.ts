@@ -63,6 +63,14 @@ export const invoiceEndpoints = (
     }),
     invalidatesTags: (_result, _error, { id }) => [{ type: "Invoice", id }, "Invoice"],
   }),
+  sendQuote: builder.mutation<Invoice, { id: string; payload?: { whatsappMessageStyle?: string } }>({
+    query: ({ id, payload }) => ({
+      url: `/invoices/${id}/send-quote`,
+      method: "POST",
+      body: payload ?? {},
+    }),
+    invalidatesTags: (_result, _error, { id }) => [{ type: "Invoice", id }, "Invoice"],
+  }),
   markInvoicePaid: builder.mutation<Invoice, { id: string; payload: MarkInvoicePaidPayload }>({
     query: ({ id, payload }) => ({
       url: `/invoices/${id}/mark-paid`,

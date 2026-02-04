@@ -98,7 +98,7 @@ export function VideoCarousel() {
   const currentVideo = videos[currentIndex]
 
   return (
-    <section className="w-full py-10 sm:py-14 md:py-20 lg:py-24 px-4 sm:px-5 md:px-6">
+    <section className="w-full py-10 sm:py-14 md:py-20 lg:py-24 px-4 sm:px-5 md:px-6 my-12 md:my-20">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">

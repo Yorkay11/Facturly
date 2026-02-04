@@ -1,7 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState } from "react"
-import { WaitlistModal } from "@/components/landing/waitlist-modal"
+import React, { createContext, useContext, useState, lazy, Suspense, useEffect, startTransition } from "react"
 
 interface WaitlistContextType {
   openWaitlist: () => void
@@ -9,16 +8,51 @@ interface WaitlistContextType {
 
 const WaitlistContext = createContext<WaitlistContextType | undefined>(undefined)
 
+// Lazy load du modal pour améliorer les performances
+const WaitlistModal = lazy(() => 
+  import("@/components/landing/waitlist-modal").then(module => ({ 
+    default: module.WaitlistModal 
+  }))
+)
+
 export function WaitlistProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const openWaitlist = () => setIsOpen(true)
+  // Précharger le modal ET le formulaire de manière proactive dès que possible
+  useEffect(() => {
+    // Précharger immédiatement en arrière-plan (idle time)
+    const preloadModal = () => {
+      import("@/components/landing/waitlist-modal")
+      // Précharger aussi le formulaire en même temps
+      import("@/components/landing/waitlist-form")
+    }
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      requestIdleCallback(preloadModal, { timeout: 300 })
+    } else {
+      // Fallback pour navigateurs sans requestIdleCallback
+      const timer = setTimeout(preloadModal, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
+  const openWaitlist = () => {
+    // Utiliser startTransition pour rendre l'ouverture non-bloquante
+    startTransition(() => {
+      setIsOpen(true)
+    })
+  }
   const closeWaitlist = () => setIsOpen(false)
 
   return (
     <WaitlistContext.Provider value={{ openWaitlist }}>
       {children}
-      <WaitlistModal isOpen={isOpen} onClose={closeWaitlist} />
+      {/* Ne charger le modal que quand il est ouvert */}
+      {isOpen && (
+        <Suspense fallback={null}>
+          <WaitlistModal isOpen={isOpen} onClose={closeWaitlist} />
+        </Suspense>
+      )}
     </WaitlistContext.Provider>
   )
 }

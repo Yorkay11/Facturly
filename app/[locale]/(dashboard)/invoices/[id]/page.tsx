@@ -30,7 +30,7 @@ import {
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/ui/skeleton";
-import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useMarkInvoicePaidMutation, useGetInvoiceRemindersQuery, useCreateInvoiceMutation, facturlyApi } from "@/services/facturlyApi";
+import { useGetInvoiceByIdQuery, useDeleteInvoiceMutation, useCancelInvoiceMutation, useSendInvoiceMutation, useSendQuoteMutation, useMarkInvoicePaidMutation, useGetInvoiceRemindersQuery, useCreateInvoiceMutation, facturlyApi } from "@/services/facturlyApi";
 import { store } from "@/lib/redux/store";
 import { toast } from "sonner";
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -116,6 +116,7 @@ export default function InvoiceDetailPage() {
   const [cancelInvoice, { isLoading: isCancelling }] = useCancelInvoiceMutation();
   const [markInvoicePaid, { isLoading: isMarkingPaid }] = useMarkInvoicePaidMutation();
   const [createInvoice, { isLoading: isDuplicating }] = useCreateInvoiceMutation();
+  const [sendQuote, { isLoading: isSendingQuote }] = useSendQuoteMutation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showMarkPaidDialog, setShowMarkPaidDialog] = useState(false);
@@ -158,7 +159,7 @@ export default function InvoiceDetailPage() {
   };
 
   // Vérifier si on peut relancer (date d'échéance dépassée ET facture non payée)
-  const canSendReminder = invoice && invoice.status !== "draft" && invoice.status !== "paid" && invoice.status !== "cancelled" && isOverdue(invoice.dueDate, invoice.status);
+  const canSendReminder = invoice && invoice.status !== "draft" && invoice.status !== "quote" && invoice.status !== "paid" && invoice.status !== "cancelled" && isOverdue(invoice.dueDate, invoice.status);
 
   // Timeline dynamique basée sur les données réelles de la facture
   // Doit être appelé AVANT tous les return conditionnels pour respecter les règles des Hooks
@@ -559,14 +560,40 @@ export default function InvoiceDetailPage() {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2">
               {invoiceData.status === "draft" && (
-                <Button 
-                  size="sm"
-                  className="gap-2 shadow-sm"
-                  onClick={() => router.push(`/invoices/${invoiceId}/edit`)}
-                >
-                  <Edit className="h-4 w-4" />
-                  {t('buttons.edit')}
-                </Button>
+                <>
+                  <Button 
+                    size="sm"
+                    className="gap-2 shadow-sm"
+                    onClick={() => router.push(`/invoices/${invoiceId}/edit`)}
+                  >
+                    <Edit className="h-4 w-4" />
+                    {t('buttons.edit')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="gap-2 shadow-sm"
+                    disabled={isSendingQuote || !invoiceData.client?.phone}
+                    onClick={async () => {
+                      if (!invoiceId) return;
+                      try {
+                        await sendQuote({ id: invoiceId }).unwrap();
+                        toast.success(t('toasts.quoteSent') ?? 'Devis envoyé', {
+                          description: t('toasts.quoteSentDescription') ?? 'Le devis a été envoyé par WhatsApp. Le client peut l\'accepter pour le transformer en facture et payer.',
+                        });
+                        refetch();
+                      } catch (err: unknown) {
+                        const msg = err && typeof err === 'object' && 'data' in err && err.data && typeof (err.data as { message?: string }).message === 'string'
+                          ? (err.data as { message: string }).message
+                          : t('toasts.quoteSendError') ?? 'Erreur lors de l\'envoi du devis';
+                        toast.error(commonT('error'), { description: msg });
+                      }
+                    }}
+                  >
+                    <FileText className="h-4 w-4" />
+                    {t('buttons.sendAsQuote')}
+                  </Button>
+                </>
               )}
               <Button
                 size="sm"

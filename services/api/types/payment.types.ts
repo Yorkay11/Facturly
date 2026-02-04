@@ -106,7 +106,7 @@ export interface PublicInvoice {
   invoiceNumber: string;
   issueDate: string;
   dueDate: string;
-  status: "draft" | "sent" | "paid" | "cancelled" | "overdue";
+  status: "draft" | "quote" | "sent" | "paid" | "cancelled" | "overdue";
   currency: string;
   subtotalAmount: string;
   taxAmount: string;
@@ -115,6 +115,7 @@ export interface PublicInvoice {
   remainingAmount: string;
   notes?: string;
   templateName?: string; // "invoice" | "invoice-modern" | "invoice-classic" | ...
+  validUntil?: string; // Date de validité du devis (statut quote)
   viewedAt?: string | null;
   rejectedAt?: string | null;
   rejectionComment?: string | null;
@@ -156,6 +157,7 @@ export interface PublicInvoiceResponse {
   canPay: boolean;
   isRejected: boolean;
   isPaid: boolean;
+  isExpired?: boolean; // Devis expiré (validUntil dépassé)
 }
 
 export interface AcceptInvoiceResponse {

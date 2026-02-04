@@ -1,16 +1,38 @@
 "use client"
 
-import { memo, useCallback, useMemo, useState } from "react"
+import { memo, useCallback, useState } from "react"
 import { useTranslations } from "next-intl"
 import { useJoinWaitlistMutation } from "@/services/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { FaArrowRight, FaSpinner } from "react-icons/fa6"
-import { motion } from "framer-motion"
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FaCheckCircle } from "react-icons/fa"
+import Image from "next/image"
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+// Déporté pour éviter la re-déclaration au rendu
+const COUNTRIES = [
+  { code: "TG", name: "Togo" },
+  { code: "CI", name: "Côte d'Ivoire" },
+  { code: "SN", name: "Sénégal" },
+  { code: "BJ", name: "Bénin" },
+  { code: "BF", name: "Burkina Faso" },
+  { code: "ML", name: "Mali" },
+  { code: "NE", name: "Niger" },
+  { code: "CM", name: "Cameroun" },
+  { code: "GA", name: "Gabon" },
+  { code: "CG", name: "Congo" },
+  { code: "CD", name: "RDC" },
+  { code: "OTHER", name: "Autre" }
+] as const;
 
 const COUNTRY_FLAGS: Record<string, string> = {
   TG: "/images/countries/flag-for-flag-togo-svgrepo-com.svg",
@@ -28,64 +50,41 @@ const COUNTRY_FLAGS: Record<string, string> = {
 
 function WaitlistFormComponent() {
   const t = useTranslations("landing.waitlist")
-  const [email, setEmail] = useState("")
-  const [name, setName] = useState("")
-  const [country, setCountry] = useState("")
+  const [formData, setFormData] = useState({ name: "", email: "", country: "" })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [joinWaitlist, { isLoading }] = useJoinWaitlistMutation()
 
-  const countries = useMemo(
-    () => [
-      { code: "TG", name: "Togo" },
-      { code: "CI", name: "Côte d'Ivoire" },
-      { code: "SN", name: "Sénégal" },
-      { code: "BJ", name: "Bénin" },
-      { code: "BF", name: "Burkina Faso" },
-      { code: "ML", name: "Mali" },
-      { code: "NE", name: "Niger" },
-      { code: "CM", name: "Cameroun" },
-      { code: "GA", name: "Gabon" },
-      { code: "CG", name: "Congo" },
-      { code: "CD", name: "RDC" },
-      { code: "OTHER", name: "Autre" }
-    ],
-    []
-  )
+  // Handler générique pour les inputs
+  const handleChange = useCallback((field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }, [])
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email) return
+    const { email, name, country } = formData
+    
+    if (!email || isLoading) return
 
     try {
       await joinWaitlist({ email, name, country }).unwrap()
       setIsSubmitted(true)
-      toast.success(t("success.title"), {
-        description: t("success.description"),
-      })
+      toast.success(t("success.title"), { description: t("success.description") })
     } catch (error: any) {
-      if (error.status === 409) {
-        toast.error(t("error.alreadyExists"))
-      } else {
-        toast.error(t("error.generic"))
-      }
+      const message = error.status === 409 ? t("error.alreadyExists") : t("error.generic")
+      toast.error(message)
     }
-  }, [email, name, country, joinWaitlist, t])
+  }, [formData, isLoading, joinWaitlist, t])
 
+  // Composant de succès extrait pour la lisibilité
   if (isSubmitted) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center justify-center p-8 bg-primary/5 border border-primary/20 rounded-2xl text-center"
-      >
+      <div className="flex flex-col items-center justify-center p-8 bg-primary/5 border border-primary/20 rounded-2xl text-center animate-in fade-in zoom-in duration-300">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
           <FaCheckCircle className="w-8 h-8" />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">{t("success.title")}</h3>
-        <p className="text-muted-foreground max-w-xs mx-auto">
-          {t("success.description")}
-        </p>
-      </motion.div>
+        <p className="text-muted-foreground max-w-xs mx-auto">{t("success.description")}</p>
+      </div>
     )
   }
 
@@ -95,56 +94,54 @@ function WaitlistFormComponent() {
         <Input
           type="text"
           placeholder={t("fields.name")}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="bg-background/50 backdrop-blur-sm border-border focus:border-primary/50 h-12"
+          value={formData.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          className="bg-background/50 backdrop-blur-sm h-12 transition-all focus:ring-2 focus:ring-primary/20"
         />
         <Input
           type="email"
           placeholder={t("fields.email")}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={(e) => handleChange("email", e.target.value)}
           required
-          className="bg-background/50 backdrop-blur-sm border-border focus:border-primary/50 h-12"
+          className="bg-background/50 backdrop-blur-sm h-12 transition-all focus:ring-2 focus:ring-primary/20"
         />
-        <Select value={country} onValueChange={setCountry}>
-          <SelectTrigger className="bg-background/50 backdrop-blur-sm border-border focus:border-primary/50 h-12">
+        <Select value={formData.country} onValueChange={(val) => handleChange("country", val)}>
+          <SelectTrigger className="bg-background/50 backdrop-blur-sm h-12">
             <SelectValue placeholder={t("fields.country")} />
           </SelectTrigger>
           <SelectContent className="max-h-[300px]">
-            {countries.map((c) => {
-              const flagSrc = c.code !== "OTHER" ? COUNTRY_FLAGS[c.code] : null
-              return (
-                <SelectItem key={c.code} value={c.name}>
-                  <span className="flex items-center gap-2">
-                    {flagSrc ? (
-                      <img
-                        src={flagSrc}
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="w-5 h-5 flex-shrink-0 object-contain rounded-sm"
-                        role="presentation"
-                        loading="lazy"
+            {COUNTRIES.map((c) => (
+              <SelectItem key={c.code} value={c.name}>
+                <div className="flex items-center gap-3">
+                  {COUNTRY_FLAGS[c.code] ? (
+                    <div className="relative w-5 h-4 overflow-hidden rounded-sm shadow-sm">
+                      <Image
+                        src={COUNTRY_FLAGS[c.code]}
+                        alt={c.name}
+                        fill
+                        className="object-cover"
+                        sizes="20px"
                       />
-                    ) : (
-                      <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-base" aria-hidden="true">🌍</span>
-                    )}
-                    <span>{c.name}</span>
-                  </span>
-                </SelectItem>
-              )
-            })}
+                    </div>
+                  ) : (
+                    <span className="w-5 text-center">🌍</span>
+                  )}
+                  <span className="text-sm">{c.name}</span>
+                </div>
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
+
       <Button
         type="submit"
-        disabled={isLoading}
-        className="w-full h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold group transition-all duration-300 shadow-lg shadow-primary/20"
+        disabled={isLoading || !formData.email}
+        className="w-full h-12 rounded-full font-semibold group shadow-lg shadow-primary/20 active:scale-[0.98] transition-all"
       >
         {isLoading ? (
-          <FaSpinner className="animate-spin mr-2" />
+          <FaSpinner className="animate-spin" />
         ) : (
           <>
             {t("cta")}
@@ -152,7 +149,8 @@ function WaitlistFormComponent() {
           </>
         )}
       </Button>
-      <p className="text-center text-xs text-muted-foreground">
+
+      <p className="text-center text-[10px] uppercase tracking-wider text-muted-foreground/60">
         {t("privacyNote")}
       </p>
     </form>

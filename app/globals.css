@@ -342,6 +342,41 @@ body {
   .logo-reveal {
     animation: logoReveal 1.2s ease-out forwards;
   }
+
+  /* Animation shimmer pour les boutons CTA */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  .shimmer-effect:hover::before {
+    animation: shimmer 1s infinite;
+  }
 }
 
 @layer base {

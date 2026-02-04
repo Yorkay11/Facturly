@@ -188,14 +188,20 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
     form.setValue("items", currentItems.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: string, value: string) => {
+  const updateItem = (index: number, field: string, value: string | undefined) => {
     const currentItems = form.getValues("items");
     const updatedItems = [...currentItems];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     form.setValue("items", updatedItems);
   };
 
+  const NO_PRODUCT_VALUE = "__none__";
+
   const handleProductSelect = (index: number, productId: string) => {
+    if (productId === NO_PRODUCT_VALUE) {
+      updateItem(index, "productId", undefined);
+      return;
+    }
     const product = products.find((p) => p.id === productId);
     if (product) {
       updateItem(index, "productId", productId);
@@ -510,14 +516,14 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
                     <div>
                       <Label>{t("product")}</Label>
                       <Select
-                        value={item.productId || ""}
+                        value={item.productId || NO_PRODUCT_VALUE}
                         onValueChange={(value) => handleProductSelect(index, value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder={t("selectProduct")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">{t("noProduct")}</SelectItem>
+                          <SelectItem value={NO_PRODUCT_VALUE}>{t("noProduct")}</SelectItem>
                           {products.map((product) => (
                             <SelectItem key={product.id} value={product.id}>
                               {product.name}

@@ -113,7 +113,7 @@ export function InteractiveDemo() {
   const progress = ((currentStep + 1) / steps.length) * 100
 
   return (
-    <section className="w-full py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-background to-muted/30">
+    <section className="w-full py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-background to-muted/30 my-12 md:my-20">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">

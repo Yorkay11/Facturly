@@ -42,9 +42,10 @@ export interface InvoicePayment {
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  status: "draft" | "sent" | "paid" | "cancelled" | "overdue";
+  status: "draft" | "quote" | "sent" | "paid" | "cancelled" | "overdue";
   issueDate: string;
   dueDate: string;
+  validUntil?: string; // Date de validité du devis (pour statut QUOTE)
   sentAt?: string;
   recipientEmail?: string;
   paymentLinkToken?: string;
@@ -65,6 +66,7 @@ export interface Invoice {
     id: string;
     name: string;
     email?: string;
+    phone?: string;
     addressLine1?: string;
     city?: string;
     country?: string;
@@ -78,9 +80,10 @@ export interface Invoice {
 export interface InvoiceSummary {
   id: string;
   invoiceNumber: string;
-  status: "draft" | "sent" | "paid" | "cancelled" | "overdue";
+  status: "draft" | "quote" | "sent" | "paid" | "cancelled" | "overdue";
   issueDate: string;
   dueDate: string;
+  validUntil?: string;
   currency: string;
   subtotalAmount: string;
   taxAmount: string;
@@ -114,6 +117,7 @@ export interface UpdateInvoicePayload {
   clientId?: string;
   issueDate?: string;
   dueDate?: string;
+  validUntil?: string; // OPTIONNEL - Date de validité du devis (format: YYYY-MM-DD)
   currency?: string;
   notes?: string;
   status?: "draft" | "sent" | "paid" | "cancelled";

@@ -32,6 +32,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -52,6 +53,7 @@ export default function PublicInvoicePage() {
   const commonT = useTranslations('common');
   const locale = useLocale();
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showCommitmentModal, setShowCommitmentModal] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [monerooUrl, setMonerooUrl] = useState<string | null>(null);
@@ -132,8 +134,15 @@ export default function PublicInvoicePage() {
     }).format(numValue);
   };
 
-  const handleAccept = async () => {
+  const handleAcceptClick = () => {
+    // Soft Commitment : Afficher la confirmation avant de procéder au paiement
+    setShowCommitmentModal(true);
+  };
+
+  const handleAcceptConfirm = async () => {
     if (!token || !invoiceData) return;
+
+    setShowCommitmentModal(false);
 
     try {
       const response = await acceptInvoice(token).unwrap();
@@ -245,10 +254,14 @@ export default function PublicInvoicePage() {
 
   const invoice = invoiceData.invoice;
   const items = invoice.items ?? [];
+  const isQuote = invoice.status === "quote";
   const isPaid = invoiceData.isPaid || invoice.status === "paid";
   const isRejected = invoiceData.isRejected || invoice.status === "cancelled" || invoice.rejectedAt;
-  const canAccept = invoiceData.canAccept && !isPaid && !isRejected;
+  const isExpired = invoiceData.isExpired || (isQuote && invoice.validUntil && new Date(invoice.validUntil) < new Date());
+  const canAccept = invoiceData.canAccept && !isPaid && !isRejected && !isExpired;
   const canPay = invoiceData.canPay && !isPaid && !canAccept;
+  const documentTitle = isQuote ? t('documentTitleQuote') : commonT('invoice');
+  const acceptButtonLabel = isQuote ? t('actions.acceptQuote') : t('actions.accept');
 
   const backendTemplateName = invoice.templateName || "invoice";
   const frontendTemplate = getFrontendTemplateFromBackend(backendTemplateName);
@@ -514,7 +527,7 @@ export default function PublicInvoicePage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-                {commonT('invoice')} {invoice.invoiceNumber}
+                {documentTitle} {invoice.invoiceNumber}
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 <InvoiceStatusBadge status={invoice.status} />
@@ -606,12 +619,26 @@ export default function PublicInvoicePage() {
                   </div>
                 )}
 
+                {isExpired && (
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-amber-700">
+                      <AlertCircle className="h-5 w-5" />
+                      <p className="font-semibold text-sm">{t('expired.title')}</p>
+                    </div>
+                    <p className="text-sm text-amber-700 leading-relaxed">
+                      {t('expired.description', { 
+                        date: invoice.validUntil ? formatDate(invoice.validUntil) : '' 
+                      })}
+                    </p>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 {canAccept && (
                   <div className="space-y-3">
                     <Button
                       className="w-full h-11 text-base font-semibold bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all"
-                      onClick={handleAccept}
+                      onClick={handleAcceptClick}
                       disabled={isAccepting}
                       size="lg"
                     >
@@ -623,7 +650,7 @@ export default function PublicInvoicePage() {
                       ) : (
                         <>
                           <Check className="h-4 w-4 mr-2" />
-                          {t('actions.accept')}
+                          {acceptButtonLabel}
                         </>
                       )}
                     </Button>
@@ -651,7 +678,7 @@ export default function PublicInvoicePage() {
                     </div>
                     <Button
                       className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                      onClick={handleAccept}
+                      onClick={handleAcceptClick}
                       disabled={isAccepting}
                       size="lg"
                     >
@@ -700,6 +727,64 @@ export default function PublicInvoicePage() {
         />
       )}
 
+      {/* Soft Commitment Modal */}
+      <Dialog open={showCommitmentModal} onOpenChange={setShowCommitmentModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {isQuote ? t('commitment.quoteTitle') : t('commitment.invoiceTitle')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              {isQuote 
+                ? t('commitment.quoteMessage', { 
+                    amount: formatCurrency(invoice.totalAmount, invoice.currency),
+                    number: invoice.invoiceNumber
+                  })
+                : t('commitment.invoiceMessage', { 
+                    amount: formatCurrency(invoice.totalAmount, invoice.currency),
+                    number: invoice.invoiceNumber
+                  })}
+            </p>
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                <div className="space-y-1 text-sm">
+                  <p className="font-semibold text-slate-900">{t('commitment.confirmation')}</p>
+                  <p className="text-slate-600">{t('commitment.legalNote')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowCommitmentModal(false)}
+            >
+              {t('commitment.cancel')}
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700"
+              onClick={handleAcceptConfirm}
+              disabled={isAccepting}
+            >
+              {isAccepting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('actions.accepting')}
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  {t('commitment.confirm')}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Fullscreen Invoice Sheet */}
       {isLargeScreen && (
         <Sheet open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
@@ -709,7 +794,7 @@ export default function PublicInvoicePage() {
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-slate-600" />
                   <SheetTitle className="text-xl font-semibold text-slate-900">
-                    {commonT('invoice')} {invoice.invoiceNumber}
+                    {documentTitle} {invoice.invoiceNumber}
                   </SheetTitle>
                 </div>
                 <Button

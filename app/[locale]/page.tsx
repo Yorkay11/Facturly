@@ -73,7 +73,7 @@ export async function generateMetadata({
 export default async function LandingPage() {
   const tFaq = await getTranslations('landing.faq.items');
   const tMeta = await getTranslations('metadata');
-  
+
   const faqData = [
     {
       question: tFaq('whatIs.question'),
@@ -144,7 +144,7 @@ export default async function LandingPage() {
     ],
   };
 
-  
+
 
   return (
     <WaitlistProvider>
@@ -166,44 +166,44 @@ export default async function LandingPage() {
           __html: JSON.stringify(breadcrumbSchema),
         }}
       />
-        <CountriesBanner />
-      <div className="min-h-screen bg-background relative overflow-hidden pb-0 pt-16 md:pt-20">
-          <div className="relative z-10">
-          <main className="max-w-[1320px] mx-auto relative px-4 md:px-0 mb-20" id="hero-container">
+      <CountriesBanner />
+      <div className="flex flex-col min-h-screen bg-background relative overflow-hidden pb-0 pt-16 md:pt-20">
+        <div className="relative z-10 flex flex-col w-full h-full gap-y-24 items-center mx-auto max-w-[1320px]" >
+          <main className="max-w-[1320px]  relative px-4 md:px-0 mb-20" id="hero-container">
             <HeroSection />
-            <div className="flex items-center justify-center w-full z-30">
+            {/* <div className="flex items-center justify-center w-full z-30">
               <DashboardPreview />
-            </div>
+            </div> */}
           </main>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.25}>
-            <FeaturesSection />
-          </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+          <AnimatedSection className="relative z-10  " delay={0.2}>
             <VideoCarousel />
           </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.4}>
+          <AnimatedSection className="relative z-10  " delay={0.25}>
+            <FeaturesSection />
+          </AnimatedSection>
+          <AnimatedSection className="relative z-10  " delay={0.4}>
             <WhyFacturlySection />
           </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
+          <AnimatedSection className="relative z-10  " delay={0.3}>
             <InteractiveDemo />
           </AnimatedSection>
-         
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.3}>
+
+          <AnimatedSection className="relative z-10  " delay={0.3}>
             <MobileMoneySection />
           </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+          <AnimatedSection className="relative z-10  " delay={0.2}>
             <RealMetrics />
           </AnimatedSection>
-          <AnimatedSection className="relative z-10 mt-8 md:mt-16" delay={0.2}>
+          <AnimatedSection className="relative z-10" delay={0.2}>
             <SupportedCountriesSection />
           </AnimatedSection>
-          <AnimatedSection id="faq-section" className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+          <AnimatedSection id="faq-section" className="relative z-10  " delay={0.2}>
             <FAQSection />
           </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+          <AnimatedSection className="relative z-10  " delay={0.2}>
             <CTASection />
           </AnimatedSection>
-          <AnimatedSection className="relative z-10 max-w-[1320px] mx-auto mt-8 md:mt-16" delay={0.2}>
+          <AnimatedSection className="relative z-10   w-full" delay={0.2}>
             <FooterSection />
           </AnimatedSection>
         </div>

@@ -333,6 +333,7 @@
     "client": "Client",
     "total": "Total",
     "amount": "Montant",
+    "template": "Template de facture",
     "actions": "Actions",
     "searchPlaceholder": "Rechercher (client, numéro...)",
     "filterPlaceholder": "Statut",
@@ -853,6 +854,7 @@
       },
       "buttons": {
         "edit": "Modifier",
+        "sendAsQuote": "Envoyer comme devis",
         "copyPublicLink": "Copier le lien public",
         "copyPaymentLink": "Copier le lien de paiement",
         "sendReminder": "Envoyer un rappel",
@@ -968,7 +970,10 @@
       "toasts": {
         "linkCopied": "Lien copié",
         "paymentLinkCopied": "Le lien de paiement a été copié dans le presse-papiers.",
-        "publicLinkCopied": "Le lien public de visualisation a été copié dans le presse-papiers."
+        "publicLinkCopied": "Le lien public de visualisation a été copié dans le presse-papiers.",
+        "quoteSent": "Devis envoyé",
+        "quoteSentDescription": "Le devis a été envoyé par WhatsApp. Le client peut l'accepter pour le transformer en facture et payer.",
+        "quoteSendError": "Erreur lors de l'envoi du devis."
       }
     }
   },
@@ -2635,6 +2640,8 @@
   },
   "public": {
     "invoice": {
+      "documentTitleQuote": "Devis",
+      "acceptQuote": "Accepter le devis",
       "errors": {
         "invalidToken": "Token invalide",
         "invalidTokenDescription": "Le lien de la facture est invalide ou manquant.",
@@ -2676,6 +2683,7 @@
         "canAcceptDescription": "Acceptez ou refusez cette facture.",
         "noActionDescription": "Aucune action disponible pour le moment.",
         "accept": "Accepter la facture",
+        "acceptQuote": "Accepter le devis",
         "accepting": "Traitement...",
         "reject": "Refuser la facture",
         "payNow": "Payer maintenant",
@@ -2701,6 +2709,20 @@
         "rejected": "Facture refusée",
         "rejectedDescription": "La facture a été refusée avec succès.",
         "acceptError": "Une erreur est survenue lors de l'acceptation de la facture."
+      },
+      "expired": {
+        "title": "Devis expiré",
+        "description": "Ce devis a expiré le {date}. Veuillez contacter le vendeur pour obtenir un nouveau devis."
+      },
+      "commitment": {
+        "quoteTitle": "Confirmer votre commande",
+        "invoiceTitle": "Confirmer l'acceptation",
+        "quoteMessage": "En acceptant ce devis n°{number}, vous confirmez votre commande et vous engagez à payer la somme de {amount}.",
+        "invoiceMessage": "En acceptant cette facture n°{number}, vous confirmez votre commande et vous engagez à payer la somme de {amount}.",
+        "confirmation": "Engagement de paiement",
+        "legalNote": "Cette confirmation constitue un Bon de Commande légal. Vous serez redirigé vers le paiement sécurisé par Mobile Money.",
+        "cancel": "Annuler",
+        "confirm": "Je confirme et je paie"
       }
     },
     "pay": {

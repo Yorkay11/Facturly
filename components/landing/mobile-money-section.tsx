@@ -78,11 +78,8 @@ export function MobileMoneySection() {
   }
 
   return (
-    <section className="w-full py-16 md:py-24 px-4 md:px-6 relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 z-[1]" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 z-[1]" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 z-[1]" />
+    <section className="w-full py-16 md:py-24 my-12 md:my-20 px-4 md:px-6 relative overflow-hidden">
+      
       
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
@@ -164,7 +161,7 @@ export function MobileMoneySection() {
             <Button
               onClick={handleCTAClick}
               size="lg"
-              className="group px-8 py-6 text-base font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="group px-8 py-6 text-base font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {isAuthenticated ? t('cta.buttonAuthenticated') : t('cta.buttonGuest')}
               <FaArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />

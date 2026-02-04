@@ -50,7 +50,7 @@ export function DashboardPreview() {
   )
 
   return (
-    <div ref={ref} className="w-[calc(100vw-32px)] md:w-[1160px] mt-44 md:mt-0">
+    <div ref={ref} className="relative w-[calc(100vw-32px)] md:w-[1160px] mt-44 md:mt-0" suppressHydrationWarning>
       <motion.div
         style={{
           rotateX,

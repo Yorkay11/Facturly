@@ -85,6 +85,7 @@ export const {
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useSendInvoiceMutation,
+  useSendQuoteMutation,
   useMarkInvoicePaidMutation,
   useCancelInvoiceMutation,
   useDeleteInvoiceMutation,

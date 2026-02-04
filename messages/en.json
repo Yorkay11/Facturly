@@ -332,6 +332,7 @@
     "client": "Client",
     "total": "Total",
     "amount": "Amount",
+    "template": "Invoice template",
     "actions": "Actions",
     "searchPlaceholder": "Search (client, number...)",
     "filterPlaceholder": "Status",
@@ -852,6 +853,7 @@
       },
       "buttons": {
         "edit": "Edit",
+        "sendAsQuote": "Send as quote",
         "copyPublicLink": "Copy public link",
         "copyPaymentLink": "Copy payment link",
         "sendReminder": "Send reminder",
@@ -967,7 +969,10 @@
       "toasts": {
         "linkCopied": "Link copied",
         "paymentLinkCopied": "Payment link has been copied to clipboard.",
-        "publicLinkCopied": "Public viewing link has been copied to clipboard."
+        "publicLinkCopied": "Public viewing link has been copied to clipboard.",
+        "quoteSent": "Quote sent",
+        "quoteSentDescription": "The quote has been sent via WhatsApp. The client can accept it to convert to an invoice and pay.",
+        "quoteSendError": "Error sending the quote."
       }
     }
   },
@@ -2629,6 +2634,8 @@
   },
   "public": {
     "invoice": {
+      "documentTitleQuote": "Quote",
+      "acceptQuote": "Accept quote",
       "errors": {
         "invalidToken": "Invalid token",
         "invalidTokenDescription": "The invoice link is invalid or missing.",
@@ -2670,6 +2677,7 @@
         "canAcceptDescription": "Accept or reject this invoice.",
         "noActionDescription": "No action available at the moment.",
         "accept": "Accept invoice",
+        "acceptQuote": "Accept quote",
         "accepting": "Processing...",
         "reject": "Reject invoice",
         "payNow": "Pay now",
@@ -2695,6 +2703,20 @@
         "rejected": "Invoice rejected",
         "rejectedDescription": "The invoice has been successfully rejected.",
         "acceptError": "An error occurred while accepting the invoice."
+      },
+      "expired": {
+        "title": "Quote expired",
+        "description": "This quote expired on {date}. Please contact the seller to get a new quote."
+      },
+      "commitment": {
+        "quoteTitle": "Confirm your order",
+        "invoiceTitle": "Confirm acceptance",
+        "quoteMessage": "By accepting quote #{number}, you confirm your order and commit to paying the amount of {amount}.",
+        "invoiceMessage": "By accepting invoice #{number}, you confirm your order and commit to paying the amount of {amount}.",
+        "confirmation": "Payment commitment",
+        "legalNote": "This confirmation constitutes a legal Purchase Order. You will be redirected to secure Mobile Money payment.",
+        "cancel": "Cancel",
+        "confirm": "I confirm and pay"
       }
     },
     "pay": {

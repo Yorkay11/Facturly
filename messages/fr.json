@@ -271,6 +271,9 @@
     "spotlightEmpty": "Aucun résultat trouvé."
   },
   "topbar": {
+    "supportDocumentation": "Documentation",
+    "supportContact": "Nous contacter",
+    "supportEmail": "support@facturly.online",
     "user": "Utilisateur",
     "noPlan": "Aucun plan",
     "planFree": "Gratuit",
@@ -2046,6 +2049,8 @@
       "tagline": "La Fintech qui simplifie la gestion financière des entrepreneurs en Afrique.",
       "product": "Prestation",
       "legal": "Légal",
+      "contact": "Contact",
+      "supportEmail": "support@facturly.online",
       "features": "Fonctionnalités",
       "howItWorks": "Comment ça marche",
       "pricing": "Tarifs",
@@ -3067,7 +3072,7 @@
       },
       "publisher": {
         "title": "1. Éditeur du service",
-        "content": "Le site facturly.online est édité par [Nom de l'entreprise ou auto-entrepreneur], [Forme juridique], immatriculé au Registre du Commerce de [Ville, Pays] sous le numéro [RCCM].\n\n• Siège social : [Adresse]\n• Contact : support@facturly.app"
+        "content": "Le site facturly.online est édité par [Nom de l'entreprise ou auto-entrepreneur], [Forme juridique], immatriculé au Registre du Commerce de [Ville, Pays] sous le numéro [RCCM].\n\n• Siège social : [Adresse]\n• Contact : support@facturly.online"
       },
       "hosting": {
         "title": "2. Hébergement",

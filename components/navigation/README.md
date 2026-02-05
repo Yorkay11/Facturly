@@ -160,7 +160,7 @@ const handleSaveAndRedirect = async () => {
 
 ```tsx
 <Redirect 
-  to="https://docs.facturly.app" 
+  to="https://docs.facturly.online" 
   type="external"
   checkUnsavedChanges={false}
 />

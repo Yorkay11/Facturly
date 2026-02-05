@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
@@ -119,17 +120,34 @@ export const Topbar = () => {
           <NotificationDropdown />
 
           {/* Help/Support */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => {
-              window.open("https://docs.facturly.app", "_blank");
-            }}
-            aria-label={t('support')}
-          >
-            <FaCircleQuestion className="h-4 w-4" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                aria-label={t('support')}
+              >
+                <FaCircleQuestion className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-1" align="end" sideOffset={8}>
+              <a
+                href="https://docs.facturly.online"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                {tTopbar('supportDocumentation')}
+              </a>
+              <a
+                href="mailto:support@facturly.online"
+                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground break-all"
+              >
+                {tTopbar('supportContact')} — {tTopbar('supportEmail')}
+              </a>
+            </PopoverContent>
+          </Popover>
 
           {/* Language Switcher */}
           <LanguageSwitcher />

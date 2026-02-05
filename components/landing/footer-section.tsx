@@ -28,7 +28,7 @@ export function FooterSection() {
         </p>
       </div>
       {/* Right Section: Links */}
-      <div className="grid grid-cols-2 gap-4 md:gap-6 p-4 md:p-4 w-full md:w-auto">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 p-4 md:p-4 w-full md:w-auto">
         <div className="flex flex-col justify-start items-start gap-3">
           <h3 className="text-muted-foreground text-sm font-medium leading-5">{t('product')}</h3>
           <div className="flex flex-col justify-end items-start gap-2">
@@ -41,6 +41,14 @@ export function FooterSection() {
             <Link href="/pricing" className="text-foreground text-sm font-normal leading-5 hover:underline">
               {t('pricing')}
             </Link>
+          </div>
+        </div>
+        <div className="flex flex-col justify-start items-start gap-3">
+          <h3 className="text-muted-foreground text-sm font-medium leading-5">{t('contact')}</h3>
+          <div className="flex flex-col justify-center items-start gap-2">
+            <a href="mailto:support@facturly.online" className="text-foreground text-sm font-normal leading-5 hover:underline break-all">
+              {t('supportEmail')}
+            </a>
           </div>
         </div>
         <div className="flex flex-col justify-start items-start gap-3">

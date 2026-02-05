@@ -114,7 +114,7 @@ export default async function LandingPage() {
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
-      "email": "support@facturly.app",
+      "email": "support@facturly.online",
     },
   };
 

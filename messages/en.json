@@ -270,6 +270,9 @@
     "spotlightEmpty": "No results found."
   },
   "topbar": {
+    "supportDocumentation": "Documentation",
+    "supportContact": "Contact us",
+    "supportEmail": "support@facturly.online",
     "user": "User",
     "noPlan": "No plan",
     "planFree": "Free",
@@ -2041,6 +2044,8 @@
       "lomeAnchor": "Based in Lomé, at the heart of West African finance.",
       "product": "Service",
       "legal": "Legal",
+      "contact": "Contact",
+      "supportEmail": "support@facturly.online",
       "features": "Features",
       "howItWorks": "How it works",
       "pricing": "Pricing",
@@ -3061,7 +3066,7 @@
       },
       "publisher": {
         "title": "1. Service publisher",
-        "content": "The facturly.online website is published by [Company name or sole proprietor], [Legal form], registered at the Trade Register of [City, Country] under number [RCCM].\n\n• Registered office: [Address]\n• Contact: support@facturly.app"
+        "content": "The facturly.online website is published by [Company name or sole proprietor], [Legal form], registered at the Trade Register of [City, Country] under number [RCCM].\n\n• Registered office: [Address]\n• Contact: support@facturly.online"
       },
       "hosting": {
         "title": "2. Hosting",

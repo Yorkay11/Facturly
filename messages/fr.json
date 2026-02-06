@@ -1699,11 +1699,15 @@
     "cta": {
       "title": "Créez votre première facture en 60 secondes",
       "subtitle": "Rejoignez les entrepreneurs africains qui utilisent Facturly pour créer, envoyer et être payés rapidement via mobile money",
-      "socialProof": "Déjà utilisé par +100 entrepreneurs en Côte d'Ivoire et au Sénégal",
+      "socialProof": "Déjà utilisé par +10 entrepreneurs en Côte d'Ivoire et au Sénégal",
       "betaFull": "Bêta complète ({current}/{max} utilisateurs)",
       "betaAvailable": "{remaining} place{plural} disponible{plural} ({current}/{max})",
       "ctaAuthenticated": "Accéder au tableau de bord",
       "ctaGuest": "Rejoindre la liste d'attente"
+    },
+    "dashboardPreview": {
+      "title": "Votre tableau de bord en un coup d'œil.",
+      "titleLine2": "Simple, rapide, efficace."
     },
     "waitlist": {
       "title": "Rejoignez la liste d'attente",

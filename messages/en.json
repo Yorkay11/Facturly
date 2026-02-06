@@ -1693,11 +1693,15 @@
     "cta": {
       "title": "Create your first invoice in 60 seconds",
       "subtitle": "Join African entrepreneurs who use Facturly to create, send and get paid quickly via mobile money",
-      "socialProof": "Already used by +100 entrepreneurs in Ivory Coast and Senegal",
+      "socialProof": "Already used by +10 entrepreneurs in Ivory Coast and Senegal",
       "betaFull": "Beta full ({current}/{max} users)",
       "betaAvailable": "{remaining} spot{plural} available ({current}/{max})",
       "ctaAuthenticated": "Access dashboard",
       "ctaGuest": "Join the waitlist"
+    },
+    "dashboardPreview": {
+      "title": "Your dashboard at a glance.",
+      "titleLine2": "Simple, fast, efficient."
     },
     "waitlist": {
       "title": "Join the waitlist",

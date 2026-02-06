@@ -15,6 +15,7 @@ import { CTASection } from "@/components/landing/cta-section"
 import { FooterSection } from "@/components/landing/footer-section"
 import { AnimatedSection } from "@/components/landing/animated-section"
 import { WaitlistProvider } from "@/contexts/WaitlistContext"
+import { SupportFab } from "@/components/landing/support-fab"
 
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.facturly.online";
@@ -208,6 +209,7 @@ export default async function LandingPage() {
           </AnimatedSection>
         </div>
       </div>
+      <SupportFab />
     </WaitlistProvider>
   )
 }

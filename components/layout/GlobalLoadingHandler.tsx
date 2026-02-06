@@ -14,6 +14,18 @@ export function GlobalLoadingHandler() {
   // Le pathname avec next-intl retourne le chemin sans la locale (ex: '/' pour la landing)
   const isLandingPage = pathname === '/';
 
+  // Simuler le chargement initial de l'application
+  useEffect(() => {
+    // Afficher le loader sur toutes les pages, y compris la landing
+    setLoading(true);
+    
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2500); // Durée pour voir les étapes du loader
+    
+    return () => clearTimeout(timer);
+  }, [setLoading]);
+
   // Masquer le loader initial HTML et prendre le relais avec le loader React
   useEffect(() => {
     // Masquer le loader initial HTML s'il existe encore

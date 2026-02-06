@@ -21,6 +21,9 @@ import { Separator } from "@/components/ui/separator";
 import { useLoginMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 
+import { DotPattern } from "@/components/ui/dot-pattern";
+import { Quote } from "lucide-react";
+
 function LoginForm() {
   const router = useRouter();
   const locale = useLocale();
@@ -129,10 +132,10 @@ function LoginForm() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Section gauche : Logo avec fond sombre */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
-        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-md">
+      {/* Section gauche : Logo avec fond sombre et pattern */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-6 relative overflow-hidden">
+        <DotPattern className="text-white opacity-20" glow />
+        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-md">
           <Image
             src="/logos/logo.png"
             alt="Facturly"
@@ -141,11 +144,11 @@ function LoginForm() {
             className="w-auto h-24 object-contain brightness-0 invert"
             priority
           />
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h2 className="text-3xl font-bold text-white">
               {t('heroTitle')}
             </h2>
-            <p className="text-white/80 text-lg">
+            <p className="text-white/80 text-lg leading-relaxed">
               {t('heroDescription')}
             </p>
           </div>
@@ -153,60 +156,64 @@ function LoginForm() {
       </div>
 
       {/* Section droite : Formulaire */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-white">
-        <div className="w-full max-w-md">
-          <Card className="border-primary/20 shadow-lg">
-            <CardHeader className="space-y-4 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center">
-                <Image
-                  src="/icon.png"
-                  alt="Facturly"
-                  width={64}
-                  height={64}
-                  className="h-16 w-16 object-contain rounded-lg"
-                  priority
-                />
-              </div>
-              <div>
-                <CardTitle className="text-2xl font-semibold text-primary">{t('login')}</CardTitle>
-                <CardDescription className="text-foreground/60">
-                  {t('welcomeBack')}
-                </CardDescription>
-              </div>
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-gray-50/50">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center lg:hidden">
+            <Image
+              src="/icon.png"
+              alt="Facturly"
+              width={64}
+              height={64}
+              className="h-16 w-16 mx-auto object-contain rounded-xl shadow-md"
+              priority
+            />
+          </div>
+
+          <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl">
+            <CardHeader className="space-y-1 text-center pb-8">
+              <CardTitle className="text-2xl font-bold tracking-tight">{t('login')}</CardTitle>
+              <CardDescription className="text-muted-foreground text-sm">
+                {t('welcomeBack')}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('email')}</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                  <Label htmlFor="email" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('email')}</Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="vous@entreprise.com"
-                      className="pl-9"
+                      className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                       {...form.register("email")}
                     />
                   </div>
                   {form.formState.errors.email ? (
-                    <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+                    <p className="text-xs text-destructive ml-1">{form.formState.errors.email.message}</p>
                   ) : null}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t('password')}</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('password')}</Label>
+                    <Link href="#" className="text-xs text-primary hover:text-primary/80 font-medium hover:underline">
+                      {t('forgotPassword')}
+                    </Link>
+                  </div>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pl-9 pr-9"
+                      className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                       {...form.register("password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                       aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                     >
                       {showPassword ? (
@@ -217,21 +224,21 @@ function LoginForm() {
                     </button>
                   </div>
                   {form.formState.errors.password ? (
-                    <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+                    <p className="text-xs text-destructive ml-1">{form.formState.errors.password.message}</p>
                   ) : null}
                 </div>
-                <Button type="submit" className="w-full gap-2" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                <Button type="submit" className="w-full gap-2 h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
                   {t('signIn')}
                 </Button>
               </form>
               
-              <div className="relative">
+              <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <Separator />
+                  <Separator className="w-full" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-foreground/60">
+                  <span className="bg-white px-2 text-muted-foreground font-medium">
                     {t('orContinueWith')}
                   </span>
                 </div>
@@ -240,14 +247,14 @@ function LoginForm() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full gap-2 hover:bg-primary hover:text-white"
+                className="w-full gap-3 h-11 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium transition-all"
                 onClick={handleGoogleLogin}
                 disabled={isGoogleLoading || isLoading}
               >
                 {isGoogleLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -268,47 +275,26 @@ function LoginForm() {
                 )}
                 {t('continueWithGoogle')}
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                {locale === 'fr' ? (
-                  <>
-                    En continuant avec Google, vous acceptez notre{' '}
-                    <Link href="/privacy" className="text-primary hover:underline">
-                      politique de confidentialité
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    By continuing with Google, you agree to our{' '}
-                    <Link href="/privacy" className="text-primary hover:underline">
-                      privacy policy
-                    </Link>
-                  </>
-                )}
-              </p>
-
-              <div className="space-y-3 text-center text-sm text-foreground/60">
-                <Link href="#" className="text-primary hover:underline">
-                  {t('forgotPassword')}
-                </Link>
-                <Separator />
-                <p>
-                  {t('dontHaveAccount')} {" "}
-                  <Link href="/register" className="text-primary hover:underline">
-                    {t('createAccount')}
-                  </Link>
-                </p>
-              </div>
             </CardContent>
+            <div className="p-6 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
+              <p className="text-sm text-muted-foreground">
+                {t('dontHaveAccount')} {" "}
+                <Link href="/register" className="text-primary font-semibold hover:underline">
+                  {t('createAccount')}
+                </Link>
+              </p>
+            </div>
           </Card>
-          <p className="mt-6 text-center text-xs text-foreground/50">
+          
+          <p className="text-center text-xs text-muted-foreground/60 px-4">
             {locale === 'fr' ? (
               <>
                 En vous connectant, vous acceptez nos{' '}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   conditions d'utilisation
                 </Link>
                 {' '}et notre{' '}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link href="/privacy" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   politique de confidentialité
                 </Link>
                 .
@@ -316,11 +302,11 @@ function LoginForm() {
             ) : (
               <>
                 By signing in, you agree to our{' '}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   terms of use
                 </Link>
                 {' '}and{' '}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link href="/privacy" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   privacy policy
                 </Link>
                 .

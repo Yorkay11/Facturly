@@ -21,6 +21,9 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useMemo } from 'react';
 import { Redirect } from '@/components/navigation';
 
+import { DotPattern } from "@/components/ui/dot-pattern";
+import { Quote } from "lucide-react";
+
 export default function RegisterPage() {
   const router = useRouter();
   const locale = useLocale();
@@ -233,9 +236,9 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen">
       {/* Section gauche : Logo avec fond sombre */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5"></div>
-        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 max-w-md">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-6 relative overflow-hidden">
+        <DotPattern className="text-white opacity-20" glow />
+        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-md">
           <Image
             src="/logos/logo.png"
             alt="Facturly"
@@ -244,11 +247,11 @@ export default function RegisterPage() {
             className="w-auto h-24 object-contain brightness-0 invert"
             priority
           />
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h2 className="text-3xl font-bold text-white">
               {t('heroTitle')}
             </h2>
-            <p className="text-white/80 text-lg">
+            <p className="text-white/80 text-lg leading-relaxed">
               {t('heroDescription')}
             </p>
           </div>
@@ -256,47 +259,46 @@ export default function RegisterPage() {
       </div>
 
       {/* Section droite : Formulaire */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-white">
-        <div className="w-full max-w-md">
-          <Card className="border-primary/20 shadow-lg">
-            <CardHeader className="space-y-4 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center">
-                <Image
-                  src="/icon.png"
-                  alt="Facturly"
-                  width={64}
-                  height={64}
-                  className="h-16 w-16 object-contain rounded-lg"
-                  priority
-                />
-              </div>
-              <div>
-                <CardTitle className="text-2xl font-semibold text-primary">{t('cardTitle')}</CardTitle>
-                <CardDescription className="text-foreground/60">
-                  {t('cardDescription')}
-                </CardDescription>
-              </div>
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-gray-50/50">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center lg:hidden">
+            <Image
+              src="/icon.png"
+              alt="Facturly"
+              width={64}
+              height={64}
+              className="h-16 w-16 mx-auto object-contain rounded-xl shadow-md"
+              priority
+            />
+          </div>
+
+          <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl">
+            <CardHeader className="space-y-1 text-center pb-8">
+              <CardTitle className="text-2xl font-bold tracking-tight">{t('cardTitle')}</CardTitle>
+              <CardDescription className="text-muted-foreground text-sm">
+                {t('cardDescription')}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Indicateur de progression */}
-              <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="flex items-center justify-center gap-2 mb-8">
                 {steps.map((step, index) => (
                   <div key={step.id} className="flex items-center">
                     <div
                       className={cn(
                         "h-2 rounded-full transition-all duration-300",
                         index + 1 === currentStep
-                          ? "w-8 bg-primary"
+                          ? "w-8 bg-primary shadow-lg shadow-primary/25"
                           : index + 1 < currentStep
                           ? "w-2 bg-primary/50"
-                          : "w-2 bg-muted-foreground/30"
+                          : "w-2 bg-muted-foreground/20"
                       )}
                     />
                     {index < steps.length - 1 && (
                       <div
                         className={cn(
-                          "h-0.5 w-4 transition-all duration-300",
-                          index + 1 < currentStep ? "bg-primary/50" : "bg-muted-foreground/30"
+                          "h-0.5 w-4 transition-all duration-300 mx-1",
+                          index + 1 < currentStep ? "bg-primary/50" : "bg-muted-foreground/20"
                         )}
                       />
                     )}
@@ -304,7 +306,7 @@ export default function RegisterPage() {
                 ))}
               </div>
 
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" onKeyDown={async (e) => {
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" onKeyDown={async (e) => {
                 if (e.key === "Enter" && !isLastStep) {
                   e.preventDefault();
                   await handleNext();
@@ -315,52 +317,52 @@ export default function RegisterPage() {
                   <div className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">{t('fields.firstName')}</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                        <Label htmlFor="firstName" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.firstName')}</Label>
+                        <div className="relative group">
+                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                           <Input
                             id="firstName"
                             type="text"
                             placeholder={t('placeholders.firstName')}
-                            className="pl-9"
+                            className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                             {...form.register("firstName")}
                           />
                         </div>
                         {form.formState.errors.firstName ? (
-                          <p className="text-xs text-destructive">{form.formState.errors.firstName.message}</p>
+                          <p className="text-xs text-destructive ml-1">{form.formState.errors.firstName.message}</p>
                         ) : null}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">{t('fields.lastName')}</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                        <Label htmlFor="lastName" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.lastName')}</Label>
+                        <div className="relative group">
+                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                           <Input
                             id="lastName"
                             type="text"
                             placeholder={t('placeholders.lastName')}
-                            className="pl-9"
+                            className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                             {...form.register("lastName")}
                           />
                         </div>
                         {form.formState.errors.lastName ? (
-                          <p className="text-xs text-destructive">{form.formState.errors.lastName.message}</p>
+                          <p className="text-xs text-destructive ml-1">{form.formState.errors.lastName.message}</p>
                         ) : null}
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">{t('fields.email')}</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                      <Label htmlFor="email" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.email')}</Label>
+                      <div className="relative group">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                         <Input
                           id="email"
                           type="email"
                           placeholder={t('placeholders.email')}
-                          className="pl-9"
+                          className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                           {...form.register("email")}
                         />
                       </div>
                       {form.formState.errors.email ? (
-                        <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+                        <p className="text-xs text-destructive ml-1">{form.formState.errors.email.message}</p>
                       ) : null}
                     </div>
                   </div>
@@ -370,20 +372,20 @@ export default function RegisterPage() {
                 {currentStep === 2 && (
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="password">{t('fields.password')}</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                      <Label htmlFor="password" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.password')}</Label>
+                      <div className="relative group">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
                           placeholder={t('placeholders.password')}
-                          className="pl-9 pr-9"
+                          className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                           {...form.register("password")}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                           aria-label={showPassword ? t('ariaLabels.hidePassword') : t('ariaLabels.showPassword')}
                         >
                           {showPassword ? (
@@ -394,27 +396,27 @@ export default function RegisterPage() {
                         </button>
                       </div>
                       {form.formState.errors.password ? (
-                        <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>
+                        <p className="text-xs text-destructive ml-1">{form.formState.errors.password.message}</p>
                       ) : null}
-                      <p className="text-xs text-foreground/50">
+                      <p className="text-xs text-muted-foreground/80 ml-1">
                         {t('passwordHint')}
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">{t('fields.confirmPassword')}</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
+                      <Label htmlFor="confirmPassword" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.confirmPassword')}</Label>
+                      <div className="relative group">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                         <Input
                           id="confirmPassword"
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder={t('placeholders.confirmPassword')}
-                          className="pl-9 pr-9"
+                          className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                           {...form.register("confirmPassword")}
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/60 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                           aria-label={showConfirmPassword ? t('ariaLabels.hideConfirmPassword') : t('ariaLabels.showConfirmPassword')}
                         >
                           {showConfirmPassword ? (
@@ -425,20 +427,20 @@ export default function RegisterPage() {
                         </button>
                       </div>
                       {form.formState.errors.confirmPassword ? (
-                        <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>
+                        <p className="text-xs text-destructive ml-1">{form.formState.errors.confirmPassword.message}</p>
                       ) : null}
                     </div>
                   </div>
                 )}
 
                 {/* Boutons de navigation */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-2">
                   {currentStep > 1 && (
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handlePrevious}
-                      className="flex-1"
+                      className="flex-1 h-11"
                       disabled={isLoading}
                     >
                       <ChevronLeft className="h-4 w-4 mr-2" />
@@ -448,7 +450,7 @@ export default function RegisterPage() {
                   <Button
                     type={isLastStep ? "submit" : "button"}
                     onClick={!isLastStep ? handleNext : undefined}
-                    className={cn("flex-1 gap-2", currentStep === 1 && "ml-auto")}
+                    className={cn("flex-1 gap-2 h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all", currentStep === 1 && "ml-auto")}
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -468,28 +470,31 @@ export default function RegisterPage() {
                 </div>
               </form>
 
-              <div className="space-y-3 text-center text-sm text-foreground/60">
-                <Separator />
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-px bg-border"></div>
-                  <span className="text-xs text-muted-foreground">{tAuth('orContinueWith')}</span>
-                  <div className="flex-1 h-px bg-border"></div>
+              <div className="space-y-4 text-center text-sm text-foreground/60 pt-2">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground font-medium">{tAuth('orContinueWith')}</span>
+                  </div>
                 </div>
+                
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full hover:bg-primary hover:text-white"
+                  className="w-full h-11 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium transition-all"
                   onClick={handleGoogleLogin}
                   disabled={isGoogleLoading || isLoading}
                 >
                   {isGoogleLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                       {tAuth('processing')}
                     </>
                   ) : (
                     <>
-                      <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                         <path
                           fill="#4285F4"
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -511,24 +516,26 @@ export default function RegisterPage() {
                     </>
                   )}
                 </Button>
-                <p>
-                  {t('alreadyHaveAccount')} {" "}
-                  <Link href="/login" className="text-primary hover:underline">
-                    {t('signInLink')}
-                  </Link>
-                </p>
               </div>
             </CardContent>
+            <div className="p-6 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
+              <p className="text-sm text-muted-foreground">
+                {t('alreadyHaveAccount')} {" "}
+                <Link href="/login" className="text-primary font-semibold hover:underline">
+                  {t('signInLink')}
+                </Link>
+              </p>
+            </div>
           </Card>
-          <p className="mt-6 text-center text-xs text-foreground/50">
+          <p className="text-center text-xs text-muted-foreground/60 px-4">
             {locale === 'fr' ? (
               <>
                 En créant un compte, vous acceptez nos{' '}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   conditions d'utilisation
                 </Link>
                 {' '}et notre{' '}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link href="/privacy" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   politique de confidentialité
                 </Link>
                 .
@@ -536,11 +543,11 @@ export default function RegisterPage() {
             ) : (
               <>
                 By creating an account, you agree to our{' '}
-                <Link href="/terms" className="text-primary hover:underline">
+                <Link href="/terms" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   terms of use
                 </Link>
                 {' '}and{' '}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <Link href="/privacy" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
                   privacy policy
                 </Link>
                 .

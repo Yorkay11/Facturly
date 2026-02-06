@@ -11,7 +11,8 @@ interface LoadingContextType {
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
-  const [isLoading, setIsLoading] = useState(false);
+  // Initialiser à true pour éviter le flash de contenu au chargement
+  const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
   const setLoading = useCallback((loading: boolean, message?: string) => {

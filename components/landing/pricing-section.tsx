@@ -194,7 +194,7 @@ export function PricingSection() {
                   }}
                 >
                   <Button
-                    className={`w-full py-3 rounded-md font-medium text-sm transition-all duration-300 ${
+                    className={`w-full py-3 rounded-full font-medium text-sm transition-all duration-300 ${
                       plan.popular
                         ? "bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-lg hover:shadow-xl"
                         : plan.name === "Gratuit"

@@ -41,6 +41,10 @@
   }
 }
 
+input, textarea {
+  font-size: 16px !important;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }

@@ -39,8 +39,7 @@ export const MacbookScroll = ({
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start start", "end start"],
-    layoutEffect: false,
+    offset: ["start start", "end start"]
   });
 
   const [isMobile, setIsMobile] = useState(false);
@@ -51,56 +50,48 @@ export const MacbookScroll = ({
     }
   }, []);
 
-  const easeOut = [0.33, 1, 0.68, 1] as const;
-
   const scaleX = useTransform(
     scrollYProgress,
     [0, 0.4],
-    [1.2, isMobile ? 1 : 1.5],
-    { ease: easeOut }
+    [1.2, isMobile ? 1 : 1.5]
   );
   const scaleY = useTransform(
     scrollYProgress,
     [0, 0.4],
-    [0.6, isMobile ? 1 : 1.5],
-    { ease: easeOut }
+    [0.6, isMobile ? 1 : 1.5]
   );
   const translate = useTransform(
     scrollYProgress,
     [0, 0.5],
-    [0, 800],
-    { ease: easeOut }
+    [0, 800]
   );
   const rotate = useTransform(
     scrollYProgress,
     [0.08, 0.25, 0.5],
-    [-26, -26, 0],
-    { ease: easeOut }
+    [-26, -26, 0]
   );
   const textTransform = useTransform(
     scrollYProgress,
     [0, 0.35],
-    [0, 80],
-    { ease: easeOut }
+    [0, 80]
   );
   const textOpacity = useTransform(
     scrollYProgress,
     [0, 0.3],
-    [1, 0],
-    { ease: easeOut }
+    [1, 0]
   );
 
   return (
     <div
       ref={ref}
-      className="flex min-h-[160vh] shrink-0 scale-[0.35] transform flex-col items-center justify-start py-0 [perspective:800px] [contain:paint] sm:scale-50 md:scale-100 md:py-80"
+      className="flex min-h-[160vh] h-full shrink-0 scale-[0.35] transform flex-col items-center justify-start py-0 [perspective:1200px] [contain:paint] sm:scale-50 md:scale-100 md:pt-20 md:pb-40" 
     >
       <motion.h2
         style={{
           translateY: textTransform,
           opacity: textOpacity,
         }}
-        className="mb-20 text-center text-3xl font-bold text-neutral-800 dark:text-white"
+        className="mb-20 text-center text-4xl font-bold text-neutral-800 dark:text-white"
       >
         {title || (
           <span>

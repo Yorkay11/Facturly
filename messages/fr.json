@@ -1712,6 +1712,8 @@
     "waitlist": {
       "title": "Rejoignez la liste d'attente",
       "subtitle": "Nous ouvrons les accès progressivement pour garantir la meilleure expérience. Soyez parmi les premiers à être informés.",
+      "benefit1": "Accès prioritaire aux nouvelles fonctionnalités avant la sortie publique.",
+      "benefit2": "Rejoignez une communauté de early adopters et influencez notre roadmap produit.",
       "cta": "Rejoindre la liste d'attente",
       "fields": {
         "name": "Nom de votre entreprise (optionnel)",

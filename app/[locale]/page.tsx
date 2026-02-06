@@ -171,7 +171,7 @@ export default async function LandingPage() {
         <div className="relative z-10 flex flex-col w-full h-full gap-y-24 items-center mx-auto max-w-[1320px]" >
           <main className="max-w-[1320px] relative px-4 md:px-0 mb-20" id="hero-container">
             <HeroSection />
-            <div className="flex items-center justify-center w-full z-30 mt-8">
+            <div className="flex items-center justify-start w-full z-30 h-full">
               <MacbookScrollDemo />
             </div>
           </main>

@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useTranslations } from 'next-intl'
 import { cn } from "@/lib/utils"
 import { HeroFeatures } from "./hero-features"
-import RippleGrid from "./ripple-grid"
+import { DotPattern } from "@/components/ui/dot-pattern"
 import SplitText from "@/components/ui/split-text"
 import { useWaitlist } from "@/contexts/WaitlistContext"
 
@@ -67,17 +67,17 @@ export function HeroSection() {
       {/* Gradient doux en arrière-plan */}
       <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/10 via-background/60 to-primary/30" />
       
-      {/* Fond Interactif : RippleGrid */}
-      <div className="absolute inset-0 z-0 pointer-events-auto">
-        <RippleGrid
-          enableRainbow={true}
-          gridColor="#D89EFF"
-          rippleIntensity={0.02} // Légèrement réduit pour plus de subtilité
-          gridSize={10}
-          mouseInteraction={true}
-          opacity={0.25}
-          gridThickness={100}
-        />
+      {/* DotPattern centré avec opacité réduite */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
+        <div
+          className="h-full w-full max-w-3xl"
+          style={{
+            maskImage: "radial-gradient(400px circle at center, white, transparent)",
+            WebkitMaskImage: "radial-gradient(400px circle at center, white, transparent)",
+          }}
+        >
+          <DotPattern className="h-full w-full " />
+        </div>
       </div>
       
       {/* Overlay SVG optimisé */}
@@ -141,7 +141,7 @@ export function HeroSection() {
                 prefetch()
               }
             }}
-            className="relative z-20 h-14 px-10 rounded-lg bg-primary text-primary-foreground text-lg font-semibold shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:scale-105 transition-all duration-300 shimmer-effect"
+            className="relative z-20 h-14 px-10 rounded-full bg-primary text-primary-foreground text-lg font-semibold shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:scale-105 transition-all duration-300 shimmer-effect"
           >
             <span className="relative z-10">{buttonText}</span>
           </Button>

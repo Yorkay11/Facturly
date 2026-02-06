@@ -68,7 +68,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
           <Link href={buttonHref} onClick={handleCTAClick} className="hidden md:block">
-            <Button className="relative bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-2 rounded-lg font-medium shadow-sm overflow-hidden group">
+            <Button className="relative bg-secondary text-secondary-foreground hover:bg-secondary/90 px-6 py-2 rounded-full font-medium shadow-sm overflow-hidden group">
               <span className="relative z-10">{buttonText}</span>
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent"></span>
             </Button>

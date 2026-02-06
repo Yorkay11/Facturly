@@ -1706,6 +1706,8 @@
     "waitlist": {
       "title": "Join the waitlist",
       "subtitle": "We are opening access progressively to ensure the best experience. Be among the first to be notified.",
+      "benefit1": "Get priority access to new features and updates before public release.",
+      "benefit2": "Join a community of early adopters and help influence our product roadmap.",
       "cta": "Join the waitlist",
       "fields": {
         "name": "Your business name (optional)",

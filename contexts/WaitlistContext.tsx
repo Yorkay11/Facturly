@@ -1,19 +1,13 @@
 "use client"
 
-import React, { createContext, useContext, useState, lazy, Suspense, useEffect, startTransition } from "react"
+import React, { createContext, useContext, useState, useEffect, startTransition } from "react"
+import { WaitlistExpandable } from "@/components/landing/waitlist-expandable"
 
 interface WaitlistContextType {
   openWaitlist: () => void
 }
 
 const WaitlistContext = createContext<WaitlistContextType | undefined>(undefined)
-
-// Lazy load du modal pour améliorer les performances
-const WaitlistModal = lazy(() => 
-  import("@/components/landing/waitlist-modal").then(module => ({ 
-    default: module.WaitlistModal 
-  }))
-)
 
 export function WaitlistProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -47,12 +41,7 @@ export function WaitlistProvider({ children }: { children: React.ReactNode }) {
   return (
     <WaitlistContext.Provider value={{ openWaitlist }}>
       {children}
-      {/* Ne charger le modal que quand il est ouvert */}
-      {isOpen && (
-        <Suspense fallback={null}>
-          <WaitlistModal isOpen={isOpen} onClose={closeWaitlist} />
-        </Suspense>
-      )}
+      <WaitlistExpandable isOpen={isOpen} onClose={closeWaitlist} />
     </WaitlistContext.Provider>
   )
 }

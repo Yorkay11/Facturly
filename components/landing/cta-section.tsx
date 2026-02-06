@@ -151,7 +151,7 @@ export function CTASection() {
         
         <Link href={buttonHref} onClick={handleClick}>
           <Button
-            className="px-[30px] py-2 bg-secondary text-secondary-foreground text-base font-medium leading-6 rounded-[99px] shadow-[0px_0px_0px_4px_rgba(255,255,255,0.13)] hover:bg-secondary/90 transition-all duration-200"
+            className="px-[30px] py-2 bg-secondary text-secondary-foreground text-base font-medium leading-6 rounded-full shadow-[0px_0px_0px_4px_rgba(255,255,255,0.13)] hover:bg-secondary/90 transition-all duration-200"
             size="lg"
           >
             {buttonText}

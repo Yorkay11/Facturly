@@ -186,7 +186,7 @@ function LoginForm() {
                       id="email"
                       type="email"
                       placeholder="vous@entreprise.com"
-                      className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                      className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-[background-color,border-color] duration-150"
                       {...form.register("email")}
                     />
                   </div>

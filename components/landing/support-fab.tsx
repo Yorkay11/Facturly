@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { MessageCircle, X } from "lucide-react"
+import { X } from "lucide-react"
 import { FaWhatsapp } from "react-icons/fa"
 import { AnimatePresence, motion } from "motion/react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export function SupportFab() {
   const [isOpen, setIsOpen] = useState(false)
@@ -101,7 +102,7 @@ export function SupportFab() {
 
       <Button
         size="icon"
-        className="h-14 w-14 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95"
+        className="h-14 w-14 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 bg-primary hover:bg-primary/90 overflow-hidden"
         onClick={() => setIsOpen(!isOpen)}
       >
         <AnimatePresence mode="wait">
@@ -112,18 +113,27 @@ export function SupportFab() {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: 90, opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="flex items-center justify-center"
             >
-              <X className="h-6 w-6" />
+              <X className="h-6 w-6 text-primary-foreground" />
             </motion.div>
           ) : (
             <motion.div
-              key="chat"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
+              key="fury"
+              initial={{ rotate: 90, opacity: 0, scale: 0.8 }}
+              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+              exit={{ rotate: -90, opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
+              className="flex items-center justify-center w-full h-full"
             >
-              <MessageCircle className="h-6 w-6" />
+              <Image
+                src="/mascot/fury_happy.webp"
+                alt="FURY - Support"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover"
+                priority
+              />
             </motion.div>
           )}
         </AnimatePresence>

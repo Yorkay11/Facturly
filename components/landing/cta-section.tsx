@@ -8,6 +8,7 @@ import { useGetBetaAccessInfoQuery } from "@/services/facturlyApi"
 import { useTranslations } from 'next-intl'
 import { FaUsers } from "react-icons/fa6"
 import { useWaitlist } from "@/contexts/WaitlistContext"
+import { FuryMascot } from "@/components/mascot/FuryMascot"
 
 export function CTASection() {
   const router = useRouter()
@@ -129,6 +130,9 @@ export function CTASection() {
       </div>
       <div className="relative z-20 flex flex-col justify-start items-center gap-9 max-w-4xl mx-auto">
         <div className="flex flex-col justify-start items-center gap-4 text-center">
+          <div className="mb-2">
+            <FuryMascot mood="happy" size="lg" />
+          </div>
           <h2 className="text-foreground text-4xl md:text-5xl lg:text-[68px] font-semibold leading-tight md:leading-tight lg:leading-[76px] break-words max-w-[435px]">
             {t('title')}
           </h2>

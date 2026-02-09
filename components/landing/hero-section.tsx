@@ -11,6 +11,7 @@ import { HeroFeatures } from "./hero-features"
 import { DotPattern } from "@/components/ui/dot-pattern"
 import SplitText from "@/components/ui/split-text"
 import { useWaitlist } from "@/contexts/WaitlistContext"
+import { FuryMascot } from "@/components/mascot/FuryMascot"
 
 // Composant mémoïsé pour éviter de re-render la grille complexe
 const StaticGridBackground = memo(() => (

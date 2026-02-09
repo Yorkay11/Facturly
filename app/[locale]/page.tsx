@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from 'next-intl/server';
 import { HeroSection } from "@/components/landing/hero-section"
-import { MacbookScrollDemo } from "@/components/landing/macbook-scroll-demo"
+import { HeroScrollDemo } from "@/components/landing/hero-scroll-demo"
 import { CountriesBanner } from "@/components/landing/countries-banner"
 import { InteractiveDemo } from "@/components/landing/interactive-demo"
 import { VideoCarousel } from "@/components/landing/video-carousel"
@@ -169,13 +169,13 @@ export default async function LandingPage() {
       />
       <CountriesBanner />
       <div className="flex flex-col min-h-screen bg-background relative overflow-hidden pb-0 pt-16 md:pt-20">
-        <div className="relative z-10 flex flex-col w-full h-full gap-y-24 items-center mx-auto max-w-[1320px]" >
-          <main className="max-w-[1320px] relative px-4 md:px-0 mb-20" id="hero-container">
+        <main className="relative z-10 flex flex-col w-full h-full gap-y-24 items-center mx-auto max-w-[1320px]">
+          <div className="max-w-[1320px] relative px-4 md:px-0 mb-20" id="hero-container">
             <HeroSection />
             <div className="flex items-center justify-start w-full z-30 h-full">
-              <MacbookScrollDemo />
+              <HeroScrollDemo />
             </div>
-          </main>
+          </div>
           <AnimatedSection className="relative z-10  " delay={0.2}>
             <VideoCarousel />
           </AnimatedSection>
@@ -207,7 +207,7 @@ export default async function LandingPage() {
           <AnimatedSection className="relative z-10   w-full" delay={0.2}>
             <FooterSection />
           </AnimatedSection>
-        </div>
+        </main>
       </div>
       <SupportFab />
     </WaitlistProvider>

@@ -96,7 +96,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
@@ -148,6 +148,24 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className} suppressHydrationWarning>
+        {/* Script pour mettre à jour dynamiquement l'attribut lang basé sur la locale */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Extraire la locale de l'URL
+                const pathname = window.location.pathname;
+                const localeMatch = pathname.match(/^\/(fr|en)(\/|$)/);
+                const locale = localeMatch ? localeMatch[1] : 'fr';
+                
+                // Mettre à jour l'attribut lang du document
+                if (document.documentElement) {
+                  document.documentElement.lang = locale;
+                }
+              })();
+            `,
+          }}
+        />
         {/* Loader initial professionnel - DÉSACTIVÉ */}
         {/* <div id="initial-loader" style={{
           position: 'fixed',

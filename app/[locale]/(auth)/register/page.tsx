@@ -216,7 +216,7 @@ export default function RegisterPage() {
                         id="firstName"
                         type="text"
                         placeholder={t('placeholders.firstName')}
-                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-[background-color,border-color] duration-150"
                         {...form.register("firstName")}
                       />
                     </div>
@@ -232,7 +232,7 @@ export default function RegisterPage() {
                         id="lastName"
                         type="text"
                         placeholder={t('placeholders.lastName')}
-                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-[background-color,border-color] duration-150"
                         {...form.register("lastName")}
                       />
                     </div>

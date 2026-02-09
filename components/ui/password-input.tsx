@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useDeferredValue } from 'react';
 import { CheckCheck, Eye, EyeOff, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -66,15 +66,19 @@ export function PasswordInput({
 }: PasswordInputProps) {
   const [isVisible, setIsVisible] = useState(false);
   const t = useTranslations(translationNamespace);
+  
+  // Utiliser useDeferredValue pour différer le calcul de la force du mot de passe
+  // Cela évite de bloquer le rendu pendant la saisie
+  const deferredValue = useDeferredValue(value);
 
   const strength = useMemo((): PasswordStrength => {
     const requirements: Requirement[] = PASSWORD_REQUIREMENTS.map((req) => ({
-      met: req.regex.test(value),
+      met: req.regex.test(deferredValue),
       text: t(req.key),
     }));
     const score = requirements.filter((r) => r.met).length as StrengthScore;
     return { score, requirements };
-  }, [value, t]);
+  }, [deferredValue, t]);
 
   const strengthLabel =
     strength.score === 0
@@ -86,7 +90,7 @@ export function PasswordInput({
           : strength.score === 3
             ? t('medium')
             : t('weak');
-  const isInvalid = strength.score < minStrength && value.length > 0;
+  const isInvalid = strength.score < minStrength && deferredValue.length > 0;
 
   return (
     <div className={cn(compact ? 'space-y-1.5' : 'space-y-2', className)}>
@@ -108,7 +112,7 @@ export function PasswordInput({
           aria-invalid={isInvalid || !!error}
           aria-describedby={`${id}-strength ${id}-requirements`}
           className={cn(
-            'bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200',
+            'bg-gray-50 border-gray-200 focus:bg-white transition-[background-color,border-color] duration-150',
             compact ? 'pl-9 pr-9 h-9 text-sm' : 'pl-10 pr-10 h-11',
             (error || isInvalid) && 'border-destructive focus-visible:ring-destructive',
             inputClassName

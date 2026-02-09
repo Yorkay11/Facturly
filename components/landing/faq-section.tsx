@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { FaChevronDown } from "react-icons/fa6"
 import { useTranslations } from 'next-intl'
+import { FuryMascot } from "@/components/mascot/FuryMascot"
 
 interface FAQItemProps {
   question: string
@@ -87,6 +88,9 @@ export function FAQSection() {
       <div className="w-[300px] h-[500px] absolute top-[150px] left-1/2 -translate-x-1/2 origin-top-left rotate-[-33.39deg] bg-primary/10 blur-[100px] z-0" />
       <div className="self-stretch pt-8 pb-8 md:pt-14 md:pb-14 flex flex-col justify-center items-center gap-2 relative z-10">
         <div className="flex flex-col justify-start items-center gap-4">
+          <div className="mb-2">
+            <FuryMascot mood="focus" size="md" />
+          </div>
           <h2 className="w-full max-w-[435px] text-center text-foreground text-4xl font-semibold leading-10 break-words">
             {t('title')}
           </h2>

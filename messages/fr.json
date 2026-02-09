@@ -111,6 +111,24 @@
         "showConfirmPassword": "Afficher la confirmation du mot de passe",
         "hideConfirmPassword": "Masquer la confirmation du mot de passe"
       },
+      "passwordStrength": {
+        "mustContain": "Doit contenir :",
+        "enterPassword": "Saisir un mot de passe",
+        "weak": "Mot de passe faible",
+        "medium": "Mot de passe moyen",
+        "strong": "Mot de passe fort",
+        "veryStrong": "Mot de passe très fort",
+        "showPassword": "Afficher le mot de passe",
+        "hidePassword": "Masquer le mot de passe",
+        "requirementsLabel": "Exigences du mot de passe",
+        "requirementMet": "Exigence remplie",
+        "requirementNotMet": "Exigence non remplie",
+        "requirementMinLength": "Au moins 8 caractères",
+        "requirementNumber": "Au moins 1 chiffre",
+        "requirementLowercase": "Au moins 1 lettre minuscule",
+        "requirementUppercase": "Au moins 1 lettre majuscule",
+        "requirementSpecial": "Au moins 1 caractère spécial"
+      },
       "validation": {
         "firstNameMinLength": "Le prénom doit contenir au moins 2 caractères",
         "lastNameMinLength": "Le nom doit contenir au moins 2 caractères",
@@ -120,8 +138,7 @@
         "passwordUppercase": "Le mot de passe doit contenir au moins une majuscule",
         "passwordLowercase": "Le mot de passe doit contenir au moins une minuscule",
         "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
-        "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
-        "passwordsMismatch": "Les mots de passe ne correspondent pas",
+        "passwordSpecial": "Le mot de passe doit contenir au moins un caractère spécial (!@#$%^&*...)",
         "companyNameMinLength": "Le nom de l'entreprise doit contenir au moins 2 caractères"
       },
       "toasts": {
@@ -213,6 +230,25 @@
     "products": "Prestations",
     "catalogAndPricing": "Catalogue et tarifs",
     "configuration": "Configuration",
+    "addProductDescription": "Ajouter un produit au catalogue",
+    "emptyState": {
+      "title": "Bienvenue sur votre tableau de bord !",
+      "description": "C'est ici que vous pourrez suivre votre activité. Pour commencer, créez votre première facture ou ajoutez un client.",
+      "createInvoice": "Créer une facture",
+      "addClient": "Ajouter un client",
+      "step1": {
+        "title": "1. Facturez",
+        "description": "Créez des factures professionnelles en quelques secondes."
+      },
+      "step2": {
+        "title": "2. Envoyez",
+        "description": "Envoyez vos factures par email ou lien sécurisé."
+      },
+      "step3": {
+        "title": "3. Encaissez",
+        "description": "Suivez vos paiements et relancez les impayés."
+      }
+    },
     "resources": "Ressources",
     "documentation": "Documentation",
     "support": "Support",
@@ -349,6 +385,7 @@
     "table": {
       "number": "Numéro",
       "client": "Client",
+      "noClient": "Sans client",
       "issueDate": "Date émission",
       "dueDate": "Date échéance",
       "status": "Statut",
@@ -403,7 +440,11 @@
       "customHtmlDescription": "Insérez du HTML personnalisé pour une mise en page avancée (à utiliser avec précaution).",
       "cancel": "Annuler",
       "saving": "Enregistrement...",
-      "update": "Mettre à jour"
+      "update": "Mettre à jour",
+      "validation": {
+        "nameRequired": "Le nom est requis",
+        "invalidHexColor": "Couleur hex invalide"
+      }
     },
     "new": {
       "label": "Nouvelle facture",
@@ -468,6 +509,11 @@
         "success": "Facture dupliquée",
         "successDescription": "La facture #{number} a été dupliquée. Vous pouvez modifier le montant.",
         "error": "Erreur lors de la duplication"
+      },
+      "validation": {
+        "clientRequired": "Client requis",
+        "amountRequired": "Montant requis",
+        "amountInvalid": "Montant invalide"
       }
     },
     "tutorial": {
@@ -518,6 +564,28 @@
         "sending": "Envoi de la facture...",
         "updating": "Mise à jour de la facture...",
         "creating": "Création de la facture..."
+      },
+      "advanced": {
+        "title": "Options avancées",
+        "recurring": {
+          "label": "Facture récurrente",
+          "frequency": "Fréquence",
+          "frequencyMonthly": "Mensuelle",
+          "frequencyQuarterly": "Trimestrielle",
+          "frequencyYearly": "Annuelle",
+          "dayOfMonth": "Jour du mois (1-31)",
+          "endDate": "Date de fin (optionnel)",
+          "endDateOptional": "Aucune (sans fin)",
+          "autoSend": "Envoyer automatiquement la facture générée par e-mail",
+          "recipientEmail": "E-mail du destinataire",
+          "recipientEmailPlaceholder": "email@exemple.com",
+          "notificationDaysBefore": "Notification (jours avant génération)",
+          "createAction": "Créer la facture récurrente",
+          "createSuccess": "Facture récurrente créée. Les factures seront générées automatiquement.",
+          "createError": "Impossible de créer la facture récurrente.",
+          "creating": "Création en cours...",
+          "submitButton": "Créer la facture récurrente"
+        }
       },
       "sections": {
         "invoiceInfo": {
@@ -857,6 +925,7 @@
       },
       "buttons": {
         "edit": "Modifier",
+        "editAndResend": "Modifier et renvoyer",
         "sendAsQuote": "Envoyer comme devis",
         "copyPublicLink": "Copier le lien public",
         "copyPaymentLink": "Copier le lien de paiement",
@@ -983,6 +1052,11 @@
   "clients": {
     "title": "Clients",
     "subtitle": "Gérez votre carnet d'adresses, consultez l'historique des factures et préparez vos relances.",
+    "buttons": {
+      "new": "Nouveau client",
+      "importCsv": "Importer CSV"
+    },
+    "new": "Nouveau client",
     "new": "Nouveau client",
     "add": "Ajouter un client",
     "edit": "Modifier le client",
@@ -1029,6 +1103,7 @@
       "description": "Remplissez les informations essentielles du client. Les champs marqués d'un astérisque (*) sont obligatoires.",
       "editDescription": "Modifiez les informations du client. Les champs marqués d'un astérisque (*) sont obligatoires.",
       "addressSection": "Adresse (optionnel)",
+      "advancedOptions": "Options avancées",
       "tabs": {
         "informations": "Informations",
         "adresse": "Adresse",
@@ -3325,6 +3400,11 @@
     "errors": {
       "loadingError": "Erreur lors du chargement des factures récurrentes"
     },
+    "notFound": {
+      "title": "Facture récurrente introuvable",
+      "description": "Cette facture récurrente n'existe pas ou vous n'avez pas les droits pour la modifier.",
+      "backToList": "Retour à la liste"
+    },
     "form": {
       "createTitle": "Créer une facture récurrente",
       "editTitle": "Modifier la facture récurrente",
@@ -3336,6 +3416,10 @@
       "createClient": "Créer un client",
       "name": "Nom",
       "namePlaceholder": "Ex: Facture mensuelle - Abonnement",
+      "currency": "Devise",
+      "selectCurrency": "Choisir une devise",
+      "template": "Modèle de facture",
+      "selectTemplate": "Choisir un modèle",
       "frequency": "Fréquence",
       "frequencyOptions": {
         "monthly": "Mensuelle",
@@ -3366,7 +3450,16 @@
       "update": "Mettre à jour",
       "createSuccess": "Facture récurrente créée avec succès",
       "updateSuccess": "Facture récurrente mise à jour avec succès",
-      "error": "Erreur lors de l'enregistrement"
+      "error": "Erreur lors de l'enregistrement",
+      "validation": {
+        "clientRequired": "Client requis",
+        "currencyRequired": "Devise requise",
+        "templateRequired": "Modèle requis",
+        "descriptionRequired": "Description requise",
+        "quantityRequired": "Quantité requise",
+        "unitPriceRequired": "Prix unitaire requis",
+        "atLeastOneItem": "Au moins un article est requis"
+      }
     }
   },
   "reports": {
@@ -3389,6 +3482,8 @@
     "confidenceLow": "Basse",
     "averageRevenue": "Revenu moyen",
     "totalRevenue": "Revenu total",
+    "totalClients": "Total clients",
+    "totalProducts": "Total produits",
     "growthTrend": "Tendance",
     "growthTrendIncreasing": "Croissante",
     "growthTrendDecreasing": "Décroissante",

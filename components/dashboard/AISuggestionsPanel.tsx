@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { FaMagic } from "react-icons/fa";
 import { IoArrowForwardOutline } from "react-icons/io5";
+import { Link } from '@/i18n/routing';
 
 interface Suggestion {
   id: string;
@@ -45,13 +46,13 @@ export const AISuggestionsPanel = ({ title, suggestions, className }: AISuggesti
                 </p>
               </div>
               {suggestion.actionLink && (
-                <a
+                <Link
                   href={suggestion.actionLink}
                   className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
                 >
                   {suggestion.actionLabel || "Voir"}
                   <IoArrowForwardOutline className="h-3 w-3" />
-                </a>
+                </Link>
               )}
             </div>
           </div>

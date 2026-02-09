@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { IconMail, IconX } from '@tabler/icons-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 

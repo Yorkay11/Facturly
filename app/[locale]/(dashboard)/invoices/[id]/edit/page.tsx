@@ -98,8 +98,9 @@ const InvoiceEditPage = () => {
     )
   }
 
-  // Vérifier que la facture est en brouillon
-  if (invoice.status !== "draft") {
+  // Autoriser l'édition pour brouillon ou facture annulée (modifier et renvoyer)
+  const canEdit = invoice.status === "draft" || invoice.status === "cancelled";
+  if (!canEdit) {
     return (
       <div className="space-y-4">
         <Breadcrumb
@@ -112,7 +113,7 @@ const InvoiceEditPage = () => {
         />
         <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
           <p className="font-semibold mb-2">Impossible de modifier cette facture</p>
-          <p className="mb-4">Seules les factures en brouillon peuvent être modifiées. Cette facture est actuellement en statut &quot;{invoice.status}&quot;.</p>
+          <p className="mb-4">Seules les factures en brouillon ou annulées peuvent être modifiées. Cette facture est actuellement en statut &quot;{invoice.status}&quot;.</p>
         </div>
       </div>
     )

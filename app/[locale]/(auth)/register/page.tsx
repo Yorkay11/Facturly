@@ -7,16 +7,18 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Lock, Mail, User, Building2, Eye, EyeOff, ChevronRight, ChevronLeft } from "lucide-react";
+import { Loader2, Mail, User, Building2 } from "lucide-react";
+import { Controller } from "react-hook-form";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MagicCard } from "@/components/ui/magic-card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Separator } from "@/components/ui/separator";
 import { useRegisterMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from 'next-intl';
 import { useMemo } from 'react';
 import { Redirect } from '@/components/navigation';
@@ -31,12 +33,9 @@ export default function RegisterPage() {
   const tAuth = useTranslations('auth');
   const tCommon = useTranslations('common');
   const [register, { isLoading, isSuccess, isError, error, data }] = useRegisterMutation();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Créer le schéma de validation avec les traductions dynamiques
+  // Créer le schéma de validation avec les traductions dynamiques (sans confirmation mot de passe)
   const registerSchema = useMemo(() => z.object({
     firstName: z.string().min(2, t('validation.firstNameMinLength')),
     lastName: z.string().min(2, t('validation.lastNameMinLength')),
@@ -47,28 +46,19 @@ export default function RegisterPage() {
       .max(128, t('validation.passwordMaxLength'))
       .regex(/[A-Z]/, t('validation.passwordUppercase'))
       .regex(/[a-z]/, t('validation.passwordLowercase'))
-      .regex(/[0-9]/, t('validation.passwordNumber')),
-    confirmPassword: z.string().min(1, t('validation.confirmPasswordRequired')),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: t('validation.passwordsMismatch'),
-    path: ["confirmPassword"],
+      .regex(/[0-9]/, t('validation.passwordNumber'))
+      .regex(/[!-\/:-@[-`{-~]/, t('validation.passwordSpecial')),
   }), [t]);
 
   type RegisterFormValues = z.infer<typeof registerSchema>;
 
-  const steps = [
-    { id: 1, label: t('steps.personalInfo') },
-    { id: 2, label: t('steps.security') },
-  ];
-
   const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema as any),
+    resolver: zodResolver(registerSchema as z.ZodType<RegisterFormValues>),
     defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
@@ -146,84 +136,20 @@ export default function RegisterPage() {
         to={redirectPath}
         type="replace"
         checkUnsavedChanges={false}
-        showLoader={true}
-        loaderType="processing"
-        delay={500}
+        showLoader={false} // Désactiver le loader interne de Redirect car GlobalLoader prend le relais
+        delay={0}
       />
     );
   }
 
-  const handleNext = async () => {
-    // Valider les champs de l'étape 1 avant de passer à l'étape 2
-    if (currentStep === 1) {
-      const fieldsToValidate: (keyof RegisterFormValues)[] = ["firstName", "lastName", "email"];
-      
-      // Déclencher la validation et attendre le résultat
-      const isValid = await form.trigger(fieldsToValidate);
-      
-      if (isValid) {
-        setCurrentStep(2);
-        // Scroll to top pour voir la nouvelle étape
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }, 100);
-      } else {
-        // Attendre un peu pour que les erreurs soient mises à jour dans le DOM
-        await new Promise(resolve => setTimeout(resolve, 50));
-        
-        // Trouver le premier champ avec une erreur et le mettre en focus
-        const errors = form.formState.errors;
-        const firstErrorField = fieldsToValidate.find(field => errors[field]);
-        
-        if (firstErrorField) {
-          // Attendre un peu plus pour que le DOM soit mis à jour avec les erreurs
-          setTimeout(() => {
-            const fieldElement = document.getElementById(firstErrorField);
-            if (fieldElement) {
-              fieldElement.focus();
-              fieldElement.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-          }, 100);
-          
-          const errorMessage = errors[firstErrorField]?.message || "Erreur de validation";
-          toast.error("Erreur de validation", {
-            description: errorMessage,
-          });
-        } else {
-          toast.error("Veuillez remplir tous les champs obligatoires");
-        }
-      }
-    }
+  const onSubmit = (values: RegisterFormValues) => {
+    register({
+      email: values.email,
+      password: values.password,
+      firstName: values.firstName,
+      lastName: values.lastName,
+    });
   };
-
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      // Scroll to top pour voir la nouvelle étape
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const onSubmit = async (values: RegisterFormValues) => {
-    // Sur la dernière étape uniquement, soumettre le formulaire
-    if (currentStep === steps.length) {
-      // Valider tous les champs avant de soumettre
-      const isValid = await form.trigger();
-      if (!isValid) {
-        toast.error(t('toasts.correctErrors'));
-        return;
-      }
-
-      register({
-        email: values.email,
-        password: values.password,
-        firstName: values.firstName,
-        lastName: values.lastName,
-      });
-    }
-  };
-
-  const isLastStep = currentStep === steps.length;
 
   const handleGoogleLogin = () => {
     setIsGoogleLoading(true);
@@ -272,218 +198,114 @@ export default function RegisterPage() {
             />
           </div>
 
-          <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl">
-            <CardHeader className="space-y-1 text-center pb-8">
-              <CardTitle className="text-2xl font-bold tracking-tight">{t('cardTitle')}</CardTitle>
-              <CardDescription className="text-muted-foreground text-sm">
+          <MagicCard className="border-none shadow-2xl bg-white/80 backdrop-blur-xl">
+            <CardHeader className="space-y-0.5 text-center pb-4 pt-6 px-6">
+              <CardTitle className="text-xl font-bold tracking-tight">{t('cardTitle')}</CardTitle>
+              <CardDescription className="text-muted-foreground text-xs">
                 {t('cardDescription')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Indicateur de progression */}
-              <div className="flex items-center justify-center gap-2 mb-8">
-                {steps.map((step, index) => (
-                  <div key={step.id} className="flex items-center">
-                    <div
-                      className={cn(
-                        "h-2 rounded-full transition-all duration-300",
-                        index + 1 === currentStep
-                          ? "w-8 bg-primary shadow-lg shadow-primary/25"
-                          : index + 1 < currentStep
-                          ? "w-2 bg-primary/50"
-                          : "w-2 bg-muted-foreground/20"
-                      )}
-                    />
-                    {index < steps.length - 1 && (
-                      <div
-                        className={cn(
-                          "h-0.5 w-4 transition-all duration-300 mx-1",
-                          index + 1 < currentStep ? "bg-primary/50" : "bg-muted-foreground/20"
-                        )}
+            <CardContent className="space-y-4 px-6 pb-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="firstName" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('fields.firstName')}</Label>
+                    <div className="relative group">
+                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder={t('placeholders.firstName')}
+                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                        {...form.register("firstName")}
                       />
-                    )}
+                    </div>
+                    {form.formState.errors.firstName ? (
+                      <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.firstName.message}</p>
+                    ) : null}
                   </div>
-                ))}
-              </div>
-
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" onKeyDown={async (e) => {
-                if (e.key === "Enter" && !isLastStep) {
-                  e.preventDefault();
-                  await handleNext();
-                }
-              }}>
-                {/* Étape 1 : Informations personnelles */}
-                {currentStep === 1 && (
-                  <div className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.firstName')}</Label>
-                        <div className="relative group">
-                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                          <Input
-                            id="firstName"
-                            type="text"
-                            placeholder={t('placeholders.firstName')}
-                            className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
-                            {...form.register("firstName")}
-                          />
-                        </div>
-                        {form.formState.errors.firstName ? (
-                          <p className="text-xs text-destructive ml-1">{form.formState.errors.firstName.message}</p>
-                        ) : null}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.lastName')}</Label>
-                        <div className="relative group">
-                          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                          <Input
-                            id="lastName"
-                            type="text"
-                            placeholder={t('placeholders.lastName')}
-                            className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
-                            {...form.register("lastName")}
-                          />
-                        </div>
-                        {form.formState.errors.lastName ? (
-                          <p className="text-xs text-destructive ml-1">{form.formState.errors.lastName.message}</p>
-                        ) : null}
-                      </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="lastName" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('fields.lastName')}</Label>
+                    <div className="relative group">
+                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder={t('placeholders.lastName')}
+                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                        {...form.register("lastName")}
+                      />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.email')}</Label>
-                      <div className="relative group">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder={t('placeholders.email')}
-                          className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
-                          {...form.register("email")}
-                        />
-                      </div>
-                      {form.formState.errors.email ? (
-                        <p className="text-xs text-destructive ml-1">{form.formState.errors.email.message}</p>
-                      ) : null}
-                    </div>
+                    {form.formState.errors.lastName ? (
+                      <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.lastName.message}</p>
+                    ) : null}
                   </div>
-                )}
-
-                {/* Étape 2 : Sécurité */}
-                {currentStep === 2 && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.password')}</Label>
-                      <div className="relative group">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder={t('placeholders.password')}
-                          className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
-                          {...form.register("password")}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
-                          aria-label={showPassword ? t('ariaLabels.hidePassword') : t('ariaLabels.showPassword')}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      {form.formState.errors.password ? (
-                        <p className="text-xs text-destructive ml-1">{form.formState.errors.password.message}</p>
-                      ) : null}
-                      <p className="text-xs text-muted-foreground/80 ml-1">
-                        {t('passwordHint')}
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('fields.confirmPassword')}</Label>
-                      <div className="relative group">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                        <Input
-                          id="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder={t('placeholders.confirmPassword')}
-                          className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
-                          {...form.register("confirmPassword")}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
-                          aria-label={showConfirmPassword ? t('ariaLabels.hideConfirmPassword') : t('ariaLabels.showConfirmPassword')}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      {form.formState.errors.confirmPassword ? (
-                        <p className="text-xs text-destructive ml-1">{form.formState.errors.confirmPassword.message}</p>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
-
-                {/* Boutons de navigation */}
-                <div className="flex gap-3 pt-2">
-                  {currentStep > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handlePrevious}
-                      className="flex-1 h-11"
-                      disabled={isLoading}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-2" />
-                      {t('buttons.previous')}
-                    </Button>
-                  )}
-                  <Button
-                    type={isLastStep ? "submit" : "button"}
-                    onClick={!isLastStep ? handleNext : undefined}
-                    className={cn("flex-1 gap-2 h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all", currentStep === 1 && "ml-auto")}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        {t('buttons.creating')}
-                      </>
-                    ) : isLastStep ? (
-                      t('buttons.createAccount')
-                    ) : (
-                      <>
-                        {t('buttons.next')}
-                        <ChevronRight className="h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
                 </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('fields.email')}</Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={t('placeholders.email')}
+                      className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                      {...form.register("email")}
+                    />
+                  </div>
+                  {form.formState.errors.email ? (
+                    <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.email.message}</p>
+                  ) : null}
+                </div>
+                <Controller
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <PasswordInput
+                      id="password"
+                      name={field.name}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      placeholder={t('placeholders.password')}
+                      label={t('fields.password')}
+                      error={form.formState.errors.password?.message}
+                      translationNamespace="auth.register.passwordStrength"
+                      compact
+                      className="space-y-1.5"
+                    />
+                  )}
+                />
+
+                <Button
+                  type="submit"
+                  className="w-full gap-2 h-9 text-sm font-medium shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t('buttons.creating')}
+                    </>
+                  ) : (
+                    t('buttons.createAccount')
+                  )}
+                </Button>
               </form>
 
-              <div className="space-y-4 text-center text-sm text-foreground/60 pt-2">
+              <div className="space-y-3 text-center text-foreground/60 pt-1">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <Separator className="w-full" />
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
+                  <div className="relative flex justify-center text-[10px] uppercase">
                     <span className="bg-white px-2 text-muted-foreground font-medium">{tAuth('orContinueWith')}</span>
                   </div>
                 </div>
-                
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-11 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium transition-all"
+                  className="w-full h-9 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium text-sm transition-all"
                   onClick={handleGoogleLogin}
                   disabled={isGoogleLoading || isLoading}
                 >
@@ -518,15 +340,15 @@ export default function RegisterPage() {
                 </Button>
               </div>
             </CardContent>
-            <div className="p-6 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="p-4 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
+              <p className="text-xs text-muted-foreground">
                 {t('alreadyHaveAccount')} {" "}
                 <Link href="/login" className="text-primary font-semibold hover:underline">
                   {t('signInLink')}
                 </Link>
               </p>
             </div>
-          </Card>
+          </MagicCard>
           <p className="text-center text-xs text-muted-foreground/60 px-4">
             {locale === 'fr' ? (
               <>

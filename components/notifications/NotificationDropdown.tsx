@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGetNotificationsQuery, useGetUnreadNotificationsCountQuery, useMarkNotificationAsReadMutation, useMarkAllNotificationsAsReadMutation, useDeleteNotificationMutation } from '@/services/facturlyApi';
 import { NotificationList } from './NotificationList';
 import { NotificationBadge } from './NotificationBadge';
-import { cn } from '@/lib/utils';
+import { StaggeredDropdown } from '@/components/ui/staggered-dropdown';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 
 export function NotificationDropdown() {
   const t = useTranslations('notifications.dropdown');
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery(
     { page: 1, limit: 10 },
@@ -27,25 +26,9 @@ export function NotificationDropdown() {
   const notifications = notificationsResponse?.data ?? [];
   const unreadCount = unreadCountResponse?.count ?? 0;
 
-  // Fermer le dropdown si on clique en dehors
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen]);
-
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-    if (!isOpen) {
-      refetch();
-    }
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) refetch();
   };
 
   const handleMarkAsRead = async (id: string) => {
@@ -73,52 +56,50 @@ export function NotificationDropdown() {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <NotificationBadge count={unreadCount} onClick={handleToggle} />
-      
-      {isOpen && (
-        <div className={cn(
-          "absolute right-0 mt-2 w-[420px] z-50",
-          "bg-background border rounded-lg shadow-lg",
-          "animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
-          "max-h-[600px] flex flex-col overflow-hidden"
-        )}>
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
-            <h3 className="font-semibold text-sm">{t('title')}</h3>
-            {unreadCount > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {t('unread', { count: unreadCount })}
-              </span>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            <NotificationList
-              notifications={notifications}
-              onMarkAsRead={handleMarkAsRead}
-              onDelete={handleDelete}
-              onMarkAllAsRead={handleMarkAllAsRead}
-              loading={isLoading}
-            />
-          </div>
-
-          {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="border-t px-4 py-2.5 bg-muted/20">
-              <Link
-                href="/notifications"
-                className="text-xs text-primary hover:underline font-medium block text-center"
-                onClick={() => setIsOpen(false)}
-              >
-                {t('viewAll')}
-              </Link>
-            </div>
+    <StaggeredDropdown open={isOpen} onOpenChange={handleOpenChange}>
+      <StaggeredDropdown.Trigger>
+        <NotificationBadge count={unreadCount} />
+      </StaggeredDropdown.Trigger>
+      <StaggeredDropdown.Content
+        align="right"
+        sideOffset={8}
+        className="w-[420px] max-h-[600px] flex flex-col p-0"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
+          <h3 className="font-semibold text-xs">{t('title')}</h3>
+          {unreadCount > 0 && (
+            <span className="text-[11px] text-muted-foreground">
+              {t('unread', { count: unreadCount })}
+            </span>
           )}
         </div>
-      )}
-    </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <NotificationList
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onDelete={handleDelete}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            loading={isLoading}
+          />
+        </div>
+
+        {/* Footer */}
+        {notifications.length > 0 && (
+          <div className="border-t px-3 py-2 bg-muted/20 shrink-0">
+            <Link
+              href="/notifications"
+              className="text-xs text-primary hover:underline font-medium block text-center"
+              onClick={() => handleOpenChange(false)}
+            >
+              {t('viewAll')}
+            </Link>
+          </div>
+        )}
+      </StaggeredDropdown.Content>
+    </StaggeredDropdown>
   );
 }
 

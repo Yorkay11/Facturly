@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InvoiceLimit } from "@/services/facturlyApi";
 import { AlertTriangle, CheckCircle2, Infinity } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 interface InvoiceLimitCardProps {
   invoiceLimit?: InvoiceLimit;

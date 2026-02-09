@@ -35,7 +35,7 @@ export const RecentActivity = ({ items, className }: RecentActivityProps) => {
   return (
     <div className={cn("relative", className)}>
       {/* Timeline verticale */}
-      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200" />
+      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
       
       <div className="space-y-3">
         {items.map((item, index) => {
@@ -53,12 +53,12 @@ export const RecentActivity = ({ items, className }: RecentActivityProps) => {
               </div>
               
               {/* Contenu */}
-              <div className="flex-1 min-w-0 rounded-md border border-slate-200 bg-white p-2 transition-shadow hover:shadow-sm">
+              <div className="flex-1 min-w-0 rounded-md border border-border bg-card p-2 transition-shadow hover:shadow-sm">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-xs font-semibold text-slate-900 flex-1">{item.title}</p>
-                  <span className="text-[10px] text-slate-500 whitespace-nowrap">{item.time}</span>
+                  <p className="text-xs font-semibold text-foreground flex-1">{item.title}</p>
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{item.time}</span>
                 </div>
-                <p className="text-[10px] text-slate-600">{item.description}</p>
+                <p className="text-[10px] text-muted-foreground">{item.description}</p>
               </div>
             </div>
           );

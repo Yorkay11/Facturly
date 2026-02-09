@@ -8,7 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Info, Loader2 } from "lucide-react";
 import { useTranslations, useLocale } from 'next-intl';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DirectionAwareTabs } from "@/components/ui/direction-aware-tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -84,7 +84,8 @@ function SettingsContent() {
   const defaultTab = tabParam && validTabs.includes(tabParam) ? tabParam : "profile";
   
   const [activeTab, setActiveTab] = useState(defaultTab);
-  
+  const activeTabId = sections.findIndex((s) => s.value === activeTab);
+
   // Créer les schémas de validation avec les traductions
   const userSchema = useMemo(() => z.object({
     firstName: z.string().min(2, t('profile.validation.firstNameMin')),
@@ -327,21 +328,15 @@ function SettingsContent() {
           <Skeleton className="h-64 w-full" />
         </div>
       ) : (
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="flex-wrap bg-primary/10">
-            {sections.map((section) => (
-              <TabsTrigger
-                key={section.value}
-                value={section.value}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                {section.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
+        <DirectionAwareTabs
+          className="w-full mb-6"
+          tabs={[
+            {
+              id: 0,
+              label: sections[0].label,
+              content: (
+                <>
           {/* Profil utilisateur */}
-          <TabsContent value="profile">
             <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="text-primary">{t('profile.title')}</CardTitle>
@@ -426,10 +421,15 @@ function SettingsContent() {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
-
+                </>
+              ),
+            },
+            {
+              id: 1,
+              label: sections[1].label,
+              content: (
+                <>
           {/* Entreprise */}
-          <TabsContent value="workspace">
             <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="text-primary">{t('workspace.title')}</CardTitle>
@@ -621,10 +621,15 @@ function SettingsContent() {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
-
+                </>
+              ),
+            },
+            {
+              id: 2,
+              label: sections[2].label,
+              content: (
+                <>
           {/* Paramètres de facturation */}
-          <TabsContent value="billing">
             <div className="space-y-6">
               <Card className="border-primary/20">
                 <CardHeader>
@@ -815,8 +820,13 @@ function SettingsContent() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-        </Tabs>
+                </>
+              ),
+            },
+          ]}
+          value={activeTabId >= 0 ? activeTabId : 0}
+          onValueChange={(id) => handleTabChange(sections[id].value)}
+        />
       )}
 
     </div>

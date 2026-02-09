@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname } from '@/i18n/routing';
+import { Link, usePathname } from '@/i18n/routing';
+import Image from "next/image";
 import {
   FaMagnifyingGlass,
   FaCircleQuestion,
@@ -42,10 +43,10 @@ export const Topbar = () => {
   // Shortcuts and search results for Apple Spotlight (i18n)
   const spotlightShortcuts: Shortcut[] = useMemo(
     () => [
-      { label: t('dashboard'), icon: <LayoutGrid />, link: '/dashboard' },
-      { label: t('invoices'), icon: <FileText />, link: '/invoices' },
-      { label: t('newInvoice'), icon: <Receipt />, link: '/invoices/new' },
-      { label: t('clients'), icon: <Users />, link: '/clients' },
+      { label: t('dashboard'), icon: <LayoutGrid />, link: '/dashboard', color: '#3b82f6' },
+      { label: t('invoices'), icon: <FileText />, link: '/invoices', color: '#10b981' },
+      { label: t('newInvoice'), icon: <Receipt />, link: '/invoices/new', color: '#8b5cf6' },
+      { label: t('clients'), icon: <Users />, link: '/clients', color: '#f59e0b' },
     ],
     [t]
   );
@@ -87,8 +88,18 @@ export const Topbar = () => {
       isCollapsed ? "left-16" : "left-64"
     )}>
       <div className="flex h-full items-center justify-between px-2 lg:px-3">
-        {/* Left: Search button */}
-        <Button
+        {/* Left: Logo + Search */}
+        <div className="flex items-center gap-2 min-w-0">
+          <Link href="/dashboard" className="shrink-0 flex items-center">
+            <Image
+              src="/logos/logo.png"
+              alt="Facturly"
+              width={100}
+              height={32}
+              className="h-6 w-auto object-contain"
+            />
+          </Link>
+          <Button
           variant="outline"
           size="icon"
           className="h-8 w-8 shrink-0 border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
@@ -97,6 +108,7 @@ export const Topbar = () => {
         >
           <FaMagnifyingGlass className="h-4 w-4" />
         </Button>
+        </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 ml-2">

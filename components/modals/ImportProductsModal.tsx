@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { IoCloudUploadOutline, IoCloseOutline, IoCheckmarkCircleOutline, IoAlertCircleOutline, IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -322,8 +323,12 @@ export const ImportProductsModal = ({ open, onClose, onSuccess }: ImportProducts
   }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-7xl max-h-[97vh] overflow-y-auto">
+    <ResponsiveModal
+      open={open}
+      onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
+      modalMaxWidth="sm:max-w-7xl"
+      contentClassName="max-h-[97vh] overflow-y-auto"
+    >
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
@@ -615,8 +620,7 @@ export const ImportProductsModal = ({ open, onClose, onSuccess }: ImportProducts
             </Button>
           )}
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   );
 };
 

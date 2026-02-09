@@ -8,7 +8,7 @@ import { BottomTabs } from "@/components/layout/BottomTabs";
 import { NavigationBlockProvider, useNavigationBlock } from "@/contexts/NavigationBlockContext";
 import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 import { GlobalLoader } from "@/components/ui/global-loader";
-import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
+import { useLoading } from "@/contexts/LoadingContext";
 import { RedirectLoader } from "@/components/navigation/RedirectLoader";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
@@ -80,16 +80,19 @@ function NavigationBlockDialog() {
 
   // Fonction pour abandonner les modifications
   const handleDiscard = () => {
-    // Réinitialiser les stores
+    const urlToGo = pendingNavigation;
+    // Réinitialiser les stores et l'état du contexte (ferme le dialog, clear pending)
     resetMetadata();
     clearItems();
     setHasUnsavedChanges(false);
-    
-    // Fermer le dialog
     setShowUnsavedDialog(false);
-    
-    // Utiliser la fonction du contexte pour la navigation
     handleDiscardFromContext();
+    // Naviguer avec le router i18n (obligatoire pour la locale)
+    if (urlToGo) {
+      router.push(urlToGo);
+    } else {
+      router.push("/invoices");
+    }
   };
 
   // Fonction pour annuler (rester sur la page)
@@ -150,13 +153,19 @@ function OnboardingRedirect() {
   }
 
   // Vérifier si le profil doit être complété
-  const shouldRedirectToOnboarding = !workspace || 
-    (error && 'status' in error && error.status === 404) ||
+  const shouldRedirectToOnboarding = 
+    // Cas 1: Pas de workspace du tout (404) ou workspace null
+    !workspace || (error && 'status' in error && error.status === 404) ||
+    // Cas 2: Workspace existe mais incomplet
     (workspace && (() => {
       const workspaceCompletion = workspace.profileCompletion ?? 0;
+      // Pour les entreprises, vérifier si le nom est présent
       const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
         ? !workspace.name
         : false;
+      
+      // Considérer incomplet si < 100% ou infos manquantes
+      // Note: Vous pouvez ajuster le seuil de 100% si nécessaire (ex: 80%)
       return workspaceCompletion < 100 || hasMissingWorkspaceInfo;
     })());
 
@@ -203,7 +212,7 @@ function DashboardLayoutContent({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Mobile Header */}
       <MobileHeader 
         onMenuClick={() => setSidebarOpen(true)}
@@ -251,16 +260,14 @@ export default function DashboardLayout({
   children: ReactNode;
 }) {
   return (
-    <LoadingProvider>
-      <NavigationBlockProvider>
-        <SidebarProvider>
-          <WorkspaceProvider>
-            <DashboardLayoutContent>
-              {children}
-            </DashboardLayoutContent>
-          </WorkspaceProvider>
-        </SidebarProvider>
-      </NavigationBlockProvider>
-    </LoadingProvider>
+    <NavigationBlockProvider>
+      <SidebarProvider>
+        <WorkspaceProvider>
+          <DashboardLayoutContent>
+            {children}
+          </DashboardLayoutContent>
+        </WorkspaceProvider>
+      </SidebarProvider>
+    </NavigationBlockProvider>
   );
 }

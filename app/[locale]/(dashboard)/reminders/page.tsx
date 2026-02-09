@@ -19,6 +19,7 @@ import { useGetInvoicesQuery } from "@/services/facturlyApi";
 import ReminderModal from "@/components/modals/ReminderModal";
 import { useState } from "react";
 import { useTranslations, useLocale } from 'next-intl';
+import { FuryMascot } from "@/components/mascot/FuryMascot";
 
 export default function RemindersPage() {
   const t = useTranslations('reminders');
@@ -216,8 +217,9 @@ export default function RemindersPage() {
               </TableBody>
             </Table>
           ) : (
-            <div className="rounded-xl border border-dashed border-primary/30 bg-white py-16 text-center text-sm text-foreground/60">
-              {t('empty.noReminders')}
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-primary/30 bg-white py-16 text-center">
+              <FuryMascot mood="reminder" size="lg" className="mb-4" />
+              <p className="text-sm text-foreground/60">{t('empty.noReminders')}</p>
             </div>
           )}
         </CardContent>

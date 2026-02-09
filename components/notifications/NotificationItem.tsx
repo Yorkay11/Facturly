@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Notification } from '@/services/facturlyApi';
-import { Info, CheckCircle2, AlertTriangle, XCircle, X, Clock } from 'lucide-react';
+import { Info, CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -43,7 +43,7 @@ const priorityConfig = {
   },
 };
 
-export function NotificationItem({
+function NotificationItem({
   notification,
   onMarkAsRead,
   onDelete,
@@ -75,7 +75,7 @@ export function NotificationItem({
   return (
     <div
       className={cn(
-        "group relative px-4 py-3 border-b border-border/50",
+        "group relative px-3 py-2 border-b border-border/50",
         "transition-all duration-200 cursor-pointer",
         "hover:bg-muted/50",
         notification.read && "opacity-70",
@@ -83,54 +83,46 @@ export function NotificationItem({
       )}
       onClick={handleClick}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-2">
         {/* Icon avec indicateur non lu */}
-        <div className="relative flex-shrink-0 mt-0.5">
+        <div className="relative flex-shrink-0">
           <div className={cn(
-            "rounded-lg p-2",
+            "rounded-md p-1.5",
             config.bgColor
           )}>
-            <Icon className={cn("h-4 w-4", config.iconColor)} />
+            <Icon className={cn("h-3 w-3", config.iconColor)} />
           </div>
           {!notification.read && (
             <div className={cn(
-              "absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-background",
+              "absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full border border-background",
               config.dotColor
             )} />
           )}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-start justify-between gap-2">
-            <h4 className={cn(
-              "text-sm font-medium leading-tight",
-              !notification.read && "font-semibold"
-            )}>
-              {interpolateMessage(notification.title, notification.data, locale)}
-            </h4>
+        {/* Content : titre + date uniquement */}
+        <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+          <h4 className={cn(
+            "text-xs font-medium leading-tight truncate",
+            !notification.read && "font-semibold"
+          )}>
+            {interpolateMessage(notification.title, notification.data, locale)}
+          </h4>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <span className="text-[10px] text-muted-foreground tabular-nums">{timeAgo}</span>
             <Button
               variant="ghost"
               size="icon"
               className={cn(
-                "h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0",
+                "h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity",
                 "text-muted-foreground hover:text-destructive",
                 "hover:bg-destructive/10"
               )}
               onClick={handleDelete}
               aria-label={t('delete')}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3 w-3" />
             </Button>
-          </div>
-          
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-            {interpolateMessage(notification.message, notification.data, locale)}
-          </p>
-
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span>{timeAgo}</span>
           </div>
         </div>
       </div>
@@ -138,7 +130,7 @@ export function NotificationItem({
       {/* Barre latérale pour les non lues */}
       {!notification.read && (
         <div className={cn(
-          "absolute left-0 top-0 bottom-0 w-1 rounded-r-full",
+          "absolute left-0 top-0 bottom-0 w-0.5 rounded-r-full",
           config.dotColor
         )} />
       )}
@@ -146,3 +138,4 @@ export function NotificationItem({
   );
 }
 
+export { NotificationItem };

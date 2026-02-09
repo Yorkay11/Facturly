@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useGetBillsQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { FuryMascot } from "@/components/mascot";
 
 
 export default function BillsPage() {
@@ -209,7 +210,9 @@ export default function BillsPage() {
             </div>
           ) : filteredBills.length === 0 ? (
             <div className="rounded-xl border border-border bg-secondary/60 p-6 text-center">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-foreground/40" />
+              <div className="mb-4">
+                <FuryMascot mood="sad" size="md" />
+              </div>
               <p className="text-sm font-medium text-foreground/70 mb-1">{t('empty.title')}</p>
               <p className="text-xs text-foreground/50">
                 {searchQuery

@@ -34,8 +34,8 @@ export const RevenueChart = ({ data, range, onRangeChange, className }: RevenueC
     maximumFractionDigits: 0,
   });
 
-  const primaryColor = "#7835ef";
-  const primaryColorLight = "rgba(120, 53, 239, 0.08)";
+  const primaryColor = "hsl(var(--primary))";
+  const primaryColorLight = "hsl(var(--primary) / 0.15)";
 
   const timeRanges: Array<{ value: TimeRange; label: string }> = [
     { value: "1d", label: t('timeRange.1d') },
@@ -80,17 +80,17 @@ export const RevenueChart = ({ data, range, onRangeChange, className }: RevenueC
           </defs>
           <CartesianGrid 
             strokeDasharray="3 3" 
-            stroke="#f1f5f9" 
+            stroke="hsl(var(--border))" 
             vertical={false} 
           />
           <XAxis
             dataKey="name"
-            tick={{ fill: "#64748b", fontSize: 12 }}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: "#64748b", fontSize: 11 }}
+            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={75}
@@ -115,14 +115,14 @@ export const RevenueChart = ({ data, range, onRangeChange, className }: RevenueC
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "#ffffff",
-              border: "1px solid #e2e8f0",
+              backgroundColor: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
               borderRadius: "6px",
               padding: "8px 12px",
               boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             }}
             labelStyle={{ 
-              color: "#1e293b", 
+              color: "hsl(var(--foreground))", 
               fontWeight: 500, 
               marginBottom: "4px",
               fontSize: "12px",
@@ -150,7 +150,7 @@ export const RevenueChart = ({ data, range, onRangeChange, className }: RevenueC
             stroke={primaryColor}
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 5, stroke: primaryColor, strokeWidth: 2, fill: "#ffffff" }}
+            activeDot={{ r: 5, stroke: primaryColor, strokeWidth: 2, fill: "hsl(var(--background))" }}
           />
         </ComposedChart>
       </ResponsiveContainer>

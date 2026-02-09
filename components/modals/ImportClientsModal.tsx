@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { IoCloudUploadOutline, IoCloseOutline, IoCheckmarkCircleOutline, IoAlertCircleOutline, IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -308,8 +309,12 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
   }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+    <ResponsiveModal
+      open={open}
+      onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
+      modalMaxWidth="sm:max-w-[900px]"
+      contentClassName="max-h-[90vh] overflow-y-auto"
+    >
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
@@ -578,8 +583,7 @@ export const ImportClientsModal = ({ open, onClose, onSuccess }: ImportClientsMo
             </Button>
           )}
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   );
 };
 

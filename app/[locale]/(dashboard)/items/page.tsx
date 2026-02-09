@@ -34,6 +34,7 @@ import { useGetProductsQuery, Product, useDeleteProductMutation } from "@/servic
 import { toast } from "sonner";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { useTranslations, useLocale } from 'next-intl';
+import { FuryMascot } from "@/components/mascot";
 
 const getPrice = (product: Product): number => {
   // Product.unitPrice est toujours une string selon l'API (price est un alias)
@@ -293,7 +294,8 @@ export default function ItemsPage() {
           )}
         </Card>
       ) : (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
+        <div className="flex flex-col items-center gap-6 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
+          <FuryMascot mood="focus" size="lg" />
           <p className="text-xl font-semibold text-primary">{t('noItems')}</p>
           <p className="max-w-md text-center text-sm text-foreground/60">
             {t('noItemsDescription')}

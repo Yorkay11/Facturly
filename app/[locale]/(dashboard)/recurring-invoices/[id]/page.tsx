@@ -1,7 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
-import { RecurringInvoiceForm } from "@/components/recurring-invoices/RecurringInvoiceForm";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import { useTranslations } from "next-intl";
 import { useGetRecurringInvoiceByIdQuery, useGenerateRecurringInvoiceMutation } from "@/services/facturlyApi";
@@ -12,8 +12,8 @@ import { Calendar, Repeat, Mail, FileText, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "@/i18n/routing";
+import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import {
   Table,
   TableBody,
@@ -281,9 +281,7 @@ export default function RecurringInvoiceDetailPage() {
                       {format(new Date(invoice.issueDate), "PP", { locale: dateLocale })}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={invoice.status === "paid" ? "default" : "secondary"}>
-                        {invoice.status}
-                      </Badge>
+                      <InvoiceStatusBadge status={invoice.status} />
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       {new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-US", {

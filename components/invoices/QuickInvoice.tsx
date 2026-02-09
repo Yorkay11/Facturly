@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -42,24 +42,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { WhatsAppMessageStyleSelector } from "@/components/whatsapp/WhatsAppMessageStyleSelector";
 import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types";
 
-const quickInvoiceSchema = z.object({
-  clientId: z.string().min(1, "Client requis"),
-  amount: z.string().min(1, "Montant requis").refine(
-    (val) => !isNaN(Number(val)) && Number(val) > 0,
-    "Montant invalide"
-  ),
-  invoiceType: z.enum(['one-time', 'recurring']).optional(), // Type de facture : ponctuelle ou récurrente
-  templateId: z.string().optional(), // ID du template personnalisé
-});
-
-type QuickInvoiceFormValues = z.infer<typeof quickInvoiceSchema>;
-
 interface QuickInvoiceProps {
   onSwitchToFullMode?: () => void;
 }
 
 export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
-  const t = useTranslations('invoices.quick');
+  const t = useTranslations("invoices.quick");
+  const tValidation = useTranslations("invoices.quick.validation");
   const router = useRouter();
   const isMobile = useIsMobile();
   const [clientOpen, setClientOpen] = useState(false);
@@ -78,7 +67,26 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
   const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
 
   const { data: defaultTemplate } = useGetDefaultInvoiceTemplateQuery();
-  
+
+  const quickInvoiceSchema = useMemo(
+    () =>
+      z.object({
+        clientId: z.string().min(1, tValidation("clientRequired")),
+        amount: z
+          .string()
+          .min(1, tValidation("amountRequired"))
+          .refine(
+            (val) => !isNaN(Number(val)) && Number(val) > 0,
+            tValidation("amountInvalid")
+          ),
+        invoiceType: z.enum(["one-time", "recurring"]).optional(),
+        templateId: z.string().optional(),
+      }),
+    [tValidation]
+  );
+
+  type QuickInvoiceFormValues = z.infer<typeof quickInvoiceSchema>;
+
   const form = useForm<QuickInvoiceFormValues>({
     resolver: zodResolver(quickInvoiceSchema),
     defaultValues: {

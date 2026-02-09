@@ -1,7 +1,6 @@
 "use client";
 
 import { Link, usePathname, useRouter } from '@/i18n/routing';
-import Image from "next/image";
 import { 
   FaHouse,
   FaFileInvoice,
@@ -67,7 +66,7 @@ const CollapsedNavItem = ({
 
   return (
     <Popover open={isHovered} onOpenChange={setIsHovered}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild className='border-none'>
         <Link
           href={item.href}
           onMouseEnter={() => setIsHovered(true)}
@@ -78,20 +77,22 @@ const CollapsedNavItem = ({
             setIsHovered(false);
           }}
           className={cn(
-            "w-full flex items-center justify-center rounded-md p-2 text-xs font-medium transition-colors",
+            "relative w-full flex items-center justify-center rounded-md py-2 text-xs font-medium transition-colors ",
             active
-              ? "bg-primary/10 text-primary"
-              : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+              ? "bg-white/15 text-white"
+              : "text-white hover:bg-white/10"
           )}
           title={item.label}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-4 w-4 mb-2" />
+          {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />}
         </Link>
       </PopoverTrigger>
-      <PopoverContent 
-        side="right" 
+      <PopoverContent
+        side="right"
         align="center"
-        className="px-2 py-1.5 text-xs font-medium"
+        className="p-2 text-xs font-medium bg-slate-900 text-white border-slate-700 shadow-lg rounded-md w-fit whitespace-nowrap"
+        sideOffset={8}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -143,25 +144,27 @@ const CollapsedNavItemWithChildren = ({
 
   return (
     <Popover open={isHovered} onOpenChange={setIsHovered}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild className='border-none'>
         <button
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className={cn(
-            "w-full flex items-center justify-center rounded-md p-2 text-xs font-medium transition-all duration-200",
+            "relative w-full flex items-center justify-center rounded-md p-2 pb-2.5 text-xs font-medium transition-all duration-200",
             active
-              ? "bg-primary/10 text-primary"
-              : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+              ? "bg-white/15 text-white"
+              : "text-white hover:bg-white/10"
           )}
           title={item.label}
         >
           <Icon className="h-4 w-4 transition-transform duration-200" />
+          {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />}
         </button>
       </PopoverTrigger>
-      <PopoverContent 
-        side="right" 
+      <PopoverContent
+        side="right"
         align="start"
-        className="w-56 p-2 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1 duration-200"
+        className="w-56 p-2 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1 duration-200 bg-white border border-slate-200 shadow-lg rounded-lg"
+        sideOffset={8}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -341,58 +344,34 @@ export const Sidebar = ({
   };
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-white min-h-0 overflow-hidden">
-      {/* Header */}
+    <div className="flex h-full flex-col min-h-0 overflow-hidden bg-transparent">
+      {/* Header: collapse/close only — logo is in Topbar */}
       <div className={cn(
-        "flex items-center justify-between border-b border-slate-200 px-2",
+        "flex items-center justify-center border-b border-white/10",
         isMobile ? "h-14 min-h-14" : "h-12"
       )}>
-        {!effectiveCollapsed && (
-          <Link href="/dashboard" className="flex items-center flex-1 min-w-0" onClick={() => isMobile && setIsOpen(false)}>
-            <Image
-              src="/logos/logo.png"
-              alt="Facturly"
-              width={120}
-              height={40}
-              className="h-6 w-auto object-contain"
-            />
-          </Link>
-        )}
-        {effectiveCollapsed && (
-          <Link href="/dashboard" className="flex items-center justify-center w-full">
-            <Image
-              src="/logos/icon.png"
-              alt="Facturly"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
-            />
-          </Link>
-        )}
         {!isMobile && (
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0"
+            variant="default"
+            className="h-4 w-4 shrink-0 text-white hover:bg-white/10 bg-transparent"
             onClick={toggleCollapsed}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
-              <FaChevronRight className="h-3.5 w-3.5" />
+              <FaChevronRight className="h-4 w-4" />
             ) : (
-              <FaChevronLeft className="h-3.5 w-3.5" />
+              <FaChevronLeft className="h-4 w-4" />
             )}
           </Button>
         )}
         {isMobile && (
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 -mr-1 touch-manipulation"
+            variant="default"
+            className="h-4 w-4 shrink-0 text-white hover:bg-white/10 bg-transparent"
             onClick={() => setIsOpen(false)}
             aria-label="Fermer le menu"
           >
-            <FaXmark className="h-5 w-5" />
+            <FaXmark className="h-4 w-4" />
           </Button>
         )}
       </div>
@@ -400,27 +379,27 @@ export const Sidebar = ({
       {/* Workspace Selection */}
       {!effectiveCollapsed && (workspace || isLoadingWorkspaces) && (
         <div className={cn(
-          "border-b border-slate-200 flex-shrink-0",
+          "border-b border-white/10 flex-shrink-0",
           isMobile ? "px-3 py-2" : "px-2 py-1.5"
         )}>
           <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
               <button className={cn(
-                "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors hover:bg-slate-50 text-left touch-manipulation",
+                "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors hover:bg-white/10 text-left touch-manipulation text-white",
                 isMobile ? "px-3 py-2.5" : "px-2 py-1.5"
               )}>
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/15 text-white">
                   <FaBuilding className="h-3 w-3" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold text-slate-900 truncate leading-tight">
+                  <p className="text-[11px] font-semibold text-white truncate leading-tight">
                     {workspace?.name || tTopbar('workspace')}
                   </p>
-                  <p className="text-[9px] text-slate-500 truncate leading-tight mt-0.5">
+                  <p className="text-[9px] text-white/80 truncate leading-tight mt-0.5">
                     {workspace ? (workspace.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')) : '…'}
                   </p>
                 </div>
-                <FaChevronDown className="h-3 w-3 text-slate-400 shrink-0" />
+                <FaChevronDown className="h-3 w-3 text-white/80 shrink-0" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-3" align="start">
@@ -458,11 +437,11 @@ export const Sidebar = ({
                     </div>
                   </button>
                 ))}
-                <div className="border-t border-slate-200 pt-2 space-y-1">
+                <div className="border-t border-white/10 pt-2 space-y-1">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs text-white hover:bg-white/10 hover:text-white"
                     onClick={() => {
                       setCreateModalOpen(true);
                       setWorkspacePopoverOpen(false);
@@ -474,7 +453,7 @@ export const Sidebar = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs text-white hover:bg-white/10 hover:text-white"
                     onClick={() => {
                       handleNavigation("/settings?tab=workspace");
                       setWorkspacePopoverOpen(false);
@@ -491,10 +470,10 @@ export const Sidebar = ({
         </div>
       )}
       {effectiveCollapsed && (workspace || isLoadingWorkspaces) && (
-        <div className="border-b border-slate-200 px-2 py-1.5 flex justify-center">
+        <div className="border-b border-white/10 py-1.5 flex justify-center">
           <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
-              <button className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+              <button className="flex h-7 w-7 items-center justify-center rounded-md bg-white/15 text-white hover:bg-white/25 transition-colors">
                 <FaBuilding className="h-3.5 w-3.5" />
               </button>
             </PopoverTrigger>
@@ -533,11 +512,11 @@ export const Sidebar = ({
                     </div>
                   </button>
                 ))}
-                <div className="border-t border-slate-200 pt-2 space-y-1">
+                <div className="border-t border-white/10 pt-2 space-y-1">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs text-white hover:bg-white/10"
                     onClick={() => {
                       setCreateModalOpen(true);
                       setWorkspacePopoverOpen(false);
@@ -549,7 +528,7 @@ export const Sidebar = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs"
+                    className="w-full justify-start text-xs text-white hover:bg-white/10"
                     onClick={() => {
                       handleNavigation("/settings?tab=workspace");
                       setWorkspacePopoverOpen(false);
@@ -568,7 +547,7 @@ export const Sidebar = ({
 
       {/* Navigation */}
       <nav className={cn(
-        "flex-1 overflow-y-auto overscroll-contain px-2 py-1.5 space-y-0.5",
+        "flex-1 overflow-y-auto overscroll-contain py-1.5 space-y-0.5",
         isMobile && "py-2 space-y-1"
       )}>
         {navItems.map((item) => {
@@ -605,8 +584,9 @@ export const Sidebar = ({
 
           const btnCls = "w-full flex items-center justify-between rounded-md text-xs font-medium transition-colors touch-manipulation";
           const linkCls = "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors touch-manipulation";
-          const navClsActive = "bg-primary/10 text-primary";
-          const navClsInactive = "text-slate-700 hover:bg-slate-100 hover:text-slate-900";
+          const navClsActive = "bg-white/15 text-white";
+          const navClsInactive = "text-white hover:bg-white/10";
+          const navBar = <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />;
           const padY = isMobile ? "py-3 px-3" : "px-2 py-1.5";
           const childPadY = isMobile ? "py-2.5 px-3" : "px-2 py-1";
           const childMl = isMobile ? "ml-4" : "ml-6";
@@ -618,7 +598,7 @@ export const Sidebar = ({
                   <button
                     onClick={() => toggleExpanded(item.href)}
                     className={cn(
-                      btnCls, padY,
+                      "relative", btnCls, padY,
                       active || hasActiveChild ? navClsActive : navClsInactive
                     )}
                   >
@@ -626,6 +606,7 @@ export const Sidebar = ({
                       <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>
                     </div>
+                    {(active || hasActiveChild) && navBar}
                     <FaChevronDown 
                       className={cn(
                         "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
@@ -646,14 +627,15 @@ export const Sidebar = ({
                               handleNavClick(child.href);
                             }}
                             className={cn(
-                              "block rounded-md text-[11px] transition-colors touch-manipulation",
+                              "relative block rounded-md text-[11px] transition-colors touch-manipulation",
                               childPadY,
                               childActive
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                ? "bg-white/15 text-white font-medium"
+                                : "text-white hover:bg-white/10"
                             )}
                           >
                             {child.label}
+                            {childActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />}
                           </Link>
                         );
                       })}
@@ -668,12 +650,13 @@ export const Sidebar = ({
                     handleNavClick(item.href);
                   }}
                   className={cn(
-                    linkCls, padY,
+                    "relative", linkCls, padY,
                     active ? navClsActive : navClsInactive
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{item.label}</span>
+                  {active && navBar}
                 </Link>
               )}
             </div>
@@ -683,7 +666,7 @@ export const Sidebar = ({
 
       {/* User profile */}
       <div className={cn(
-        "border-t border-slate-200 p-2 flex-shrink-0",
+        "border-t border-white/10 p-2 flex-shrink-0",
         isMobile && "p-3"
       )}>
         {effectiveCollapsed ? (
@@ -692,11 +675,11 @@ export const Sidebar = ({
               <button
                 type="button"
                 onClick={() => setProfileOpen(true)}
-                className="w-full flex items-center justify-center rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
+                className="w-full flex items-center justify-center rounded-md border border-white/20 bg-white/10 p-1 transition-colors hover:bg-white/15"
                 title={getUserDisplayName()}
               >
                 <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                     {isLoadingUser ? "..." : getInitials()}
                   </AvatarFallback>
                 </Avatar>
@@ -740,13 +723,13 @@ export const Sidebar = ({
             type="button"
             onClick={() => setProfileOpen(true)}
             className={cn(
-              "w-full flex items-center gap-2 rounded-md border border-slate-200 bg-white transition-colors hover:bg-slate-50 touch-manipulation",
+              "w-full flex items-center gap-2 rounded-md border border-white/20 bg-white/10 transition-colors hover:bg-white/15 touch-manipulation text-white",
               isMobile ? "p-3" : "p-2"
             )}
           >
             <Avatar className={cn("shrink-0", isMobile ? "h-9 w-9" : "h-7 w-7")}>
               <AvatarFallback className={cn(
-                "bg-primary text-primary-foreground",
+                "bg-white/20 text-white border border-white/30",
                 isMobile ? "text-xs" : "text-[10px]"
               )}>
                 {isLoadingUser ? "..." : getInitials()}
@@ -754,7 +737,7 @@ export const Sidebar = ({
             </Avatar>
             <div className="flex-1 text-left min-w-0">
               <p className={cn(
-                "font-semibold text-slate-900 truncate leading-tight",
+                "font-semibold text-white truncate leading-tight",
                 isMobile ? "text-sm" : "text-[11px]"
               )}>
                 {isLoadingUser ? "..." : getUserDisplayName()}
@@ -876,7 +859,7 @@ export const Sidebar = ({
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetContent
             side="left"
-            className="w-[85vw] max-w-[300px] p-0 gap-0 [&>button]:hidden h-full flex flex-col overflow-hidden"
+            className="w-[85vw] max-w-[300px] p-0 gap-0 [&>button]:hidden h-full flex flex-col overflow-hidden bg-gradient-to-b from-[#2e1065] via-[#3b0764] to-[#4c0519] backdrop-blur-xl border-r border-white/10"
           >
             <div className="flex flex-col h-full overflow-hidden min-h-0">
               <SidebarContent />
@@ -892,7 +875,9 @@ export const Sidebar = ({
   return (
     <>
       <aside className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-r border-slate-200 bg-white transition-all duration-300",
+        "fixed left-0 top-0 z-40 h-screen border-r border-white/10 transition-all duration-300",
+        "bg-gradient-to-b from-[#2e1065] via-[#3b0764] to-[#4c0519]",
+        "backdrop-blur-xl",
         isCollapsed ? "w-16" : "w-64"
       )}>
         <SidebarContent />

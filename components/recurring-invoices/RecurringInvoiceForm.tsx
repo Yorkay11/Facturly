@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,8 +39,11 @@ import {
   useCreateRecurringInvoiceMutation,
   useUpdateRecurringInvoiceMutation,
   useGetRecurringInvoiceByIdQuery,
+  useGetWorkspaceQuery,
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
+import { invoiceTemplates, getBackendTemplateName, getFrontendTemplateFromBackend } from "@/types/invoiceTemplate";
+import { devises } from "@/data/datas";
 import ClientModal from "@/components/modals/ClientModal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -55,28 +58,6 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const recurringInvoiceSchema = z.object({
-  clientId: z.string().min(1, "Client requis"),
-  name: z.string().optional(),
-  frequency: z.enum(["monthly", "quarterly", "yearly"]),
-  startDate: z.date(),
-  endDate: z.date().optional(),
-  dayOfMonth: z.number().min(1).max(31),
-  autoSend: z.boolean().optional(),
-  recipientEmail: z.string().email().optional().or(z.literal("")),
-  notificationDaysBefore: z.number().min(0).optional(),
-  items: z.array(
-    z.object({
-      productId: z.string().optional(),
-      description: z.string().min(1, "Description requise"),
-      quantity: z.string().min(1, "Quantité requise"),
-      unitPrice: z.string().min(1, "Prix unitaire requis"),
-    })
-  ).min(1, "Au moins un article est requis"),
-});
-
-type RecurringInvoiceFormValues = z.infer<typeof recurringInvoiceSchema>;
-
 interface RecurringInvoiceFormProps {
   recurringInvoiceId?: string;
   onSuccess?: () => void;
@@ -84,6 +65,7 @@ interface RecurringInvoiceFormProps {
 
 export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: RecurringInvoiceFormProps) {
   const t = useTranslations("recurringInvoices.form");
+  const tValidation = useTranslations("recurringInvoices.form.validation");
   const router = useRouter();
   const isEditMode = !!recurringInvoiceId;
 
@@ -96,6 +78,8 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
   const clients = clientsData?.data || [];
   const { data: productsData } = useGetProductsQuery();
   const products = productsData?.data || [];
+  const { data: workspace } = useGetWorkspaceQuery();
+  const workspaceCurrency = workspace?.defaultCurrency || "EUR";
 
   const [createRecurringInvoice, { isLoading: isCreating }] = useCreateRecurringInvoiceMutation();
   const [updateRecurringInvoice, { isLoading: isUpdating }] = useUpdateRecurringInvoiceMutation();
@@ -104,11 +88,43 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string>("");
 
+  const recurringInvoiceSchema = useMemo(
+    () =>
+      z.object({
+        clientId: z.string().min(1, tValidation("clientRequired")),
+        name: z.string().optional(),
+        currency: z.string().min(1, tValidation("currencyRequired")),
+        templateId: z.string().min(1, tValidation("templateRequired")),
+        frequency: z.enum(["monthly", "quarterly", "yearly"]),
+        startDate: z.date(),
+        endDate: z.date().optional(),
+        dayOfMonth: z.number().min(1).max(31),
+        autoSend: z.boolean().optional(),
+        recipientEmail: z.string().email().optional().or(z.literal("")),
+        notificationDaysBefore: z.number().min(0).optional(),
+        items: z
+          .array(
+            z.object({
+              productId: z.string().optional(),
+              description: z.string().min(1, tValidation("descriptionRequired")),
+              quantity: z.string().min(1, tValidation("quantityRequired")),
+              unitPrice: z.string().min(1, tValidation("unitPriceRequired")),
+            })
+          )
+          .min(1, tValidation("atLeastOneItem")),
+      }),
+    [tValidation]
+  );
+
+  type RecurringInvoiceFormValues = z.infer<typeof recurringInvoiceSchema>;
+
   const form = useForm<RecurringInvoiceFormValues>({
     resolver: zodResolver(recurringInvoiceSchema),
     defaultValues: {
       clientId: "",
       name: "",
+      currency: "EUR",
+      templateId: invoiceTemplates[0]?.id ?? "invoice",
       frequency: "monthly",
       startDate: new Date(),
       dayOfMonth: 1,
@@ -119,12 +135,24 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
     },
   });
 
+  // Devise par défaut (workspace) en création
+  useEffect(() => {
+    if (!isEditMode && workspace?.defaultCurrency) {
+      form.setValue("currency", workspace.defaultCurrency);
+    }
+  }, [isEditMode, workspace?.defaultCurrency, form]);
+
   // Charger les données existantes en mode édition
   useEffect(() => {
     if (isEditMode && existingRecurringInvoice) {
+      const templateId = existingRecurringInvoice.templateName
+        ? getFrontendTemplateFromBackend(existingRecurringInvoice.templateName).id
+        : invoiceTemplates[0]?.id ?? "invoice";
       form.reset({
         clientId: existingRecurringInvoice.clientId,
         name: existingRecurringInvoice.name || "",
+        currency: existingRecurringInvoice.currency || workspaceCurrency,
+        templateId,
         frequency: existingRecurringInvoice.frequency,
         startDate: new Date(existingRecurringInvoice.startDate),
         endDate: existingRecurringInvoice.endDate ? new Date(existingRecurringInvoice.endDate) : undefined,
@@ -141,12 +169,14 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
       });
       setSelectedClientId(existingRecurringInvoice.clientId);
     }
-  }, [isEditMode, existingRecurringInvoice, form]);
+  }, [isEditMode, existingRecurringInvoice, workspaceCurrency, form]);
 
   const selectedClient = clients.find((c) => c.id === selectedClientId || c.id === form.watch("clientId"));
 
   const handleSubmit = async (values: RecurringInvoiceFormValues) => {
     try {
+      const currencyToUse = values.currency || workspaceCurrency;
+      const templateName = getBackendTemplateName(values.templateId);
       const payload = {
         clientId: values.clientId,
         name: values.name || undefined,
@@ -156,12 +186,29 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
         dayOfMonth: values.dayOfMonth,
         autoSend: values.autoSend || false,
         recipientEmail: values.recipientEmail || undefined,
+        currency: currencyToUse,
+        templateName,
         notificationDaysBefore: values.notificationDaysBefore || 0,
         items: values.items,
       };
 
       if (isEditMode && recurringInvoiceId) {
-        await updateRecurringInvoice({ id: recurringInvoiceId, payload }).unwrap();
+        await updateRecurringInvoice({
+          id: recurringInvoiceId,
+          payload: {
+            name: payload.name,
+            frequency: payload.frequency,
+            startDate: payload.startDate,
+            endDate: payload.endDate,
+            dayOfMonth: payload.dayOfMonth,
+            autoSend: payload.autoSend,
+            recipientEmail: payload.recipientEmail,
+            currency: payload.currency,
+            templateName: payload.templateName,
+            notificationDaysBefore: payload.notificationDaysBefore,
+            items: payload.items,
+          },
+        }).unwrap();
         toast.success(t("updateSuccess"));
       } else {
         await createRecurringInvoice(payload).unwrap();
@@ -309,6 +356,58 @@ export function RecurringInvoiceForm({ recurringInvoiceId, onSuccess }: Recurrin
                   <FormControl>
                     <Input placeholder={t("namePlaceholder")} {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Devise */}
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("currency")} <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("selectCurrency")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {devises.map((d) => (
+                        <SelectItem key={d.value} value={d.value}>
+                          {d.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Modèle de facture */}
+            <FormField
+              control={form.control}
+              name="templateId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("template")} <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("selectTemplate")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {invoiceTemplates.map((tpl) => (
+                        <SelectItem key={tpl.id} value={tpl.id}>
+                          {tpl.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useCreateClientMutation, useUpdateClientMutation, useGetClientByIdQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface ClientModalProps {
@@ -63,6 +65,8 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
     },
   });
 
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   // Pré-remplir le formulaire en mode édition
   useEffect(() => {
     if (isEditMode && existingClient && open) {
@@ -74,6 +78,11 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
         postalCode: existingClient.postalCode || "",
         city: existingClient.city || "",
       });
+      const hasAddress =
+        existingClient.addressLine1?.trim() ||
+        existingClient.postalCode?.trim() ||
+        existingClient.city?.trim();
+      setShowAdvanced(Boolean(hasAddress));
     } else if (!isEditMode && open) {
       form.reset({
         name: "",
@@ -83,6 +92,7 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
         postalCode: "",
         city: "",
       });
+      setShowAdvanced(false);
     }
   }, [existingClient, isEditMode, open, form]);
 
@@ -164,136 +174,145 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
     }
   };
 
+  const fieldDisabled = isLoading || isLoadingClient;
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>{isEditMode ? t('editTitle') : t('addTitle')}</DialogTitle>
-          <DialogDescription>
-            {isEditMode ? t('editDescription') : t('description')}
-          </DialogDescription>
-        </DialogHeader>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
+      modalMaxWidth="sm:max-w-[440px]"
+    >
+      <DialogHeader className="pb-2">
+        <DialogTitle className="text-base font-semibold">
+          {isEditMode ? t("editTitle") : t("addTitle")}
+        </DialogTitle>
+        <DialogDescription className="text-xs text-muted-foreground">
+          {isEditMode ? t("editDescription") : t("description")}
+        </DialogDescription>
+      </DialogHeader>
 
-        <form 
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
-              e.preventDefault();
-              form.handleSubmit(onSubmit)();
-            }
-          }}
-        >
-          {/* Nom */}
-          <div className="space-y-2">
-            <Label htmlFor="client-name" className="text-sm font-medium">
-              {t('fields.fullName')} <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="client-name"
-              placeholder={t('fields.fullNamePlaceholder')}
-              {...form.register("name")}
-              disabled={isLoading || isLoadingClient}
-              className={cn(
-                form.formState.errors.name && "border-destructive"
-              )}
-              autoFocus
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-3"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+            e.preventDefault();
+            form.handleSubmit(onSubmit)();
+          }
+        }}
+      >
+        <div className="space-y-1.5">
+          <Label htmlFor="client-name" className="text-xs font-medium">
+            {t("fields.fullName")} <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="client-name"
+            placeholder={t("fields.fullNamePlaceholder")}
+            {...form.register("name")}
+            disabled={fieldDisabled}
+            className={cn(form.formState.errors.name && "border-destructive")}
+            autoFocus
+          />
+          {form.formState.errors.name && (
+            <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="client-email" className="text-xs font-medium">
+            {t("fields.email")} <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="client-email"
+            type="email"
+            placeholder={t("fields.emailPlaceholder")}
+            {...form.register("email")}
+            disabled={fieldDisabled}
+            className={cn(form.formState.errors.email && "border-destructive")}
+          />
+          {form.formState.errors.email && (
+            <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="client-phone" className="text-xs font-medium">
+            {t("fields.phone")}
+          </Label>
+          <Input
+            id="client-phone"
+            type="tel"
+            placeholder={t("fields.phonePlaceholder")}
+            {...form.register("phone")}
+            disabled={fieldDisabled}
+          />
+        </div>
+
+        <div className="border-t pt-3">
+          <div className="flex items-center justify-between">
+            <label htmlFor="advanced-options" className="text-xs font-medium text-foreground cursor-pointer">
+              {t("advancedOptions")}
+            </label>
+            <Switch
+              id="advanced-options"
+              checked={showAdvanced}
+              onCheckedChange={setShowAdvanced}
+              disabled={fieldDisabled}
             />
-            {form.formState.errors.name && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.name.message}
+          </div>
+          {showAdvanced && (
+            <div className="pt-3 space-y-3">
+              <p className="text-xs text-muted-foreground">
+                {t("addressSection")}
               </p>
-            )}
-          </div>
-
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="client-email" className="text-sm font-medium">
-              {t('fields.email')} <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="client-email"
-              type="email"
-              placeholder={t('fields.emailPlaceholder')}
-              {...form.register("email")}
-              disabled={isLoading || isLoadingClient}
-              className={cn(
-                form.formState.errors.email && "border-destructive"
-              )}
-            />
-            {form.formState.errors.email && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-
-          {/* Téléphone */}
-          <div className="space-y-2">
-            <Label htmlFor="client-phone" className="text-sm font-medium">
-              {t('fields.phone')}
-            </Label>
-            <Input
-              id="client-phone"
-              type="tel"
-              placeholder={t('fields.phonePlaceholder')}
-              {...form.register("phone")}
-              disabled={isLoading || isLoadingClient}
-            />
-          </div>
-
-          {/* Adresse - version simplifiée */}
-          <div className="space-y-3 pt-2 border-t">
-            <p className="text-xs text-muted-foreground font-medium">
-              {t('addressSection') || "Adresse (optionnel)"}
-            </p>
-            <div className="space-y-2">
               <Input
-                placeholder={t('fields.addressLine1Placeholder') || "Adresse"}
+                placeholder={t("fields.addressLine1Placeholder") || "Adresse"}
                 {...form.register("addressLine1")}
-                disabled={isLoading || isLoadingClient}
+                disabled={fieldDisabled}
               />
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder={t("fields.postalCodePlaceholder") || "Code postal"}
+                  {...form.register("postalCode")}
+                  disabled={fieldDisabled}
+                />
+                <Input
+                  placeholder={t("fields.cityPlaceholder") || "Ville"}
+                  {...form.register("city")}
+                  disabled={fieldDisabled}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                placeholder={t('fields.postalCodePlaceholder') || "Code postal"}
-                {...form.register("postalCode")}
-                disabled={isLoading || isLoadingClient}
-              />
-              <Input
-                placeholder={t('fields.cityPlaceholder') || "Ville"}
-                {...form.register("city")}
-                disabled={isLoading || isLoadingClient}
-              />
-            </div>
-          </div>
+          )}
+        </div>
 
-          <DialogFooter className="flex items-center justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading || isLoadingClient}
-            >
-              {t('buttons.cancel')}
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isLoading || isLoadingClient || !form.formState.isValid}
-            >
-              {isLoading || isLoadingClient ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {isEditMode ? t('buttons.updating') : t('buttons.saving')}
-                </>
-              ) : (
-                isEditMode ? t('buttons.update') : t('buttons.save')
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        <DialogFooter className="gap-2 pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleClose}
+            disabled={fieldDisabled}
+          >
+            {t("buttons.cancel")}
+          </Button>
+          <Button
+            type="submit"
+            size="sm"
+            disabled={fieldDisabled || !form.formState.isValid}
+          >
+            {isLoading || isLoadingClient ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                {isEditMode ? t("buttons.updating") : t("buttons.saving")}
+              </>
+            ) : (
+              isEditMode ? t("buttons.update") : t("buttons.save")
+            )}
+          </Button>
+        </DialogFooter>
+      </form>
+    </ResponsiveModal>
   );
 };
 

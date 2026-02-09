@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
+import { FuryMascot } from "@/components/mascot";
 
 export default function RecurringInvoicesPage() {
   const t = useTranslations('recurringInvoices');
@@ -110,7 +111,7 @@ export default function RecurringInvoicesPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className=" mx-auto py-6 space-y-6">
       <Breadcrumb
         items={[
           { label: t('breadcrumb.dashboard'), href: "/dashboard" },
@@ -124,7 +125,7 @@ export default function RecurringInvoicesPage() {
           <p className="text-muted-foreground mt-1">{t('subtitle')}</p>
         </div>
         <Button asChild>
-          <Link href="/recurring-invoices/new">
+          <Link href="/invoices/new?recurring=1">
             <Plus className="mr-2 h-4 w-4" />
             {t('create')}
           </Link>
@@ -156,11 +157,13 @@ export default function RecurringInvoicesPage() {
 
       {!isLoading && !isError && filteredInvoices.length === 0 && (
         <div className="text-center py-12 border rounded-lg">
-          <Repeat className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <div className="mb-4">
+            <FuryMascot mood="focus" size="md" />
+          </div>
           <h3 className="text-lg font-semibold mb-2">{t('empty.title')}</h3>
           <p className="text-muted-foreground mb-4">{t('empty.description')}</p>
           <Button asChild>
-            <Link href="/recurring-invoices/new">
+            <Link href="/invoices/new?recurring=1">
               <Plus className="mr-2 h-4 w-4" />
               {t('create')}
             </Link>

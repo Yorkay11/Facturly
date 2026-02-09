@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,26 +21,6 @@ import {
   type InvoiceTemplate,
   type CreateInvoiceTemplateDto,
 } from "@/services/facturlyApi";
-
-const templateFormSchema = z.object({
-  name: z.string().min(1, "Le nom est requis"),
-  baseTemplate: z.string().default("invoice"),
-  isDefault: z.boolean().default(false),
-  logoUrl: z.string().url().optional().or(z.literal("")),
-  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Couleur hex invalide"),
-  textColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Couleur hex invalide"),
-  backgroundColor: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, "Couleur hex invalide"),
-  headerText: z.string().optional(),
-  footerText: z.string().optional(),
-  showLogo: z.boolean().default(true),
-  showCompanyDetails: z.boolean().default(true),
-  showPaymentTerms: z.boolean().default(true),
-  customHtml: z.string().optional(),
-});
-
-type TemplateFormValues = z.infer<typeof templateFormSchema>;
 
 interface InvoiceTemplateFormProps {
   template?: InvoiceTemplate;
@@ -64,6 +45,34 @@ export function InvoiceTemplateForm({
   onCancel,
 }: InvoiceTemplateFormProps) {
   const t = useTranslations("invoices.templates");
+
+  const templateFormSchema = useMemo(
+    () =>
+      z.object({
+        name: z.string().min(1, t("validation.nameRequired")),
+        baseTemplate: z.string().default("invoice"),
+        isDefault: z.boolean().default(false),
+        logoUrl: z.string().url().optional().or(z.literal("")),
+        accentColor: z
+          .string()
+          .regex(/^#[0-9A-Fa-f]{6}$/, t("validation.invalidHexColor")),
+        textColor: z
+          .string()
+          .regex(/^#[0-9A-Fa-f]{6}$/, t("validation.invalidHexColor")),
+        backgroundColor: z
+          .string()
+          .regex(/^#[0-9A-Fa-f]{6}$/, t("validation.invalidHexColor")),
+        headerText: z.string().optional(),
+        footerText: z.string().optional(),
+        showLogo: z.boolean().default(true),
+        showCompanyDetails: z.boolean().default(true),
+        showPaymentTerms: z.boolean().default(true),
+        customHtml: z.string().optional(),
+      }),
+    [t]
+  );
+
+  type TemplateFormValues = z.infer<typeof templateFormSchema>;
 
   const form = useForm<TemplateFormValues>({
     resolver: zodResolver(templateFormSchema),

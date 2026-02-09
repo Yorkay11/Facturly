@@ -124,6 +124,36 @@ body {
     animation: floatProvider 6s ease-in-out infinite;
   }
 
+  /* Animation pour FURY dans sa bulle flottante */
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes bubble-pulse {
+    0%, 100% {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+    50% {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(99, 102, 241, 0);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-bubble-pulse {
+    animation: bubble-pulse 2s ease-in-out infinite;
+  }
+
   /* Animation marquee - maintenant gérée par react-fast-marquee */
 
   /* Animation de vague pour le gradient violet */

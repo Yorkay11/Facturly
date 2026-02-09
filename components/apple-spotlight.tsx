@@ -67,7 +67,7 @@ const ShortcutButton = ({ icon, link, onSelect }: ShortcutButtonProps) => {
       }}
       className="rounded-full cursor-pointer hover:shadow-lg opacity-30 hover:opacity-100 transition-[opacity,shadow] duration-200"
     >
-      <div className="size-16 aspect-square flex items-center justify-center [&_svg]:size-7 [&_svg]:stroke-[1.4]">
+      <div className="size-14 aspect-square flex items-center justify-center [&_svg]:size-6 [&_svg]:stroke-[1.4]">
         {icon}
       </div>
     </button>
@@ -315,7 +315,7 @@ const AppleSpotlight = ({
 
   const overlay = (
     <div
-      className="fixed inset-0 z-[100] min-h-screen h-screen w-screen bg-background/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] min-h-screen h-screen w-screen bg-black/60 backdrop-blur-sm"
       style={{ top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={onClose}
       role="presentation"

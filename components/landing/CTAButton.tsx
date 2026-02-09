@@ -1,8 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { Link, useRouter } from "@/i18n/routing"
 import { ReactNode } from "react"
 import { useAuth } from "@/hooks/useAuth"
 

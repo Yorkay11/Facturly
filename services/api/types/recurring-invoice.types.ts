@@ -76,6 +76,7 @@ export interface UpdateRecurringInvoicePayload {
   dayOfMonth?: number;
   autoSend?: boolean;
   recipientEmail?: string;
+  currency?: string;
   templateName?: string;
   notes?: string;
   notificationDaysBefore?: number;

@@ -5,7 +5,8 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -266,8 +267,12 @@ export const ProductModal = ({ open, onClose, productId, onSuccess }: ProductMod
   const isLastTab = currentTabIndex === tabs.length - 1;
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+    <ResponsiveModal
+      open={open}
+      onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
+      modalMaxWidth="sm:max-w-[600px]"
+      contentClassName="max-h-[90vh] overflow-y-auto"
+    >
         <DialogHeader>
           <DialogTitle>{isEditMode ? t('editTitle') : t('addTitle')}</DialogTitle>
           <DialogDescription>
@@ -509,8 +514,7 @@ export const ProductModal = ({ open, onClose, productId, onSuccess }: ProductMod
             </div>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   );
 };
 

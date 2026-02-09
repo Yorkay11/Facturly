@@ -64,7 +64,7 @@ import { useItemsStore } from "@/hooks/useItemStore"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetWorkspaceQuery, useGetProductsQuery, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetWorkspaceQuery, useGetProductsQuery, useCreateRecurringInvoiceMutation, type Invoice } from "@/services/facturlyApi"
 import { invoiceTemplates } from "@/types/invoiceTemplate"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
@@ -75,26 +75,39 @@ import { Redirect } from "@/components/navigation"
 import { Loader } from "@/components/ui/loader"
 import { useTranslations, useLocale } from 'next-intl'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
 import { getBackendTemplateName, getFrontendTemplateFromBackend } from "@/types/invoiceTemplate"
 import { CommandPalette } from "@/components/invoices/CommandPalette"
 import { WhatsAppMessageStyleSelector } from "@/components/whatsapp/WhatsAppMessageStyleSelector"
 import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types"
 import { useInvoiceDraftPersistence, clearInvoiceDraft } from "@/hooks/useInvoiceDraftPersistence"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, Repeat } from "lucide-react"
+import type { RecurrenceFrequency } from "@/services/api/types/recurring-invoice.types"
 
 interface InvoiceDetailsProps {
     invoiceId?: string;
+    initialRecurring?: boolean;
     onSaveDraftReady?: (saveFunction: (skipRedirect?: boolean) => Promise<void>) => void;
     onHasUnsavedChanges?: (hasChanges: boolean) => void;
 }
 
-const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: InvoiceDetailsProps = {}) => {
+const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUnsavedChanges }: InvoiceDetailsProps = {}) => {
     const t = useTranslations('invoices.form');
     const previewT = useTranslations('invoices.preview');
     const locale = useLocale();
     const searchParams = useSearchParams();
     const clientIdFromUrl = searchParams ? searchParams.get("clientId") || undefined : undefined;
+    const recurringFromUrl = searchParams?.get("recurring") === "1";
     const router = useRouter();
+    const [advancedOpen, setAdvancedOpen] = useState(!!(initialRecurring ?? recurringFromUrl));
+    const [isRecurring, setIsRecurring] = useState(!!(initialRecurring ?? recurringFromUrl));
+    const [recurringFrequency, setRecurringFrequency] = useState<RecurrenceFrequency>("monthly");
+    const [recurringDayOfMonth, setRecurringDayOfMonth] = useState(1);
+    const [recurringAutoSend, setRecurringAutoSend] = useState(false);
+    const [recurringRecipientEmail, setRecurringRecipientEmail] = useState("");
+    const [recurringNotificationDaysBefore, setRecurringNotificationDaysBefore] = useState(0);
+    const [recurringEndDate, setRecurringEndDate] = useState<Date | undefined>(undefined);
     const redirect = useRedirect({ checkUnsavedChanges: false });
     
     const [open, setOpen] = React.useState(false);
@@ -127,6 +140,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     // Précharger les produits au chargement de la page pour optimisation
     useGetProductsQuery({ page: 1, limit: 100 });
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
+    const [createRecurringInvoice, { isLoading: isCreatingRecurring }] = useCreateRecurringInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
     const [sendInvoice, { isLoading: isSendingInvoice }] = useSendInvoiceMutation();
     const { data: client } = useGetClientByIdQuery(metadataStore.clientId || "", {
@@ -140,7 +154,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     );
 
     const isEditMode = !!invoiceId;
-    const isSaving = isCreatingInvoice || isUpdatingInvoice || isSendingInvoice;
+    const isSaving = isCreatingInvoice || isUpdatingInvoice || isSendingInvoice || isCreatingRecurring;
     
     // Utiliser le contexte de loading global pour griser la page
     const { setLoading } = useLoading();
@@ -172,8 +186,10 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
     
     // Mettre à jour le loader global lors des mutations
     useEffect(() => {
-        if (isCreatingInvoice || isUpdatingInvoice || isSendingInvoice) {
-            if (isSendingInvoice) {
+        if (isCreatingInvoice || isUpdatingInvoice || isSendingInvoice || isCreatingRecurring) {
+            if (isCreatingRecurring) {
+                setLoading(true, t('advanced.recurring.creating'));
+            } else if (isSendingInvoice) {
                 setLoading(true, t('loading.sending'));
             } else {
                 setLoading(true, isEditMode ? t('loading.updating') : t('loading.creating'));
@@ -181,7 +197,7 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
         } else {
             setLoading(false);
         }
-    }, [isCreatingInvoice, isUpdatingInvoice, isSendingInvoice, isEditMode, setLoading, t]);
+    }, [isCreatingInvoice, isUpdatingInvoice, isSendingInvoice, isCreatingRecurring, isEditMode, setLoading, t]);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
@@ -483,6 +499,11 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
 
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
         try {
+            if (isRecurring && !isEditMode) {
+                const ok = await handleCreateRecurring();
+                if (ok) return;
+                return;
+            }
             // Valider que le client est sélectionné
             const clientId = storedClientId || clientIdFromUrl;
             if (!clientId) {
@@ -636,11 +657,72 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
             });
         }
     }
-    
+
+    // Créer une facture récurrente (depuis le formulaire facture)
+    const handleCreateRecurring = async (): Promise<boolean> => {
+        const clientId = storedClientId || clientIdFromUrl;
+        if (!clientId) {
+            toast.error(t('errors.clientMissing'), { description: t('errors.clientMissingDescription', { action: t('advanced.recurring.createAction') }) });
+            return false;
+        }
+        if (!issueDate || !dueDate) {
+            toast.error(t('errors.datesMissing'), { description: t('errors.datesMissingDescription', { action: t('advanced.recurring.createAction') }) });
+            return false;
+        }
+        if (!items?.length) {
+            toast.error(t('errors.noItems'), { description: t('errors.noItemsDescription', { action: t('advanced.recurring.createAction') }) });
+            return false;
+        }
+        const currencyToUse = storedCurrency || workspaceCurrency;
+        if (!currencyToUse) {
+            toast.error(t('errors.currencyMissing'), { description: t('errors.currencyMissingDescription', { action: t('advanced.recurring.createAction') }) });
+            return false;
+        }
+        const currentTemplateId = metadataStore.templateId || invoiceTemplates[0].id;
+        const templateName = getBackendTemplateName(currentTemplateId);
+        const payload = {
+            clientId,
+            name: form.getValues("subject") || undefined,
+            frequency: recurringFrequency,
+            startDate: format(issueDate, "yyyy-MM-dd"),
+            endDate: recurringEndDate ? format(recurringEndDate, "yyyy-MM-dd") : undefined,
+            dayOfMonth: Math.min(31, Math.max(1, recurringDayOfMonth)),
+            autoSend: recurringAutoSend,
+            recipientEmail: recurringAutoSend ? (recurringRecipientEmail || undefined) : undefined,
+            currency: currencyToUse,
+            templateName,
+            notes: notes || undefined,
+            notificationDaysBefore: recurringNotificationDaysBefore,
+            items: items.map((item) => ({
+                description: item.description,
+                quantity: item.quantity.toString(),
+                unitPrice: item.unitPrice.toFixed(2),
+            })),
+        };
+        try {
+            const result = await createRecurringInvoice(payload).unwrap();
+            resetMetadata();
+            clearItems();
+            clearInvoiceDraft();
+            toast.success(t('advanced.recurring.createSuccess'));
+            router.replace(`/recurring-invoices/${result.id}`);
+            return true;
+        } catch (err: unknown) {
+            const msg = err && typeof err === "object" && "data" in err && (err as { data?: { message?: string } }).data?.message;
+            toast.error(t('errors.prepareError'), { description: typeof msg === "string" ? msg : t('advanced.recurring.createError') });
+            return false;
+        }
+    };
+
     // Fonction pour sauvegarder le brouillon (création ou mise à jour)
     const handleSaveDraft = async (skipRedirect: boolean = false) => {
         setIsSavingDraft(true);
         try {
+            if (isRecurring && !isEditMode) {
+                const ok = await handleCreateRecurring();
+                setIsSavingDraft(false);
+                return;
+            }
             // Valider que le client est sélectionné
             const clientId = storedClientId || clientIdFromUrl;
             if (!clientId) {
@@ -1406,6 +1488,106 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                     </div>
                 </section>
 
+                {/* Options avancées : facture récurrente (création uniquement) */}
+                {!isEditMode && (
+                    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+                            <CollapsibleTrigger asChild>
+                                <Button type="button" variant="ghost" className="w-full justify-between p-0 h-auto font-semibold text-slate-900 hover:bg-transparent">
+                                    <span className="flex items-center gap-2">
+                                        <Repeat className="h-4 w-4 text-primary" />
+                                        {t('advanced.title')}
+                                    </span>
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
+                                </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className="pt-4 space-y-4 border-t mt-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="recurring"
+                                            checked={isRecurring}
+                                            onCheckedChange={(v) => setIsRecurring(!!v)}
+                                        />
+                                        <label htmlFor="recurring" className="text-sm font-medium cursor-pointer">
+                                            {t('advanced.recurring.label')}
+                                        </label>
+                                    </div>
+                                    {isRecurring && (
+                                        <div className="grid gap-4 md:grid-cols-2 pl-6">
+                                            <div>
+                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.frequency')}</label>
+                                                <Select value={recurringFrequency} onValueChange={(v) => setRecurringFrequency(v as RecurrenceFrequency)}>
+                                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="monthly">{t('advanced.recurring.frequencyMonthly')}</SelectItem>
+                                                        <SelectItem value="quarterly">{t('advanced.recurring.frequencyQuarterly')}</SelectItem>
+                                                        <SelectItem value="yearly">{t('advanced.recurring.frequencyYearly')}</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.dayOfMonth')}</label>
+                                                <Input
+                                                    type="number"
+                                                    min={1}
+                                                    max={31}
+                                                    value={recurringDayOfMonth}
+                                                    onChange={(e) => setRecurringDayOfMonth(parseInt(e.target.value, 10) || 1)}
+                                                />
+                                            </div>
+                                            <div className="md:col-span-2">
+                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.endDate')}</label>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                                            {recurringEndDate ? format(recurringEndDate, "PPP") : t('advanced.recurring.endDateOptional')}
+                                                            <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={recurringEndDate}
+                                                            onSelect={setRecurringEndDate}
+                                                            disabled={(date) => issueDate ? date < issueDate : false}
+                                                            initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+                                            <div className="flex items-center space-x-2 md:col-span-2">
+                                                <Checkbox id="recurringAutoSend" checked={recurringAutoSend} onCheckedChange={(v) => setRecurringAutoSend(!!v)} />
+                                                <label htmlFor="recurringAutoSend" className="text-sm font-medium cursor-pointer">{t('advanced.recurring.autoSend')}</label>
+                                            </div>
+                                            {recurringAutoSend && (
+                                                <div className="md:col-span-2">
+                                                    <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.recipientEmail')}</label>
+                                                    <Input
+                                                        type="email"
+                                                        placeholder={t('advanced.recurring.recipientEmailPlaceholder')}
+                                                        value={recurringRecipientEmail}
+                                                        onChange={(e) => setRecurringRecipientEmail(e.target.value)}
+                                                    />
+                                                </div>
+                                            )}
+                                            <div>
+                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.notificationDaysBefore')}</label>
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    value={recurringNotificationDaysBefore}
+                                                    onChange={(e) => setRecurringNotificationDaysBefore(parseInt(e.target.value, 10) || 0)}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    </section>
+                )}
+
                 <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div>
@@ -1752,15 +1934,15 @@ const InvoiceDetails = ({ invoiceId, onSaveDraftReady, onHasUnsavedChanges }: In
                             onClick={() => handleSaveDraft(false)}
                             disabled={isSaving || isLoadingInvoice}
                         >
-                            {isSaving ? (isEditMode ? t('buttons.updating') : t('buttons.saving')) : (isEditMode ? t('buttons.updateDraft') : t('buttons.saveDraft'))}
+                            {isSaving ? (isCreatingRecurring ? t('advanced.recurring.creating') : isEditMode ? t('buttons.updating') : t('buttons.saving')) : (isRecurring && !isEditMode ? t('advanced.recurring.submitButton') : isEditMode ? t('buttons.updateDraft') : t('buttons.saveDraft'))}
                         </Button>
                         <Button 
                             type="submit" 
                             className="w-full sm:w-auto" 
-                            disabled={isSaving || (!isEditMode && !completenessInfo.isComplete)}
-                            title={!completenessInfo.isComplete && !isEditMode ? (t('validation.notReadyToSend') || "Complétez tous les champs requis") : undefined}
+                            disabled={isSaving || (!isEditMode && !isRecurring && !completenessInfo.isComplete) || (!isEditMode && isRecurring && (completenessInfo.missingCount > 0 || !completenessInfo.hasItems))}
+                            title={!isEditMode && !isRecurring && !completenessInfo.isComplete ? (t('validation.notReadyToSend') || "Complétez tous les champs requis") : undefined}
                         >
-                            {isSaving && isSendingInvoice ? t('buttons.sending') : t('buttons.send')}
+                            {isSaving && isCreatingRecurring ? t('advanced.recurring.creating') : isRecurring && !isEditMode ? t('advanced.recurring.submitButton') : (isSaving && isSendingInvoice ? t('buttons.sending') : t('buttons.send'))}
                         </Button>
                     </div>
                 </div>

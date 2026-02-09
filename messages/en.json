@@ -111,6 +111,24 @@
         "showConfirmPassword": "Show password confirmation",
         "hideConfirmPassword": "Hide password confirmation"
       },
+      "passwordStrength": {
+        "mustContain": "Must contain:",
+        "enterPassword": "Enter a password",
+        "weak": "Weak password",
+        "medium": "Medium password",
+        "strong": "Strong password",
+        "veryStrong": "Very strong password",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "requirementsLabel": "Password requirements",
+        "requirementMet": "Requirement met",
+        "requirementNotMet": "Requirement not met",
+        "requirementMinLength": "At least 8 characters",
+        "requirementNumber": "At least 1 number",
+        "requirementLowercase": "At least 1 lowercase letter",
+        "requirementUppercase": "At least 1 uppercase letter",
+        "requirementSpecial": "At least 1 special character"
+      },
       "validation": {
         "firstNameMinLength": "First name must contain at least 2 characters",
         "lastNameMinLength": "Last name must contain at least 2 characters",
@@ -120,8 +138,7 @@
         "passwordUppercase": "Password must contain at least one uppercase letter",
         "passwordLowercase": "Password must contain at least one lowercase letter",
         "passwordNumber": "Password must contain at least one number",
-        "confirmPasswordRequired": "Please confirm your password",
-        "passwordsMismatch": "Passwords do not match",
+        "passwordSpecial": "Password must contain at least one special character (!@#$%^&*...)",
         "companyNameMinLength": "Company name must contain at least 2 characters"
       },
       "toasts": {
@@ -212,6 +229,25 @@
     "products": "Services",
     "catalogAndPricing": "Catalog and pricing",
     "configuration": "Configuration",
+    "addProductDescription": "Add a product to the catalog",
+    "emptyState": {
+      "title": "Welcome to your dashboard!",
+      "description": "This is where you can track your activity. To get started, create your first invoice or add a client.",
+      "createInvoice": "Create invoice",
+      "addClient": "Add client",
+      "step1": {
+        "title": "1. Invoice",
+        "description": "Create professional invoices in seconds."
+      },
+      "step2": {
+        "title": "2. Send",
+        "description": "Send your invoices via email or secure link."
+      },
+      "step3": {
+        "title": "3. Get Paid",
+        "description": "Track your payments and remind unpaid invoices."
+      }
+    },
     "resources": "Resources",
     "documentation": "Documentation",
     "support": "Support",
@@ -348,6 +384,7 @@
     "table": {
       "number": "Number",
       "client": "Client",
+      "noClient": "No client",
       "issueDate": "Issue date",
       "dueDate": "Due date",
       "status": "Status",
@@ -402,7 +439,11 @@
       "customHtmlDescription": "Insert custom HTML for advanced layout (use with caution).",
       "cancel": "Cancel",
       "saving": "Saving...",
-      "update": "Update"
+      "update": "Update",
+      "validation": {
+        "nameRequired": "Name is required",
+        "invalidHexColor": "Invalid hex color"
+      }
     },
     "new": {
       "label": "New invoice",
@@ -467,6 +508,11 @@
         "success": "Invoice duplicated",
         "successDescription": "Invoice #{number} has been duplicated. You can modify the amount.",
         "error": "Error duplicating invoice"
+      },
+      "validation": {
+        "clientRequired": "Client required",
+        "amountRequired": "Amount required",
+        "amountInvalid": "Invalid amount"
       }
     },
     "tutorial": {
@@ -517,6 +563,28 @@
         "sending": "Sending invoice...",
         "updating": "Updating invoice...",
         "creating": "Creating invoice..."
+      },
+      "advanced": {
+        "title": "Advanced options",
+        "recurring": {
+          "label": "Recurring invoice",
+          "frequency": "Frequency",
+          "frequencyMonthly": "Monthly",
+          "frequencyQuarterly": "Quarterly",
+          "frequencyYearly": "Yearly",
+          "dayOfMonth": "Day of month (1-31)",
+          "endDate": "End date (optional)",
+          "endDateOptional": "None (no end date)",
+          "autoSend": "Automatically send generated invoice by email",
+          "recipientEmail": "Recipient email",
+          "recipientEmailPlaceholder": "email@example.com",
+          "notificationDaysBefore": "Notification (days before generation)",
+          "createAction": "Create recurring invoice",
+          "createSuccess": "Recurring invoice created. Invoices will be generated automatically.",
+          "createError": "Could not create recurring invoice.",
+          "creating": "Creating...",
+          "submitButton": "Create recurring invoice"
+        }
       },
       "sections": {
         "invoiceInfo": {
@@ -856,6 +924,7 @@
       },
       "buttons": {
         "edit": "Edit",
+        "editAndResend": "Edit and resend",
         "sendAsQuote": "Send as quote",
         "copyPublicLink": "Copy public link",
         "copyPaymentLink": "Copy payment link",
@@ -982,6 +1051,11 @@
   "clients": {
     "title": "Clients",
     "subtitle": "Manage your address book, view invoice history and prepare your reminders.",
+    "buttons": {
+      "new": "New Client",
+      "importCsv": "Import CSV"
+    },
+    "new": "New Client",
     "new": "New Client",
     "add": "Add Client",
     "edit": "Edit Client",
@@ -1027,6 +1101,7 @@
       "editTitle": "Edit Client",
       "description": "Fill in the client information by sections. Fields marked with an asterisk (*) are required.",
       "addressSection": "Address (optional)",
+      "advancedOptions": "Advanced options",
       "tabs": {
         "informations": "Information",
         "adresse": "Address",
@@ -3319,6 +3394,11 @@
     "errors": {
       "loadingError": "Error loading recurring invoices"
     },
+    "notFound": {
+      "title": "Recurring invoice not found",
+      "description": "This recurring invoice does not exist or you do not have permission to edit it.",
+      "backToList": "Back to list"
+    },
     "form": {
       "createTitle": "Create recurring invoice",
       "editTitle": "Edit recurring invoice",
@@ -3330,6 +3410,10 @@
       "createClient": "Create a client",
       "name": "Name",
       "namePlaceholder": "Ex: Monthly invoice - Subscription",
+      "currency": "Currency",
+      "selectCurrency": "Select a currency",
+      "template": "Invoice template",
+      "selectTemplate": "Select a template",
       "frequency": "Frequency",
       "frequencyOptions": {
         "monthly": "Monthly",
@@ -3360,7 +3444,16 @@
       "update": "Update",
       "createSuccess": "Recurring invoice created successfully",
       "updateSuccess": "Recurring invoice updated successfully",
-      "error": "Error saving"
+      "error": "Error saving",
+      "validation": {
+        "clientRequired": "Client required",
+        "currencyRequired": "Currency required",
+        "templateRequired": "Template required",
+        "descriptionRequired": "Description required",
+        "quantityRequired": "Quantity required",
+        "unitPriceRequired": "Unit price required",
+        "atLeastOneItem": "At least one item is required"
+      }
     }
   },
   "reports": {
@@ -3383,6 +3476,8 @@
     "confidenceLow": "Low",
     "averageRevenue": "Average revenue",
     "totalRevenue": "Total revenue",
+    "totalClients": "Total clients",
+    "totalProducts": "Total products",
     "growthTrend": "Trend",
     "growthTrendIncreasing": "Increasing",
     "growthTrendDecreasing": "Decreasing",

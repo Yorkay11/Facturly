@@ -11,7 +11,7 @@ export function FooterSection() {
     <footer className="w-full max-w-[1320px] mx-auto px-5 flex flex-col md:flex-row justify-between items-start gap-4 md:gap-0 py-10 md:py-[70px]">
       {/* Left Section: Logo, Description */}
       <div className="flex flex-col justify-start items-start gap-4 p-4 md:p-4">
-        <Link href="/" className="flex items-center">
+        <Link href="/?landing=1" className="flex items-center">
           <Image
             src="/logos/logo.png"
             alt="Facturly"

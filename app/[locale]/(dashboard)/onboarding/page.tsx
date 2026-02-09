@@ -37,7 +37,7 @@ export default function OnboardingPage() {
   if (!workspace) {
     // Le workspace devrait toujours exister, mais au cas où...
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
         <div className="w-full max-w-2xl space-y-4">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-64 w-full" />
@@ -71,7 +71,7 @@ export default function OnboardingPage() {
       )}
 
       {!isProfileComplete && (
-        <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
+        <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
           <div className="w-full max-w-4xl">
             <OnboardingWizard 
               workspace={workspace}

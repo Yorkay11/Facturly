@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl';
 import { removeLocalePrefix } from '@/utils/path-utils';
 import { Redirect } from '@/components/navigation';
 
+import { MagicCard } from "@/components/ui/magic-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,9 +124,8 @@ function LoginForm() {
         to={redirectPath}
         type="replace"
         checkUnsavedChanges={false}
-        showLoader={true}
-        loaderType="processing"
-        delay={500}
+        showLoader={false} // Désactiver le loader interne de Redirect car GlobalLoader prend le relais
+        delay={0}
       />
     );
   }
@@ -169,75 +169,75 @@ function LoginForm() {
             />
           </div>
 
-          <Card className="border-none shadow-2xl bg-white/80 backdrop-blur-xl">
-            <CardHeader className="space-y-1 text-center pb-8">
-              <CardTitle className="text-2xl font-bold tracking-tight">{t('login')}</CardTitle>
-              <CardDescription className="text-muted-foreground text-sm">
+          <MagicCard className="rounded-xl shadow-2xl">
+            <CardHeader className="space-y-0.5 text-center pb-4 pt-6 px-6">
+              <CardTitle className="text-xl font-bold tracking-tight">{t('login')}</CardTitle>
+              <CardDescription className="text-muted-foreground text-xs">
                 {t('welcomeBack')}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('email')}</Label>
+            <CardContent className="space-y-4 px-6 pb-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('email')}</Label>
                   <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="vous@entreprise.com"
-                      className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                      className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                       {...form.register("email")}
                     />
                   </div>
                   {form.formState.errors.email ? (
-                    <p className="text-xs text-destructive ml-1">{form.formState.errors.email.message}</p>
+                    <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.email.message}</p>
                   ) : null}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-xs font-medium uppercase text-muted-foreground tracking-wider ml-1">{t('password')}</Label>
-                    <Link href="#" className="text-xs text-primary hover:text-primary/80 font-medium hover:underline">
+                    <Label htmlFor="password" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('password')}</Label>
+                    <Link href="#" className="text-[10px] text-primary hover:text-primary/80 font-medium hover:underline">
                       {t('forgotPassword')}
                     </Link>
                   </div>
                   <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Lock className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
+                      className="pl-9 pr-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
                       {...form.register("password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
                       aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff className="h-3.5 w-3.5" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3.5 w-3.5" />
                       )}
                     </button>
                   </div>
                   {form.formState.errors.password ? (
-                    <p className="text-xs text-destructive ml-1">{form.formState.errors.password.message}</p>
+                    <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.password.message}</p>
                   ) : null}
                 </div>
-                <Button type="submit" className="w-full gap-2 h-11 text-base font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all" disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+                <Button type="submit" className="w-full gap-2 h-9 text-sm font-medium shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   {t('signIn')}
                 </Button>
               </form>
-              
-              <div className="relative my-6">
+
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <Separator className="w-full" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
+                <div className="relative flex justify-center text-[10px] uppercase">
                   <span className="bg-white px-2 text-muted-foreground font-medium">
                     {t('orContinueWith')}
                   </span>
@@ -247,14 +247,14 @@ function LoginForm() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full gap-3 h-11 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium transition-all"
+                className="w-full gap-2 h-9 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium text-sm transition-all"
                 onClick={handleGoogleLogin}
                 disabled={isGoogleLoading || isLoading}
               >
                 {isGoogleLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24">
                     <path
                       fill="#4285F4"
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -276,16 +276,16 @@ function LoginForm() {
                 {t('continueWithGoogle')}
               </Button>
             </CardContent>
-            <div className="p-6 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="p-4 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
+              <p className="text-xs text-muted-foreground">
                 {t('dontHaveAccount')} {" "}
                 <Link href="/register" className="text-primary font-semibold hover:underline">
                   {t('createAccount')}
                 </Link>
               </p>
             </div>
-          </Card>
-          
+          </MagicCard>
+
           <p className="text-center text-xs text-muted-foreground/60 px-4">
             {locale === 'fr' ? (
               <>

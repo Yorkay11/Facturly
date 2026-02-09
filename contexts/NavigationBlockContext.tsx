@@ -51,17 +51,13 @@ export function NavigationBlockProvider({ children }: { children: ReactNode }) {
     // Elle est laissée vide pour éviter les erreurs mais ne devrait pas être appelée
   }, []);
 
-  // Fonction pour abandonner les modifications
+  // Fonction pour abandonner les modifications (ne fait que réinitialiser l'état).
+  // La navigation réelle est faite par le layout avec le router i18n après avoir lu pendingNavigation.
   const handleDiscard = useCallback(() => {
     setHasUnsavedChanges(false);
     shouldBlockNavigationRef.current = false;
-    
-    // Si une navigation était en attente, l'exécuter
-    if (pendingNavigation) {
-      router.push(pendingNavigation);
-      setPendingNavigation(null);
-    }
-  }, [pendingNavigation, router]);
+    setPendingNavigation(null);
+  }, []);
 
   // Fonction pour annuler la navigation
   const handleCancel = useCallback(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 

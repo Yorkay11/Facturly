@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
+import { Link } from '@/i18n/routing';
 
 interface StatusBreakdown {
   label: string;
@@ -26,19 +27,19 @@ interface StatCardProps {
 
 export const StatCard = ({ title, value, helper, icon, trend, variant = "default", statusBreakdown, seeMoreLink, seeMoreLabel = "See more" }: StatCardProps) => {
   const variantStyles: Record<NonNullable<StatCardProps['variant']>, string> = {
-    default: "border-slate-200 bg-white hover:border-slate-300",
-    accent: "border-primary/20 bg-white hover:border-primary/30",
-    success: "border-emerald-200 bg-white hover:border-emerald-300",
-    warning: "border-amber-200 bg-white hover:border-amber-300",
-    danger: "border-red-200 bg-red-300 hover:border-red-300",
+    default: "border-border bg-card hover:border-primary/20",
+    accent: "border-primary/20 bg-card hover:border-primary/30",
+    success: "border-emerald-200 bg-emerald-50/30 dark:bg-emerald-950/10 hover:border-emerald-300",
+    warning: "border-amber-200 bg-amber-50/30 dark:bg-amber-950/10 hover:border-amber-300",
+    danger: "border-destructive/20 bg-destructive/5 hover:border-destructive/30",
   };
 
   const iconStyles: Record<NonNullable<StatCardProps['variant']>, string> = {
-    default: "bg-slate-100 text-slate-600",
+    default: "bg-muted text-muted-foreground",
     accent: "bg-primary/10 text-primary",
-    success: "bg-green-500 text-white",
-    warning: "bg-amber-100 text-amber-600",
-    danger: "bg-red-400 text-white",
+    success: "bg-emerald-500 text-white",
+    warning: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+    danger: "bg-destructive text-destructive-foreground",
   };
 
   const statusColors = {
@@ -56,22 +57,22 @@ export const StatCard = ({ title, value, helper, icon, trend, variant = "default
       )}
     >
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background/60 to-transparent pointer-events-none" />
       
       <div className="relative flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">{title}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
             {seeMoreLink && (
-              <a
+              <Link
                 href={seeMoreLink}
                 className="text-[10px] font-medium text-primary hover:text-primary/80 transition-colors hover:underline"
               >
                 {seeMoreLabel} →
-              </a>
+              </Link>
             )}
           </div>
-          <p className="text-xl md:text-2xl font-bold text-slate-900 mb-1.5 tracking-tight">{value}</p>
+          <p className="text-xl md:text-2xl font-bold text-foreground mb-1.5 tracking-tight">{value}</p>
           
           {trend && (
             <div
@@ -110,14 +111,14 @@ export const StatCard = ({ title, value, helper, icon, trend, variant = "default
 
       {/* Status Breakdown with Progress Bars */}
       {statusBreakdown && statusBreakdown.length > 0 && (
-        <div className="mt-3 space-y-2 pt-3 border-t border-slate-200/60">
+        <div className="mt-3 space-y-2 pt-3 border-t border-border/60">
           {statusBreakdown.map((status, index) => (
             <div key={index} className="space-y-1">
               <div className="flex items-center justify-between text-[10px]">
-                <span className="font-semibold text-slate-700">{status.label}</span>
-                <span className="text-slate-500 font-medium">{status.value.toFixed(1)}%</span>
+                <span className="font-semibold text-foreground/80">{status.label}</span>
+                <span className="text-muted-foreground font-medium">{status.value.toFixed(1)}%</span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-slate-100/80 overflow-hidden">
+              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all duration-500 ease-out",

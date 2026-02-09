@@ -22,7 +22,7 @@ export function Header() {
   const buttonHref = isAuthenticated ? "/dashboard" : "#"
 
   const navItems = [
-    { name: t('home'), href: "/" },
+    { name: t('home'), href: "/?landing=1" },
     { name: t('howItWorks'), href: "/how-it-works" },
     { name: t('features'), href: "/features" },
     { name: t('pricing'), href: "/pricing" },
@@ -43,7 +43,7 @@ export function Header() {
     <header className="w-full py-3 md:py-4 px-1 md:px-2">
       <div className="max-w-[1320px] mx-auto flex items-center justify-between px-2 md:px-6">
         <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-3 shrink-0">
+          <Link href="/?landing=1" className="flex items-center gap-3 shrink-0">
             <Image
               src="/logos/logo.png"
               alt="Facturly"

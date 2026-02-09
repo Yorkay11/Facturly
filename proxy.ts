@@ -60,12 +60,18 @@ export function proxy(request: NextRequest) {
   
   // Construire le chemin sans locale pour vérifier l'authentification
   const pathWithoutLocale = pathname.replace(/^\/(fr|en)/, '') || '/';
-  
+  const token = request.cookies.get("facturly_access_token")?.value;
+
+  // Utilisateur connecté qui arrive sur la landing → redirection vers le dashboard (PWA : éviter de rester sur la landing).
+  // Si ?landing=1 est présent, on n’applique pas la redirection : l’utilisateur peut volontairement aller sur la landing.
+  const wantsLanding = request.nextUrl.searchParams.get('landing') === '1';
+  if ((pathWithoutLocale === '/' || pathWithoutLocale === '') && token && !wantsLanding) {
+    const dashboardUrl = new URL(`/${locale}/dashboard`, request.url);
+    return NextResponse.redirect(dashboardUrl);
+  }
+
   // Vérifier l'authentification pour les routes protégées
   if (!isPublicPath(pathWithoutLocale)) {
-    // Check for authentication token
-    const token = request.cookies.get("facturly_access_token")?.value;
-
     if (!token) {
       // Rediriger vers la page de login avec la locale
       const loginUrl = new URL(`/${locale}/login`, request.url);

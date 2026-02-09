@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +17,7 @@ export function LegalPageHeader({ icon, lastUpdated, backToHome }: LegalPageHead
     )}>
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+          <Link href="/?landing=1" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">{backToHome}</span>
           </Link>

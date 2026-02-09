@@ -5,9 +5,8 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, XCircle, AlertCircle } from "lucide-react";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
-  Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -144,8 +143,11 @@ export const RejectInvoiceModal = ({
   const commentLength = form.watch("comment")?.length || 0;
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[600px]">
+    <ResponsiveModal
+      open={open}
+      onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
+      modalMaxWidth="sm:max-w-[600px]"
+    >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <XCircle className="h-5 w-5 text-destructive" />
@@ -253,8 +255,7 @@ export const RejectInvoiceModal = ({
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveModal>
   );
 };
 

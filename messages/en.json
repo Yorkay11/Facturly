@@ -2928,10 +2928,15 @@
       "loadError": "Error loading notifications. Please try again."
     },
     "push": {
+      "sectionTitle": "Push notifications",
+      "sectionDescription": "Receive alerts (payment received, invoice opened…) even when the tab is closed.",
       "enable": "Enable notifications",
       "enableSuccess": "Notifications enabled. You'll receive alerts even when the tab is closed.",
       "enableError": "Could not enable notifications.",
-      "unsupported": "Push notifications not available (HTTPS required)."
+      "unsupported": "Push notifications not available (HTTPS required).",
+      "statusEnabled": "Enabled — you receive push alerts.",
+      "statusDenied": "Blocked. Re-enable them in your browser settings to get alerts.",
+      "vapidNotConfigured": "Not configured on server (VAPID key missing). Contact the administrator."
     }
   },
   "metadata": {

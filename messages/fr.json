@@ -2934,10 +2934,15 @@
       "loadError": "Erreur lors du chargement des notifications. Veuillez réessayer."
     },
     "push": {
+      "sectionTitle": "Notifications push",
+      "sectionDescription": "Recevez des alertes (paiement reçu, facture ouverte…) même quand l’onglet est fermé.",
       "enable": "Activer les notifications",
       "enableSuccess": "Notifications activées. Vous recevrez les alertes même fenêtre fermée.",
       "enableError": "Impossible d'activer les notifications.",
-      "unsupported": "Notifications push non disponibles (HTTPS requis)."
+      "unsupported": "Notifications push non disponibles (HTTPS requis).",
+      "statusEnabled": "Activées — vous recevez les alertes push.",
+      "statusDenied": "Refusées. Réautorisez-les dans les paramètres du navigateur pour les activer.",
+      "vapidNotConfigured": "Non configurées côté serveur (clé VAPID manquante). Contactez l’administrateur."
     }
   },
   "metadata": {

@@ -17,11 +17,12 @@ export type FuryMood =
 interface FuryMascotProps {
   mood: FuryMood;
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   animated?: boolean;
 }
 
 const sizeMap = {
+  xs: 32,
   sm: 80,
   md: 120,
   lg: 160,
@@ -58,9 +59,9 @@ export function FuryMascot({
         <div 
           className="relative rounded-full bg-gradient-to-br from-white via-white to-slate-50 shadow-lg ring-2 ring-white/50 overflow-hidden"
           style={{
-            width: `${imageSize + 24}px`,
-            height: `${imageSize + 24}px`,
-            padding: '12px'
+            width: `${imageSize + (size === 'xs' ? 8 : 24)}px`,
+            height: `${imageSize + (size === 'xs' ? 8 : 24)}px`,
+            padding: size === 'xs' ? '4px' : '12px'
           }}
         >
           <div className="w-full h-full flex items-center justify-center">

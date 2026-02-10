@@ -21,6 +21,7 @@ import { ConditionalRedirect } from '@/components/navigation';
 import { useNotificationsPush } from '@/hooks/useNotificationsPush';
 import { useWebPushSubscribe } from '@/hooks/useWebPushSubscribe';
 import { useLocale } from 'next-intl';
+import { ChatFab } from '@/components/chat/ChatFab';
 
 // Composant interne pour utiliser le contexte et afficher le dialog
 function NavigationBlockDialog() {
@@ -241,6 +242,7 @@ function DashboardLayoutContent({
         </div>
       </main>
       <BottomTabs />
+      <ChatFab />
       <NavigationBlockDialog />
       <OnboardingRedirect />
       {isChangingWorkspace && (

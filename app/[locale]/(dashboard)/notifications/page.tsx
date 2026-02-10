@@ -136,18 +136,6 @@ export default function NotificationsPage() {
         </div>
         <div className="flex items-center gap-3">
           <NotificationBadge count={unreadCount} />
-          {showEnablePush && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEnablePush}
-              disabled={pushEnabling}
-              className="gap-2"
-            >
-              <IoNotificationsOutline className="h-4 w-4" />
-              {t('push.enable')}
-            </Button>
-          )}
           {unreadCount > 0 && (
             <Button
               variant="outline"
@@ -161,6 +149,45 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
+
+      {/* Section Notifications push — toujours visible pour voir où s'abonner et l'état VAPID */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <IoNotificationsOutline className="h-5 w-5" />
+            {t('push.sectionTitle')}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground font-normal">
+            {t('push.sectionDescription')}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {!pushSupported && (
+            <p className="text-sm text-muted-foreground">{t('push.unsupported')}</p>
+          )}
+          {pushSupported && !vapidReady && (
+            <p className="text-sm text-amber-600 dark:text-amber-500">{t('push.vapidNotConfigured')}</p>
+          )}
+          {pushSupported && vapidReady && pushPermission === 'granted' && (
+            <p className="text-sm text-green-600 dark:text-green-500">{t('push.statusEnabled')}</p>
+          )}
+          {pushSupported && vapidReady && pushPermission === 'denied' && (
+            <p className="text-sm text-muted-foreground">{t('push.statusDenied')}</p>
+          )}
+          {showEnablePush && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEnablePush}
+              disabled={pushEnabling}
+              className="gap-2"
+            >
+              <IoNotificationsOutline className="h-4 w-4" />
+              {t('push.enable')}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Filtres */}
       <div className="flex gap-2 flex-wrap">

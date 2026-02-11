@@ -2,13 +2,12 @@
 
 import { Link } from '@/i18n/routing';
 import Image from "next/image";
-import { useRouter } from '@/i18n/routing';
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import { useForm, useFormState, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Mail, User, Building2 } from "lucide-react";
-import { Controller } from "react-hook-form";
+import { Loader2, Mail, User } from "lucide-react";
+import type { Control } from "react-hook-form";
 
 import { MagicCard } from "@/components/ui/magic-card";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,19 +19,85 @@ import { Separator } from "@/components/ui/separator";
 import { useRegisterMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from 'next-intl';
-import { useMemo } from 'react';
 import { Redirect } from '@/components/navigation';
+import { removeLocalePrefix } from '@/utils/path-utils';
 
 import { DotPattern } from "@/components/ui/dot-pattern";
-import { Quote } from "lucide-react";
+
+type RegisterFormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+};
+
+/** Affiche l’erreur d’un champ ; s’abonne uniquement à ce champ → le parent ne re-render pas à chaque frappe. */
+function GoogleIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
+  );
+}
+
+/** Affiche l'erreur d'un champ ; s'abonne uniquement à ce champ → le parent ne re-render pas à chaque frappe. */
+function RegisterFieldError({
+  control,
+  name,
+}: {
+  control: Control<RegisterFormValues>;
+  name: keyof RegisterFormValues;
+}) {
+  const { errors } = useFormState({ control, name });
+  const message = errors[name]?.message;
+  if (!message) return null;
+  return <p className="text-[10px] text-destructive ml-0.5">{message}</p>;
+}
+
+/** Champ mot de passe avec erreur isolée (useFormState sur "password" uniquement). */
+function RegisterPasswordField({
+  control,
+  ...props
+}: {
+  control: Control<RegisterFormValues>;
+  placeholder: string;
+  label: string;
+  translationNamespace: string;
+  compact?: boolean;
+  className?: string;
+}) {
+  const { errors } = useFormState({ control, name: "password" });
+  return (
+    <Controller
+      control={control}
+      name="password"
+      render={({ field }) => (
+        <PasswordInput
+          id="password"
+          name={field.name}
+          value={field.value}
+          onChange={field.onChange}
+          onBlur={field.onBlur}
+          error={errors.password?.message}
+          translationNamespace={props.translationNamespace}
+          compact={props.compact}
+          className={props.className}
+          placeholder={props.placeholder}
+          label={props.label}
+        />
+      )}
+    />
+  );
+}
 
 export default function RegisterPage() {
-  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('auth.register');
   const tAuth = useTranslations('auth');
-  const tCommon = useTranslations('common');
-  const [register, { isLoading, isSuccess, isError, error, data }] = useRegisterMutation();
+  const [registerUser, { isLoading, isSuccess, isError, error, data }] = useRegisterMutation();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Créer le schéma de validation avec les traductions dynamiques (sans confirmation mot de passe)
@@ -50,10 +115,11 @@ export default function RegisterPage() {
       .regex(/[!-\/:-@[-`{-~]/, t('validation.passwordSpecial')),
   }), [t]);
 
-  type RegisterFormValues = z.infer<typeof registerSchema>;
+  type RegisterFormValuesLocal = z.infer<typeof registerSchema>;
 
-  const form = useForm<RegisterFormValues>({
+  const { register, handleSubmit, control, formState: { isValid } } = useForm<RegisterFormValuesLocal>({
     resolver: zodResolver(registerSchema as z.ZodType<RegisterFormValues>),
+    mode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -88,7 +154,7 @@ export default function RegisterPage() {
       }
       setShouldRedirect(true);
     }
-  }, [data, isSuccess, router, t]);
+  }, [data, isSuccess, t]);
 
   useEffect(() => {
     if (isError && error) {
@@ -127,23 +193,24 @@ export default function RegisterPage() {
         description: displayMessage,
       });
     }
-  }, [error, isError]);
+  }, [error, isError, t]);
 
-  // Redirection après inscription réussie
+  // Redirection après inscription réussie : afficher le loader pendant la redirection
   if (shouldRedirect && redirectPath) {
     return (
       <Redirect
-        to={redirectPath}
+        to={removeLocalePrefix(redirectPath)}
         type="replace"
         checkUnsavedChanges={false}
-        showLoader={false} // Désactiver le loader interne de Redirect car GlobalLoader prend le relais
-        delay={0}
+        showLoader={true}
+        loaderType="processing"
+        delay={500}
       />
     );
   }
 
   const onSubmit = (values: RegisterFormValues) => {
-    register({
+    registerUser({
       email: values.email,
       password: values.password,
       firstName: values.firstName,
@@ -153,7 +220,6 @@ export default function RegisterPage() {
 
   const handleGoogleLogin = () => {
     setIsGoogleLoading(true);
-    // Rediriger vers la route API Google OAuth
     const redirectTo = '/dashboard';
     const apiUrl = `/api/auth/google?redirect=${encodeURIComponent(redirectTo)}&locale=${locale}`;
     window.location.href = apiUrl;
@@ -206,139 +272,91 @@ export default function RegisterPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 px-6 pb-6">
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="firstName" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('fields.firstName')}</Label>
+                    <Label htmlFor="firstName" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('fields.firstName')}</Label>
                     <div className="relative group">
-                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
                       <Input
                         id="firstName"
                         type="text"
+                        autoComplete="given-name"
                         placeholder={t('placeholders.firstName')}
-                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-[background-color,border-color] duration-150"
-                        {...form.register("firstName")}
+                        className="pl-9 h-10 text-sm"
+                        {...register("firstName")}
                       />
                     </div>
-                    {form.formState.errors.firstName ? (
-                      <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.firstName.message}</p>
-                    ) : null}
+                    <RegisterFieldError control={control} name="firstName" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="lastName" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('fields.lastName')}</Label>
+                    <Label htmlFor="lastName" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('fields.lastName')}</Label>
                     <div className="relative group">
-                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
                       <Input
                         id="lastName"
                         type="text"
+                        autoComplete="family-name"
                         placeholder={t('placeholders.lastName')}
-                        className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-[background-color,border-color] duration-150"
-                        {...form.register("lastName")}
+                        className="pl-9 h-10 text-sm"
+                        {...register("lastName")}
                       />
                     </div>
-                    {form.formState.errors.lastName ? (
-                      <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.lastName.message}</p>
-                    ) : null}
+                    <RegisterFieldError control={control} name="lastName" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-[10px] font-medium uppercase text-muted-foreground tracking-wider ml-0.5">{t('fields.email')}</Label>
+                  <Label htmlFor="email" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('fields.email')}</Label>
                   <div className="relative group">
-                    <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
                     <Input
                       id="email"
                       type="email"
+                      autoComplete="email"
                       placeholder={t('placeholders.email')}
-                      className="pl-9 h-9 text-sm bg-gray-50 border-gray-200 focus:bg-white transition-all duration-200"
-                      {...form.register("email")}
+                      className="pl-9 h-10 text-sm"
+                      {...register("email")}
                     />
                   </div>
-                  {form.formState.errors.email ? (
-                    <p className="text-[10px] text-destructive ml-0.5">{form.formState.errors.email.message}</p>
-                  ) : null}
+                  <RegisterFieldError control={control} name="email" />
                 </div>
-                <Controller
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <PasswordInput
-                      id="password"
-                      name={field.name}
-                      value={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      placeholder={t('placeholders.password')}
-                      label={t('fields.password')}
-                      error={form.formState.errors.password?.message}
-                      translationNamespace="auth.register.passwordStrength"
-                      compact
-                      className="space-y-1.5"
-                    />
-                  )}
+                <RegisterPasswordField
+                  control={control}
+                  placeholder={t('placeholders.password')}
+                  label={t('fields.password')}
+                  translationNamespace="auth.register.passwordStrength"
+                  compact
+                  className="space-y-1.5"
                 />
 
                 <Button
                   type="submit"
-                  className="w-full gap-2 h-9 text-sm font-medium shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all"
-                  disabled={isLoading}
+                  disabled={!isValid || isLoading}
+                  className="w-full gap-2 h-10"
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {t('buttons.creating')}
-                    </>
-                  ) : (
-                    t('buttons.createAccount')
-                  )}
+                  {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {isLoading ? t('buttons.creating') : t('buttons.createAccount')}
                 </Button>
               </form>
 
-              <div className="space-y-3 text-center text-foreground/60 pt-1">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-[10px] uppercase">
-                    <span className="bg-white px-2 text-muted-foreground font-medium">{tAuth('orContinueWith')}</span>
-                  </div>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center"><Separator className="w-full" /></div>
+                <div className="relative flex justify-center text-[10px] uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">{tAuth('orContinueWith')}</span>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-9 bg-white hover:bg-gray-50 text-foreground border-gray-200 font-medium text-sm transition-all"
-                  onClick={handleGoogleLogin}
-                  disabled={isGoogleLoading || isLoading}
-                >
-                  {isGoogleLoading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      {tAuth('processing')}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-                        <path
-                          fill="#4285F4"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        />
-                        <path
-                          fill="#EA4335"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
-                      </svg>
-                      {tAuth('continueWithGoogle')}
-                    </>
-                  )}
-                </Button>
               </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2 h-10"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading || isLoading}
+              >
+                {isGoogleLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                <GoogleIcon />
+                {tAuth('continueWithGoogle')}
+              </Button>
             </CardContent>
             <div className="p-4 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
               <p className="text-xs text-muted-foreground">
@@ -378,17 +396,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-      
-      {shouldRedirect && redirectPath && (
-        <Redirect
-          to={redirectPath}
-          type="replace"
-          checkUnsavedChanges={false}
-          showLoader={true}
-          loaderType="processing"
-          delay={500}
-        />
-      )}
     </div>
   );
 }

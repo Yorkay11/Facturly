@@ -88,10 +88,10 @@
         "confirmPassword": "Confirm password"
       },
       "placeholders": {
-        "firstName": "John",
-        "lastName": "Doe",
+        "firstName": "York",
+        "lastName": "Wona",
         "email": "you@company.com",
-        "companyName": "My Company Inc",
+        "companyName": "My Company SAS",
         "password": "••••••••",
         "confirmPassword": "••••••••"
       },
@@ -3060,8 +3060,8 @@
         "nameLabelIndividual": "Name displayed on invoices",
         "nameLabelCompany": "Company name",
         "nameOptional": "(Optional)",
-        "namePlaceholderIndividual": "Ex: John Doe – Freelance Developer",
-        "namePlaceholder": "My Company LLC",
+        "namePlaceholderIndividual": "Ex: York Wona – Freelance Developer",
+        "namePlaceholder": "My Company SAS",
         "nameHintIndividual": "This name will appear on all your invoices",
         "defaultCurrency": "Default currency",
         "defaultCurrencyPlaceholder": "Select a currency",
@@ -3079,7 +3079,7 @@
       "skipHint": "You can complete this information later",
       "fields": {
         "legalName": "Legal name",
-        "legalNamePlaceholder": "My Limited Liability Company",
+        "legalNamePlaceholder": "My SAS Company",
         "taxId": "Tax identification number",
         "taxIdPlaceholder": "Ex: NINEA, RCCM, Tax ID",
         "vatNumber": "VAT number",

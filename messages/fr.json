@@ -3066,7 +3066,7 @@
         "nameLabelIndividual": "Nom affiché sur les factures",
         "nameLabelCompany": "Nom de l'entreprise",
         "nameOptional": "(Optionnel)",
-        "namePlaceholderIndividual": "Ex: John Doe – Développeur freelance",
+        "namePlaceholderIndividual": "Ex: York Wona – Développeur freelance",
         "namePlaceholder": "Ma Société SARL",
         "nameHintIndividual": "Ce nom apparaîtra sur toutes vos factures",
         "defaultCurrency": "Devise par défaut",

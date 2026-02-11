@@ -1510,7 +1510,7 @@
     "hero": {
       "title": "Invoicing in 60 seconds",
       "subtitle": "The mobile-first platform to create, send and receive payments in West Africa.",
-      "avatarsText": "Join thousands of entrepreneurs who trust FURY",
+      "avatarsText": "Join first companies who trust FURY",
       "ctaAuthenticated": "Access dashboard",
       "ctaGuest": "Join the waitlist",
       "features": {
@@ -1897,6 +1897,7 @@
       }
     },
     "supportedCountries": {
+      "badge": "Regional coverage",
       "title": "Supported countries",
       "subtitle": "Invoice across the Franc Zone. Precisely choose FCFA (XOF) or FCFA (XAF) depending on your zone.",
       "uemoa": "UEMOA Zone — BCEAO",
@@ -3150,7 +3151,7 @@
       },
       "publisher": {
         "title": "1. Service publisher",
-        "content": "The facturly.online website is published by [Company name or sole proprietor], [Legal form], registered at the Trade Register of [City, Country] under number [RCCM].\n\n• Registered office: [Address]\n• Contact: support@facturly.online"
+        "content": "The facturly.online website is published by Devone Company, based in Lomé (Togo). Contact: support@facturly.online"
       },
       "hosting": {
         "title": "2. Hosting",

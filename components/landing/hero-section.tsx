@@ -164,7 +164,7 @@ export function HeroSection() {
           <HeroFeatures />
         </div>
 
-        <div className="pt-8 flex flex-col items-center gap-4">
+        <div className="py-4 md:pt-8 flex flex-col items-center gap-4">
           <Button 
             onClick={handleClick}
             onMouseEnter={() => {

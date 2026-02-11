@@ -1510,12 +1510,14 @@
     "hero": {
       "title": "Invoicing in 60 seconds",
       "subtitle": "The mobile-first platform to create, send and receive payments in West Africa.",
+      "avatarsText": "Join thousands of entrepreneurs who trust FURY",
       "ctaAuthenticated": "Access dashboard",
       "ctaGuest": "Join the waitlist",
       "features": {
         "sixtySeconds": "to create an invoice",
         "whatsapp": "penetration in Africa",
-        "mobileMoney": "payment methods"
+        "mobileMoney": "payment methods",
+        "fury": "AI assistant at your service"
       }
     },
     "header": {
@@ -1959,27 +1961,23 @@
       }
     },
     "realMetrics": {
-      "title": "Concrete results",
-      "subtitle": "Numbers that speak for themselves",
+      "title": "What we offer you",
+      "subtitle": "Simplicity, speed and mobile money at the heart of your invoicing.",
       "speed": {
-        "value": "60s",
-        "label": "Invoice creation",
-        "description": "Average time to create and send an invoice"
+        "title": "Speed",
+        "description": "Create and send your invoices in a few clicks"
       },
       "whatsapp": {
-        "value": "92%",
-        "label": "WhatsApp delivery",
-        "description": "Invoice delivery rate via WhatsApp"
+        "title": "WhatsApp delivery",
+        "description": "Deliver invoices directly to your clients"
       },
       "payment": {
-        "value": "48h",
-        "label": "Average payment",
-        "description": "Average payment time with mobile money"
+        "title": "Mobile money",
+        "description": "Get paid via Orange Money, MTN, Wave and more"
       },
-      "growth": {
-        "value": "+320%",
-        "label": "Quarterly growth",
-        "description": "New users this quarter"
+      "fury": {
+        "title": "FURY at your side",
+        "description": "An AI assistant to help you every day"
       }
     },
     "featuresSection": {
@@ -3173,7 +3171,7 @@
       "sections": {
         "introduction": {
           "title": "1. Welcome to Facturly",
-          "content": "Thanks for using Facturly! By accessing our platform, you're joining a community of entrepreneurs simplifying their management. By using our services, you agree to these common-sense rules that help us protect everyone.\n\nFacturly is operated by Devone Consulting, based in Lomé (Togo). Our relationship is governed by Togolese law and OHADA standards, ensuring transparency for your transactions within the Franc Zone."
+          "content": "Thanks for using Facturly! By accessing our platform, you're joining a community of entrepreneurs simplifying their management. By using our services, you agree to these common-sense rules that help us protect everyone.\n\nFacturly is operated by Devone Company, based in Lomé (Togo). Our relationship is governed by Togolese law and OHADA standards, ensuring transparency for your transactions within the Franc Zone."
         },
         "acceptance": {
           "title": "2. What to know before you start",
@@ -3245,7 +3243,7 @@
       "lastUpdated": "Last updated",
       "lastUpdatedDate": "February 1, 2026",
       "tableOfContents": "Table of Contents",
-      "dataController": "Responsible: Devone Consulting, registered at RCCM Lomé under number TG-LOM 2024 A 001 (Lomé, Togo)",
+      "dataController": "Responsible: Devone Company, registered at RCCM Lomé under number TG-LOM 2026 A 001 (Lomé, Togo)",
       "sections": {
         "introduction": {
           "title": "1. We respect your privacy",

@@ -18,6 +18,7 @@ import { FuryMascot } from "@/components/mascot/FuryMascot";
 import { ChatMessageList } from "@/components/chat/ChatPanel";
 import AiInput from "@/components/ai-input";
 import { cn } from "@/lib/utils";
+import { logoutAndRedirect } from "@/services/api/base";
 
 function ChatDrawerContent({
   chatApiUrl,
@@ -28,14 +29,25 @@ function ChatDrawerContent({
   chatHeaders: Record<string, string>;
   onNotReady?: () => void;
 }) {
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: chatApiUrl,
-        headers: chatHeaders,
-      }),
-    [chatApiUrl, chatHeaders]
-  );
+  const transport = useMemo(() => {
+    // Créer un fetch personnalisé qui intercepte les erreurs 401
+    const authAwareFetch: typeof fetch = async (input, init) => {
+      const response = await fetch(input, init);
+      
+      // Intercepter les erreurs 401 avant qu'elles ne soient traitées par le transport
+      if (!response.ok && response.status === 401) {
+        logoutAndRedirect();
+      }
+      
+      return response;
+    };
+
+    return new DefaultChatTransport({
+      api: chatApiUrl,
+      headers: chatHeaders,
+      fetch: authAwareFetch,
+    });
+  }, [chatApiUrl, chatHeaders]);
 
   const { messages, sendMessage, status, error } = useChat({
     transport,

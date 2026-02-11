@@ -24,11 +24,11 @@ const CEMAC_COUNTRIES = [
 
 function CountryFlag({ name, flag }: { name: string; flag: string }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card/60 border border-border/60 hover:border-primary/20 transition-colors">
-      <div className="relative w-6 h-6 flex-shrink-0">
+    <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-card/70 border border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-colors">
+      <div className="relative w-6 h-6 flex-shrink-0 rounded-full overflow-hidden">
         <Image src={flag} alt={name} fill className="object-contain" unoptimized sizes="24px" />
       </div>
-      <span className="text-sm font-medium text-foreground">{name}</span>
+      <span className="text-xs md:text-sm font-medium text-foreground">{name}</span>
     </div>
   );
 }
@@ -37,50 +37,58 @@ export function SupportedCountriesSection() {
   const t = useTranslations("landing.supportedCountries");
 
   return (
-    <section className="w-full py-12 md:py-16 px-4 md:px-6 bg-muted/20">
+    <section className="w-full py-14 md:py-20 px-4 md:px-6 bg-gradient-to-b from-background to-muted/30">
       <div className="max-w-[1320px] mx-auto">
-        <div className="text-center mb-10 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-            {t("title")}
-          </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t("subtitle")}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
-          <div className="rounded-xl border border-border bg-card/80 p-5 md:p-6">
-            <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">
-              {t("uemoa")}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              {t("uemoaDesc")}
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,1.4fr] gap-10 md:gap-14 items-start">
+          {/* Texte à gauche */}
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] md:text-xs font-medium uppercase tracking-[0.16em] text-primary mb-4">
+              {t("badge")}
             </p>
-            <div className="flex flex-wrap gap-2">
-              {UEMOA_COUNTRIES.map((c) => (
-                <CountryFlag key={c.code} name={c.name} flag={c.flag} />
-              ))}
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-foreground mb-3">
+              {t("title")}
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-xl">
+              {t("subtitle")}
+            </p>
+
+            <div className="mt-6 space-y-2 text-xs md:text-sm text-muted-foreground">
+              <p>{t("uemoaDesc")}</p>
+              <p>{t("cemacDesc")}</p>
             </div>
+
+            <p className="mt-6 text-xs md:text-sm font-medium text-foreground">
+              {t("crossBorder")}
+            </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card/80 p-5 md:p-6">
-            <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">
-              {t("cemac")}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              {t("cemacDesc")}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {CEMAC_COUNTRIES.map((c) => (
-                <CountryFlag key={c.code} name={c.name} flag={c.flag} />
-              ))}
+          {/* Drapeaux à droite */}
+          <div className="rounded-2xl border border-border/70 bg-card/80 backdrop-blur-sm p-5 md:p-6 lg:p-7 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <h3 className="text-xs md:text-sm font-semibold text-primary uppercase tracking-[0.18em] mb-3">
+                  {t("uemoa")}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {UEMOA_COUNTRIES.map((c) => (
+                    <CountryFlag key={c.code} name={c.name} flag={c.flag} />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs md:text-sm font-semibold text-primary uppercase tracking-[0.18em] mb-3">
+                  {t("cemac")}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {CEMAC_COUNTRIES.map((c) => (
+                    <CountryFlag key={c.code} name={c.name} flag={c.flag} />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        <p className="text-center text-sm font-medium text-foreground mt-6 px-4">
-          {t("crossBorder")}
-        </p>
       </div>
     </section>
   );

@@ -13,7 +13,7 @@ export const mockInvoices: MockInvoice[] = [
   {
     id: "1",
     number: "INV-2025-001",
-    client: "DevOne Consulting",
+    client: "DevOne Company",
     issueDate: "2025-01-04",
     dueDate: "2025-01-18",
     amount: 1250,

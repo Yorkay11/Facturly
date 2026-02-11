@@ -154,7 +154,7 @@ export function MockDashboardPreview() {
                     <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white font-black text-xl">F</div>
                     <div className="text-right">
                       <h4 className="font-black text-slate-900 text-xl uppercase tracking-tighter">Facture</h4>
-                      <p className="text-primary font-bold text-sm">#FAC-2024-001</p>
+                      <p className="text-primary font-bold text-sm">#FAC-2026-001</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-8 text-[10px]">

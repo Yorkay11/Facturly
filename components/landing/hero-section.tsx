@@ -11,7 +11,7 @@ import { HeroFeatures } from "./hero-features"
 import { DotPattern } from "@/components/ui/dot-pattern"
 import SplitText from "@/components/ui/split-text"
 import { useWaitlist } from "@/contexts/WaitlistContext"
-import { FuryMascot } from "@/components/mascot/FuryMascot"
+import { AvatarCircles } from "@/components/ui/avatar-circles"
 
 // Composant mémoïsé pour éviter de re-render la grille complexe
 const StaticGridBackground = memo(() => (
@@ -107,8 +107,8 @@ export function HeroSection() {
 
       {/* Contenu principal */}
       <div className={cn(
-        "relative z-20 space-y-8 max-w-4xl px-6 mx-auto transition-transform duration-700",
-        "mt-36 md:mt-[140px] lg:mt-[180px]"
+        "relative z-20 space-y-6 max-w-4xl px-6 mx-auto transition-transform duration-700",
+        "mt-36 md:mt-[120px] lg:mt-[160px]"
       )}>
         <div className="will-change-transform">
           <SplitText
@@ -124,6 +124,41 @@ export function HeroSection() {
         <p className="text-muted-foreground text-lg md:text-xl font-medium leading-relaxed max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-500 fill-mode-both">
           {t('subtitle')}
         </p>
+
+        <div className="pt-4 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-600 fill-mode-both">
+          <AvatarCircles
+            numPeople={5}
+            avatarUrls={[
+              {
+                imageUrl: "/mascot/fury_happy.webp",
+                profileUrl: "#",
+              },
+              {
+                imageUrl: "/mascot/fury_smile.webp",
+                profileUrl: "#",
+              },
+              {
+                imageUrl: "/mascot/fury_welcome.webp",
+                profileUrl: "#",
+              },
+              {
+                imageUrl: "/mascot/fury_focus.webp",
+                profileUrl: "#",
+              },
+              {
+                imageUrl: "/mascot/fury_sleepy.webp",
+                profileUrl: "#",
+              },
+              {
+                imageUrl: "/mascot/fury_security.webp",
+                profileUrl: "#",
+              },
+            ]}
+          />
+          <p className="text-sm text-muted-foreground">
+            {t('avatarsText')}
+          </p>
+        </div>
 
         <div className="pt-4 animate-in fade-in zoom-in duration-700 delay-700 fill-mode-both">
           <HeroFeatures />

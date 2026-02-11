@@ -1516,12 +1516,14 @@
     "hero": {
       "title": "Facturation en 60 secondes",
       "subtitle": "La plateforme mobile-first pour créer, envoyer et recevoir vos paiements en Afrique de l'Ouest.",
+      "avatarsText": "Rejoignez des milliers d'entrepreneurs qui font confiance à FURY",
       "ctaAuthenticated": "Accéder au tableau de bord",
       "ctaGuest": "Rejoindre la liste d'attente",
       "features": {
         "sixtySeconds": "pour créer une facture",
         "whatsapp": "pénétration en Afrique",
-        "mobileMoney": "méthodes de paiement"
+        "mobileMoney": "méthodes de paiement",
+        "fury": "assistant IA à votre service"
       }
     },
     "header": {
@@ -1965,27 +1967,23 @@
       }
     },
     "realMetrics": {
-      "title": "Des résultats concrets",
-      "subtitle": "Les chiffres qui parlent d'eux-mêmes",
+      "title": "Ce que nous vous proposons",
+      "subtitle": "Simplicité, rapidité et paiement mobile au cœur de votre facturation.",
       "speed": {
-        "value": "60s",
-        "label": "Création de facture",
-        "description": "Temps moyen pour créer et envoyer une facture"
+        "title": "Rapidité",
+        "description": "Créez et envoyez vos factures en quelques clics"
       },
       "whatsapp": {
-        "value": "92%",
-        "label": "Livraison WhatsApp",
-        "description": "Taux de livraison des factures par WhatsApp"
+        "title": "Envoi WhatsApp",
+        "description": "Livrez vos factures directement à vos clients"
       },
       "payment": {
-        "value": "48h",
-        "label": "Paiement moyen",
-        "description": "Délai moyen de paiement avec mobile money"
+        "title": "Mobile money",
+        "description": "Encaissez via Orange Money, MTN, Wave et plus"
       },
-      "growth": {
-        "value": "+320%",
-        "label": "Croissance trimestrielle",
-        "description": "Nouveaux utilisateurs ce trimestre"
+      "fury": {
+        "title": "FURY à l'écoute",
+        "description": "Un assistant IA pour vous aider au quotidien"
       }
     },
     "featuresSection": {
@@ -3179,7 +3177,7 @@
       "sections": {
         "introduction": {
           "title": "1. Bienvenue chez Facturly",
-          "content": "Merci d'utiliser Facturly ! En accédant à notre plateforme, vous rejoignez une communauté d'entrepreneurs qui simplifient leur gestion. En utilisant nos services, vous acceptez ces règles de bon sens qui nous permettent de protéger tout le monde.\n\nFacturly est opéré par Devone Consulting, basé à Lomé (Togo). Notre relation est régie par le droit togolais et les standards de l'OHADA, garantissant la transparence de vos transactions au sein de l'espace zone franc."
+          "content": "Merci d'utiliser Facturly ! En accédant à notre plateforme, vous rejoignez une communauté d'entrepreneurs qui simplifient leur gestion. En utilisant nos services, vous acceptez ces règles de bon sens qui nous permettent de protéger tout le monde.\n\nFacturly est opéré par Devone Company, basé à Lomé (Togo). Notre relation est régie par le droit togolais et les standards de l'OHADA, garantissant la transparence de vos transactions au sein de l'espace zone franc."
         },
         "acceptance": {
           "title": "2. Ce qu'il faut savoir avant de commencer",
@@ -3251,7 +3249,7 @@
       "lastUpdated": "Dernière mise à jour",
       "lastUpdatedDate": "1er février 2026",
       "tableOfContents": "Table des matières",
-      "dataController": "Responsable : Devone Consulting, immatriculée au RCCM de Lomé sous le numéro TG-LOM 2024 A 001 (Lomé, Togo)",
+      "dataController": "Responsable : Devone Company, immatriculée au RCCM de Lomé sous le numéro TG-LOM 2026 A 001 (Lomé, Togo)",
       "sections": {
         "introduction": {
           "title": "1. On respecte votre vie privée",

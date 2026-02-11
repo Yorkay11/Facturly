@@ -811,7 +811,7 @@ export default function ReportsPage() {
                 <SelectContent>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                     <SelectItem key={month} value={month.toString()}>
-                      {new Date(2024, month - 1, 1).toLocaleDateString(
+                      {new Date(2026, month - 1, 1).toLocaleDateString(
                         locale === 'fr' ? "fr-FR" : "en-US",
                         { month: 'long' }
                       )}

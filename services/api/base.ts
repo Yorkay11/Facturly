@@ -25,7 +25,7 @@ if (!BASE_URL) {
 // Fonction pour nettoyer les cookies et rediriger vers la page de connexion
 export const WORKSPACE_ID_COOKIE = "facturly_workspace_id";
 
-function logoutAndRedirect() {
+export function logoutAndRedirect() {
   if (typeof window !== "undefined") {
     document.cookie = "facturly_access_token=; path=/; max-age=0";
     document.cookie = "facturly_refresh_token=; path=/; max-age=0";
@@ -150,7 +150,8 @@ export const baseQueryWithAuth: BaseQueryFn<
       "AUTH_UNAUTHORIZED",
     ];
 
-    if (errorCode && logoutCodes.includes(errorCode)) {
+    // Logout si code d'erreur spécifique OU si pas de code (401 générique = session invalide)
+    if (!errorCode || logoutCodes.includes(errorCode)) {
       logoutAndRedirect();
     }
   }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { FaClock, FaMessage, FaMobileScreen } from 'react-icons/fa6'
+import { FaClock, FaMessage, FaMobileScreen, FaRobot } from 'react-icons/fa6'
 import { motion } from 'framer-motion'
 
 export function HeroFeatures() {
@@ -43,11 +43,23 @@ export function HeroFeatures() {
         highlight: "text-violet-700 dark:text-violet-400",
         iconBg: "bg-gradient-to-br from-violet-500/20 to-purple-500/20"
       }
+    },
+    {
+      icon: FaRobot,
+      text: t('fury'),
+      highlight: "FURY",
+      colors: {
+        bg: "from-pink-500/10 via-rose-500/10 to-fuchsia-500/10",
+        border: "border-pink-500/30 hover:border-pink-500/50",
+        icon: "text-pink-600 dark:text-pink-500",
+        highlight: "text-pink-700 dark:text-pink-400",
+        iconBg: "bg-gradient-to-br from-pink-500/20 to-rose-500/20"
+      }
     }
   ]
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 mt-6 md:mt-12">
+    <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 mt-4 md:mt-6">
       {features.map((feature, index) => {
         const Icon = feature.icon
         return (

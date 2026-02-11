@@ -1,77 +1,83 @@
 "use client"
 
 import { useTranslations } from 'next-intl'
-import { FaArrowTrendUp, FaBolt, FaUsers, FaFileLines, FaMessage, FaDollarSign } from 'react-icons/fa6'
+import { FaBolt, FaMessage, FaMobileScreen, FaRobot } from 'react-icons/fa6'
+import { motion } from 'framer-motion'
 
 export function RealMetrics() {
   const t = useTranslations('landing.realMetrics')
 
-  const metrics = [
+  const items = [
     {
       icon: FaBolt,
-      value: t('speed.value'),
-      label: t('speed.label'),
-      description: t('speed.description'),
-      color: 'text-yellow-500'
+      titleKey: 'speed.title' as const,
+      descriptionKey: 'speed.description' as const,
+      color: 'text-amber-500',
+      bg: 'from-amber-500/10 to-orange-500/10',
     },
     {
       icon: FaMessage,
-      value: t('whatsapp.value'),
-      label: t('whatsapp.label'),
-      description: t('whatsapp.description'),
-      color: 'text-green-500'
+      titleKey: 'whatsapp.title' as const,
+      descriptionKey: 'whatsapp.description' as const,
+      color: 'text-emerald-500',
+      bg: 'from-emerald-500/10 to-green-500/10',
     },
     {
-      icon: FaDollarSign,
-      value: t('payment.value'),
-      label: t('payment.label'),
-      description: t('payment.description'),
-      color: 'text-blue-500'
+      icon: FaMobileScreen,
+      titleKey: 'payment.title' as const,
+      descriptionKey: 'payment.description' as const,
+      color: 'text-blue-500',
+      bg: 'from-blue-500/10 to-indigo-500/10',
     },
     {
-      icon: FaArrowTrendUp,
-      value: t('growth.value'),
-      label: t('growth.label'),
-      description: t('growth.description'),
-      color: 'text-purple-500'
-    }
+      icon: FaRobot,
+      titleKey: 'fury.title' as const,
+      descriptionKey: 'fury.description' as const,
+      color: 'text-pink-500',
+      bg: 'from-pink-500/10 to-rose-500/10',
+    },
   ]
 
   return (
-    <section className="w-full py-12 md:py-16 px-4 md:px-6 bg-gradient-to-b from-background to-muted/20">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-10 md:mb-12">
-          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
+    <section className="w-full py-14 md:py-20 px-4 md:px-6">
+      <div className="max-w-5xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10 md:mb-12"
+        >
+          <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
             {t('title')}
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-xl mx-auto">
             {t('subtitle')}
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-4">
-          {metrics.map((metric, index) => {
-            const Icon = metric.icon
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {items.map((item, index) => {
+            const Icon = item.icon
             return (
-              <div
-                key={index}
-                className="group relative p-4 rounded-xl bg-card border border-border hover:border-primary/40 hover:shadow-lg transition-all duration-300"
+              <motion.div
+                key={item.titleKey}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                className="flex flex-col items-center text-center p-5 md:p-6 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-sm hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-300"
               >
-                <div className="flex flex-col items-center text-center">
-                  <div className={`w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors`}>
-                    <Icon className={`h-7 w-7 ${metric.color}`} />
-                  </div>
-                  <div className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                    {metric.value}
-                  </div>
-                  <div className="text-base font-semibold text-foreground mb-2">
-                    {metric.label}
-                  </div>
-                  <div className="text-sm text-muted-foreground leading-relaxed">
-                    {metric.description}
-                  </div>
+                <div className={`mb-3 w-11 h-11 rounded-xl bg-gradient-to-br ${item.bg} flex items-center justify-center`}>
+                  <Icon className={`h-5 w-5 ${item.color}`} />
                 </div>
-              </div>
+                <h3 className="text-base font-semibold text-foreground">
+                  {t(item.titleKey)}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+                  {t(item.descriptionKey)}
+                </p>
+              </motion.div>
             )
           })}
         </div>

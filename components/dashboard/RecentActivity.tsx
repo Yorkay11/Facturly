@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/routing";
 
 interface ActivityItem {
   id: string;
@@ -9,6 +9,8 @@ interface ActivityItem {
   description: string;
   time: string;
   status?: "info" | "success" | "warning";
+  entityId?: string;
+  entityType?: string;
 }
 
 interface RecentActivityProps {
@@ -42,24 +44,41 @@ export const RecentActivity = ({ items, className }: RecentActivityProps) => {
           const status = item.status || "info";
           const statusStyle = statusVariants[status];
           
+          const href = item.entityId && item.entityType
+            ? item.entityType === "invoice"
+              ? `/invoices/${item.entityId}`
+              : item.entityType === "client"
+                ? `/clients/${item.entityId}`
+                : undefined
+            : undefined;
+          const cardContent = (
+            <div className={cn(
+              "flex-1 min-w-0 rounded-md border border-border bg-card p-2 transition-shadow",
+              href && "hover:shadow-sm hover:border-primary/30"
+            )}>
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="text-xs font-semibold text-foreground flex-1">{item.title}</p>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">{item.time}</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground">{item.description}</p>
+            </div>
+          );
+
           return (
             <div key={item.id} className="relative flex gap-2.5">
-              {/* Point de timeline */}
               <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center">
                 <div className={cn(
                   "h-2.5 w-2.5 rounded-full border-2 border-white shadow-sm",
                   statusStyle.dot
                 )} />
               </div>
-              
-              {/* Contenu */}
-              <div className="flex-1 min-w-0 rounded-md border border-border bg-card p-2 transition-shadow hover:shadow-sm">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-xs font-semibold text-foreground flex-1">{item.title}</p>
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">{item.time}</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground">{item.description}</p>
-              </div>
+              {href ? (
+                <Link href={href} className="flex-1 min-w-0 block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
+                  {cardContent}
+                </Link>
+              ) : (
+                cardContent
+              )}
             </div>
           );
         })}

@@ -61,10 +61,11 @@ import { Card } from "../ui/card"
 import { Checkbox } from "../ui/checkbox"
 import { devises } from "@/data/datas"
 import { useItemsStore } from "@/hooks/useItemStore"
+import type { Item } from "@/types/items"
 import { SortableItem } from "./SortableItem"
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata"
 import { useItemModalControls } from "@/contexts/ItemModalContext"
-import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetWorkspaceQuery, useGetProductsQuery, useCreateRecurringInvoiceMutation, type Invoice } from "@/services/facturlyApi"
+import { useGetClientsQuery, useGetClientByIdQuery, useCreateInvoiceMutation, useUpdateInvoiceMutation, useGetInvoiceByIdQuery, useSendInvoiceMutation, useGetWorkspaceQuery, useGetSettingsQuery, useGetProductsQuery, useCreateRecurringInvoiceMutation, type Invoice } from "@/services/facturlyApi"
 import { invoiceTemplates } from "@/types/invoiceTemplate"
 import ClientModal from "@/components/modals/ClientModal"
 import { toast } from "sonner"
@@ -123,7 +124,9 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
     
     const { data: workspace } = useGetWorkspaceQuery();
+    const { data: settings } = useGetSettingsQuery();
     const workspaceCurrency = workspace?.defaultCurrency || "EUR";
+    const paymentTermsDays = settings?.paymentTerms ?? 30;
     
     // Utiliser la devise du workspace comme valeur par défaut si aucune devise n'est stockée
     const defaultCurrency = storedCurrency || workspaceCurrency;
@@ -204,11 +207,11 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     // Date d'émission par défaut : date du jour si non définie (en mode création uniquement)
     const defaultIssueDate = issueDate || (isEditMode ? undefined : new Date());
     
-    // Calculer la date d'échéance par défaut (+30 jours) si pas définie en mode création
+    // Calculer la date d'échéance par défaut (délai des paramètres) si pas définie en mode création
     const calculateDefaultDueDate = (issueDateValue?: Date): Date | undefined => {
         if (isEditMode || !issueDateValue) return dueDate;
         const defaultDueDate = new Date(issueDateValue);
-        defaultDueDate.setDate(defaultDueDate.getDate() + 30);
+        defaultDueDate.setDate(defaultDueDate.getDate() + paymentTermsDays);
         return defaultDueDate;
     };
     
@@ -259,6 +262,15 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
         },
     });
     
+    // Une ligne est valide si : description non vide, quantité > 0, prix unitaire > 0
+    const isItemValid = (item: Item) =>
+        (item.description?.trim() ?? "") !== "" &&
+        Number(item.quantity) > 0 &&
+        Number(item.unitPrice) > 0;
+
+    const allItemsValid = items.length > 0 && items.every(isItemValid);
+    const hasValidItems = items.length > 0 && allItemsValid;
+
     const getCompletenessInfo = () => {
         const requiredFields = ['receiver', 'subject', 'issueDate', 'dueDate', 'currency'];
         const missingFields: string[] = [];
@@ -271,8 +283,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             }
         });
         
-        // Vérifier aussi qu'il y a au moins un article
-        const hasItems = items.length > 0;
+        // Au moins un article et toutes les lignes valides (description, quantité > 0, prix > 0)
+        const hasItems = hasValidItems;
         
         const totalChecks = requiredFields.length + 1; // +1 pour les articles
         const passedChecks = totalChecks - missingFields.length - (hasItems ? 0 : 1);
@@ -292,7 +304,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     // Calculer l'étape actuelle de la progression de la création de facture
     const currentStep = useMemo(() => {
         const hasClient = !!(storedClientId || clientIdFromUrl);
-        const hasItems = items.length > 0;
+        const hasItems = hasValidItems;
         const hasDates = !!(issueDate && dueDate);
         const isComplete = completenessInfo.isComplete;
         
@@ -325,9 +337,9 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             const currentDueDate = form.getValues("dueDate");
             
             if (currentIssueDate && currentIssueDate instanceof Date) {
-                // Calculer la nouvelle date d'échéance (+30 jours)
+                // Calculer la nouvelle date d'échéance (délai des paramètres)
                 const newDueDate = new Date(currentIssueDate);
-                newDueDate.setDate(newDueDate.getDate() + 30);
+                newDueDate.setDate(newDueDate.getDate() + paymentTermsDays);
                 
                 // Mettre à jour seulement si la date d'échéance actuelle n'a pas été modifiée manuellement
                 // ou si elle n'existe pas
@@ -338,7 +350,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [form.watch("issueDate"), isEditMode, existingInvoice]);
+    }, [form.watch("issueDate"), isEditMode, existingInvoice, paymentTermsDays]);
     
     // Générer automatiquement le sujet quand un client est sélectionné
     useEffect(() => {
@@ -528,6 +540,12 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                 });
                 return;
             }
+            if (!allItemsValid) {
+                toast.error(t('errors.invalidItems'), {
+                    description: t('errors.invalidItemsDescription'),
+                });
+                return;
+            }
             
             // Valider que la devise est définie - utiliser la devise de l'entreprise si aucune n'est stockée
             const currencyToUse = storedCurrency || workspaceCurrency;
@@ -673,6 +691,10 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             toast.error(t('errors.noItems'), { description: t('errors.noItemsDescription', { action: t('advanced.recurring.createAction') }) });
             return false;
         }
+        if (!allItemsValid) {
+            toast.error(t('errors.invalidItems'), { description: t('errors.invalidItemsDescription') });
+            return false;
+        }
         const currencyToUse = storedCurrency || workspaceCurrency;
         if (!currencyToUse) {
             toast.error(t('errors.currencyMissing'), { description: t('errors.currencyMissingDescription', { action: t('advanced.recurring.createAction') }) });
@@ -744,6 +766,12 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             if (!items || items.length === 0) {
                 toast.error(t('errors.noItems'), {
                     description: t('errors.noItemsDescription', { action: t('actions.save') }),
+                });
+                return;
+            }
+            if (!allItemsValid) {
+                toast.error(t('errors.invalidItems'), {
+                    description: t('errors.invalidItemsDescription'),
                 });
                 return;
             }

@@ -361,6 +361,7 @@
     "print": "Print",
     "status": "Status",
     "draft": "Draft",
+    "quote": "Quote sent",
     "sent": "Sent",
     "paid": "Paid",
     "overdue": "Overdue",
@@ -509,6 +510,7 @@
         "successDescription": "Invoice #{number} has been duplicated. You can modify the amount.",
         "error": "Error duplicating invoice"
       },
+      "validationErrorTitle": "Form incomplete",
       "validation": {
         "clientRequired": "Client required",
         "amountRequired": "Amount required",
@@ -763,6 +765,8 @@
         "datesMissingDescription": "Please set issue and due dates before {action}.",
         "noItems": "No items",
         "noItemsDescription": "Please add at least one item to the invoice before {action}.",
+        "invalidItems": "Invalid line(s)",
+        "invalidItemsDescription": "Each line must have a description, a quantity greater than 0 and a unit price greater than 0. Please complete or remove empty lines.",
         "currencyMissing": "Missing currency",
         "currencyMissingDescription": "Please select a currency before {action}.",
         "updateError": "An error occurred while updating the invoice.",
@@ -1133,6 +1137,7 @@
         "nameMinLength": "Name must contain at least 2 characters",
         "invalidEmail": "Invalid email address",
         "emailRequired": "Email is required",
+        "invalidPhone": "Invalid phone number format. The number must be in international format (e.g., +22890123456)",
         "createError": "An error occurred while creating the client.",
         "createErrorGeneric": "Check your information or try again later.",
         "missingField": "Missing field: {field}",

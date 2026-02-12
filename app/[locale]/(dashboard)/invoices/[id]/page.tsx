@@ -583,7 +583,11 @@ export default function InvoiceDetailPage() {
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={isDeleting || isCancelling || invoiceData.status === "cancelled"}
               >
-                <Trash2 className="h-4 w-4" />
+                {invoiceData.status === "draft" ? (
+                  <Trash2 className="h-4 w-4" />
+                ) : (
+                  <XCircle className="h-4 w-4" />
+                )}
                 {invoiceData.status === "draft" ? t('buttons.delete') : t('buttons.cancel')}
               </Button>
         </div>

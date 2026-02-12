@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { PhoneInput, PHONE_COUNTRY_CODES, detectCountryCode } from "@/components/ui/phone-input";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { useCreateClientMutation, useUpdateClientMutation, useGetClientByIdQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -44,7 +46,17 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
   const clientSchema = z.object({
     name: z.string().min(2, tValidation('nameMinLength')),
     email: z.string().min(1, tValidation('emailRequired')).email(tValidation('invalidEmail')),
-    phone: z.string().optional(),
+    phone: z.string().optional().refine(
+      (val) => {
+        if (!val || !val.trim()) return true; // Vide est valide si optionnel
+        // Utiliser isValidPhoneNumber de react-phone-number-input
+        return isValidPhoneNumber(val);
+      },
+      {
+        message: tValidation('invalidPhone') || "Format de numéro de téléphone invalide",
+      }
+    ),
+    phoneCountryCode: z.string().optional(),
     addressLine1: z.string().optional(),
     postalCode: z.string().optional(),
     city: z.string().optional(),
@@ -59,6 +71,7 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
       name: "",
       email: "",
       phone: "",
+      phoneCountryCode: PHONE_COUNTRY_CODES[0].code,
       addressLine1: "",
       postalCode: "",
       city: "",
@@ -66,18 +79,26 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
   });
 
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [phoneCountryCode, setPhoneCountryCode] = useState<string>(PHONE_COUNTRY_CODES[0].code);
 
   // Pré-remplir le formulaire en mode édition
   useEffect(() => {
     if (isEditMode && existingClient && open) {
+      const detectedCode = existingClient.phone 
+        ? (detectCountryCode(existingClient.phone) || PHONE_COUNTRY_CODES[0].code)
+        : PHONE_COUNTRY_CODES[0].code;
+      
       form.reset({
         name: existingClient.name || "",
         email: existingClient.email || "",
         phone: existingClient.phone || "",
+        phoneCountryCode: detectedCode,
         addressLine1: existingClient.addressLine1 || "",
         postalCode: existingClient.postalCode || "",
         city: existingClient.city || "",
       });
+      setPhoneCountryCode(detectedCode);
+      
       const hasAddress =
         existingClient.addressLine1?.trim() ||
         existingClient.postalCode?.trim() ||
@@ -88,10 +109,12 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
         name: "",
         email: "",
         phone: "",
+        phoneCountryCode: PHONE_COUNTRY_CODES[0].code,
         addressLine1: "",
         postalCode: "",
         city: "",
       });
+      setPhoneCountryCode(PHONE_COUNTRY_CODES[0].code);
       setShowAdvanced(false);
     }
   }, [existingClient, isEditMode, open, form]);
@@ -237,14 +260,34 @@ export const ClientModal = ({ open, onClose, clientId, onSuccess }: ClientModalP
 
         <div className="space-y-1.5">
           <Label htmlFor="client-phone" className="text-xs font-medium">
-            {t("fields.phone")}
+            {t("fields.phone")} <span className="text-xs text-muted-foreground">(optionnel)</span>
           </Label>
-          <Input
-            id="client-phone"
-            type="tel"
+          <PhoneInput
+            value={form.watch("phone") || ""}
+            onChange={(value) => {
+              form.setValue("phone", value, { shouldValidate: true });
+              // Détecter et mettre à jour le country code
+              const detected = detectCountryCode(value);
+              if (detected) {
+                setPhoneCountryCode(detected);
+                form.setValue("phoneCountryCode", detected);
+              }
+            }}
+            onBlur={() => form.trigger("phone")}
+            countryCode={phoneCountryCode}
+            onCountryCodeChange={(code) => {
+              setPhoneCountryCode(code);
+              form.setValue("phoneCountryCode", code);
+              // Re-valider le téléphone avec le nouveau code
+              const phone = form.getValues("phone");
+              if (phone) {
+                form.trigger("phone");
+              }
+            }}
             placeholder={t("fields.phonePlaceholder")}
-            {...form.register("phone")}
             disabled={fieldDisabled}
+            error={form.formState.errors.phone?.message}
+            required={false}
           />
         </div>
 

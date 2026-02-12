@@ -4,6 +4,7 @@ import { Link } from "@/i18n/routing";
 import {
   Plus,
   Trash2,
+  XCircle,
   Copy,
   Repeat,
   Palette,
@@ -46,7 +47,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
@@ -334,19 +334,6 @@ export default function InvoicesPage() {
                       <TableCell>
                         <div className="text-sm text-foreground/70">
                           {formatDate(invoice.dueDate)}
-                          {realStatus === "overdue" && (
-                            <Badge
-                              variant="destructive"
-                              className="ml-2 text-[10px]"
-                            >
-                              {Math.ceil(
-                                (new Date().getTime() -
-                                  new Date(invoice.dueDate).getTime()) /
-                                  (1000 * 60 * 60 * 24)
-                              )}
-                              j
-                            </Badge>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -433,7 +420,11 @@ export default function InvoicesPage() {
                                 : t("deleteDialog.cancelAction")
                             }
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {invoice.status === "draft" ? (
+                              <Trash2 className="h-4 w-4" />
+                            ) : (
+                              <XCircle className="h-4 w-4" />
+                            )}
                           </Button>
                         </div>
                       </TableCell>

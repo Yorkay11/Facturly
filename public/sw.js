@@ -161,12 +161,10 @@ self.addEventListener('notificationclick', (event) => {
   const notificationData = event.notification.data || {};
   const locale = notificationData.locale || 'fr';
   let path = '/';
-  if (notificationData.type === 'invoice_paid' && notificationData.invoiceId) {
+  if (notificationData.invoiceId) {
     path = `/${locale}/invoices/${notificationData.invoiceId}`;
   } else if (notificationData.type === 'unsent_invoices') {
     path = `/${locale}/invoices?status=draft`;
-  } else if (notificationData.type === 'overdue_invoice' && notificationData.invoiceId) {
-    path = `/${locale}/invoices/${notificationData.invoiceId}`;
   } else {
     path = `/${locale}`;
   }

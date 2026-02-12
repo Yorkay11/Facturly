@@ -14,6 +14,7 @@ interface NotificationItemProps {
   notification: Notification;
   onMarkAsRead: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onNavigate?: (invoiceId: string) => void;
 }
 
 const priorityConfig = {
@@ -47,6 +48,7 @@ function NotificationItem({
   notification,
   onMarkAsRead,
   onDelete,
+  onNavigate,
 }: NotificationItemProps) {
   const t = useTranslations('notifications.item');
   const locale = useLocale();
@@ -55,6 +57,10 @@ function NotificationItem({
   const Icon = config.icon;
 
   const handleClick = async () => {
+    const invoiceId = notification.data?.invoiceId as string | undefined;
+    if (invoiceId && onNavigate) {
+      onNavigate(invoiceId);
+    }
     if (!notification.read) {
       await onMarkAsRead(notification.id);
     }

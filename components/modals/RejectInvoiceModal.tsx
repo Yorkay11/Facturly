@@ -97,20 +97,6 @@ export const RejectInvoiceModal = ({
     }
   }, [isSuccess, form, onSuccess]);
 
-  useEffect(() => {
-    if (isError && error) {
-      const errorMessage =
-        error && "data" in error
-          ? (error.data as { message?: string })?.message ??
-            t('errors.rejectError')
-          : t('errors.genericError');
-
-      toast.error(commonT('error'), {
-        description: errorMessage,
-      });
-    }
-  }, [error, isError, t, commonT]);
-
   const onSubmit = async (values: RejectFormValues) => {
     if (!token) {
       toast.error(commonT('error'), {
@@ -128,8 +114,16 @@ export const RejectInvoiceModal = ({
           reason: values.reason === "none" ? undefined : values.reason,
         },
       }).unwrap();
-    } catch (err) {
-      // L'erreur sera gérée par le useEffect
+    } catch (err: any) {
+      const baseMessage = t('errors.rejectError');
+      const errorMessage =
+        err && typeof err === 'object' && 'data' in err
+          ? (err.data as { message?: string })?.message ?? baseMessage
+          : baseMessage;
+
+      toast.error(commonT('error'), {
+        description: errorMessage,
+      });
     }
   };
 

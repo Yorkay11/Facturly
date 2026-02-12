@@ -110,10 +110,12 @@ export function useDashboardData() {
       let status: "info" | "success" | "warning" | undefined = "info";
       if (
         activity.type === "payment_received" ||
+        activity.type === "invoice_sent" ||
         activity.status === "completed"
       ) {
         status = "success";
       } else if (
+        activity.type === "invoice_rejected" ||
         activity.type.includes("overdue") ||
         activity.status === "overdue"
       ) {
@@ -146,11 +148,13 @@ export function useDashboardData() {
         : activity.description || '';
 
       return {
-        id: activity.entityId,
+        id: `${activity.entityId}-${activity.type}-${date.getTime()}`,
         title,
         description,
         time: timeAgo,
         status,
+        entityId: activity.entityId,
+        entityType: activity.entityType,
       };
     });
   }, [activitiesData, dateLocale, locale]);

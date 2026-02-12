@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -35,7 +35,7 @@ import { useGetClientsQuery, useCreateClientMutation, useCreateInvoiceMutation, 
 import { InvoiceTemplateSelector } from "./InvoiceTemplateSelector";
 import { store } from "@/lib/redux/store";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import ClientModal from "@/components/modals/ClientModal";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,9 +44,10 @@ import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types";
 
 interface QuickInvoiceProps {
   onSwitchToFullMode?: () => void;
+  initialClientId?: string;
 }
 
-export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
+export function QuickInvoice({ onSwitchToFullMode, initialClientId }: QuickInvoiceProps) {
   const t = useTranslations("invoices.quick");
   const tValidation = useTranslations("invoices.quick.validation");
   const router = useRouter();
@@ -75,8 +76,9 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
         amount: z
           .string()
           .min(1, tValidation("amountRequired"))
+          .transform((s) => s.trim().replace(/\s/g, "").replace(",", "."))
           .refine(
-            (val) => !isNaN(Number(val)) && Number(val) > 0,
+            (val) => val !== "" && !isNaN(Number(val)) && Number(val) > 0,
             tValidation("amountInvalid")
           ),
         invoiceType: z.enum(["one-time", "recurring"]).optional(),
@@ -89,13 +91,26 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
 
   const form = useForm<QuickInvoiceFormValues>({
     resolver: zodResolver(quickInvoiceSchema),
+    mode: 'onTouched', // Afficher les erreurs après interaction
     defaultValues: {
-      clientId: "",
+      clientId: initialClientId || "",
       amount: "",
       invoiceType: 'one-time', // Par défaut : facture ponctuelle
       templateId: defaultTemplate?.id || undefined,
     },
   });
+
+  // Mettre à jour le clientId si initialClientId change (ex: depuis l'URL)
+  useEffect(() => {
+    if (initialClientId && initialClientId !== form.getValues("clientId")) {
+      form.reset({
+        clientId: initialClientId,
+        amount: form.getValues("amount"),
+        invoiceType: form.getValues("invoiceType"),
+        templateId: form.getValues("templateId"),
+      });
+    }
+  }, [initialClientId, form]);
 
   const selectedClientId = form.watch("clientId");
   const selectedClient = clients.find((c) => c.id === selectedClientId);
@@ -178,18 +193,12 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
       // Créer la nouvelle facture
       const newInvoice = await createInvoice(duplicatePayload).unwrap();
       
-      // Préremplir le formulaire avec les données de la facture dupliquée
-      form.setValue("amount", fullInvoice.totalAmount);
-      
       toast.success(t('duplicate.success'), {
         description: t('duplicate.successDescription', { number: lastInvoice.invoiceNumber }),
       });
 
-      // Focus sur le champ montant pour permettre la modification
-      setTimeout(() => {
-        amountInputRef.current?.focus();
-        amountInputRef.current?.select();
-      }, 100);
+      // Rediriger vers la page d'édition de la facture dupliquée
+      router.push(`/invoices/${newInvoice.id}/edit`);
     } catch (error: any) {
       toast.error(error?.data?.message || error?.message || t('duplicate.error'));
     } finally {
@@ -260,6 +269,14 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
 
   const isLoading = isCreatingInvoice || isSendingInvoice || isCreating;
 
+  const {
+    ref: amountFormRef,
+    ...amountRegisterProps
+  } = form.register("amount", {
+    setValueAs: (v) =>
+      v === "" || v == null ? "" : String(v).trim().replace(/\s/g, "").replace(",", "."),
+  });
+
   return (
     <Card className={cn("border-2 border-primary/20 shadow-lg", isMobile && "mx-0")}>
       <CardHeader className={cn("pb-4", isMobile && "pb-3")}>
@@ -284,7 +301,19 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
         <CardDescription className={cn(isMobile && "text-sm")}>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className={cn("space-y-6", isMobile && "space-y-4")}>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+            const messages = [
+              errors.clientId?.message,
+              errors.amount?.message,
+            ].filter((m): m is string => typeof m === "string");
+            const description = messages.length
+              ? messages.join(" • ")
+              : tValidation("clientRequired");
+            toast.error(t("validationErrorTitle"), { description });
+          })}
+          className={cn("space-y-6", isMobile && "space-y-4")}
+        >
           {/* Étape 1 : Sélectionner un client */}
           <div className="space-y-2">
             <Label htmlFor="client" className="text-sm font-semibold">
@@ -480,9 +509,12 @@ export function QuickInvoice({ onSwitchToFullMode }: QuickInvoiceProps) {
                 step="0.01"
                 min="0"
                 placeholder={t('step2.amountPlaceholder')}
-                {...form.register("amount")}
+                {...amountRegisterProps}
+                ref={(el) => {
+                  amountFormRef(el);
+                  (amountInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                }}
                 disabled={isLoading || !selectedClientId}
-                ref={amountInputRef}
                 className={cn(
                   "font-semibold pr-16",
                   isMobile ? "h-12 min-h-[44px] text-xl" : "h-11 text-lg"

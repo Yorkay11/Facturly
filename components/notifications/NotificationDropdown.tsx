@@ -5,11 +5,13 @@ import { useGetNotificationsQuery, useGetUnreadNotificationsCountQuery, useMarkN
 import { NotificationList } from './NotificationList';
 import { NotificationBadge } from './NotificationBadge';
 import { StaggeredDropdown } from '@/components/ui/staggered-dropdown';
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link, useRouter } from '@/i18n/routing';
 
 export function NotificationDropdown() {
   const t = useTranslations('notifications.dropdown');
+  const locale = useLocale();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery(
@@ -55,6 +57,11 @@ export function NotificationDropdown() {
     }
   };
 
+  const handleNavigateToInvoice = (invoiceId: string) => {
+    setIsOpen(false);
+    router.push(`/invoices/${invoiceId}`);
+  };
+
   return (
     <StaggeredDropdown open={isOpen} onOpenChange={handleOpenChange}>
       <StaggeredDropdown.Trigger>
@@ -82,6 +89,7 @@ export function NotificationDropdown() {
             onMarkAsRead={handleMarkAsRead}
             onDelete={handleDelete}
             onMarkAllAsRead={handleMarkAllAsRead}
+            onNavigate={handleNavigateToInvoice}
             loading={isLoading}
           />
         </div>

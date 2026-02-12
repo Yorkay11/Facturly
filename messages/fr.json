@@ -362,6 +362,7 @@
     "print": "Imprimer",
     "status": "Statut",
     "draft": "Brouillon",
+    "quote": "Devis envoyé",
     "sent": "Envoyée",
     "paid": "Payée",
     "overdue": "En retard",
@@ -510,6 +511,7 @@
         "successDescription": "La facture #{number} a été dupliquée. Vous pouvez modifier le montant.",
         "error": "Erreur lors de la duplication"
       },
+      "validationErrorTitle": "Formulaire incomplet",
       "validation": {
         "clientRequired": "Client requis",
         "amountRequired": "Montant requis",
@@ -764,6 +766,8 @@
         "datesMissingDescription": "Veuillez définir les dates d'émission et d'échéance avant {action}.",
         "noItems": "Aucun article",
         "noItemsDescription": "Veuillez ajouter au moins un article à la facture avant {action}.",
+        "invalidItems": "Ligne(s) invalide(s)",
+        "invalidItemsDescription": "Chaque ligne doit avoir une description, une quantité supérieure à 0 et un prix unitaire supérieur à 0. Complétez ou supprimez les lignes vides.",
         "currencyMissing": "Devise manquante",
         "currencyMissingDescription": "Veuillez sélectionner une devise avant {action}.",
         "updateError": "Une erreur est survenue lors de la mise à jour de la facture.",
@@ -1135,6 +1139,7 @@
         "nameMinLength": "Le nom doit contenir au moins 2 caractères",
         "invalidEmail": "Adresse email invalide",
         "emailRequired": "L'email est requis",
+        "invalidPhone": "Format de numéro de téléphone invalide. Le numéro doit être au format international (ex: +22890123456)",
         "createError": "Une erreur est survenue lors de la création du client.",
         "createErrorGeneric": "Vérifiez vos informations ou réessayez plus tard.",
         "missingField": "Champ manquant : {field}",

@@ -14,6 +14,7 @@ interface NotificationListProps {
   onMarkAsRead: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onMarkAllAsRead?: () => Promise<void>;
+  onNavigate?: (invoiceId: string) => void;
   loading?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function NotificationList({
   onMarkAsRead,
   onDelete,
   onMarkAllAsRead,
+  onNavigate,
   loading,
 }: NotificationListProps) {
   const t = useTranslations('notifications.list');
@@ -80,6 +82,7 @@ export function NotificationList({
             notification={notification}
             onMarkAsRead={onMarkAsRead}
             onDelete={onDelete}
+            onNavigate={onNavigate}
           />
         ))}
       </div>

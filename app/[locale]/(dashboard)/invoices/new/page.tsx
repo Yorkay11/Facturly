@@ -14,7 +14,7 @@ import Skeleton from '@/components/ui/skeleton'
 import { useNavigationBlock } from '@/contexts/NavigationBlockContext'
 import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
-import { QuickInvoice } from '@/components/invoices/QuickInvoice'
+// import { QuickInvoice } from '@/components/invoices/QuickInvoice'
 import { InvoiceTutorial } from '@/components/invoices/InvoiceTutorial'
 import { DirectionAwareTabs } from '@/components/ui/direction-aware-tabs'
 import { useSearchParams } from 'next/navigation'
@@ -24,6 +24,7 @@ const InvoiceBuilderPage = () => {
   const invoicesT = useTranslations('invoices');
   const searchParams = useSearchParams();
   const fromOnboarding = searchParams?.get('from') === 'onboarding';
+  const clientIdFromUrl = searchParams?.get('clientId') || undefined;
   const [isModalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [currentItem, setCurrentItem] = useState<Item | undefined>(undefined)
@@ -143,7 +144,10 @@ const InvoiceBuilderPage = () => {
                 label: t("modes.quick"),
                 content: (
                   <div className="w-full">
-                    <QuickInvoice onSwitchToFullMode={() => setInvoiceMode("full")} />
+                    {/* <QuickInvoice 
+                      onSwitchToFullMode={() => setInvoiceMode("full")} 
+                      initialClientId={clientIdFromUrl}
+                    /> */}
                     {showTutorial && (
                       <InvoiceTutorial
                         onComplete={() => {

@@ -6,13 +6,12 @@ import Topbar from "@/components/layout/Topbar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
 import { BottomTabs } from "@/components/layout/BottomTabs";
 import { NavigationBlockProvider, useNavigationBlock } from "@/contexts/NavigationBlockContext";
-import { UnsavedChangesDialog } from "@/components/dialogs/UnsavedChangesDialog";
 import { GlobalLoader } from "@/components/ui/global-loader";
 import { useLoading } from "@/contexts/LoadingContext";
 import { RedirectLoader } from "@/components/navigation/RedirectLoader";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
-import { useRouter, usePathname } from '@/i18n/routing';
+import { usePathname } from '@/i18n/routing';
 import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { WorkspaceProvider, useWorkspace } from "@/contexts/WorkspaceContext";
@@ -23,123 +22,31 @@ import { useWebPushSubscribe } from '@/hooks/useWebPushSubscribe';
 import { useLocale } from 'next-intl';
 import { ChatFab } from '@/components/chat/ChatFab';
 
-// Composant interne pour utiliser le contexte et afficher le dialog
-function NavigationBlockDialog() {
-  const {
-    showUnsavedDialog,
-    setShowUnsavedDialog,
-    saveDraftRef,
-    isSaving,
-    setIsSaving,
-    pendingNavigation,
-    setPendingNavigation,
-    setHasUnsavedChanges,
-    handleDiscard: handleDiscardFromContext,
-    handleCancel,
-  } = useNavigationBlock();
-  
+// Composant interne : enregistre le nettoyage (metadata + items) au départ sans sauvegarder, et affiche le loader global
+function NavigationBlockLoader() {
+  const { isSaving, registerNavigateAwayCleanup } = useNavigationBlock();
   const { isLoading: globalLoading, loadingMessage } = useLoading();
   const { reset: resetMetadata } = useInvoiceMetadata();
   const { clearItems } = useItemsStore();
-  const router = useRouter();
 
-  // Fonction pour enregistrer le brouillon depuis le dialog
-  const handleSave = async () => {
-    if (!saveDraftRef.current) {
-      setShowUnsavedDialog(false);
-      return;
-    }
-    
-    setIsSaving(true);
-    try {
-      // Passer skipRedirect: true pour éviter la redirection automatique
-      await saveDraftRef.current(true);
-      
-      // Réinitialiser les stores après la sauvegarde réussie
+  useEffect(() => {
+    registerNavigateAwayCleanup(() => {
       resetMetadata();
       clearItems();
-      setHasUnsavedChanges(false);
-      
-      // Fermer le dialog
-      setShowUnsavedDialog(false);
-      
-      // Naviguer vers la destination prévue ou la liste des factures
-      if (pendingNavigation) {
-        router.push(pendingNavigation);
-        setPendingNavigation(null);
-      } else {
-        router.push('/invoices');
-      }
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      // Le toast d'erreur est déjà affiché dans handleSaveDraft
-      // Ne pas fermer le dialog en cas d'erreur pour permettre de réessayer
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Fonction pour abandonner les modifications
-  const handleDiscard = () => {
-    const urlToGo = pendingNavigation;
-    // Réinitialiser les stores et l'état du contexte (ferme le dialog, clear pending)
-    resetMetadata();
-    clearItems();
-    setHasUnsavedChanges(false);
-    setShowUnsavedDialog(false);
-    handleDiscardFromContext();
-    // Naviguer avec le router i18n (obligatoire pour la locale)
-    if (urlToGo) {
-      router.push(urlToGo);
-    } else {
-      router.push("/invoices");
-    }
-  };
-
-  // Fonction pour annuler (rester sur la page)
-  const handleCancelAction = () => {
-    // Fermer le dialog
-    setShowUnsavedDialog(false);
-    // Annuler la navigation en attente
-    handleCancel();
-  };
-
-  // Empêcher la fermeture du dialog pendant l'enregistrement
-  const handleDialogOpenChange = (open: boolean) => {
-    // Ne pas permettre la fermeture pendant l'enregistrement
-    if (!open && isSaving) {
-      return;
-    }
-    
-    setShowUnsavedDialog(open);
-    
-    // Si le dialog est fermé (clic en dehors, ESC), annuler la navigation
-    if (!open && !isSaving) {
-      handleCancel();
-    }
-  };
+    });
+  }, [registerNavigateAwayCleanup, resetMetadata, clearItems]);
 
   return (
-    <>
-      <UnsavedChangesDialog
-        open={showUnsavedDialog}
-        onOpenChange={handleDialogOpenChange}
-        onSave={handleSave}
-        onDiscard={handleDiscard}
-        onCancel={handleCancelAction}
-        isSaving={isSaving}
-      />
-      <GlobalLoader 
-        isLoading={isSaving || globalLoading} 
-        message={
-          isSaving 
-            ? "Enregistrement en cours..." 
-            : globalLoading 
+    <GlobalLoader
+      isLoading={isSaving || globalLoading}
+      message={
+        isSaving
+          ? "Enregistrement en cours..."
+          : globalLoading
             ? (loadingMessage || "Chargement en cours...")
             : undefined
-        }
-      />
-    </>
+      }
+    />
   );
 }
 
@@ -243,7 +150,7 @@ function DashboardLayoutContent({
       </main>
       <BottomTabs />
       <ChatFab />
-      <NavigationBlockDialog />
+      <NavigationBlockLoader />
       <OnboardingRedirect />
       {isChangingWorkspace && (
         <RedirectLoader 

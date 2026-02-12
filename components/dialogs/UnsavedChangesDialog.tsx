@@ -12,13 +12,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
-import { Save, X, ArrowLeft } from "lucide-react";
+import { Save, ArrowLeft } from "lucide-react";
 
 interface UnsavedChangesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: () => Promise<void> | void;
-  onDiscard: () => void;
   onCancel: () => void;
   isSaving?: boolean;
 }
@@ -27,7 +26,6 @@ export function UnsavedChangesDialog({
   open,
   onOpenChange,
   onSave,
-  onDiscard,
   onCancel,
   isSaving = false,
 }: UnsavedChangesDialogProps) {
@@ -39,11 +37,6 @@ export function UnsavedChangesDialog({
       // En cas d'erreur, ne pas fermer le dialog pour permettre de réessayer
       console.error('Error in handleSave:', error);
     }
-  };
-
-  const handleDiscard = () => {
-    onDiscard();
-    // Le dialog sera fermé dans onDiscard après la réinitialisation
   };
 
   const handleCancel = () => {
@@ -66,26 +59,16 @@ export function UnsavedChangesDialog({
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
-            className="w-full sm:w-auto order-3 sm:order-1 min-w-[120px]"
+            className="w-full sm:w-auto order-2 sm:order-1 min-w-[120px]"
           >
             {!isSaving && <ArrowLeft className="mr-2 h-4 w-4" />}
             Annuler
           </Button>
           <Button
             type="button"
-            variant="outline"
-            onClick={handleDiscard}
-            disabled={isSaving}
-            className="w-full sm:w-auto order-2 sm:order-2 min-w-[180px]"
-          >
-            {!isSaving && <X className="mr-2 h-4 w-4" />}
-            Quitter sans enregistrer
-          </Button>
-          <Button
-            type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 order-1 sm:order-3 min-w-[180px]"
+            className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90 order-1 sm:order-2 min-w-[180px]"
           >
             {isSaving ? (
               <>

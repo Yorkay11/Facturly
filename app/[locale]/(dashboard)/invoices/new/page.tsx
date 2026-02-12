@@ -18,6 +18,7 @@ import { useTranslations } from 'next-intl'
 import { InvoiceTutorial } from '@/components/invoices/InvoiceTutorial'
 import { DirectionAwareTabs } from '@/components/ui/direction-aware-tabs'
 import { useSearchParams } from 'next/navigation'
+import { QuickInvoice } from '@/components/invoices/QuickInvoice';
 
 const InvoiceBuilderPage = () => {
   const t = useTranslations('invoices.new');
@@ -144,10 +145,10 @@ const InvoiceBuilderPage = () => {
                 label: t("modes.quick"),
                 content: (
                   <div className="w-full">
-                    {/* <QuickInvoice 
+                    <QuickInvoice 
                       onSwitchToFullMode={() => setInvoiceMode("full")} 
                       initialClientId={clientIdFromUrl}
-                    /> */}
+                    />
                     {showTutorial && (
                       <InvoiceTutorial
                         onComplete={() => {

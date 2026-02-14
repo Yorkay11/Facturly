@@ -162,8 +162,8 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
     [items]
   );
   const vatAmount = useMemo(
-    () => items.reduce((total, item) => total + (item.unitPrice * item.quantity * item.vatRate) / 100, 0),
-    [items]
+    () => workspace?.type === "FREELANCE" ? 0 : items.reduce((total, item) => total + (item.unitPrice * item.quantity * item.vatRate) / 100, 0),
+    [items, workspace?.type]
   );
   const totalAmount = subtotal + vatAmount;
       const currencyCode = metadataStore.currency ? metadataStore.currency.toUpperCase() : workspaceCurrency.toUpperCase();

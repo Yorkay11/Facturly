@@ -50,41 +50,39 @@ function NavigationBlockLoader() {
   );
 }
 
-// Composant pour gérer la redirection vers l'onboarding
-function OnboardingRedirect() {
+// Composant pour gérer la redirection vers la création de workspace
+function CreateWorkspaceRedirect() {
   const pathname = usePathname();
   const { data: workspace, isLoading, error } = useGetWorkspaceQuery();
 
-  // Ne pas rediriger si on est déjà sur la page d'onboarding
-  if (pathname === '/onboarding' || isLoading) {
+  // Ne pas rediriger si on est déjà sur la page create-workspace
+  if (pathname?.includes('/create-workspace') || isLoading) {
     return null;
   }
 
-  // Vérifier si le profil doit être complété
-  const shouldRedirectToOnboarding = 
+  // Vérifier si le profil doit être complété → redirection vers create-workspace
+  const shouldRedirectToCreateWorkspace =
     // Cas 1: Pas de workspace du tout (404) ou workspace null
     !workspace || (error && 'status' in error && error.status === 404) ||
     // Cas 2: Workspace existe mais incomplet
     (workspace && (() => {
       const workspaceCompletion = workspace.profileCompletion ?? 0;
       // Pour les entreprises, vérifier si le nom est présent
-      const hasMissingWorkspaceInfo = workspace.type === 'COMPANY' 
+      const hasMissingWorkspaceInfo = workspace.type === 'COMPANY'
         ? !workspace.name
         : false;
-      
-      // Considérer incomplet si < 100% ou infos manquantes
-      // Note: Vous pouvez ajuster le seuil de 100% si nécessaire (ex: 80%)
+
       return workspaceCompletion < 100 || hasMissingWorkspaceInfo;
     })());
 
-  if (!shouldRedirectToOnboarding) {
+  if (!shouldRedirectToCreateWorkspace) {
     return null;
   }
 
   return (
     <ConditionalRedirect
-      condition={shouldRedirectToOnboarding}
-      to="/onboarding"
+      condition={shouldRedirectToCreateWorkspace}
+      to="/create-workspace"
       type="replace"
       checkUnsavedChanges={false}
       showLoader={true}
@@ -99,7 +97,7 @@ function DashboardLayoutContent({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const isOnboardingPage = pathname === '/onboarding';
+  const isCreateWorkspacePage = pathname?.includes('/create-workspace');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { isCollapsed } = useSidebar();
@@ -109,12 +107,12 @@ function DashboardLayoutContent({
   useNotificationsPush();
   useWebPushSubscribe(locale);
 
-  // Sur la page d'onboarding, ne pas afficher la sidebar et le layout normal
-  if (isOnboardingPage) {
+  // Sur la page create-workspace, ne pas afficher la sidebar et le layout normal
+  if (isCreateWorkspacePage) {
     return (
       <>
         {children}
-        <OnboardingRedirect />
+        <CreateWorkspaceRedirect />
       </>
     );
   }
@@ -151,7 +149,7 @@ function DashboardLayoutContent({
       <BottomTabs />
       <ChatFab />
       <NavigationBlockLoader />
-      <OnboardingRedirect />
+      <CreateWorkspaceRedirect />
       {isChangingWorkspace && (
         <RedirectLoader 
           text="Chargement du workspace..."

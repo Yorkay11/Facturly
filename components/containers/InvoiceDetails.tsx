@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
+import { format, startOfDay } from "date-fns"
 import { CalendarIcon, Check, ChevronsUpDown, Edit, Plus as PlusIcon, Trash2, FileDown, Clock, CheckCircle2, AlertCircle, Info } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -85,6 +85,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, Repeat } from "lucide-react"
 import type { RecurrenceFrequency } from "@/services/api/types/recurring-invoice.types"
 
+/** Format une date en YYYY-MM-DD selon l’heure locale (évite le décalage timezone de toISOString). */
+function toDateOnlyString(date: Date): string {
+  return format(date, "yyyy-MM-dd");
+}
+
 interface InvoiceDetailsProps {
     invoiceId?: string;
     initialRecurring?: boolean;
@@ -116,12 +121,14 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     const [lastSavedAt, setLastSavedAt] = React.useState<Date | undefined>(undefined);
     const [redirectAfterSave, setRedirectAfterSave] = React.useState<string | null>(null);
     const [isSavingDraft, setIsSavingDraft] = React.useState(false);
+    const [selectedProductToAdd, setSelectedProductToAdd] = React.useState<string>("");
     const clientSearchRef = React.useRef<HTMLButtonElement>(null);
     const { items, setItems, removeItem, clearItems, addItem, updateItem } = useItemsStore();
     const metadataStore = useInvoiceMetadata();
     const { setMetadata, reset: resetMetadata, currency: storedCurrency, clientId: storedClientId, receiver: storedReceiver, subject, issueDate, dueDate, notes, templateId } = metadataStore;
     
     const { data: workspace } = useGetWorkspaceQuery();
+    const isFreelance = workspace?.type === "FREELANCE";
     const { data: settings } = useGetSettingsQuery();
     const workspaceCurrency = workspace?.defaultCurrency || "EUR";
     const paymentTermsDays = settings?.paymentTerms ?? 30;
@@ -137,8 +144,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     });
     const clients = clientsResponse?.data ?? [];
     
-    // Précharger les produits au chargement de la page pour optimisation
-    useGetProductsQuery({ page: 1, limit: 100 });
+    const { data: productsResponse } = useGetProductsQuery({ page: 1, limit: 100 });
+    const products = productsResponse?.data ?? [];
     const [createInvoice, { isLoading: isCreatingInvoice }] = useCreateInvoiceMutation();
     const [createRecurringInvoice, { isLoading: isCreatingRecurring }] = useCreateRecurringInvoiceMutation();
     const [updateInvoice, { isLoading: isUpdatingInvoice }] = useUpdateInvoiceMutation();
@@ -327,21 +334,46 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             form.setValue("dueDate", autoDueDate, { shouldValidate: true, shouldDirty: true });
         }
     }, [isEditMode, issueDate, existingInvoice, setMetadata, form, paymentTermsDays]);
+
+    // Forcer la validation au montage en mode création pour que les dates par défaut soient prises en compte
+    // (React Hook Form peut laisser isValid à false tant qu'aucune interaction n'a déclenché la validation)
+    const hasTriggeredInitialValidation = React.useRef(false);
+    useEffect(() => {
+        if (isEditMode || existingInvoice || hasTriggeredInitialValidation.current) return;
+        const issue = form.getValues("issueDate");
+        const due = form.getValues("dueDate");
+        if (issue && due && issue instanceof Date && due instanceof Date && !isNaN(issue.getTime()) && !isNaN(due.getTime())) {
+            hasTriggeredInitialValidation.current = true;
+            form.trigger();
+        }
+    }, [isEditMode, existingInvoice, form]);
+
+    // Après restauration d'un brouillon, relancer la validation pour mettre à jour la progression et le bouton d'envoi
+    useEffect(() => {
+        if (didRestoreDraft && !isEditMode) {
+            form.trigger();
+        }
+    }, [didRestoreDraft, isEditMode, form]);
     
     // Calculer automatiquement la date d'échéance quand la date d'émission change (mode création uniquement)
+    // On met toujours due = issue + délai pour éviter une échéance avant la date d'émission
     useEffect(() => {
         if (!isEditMode && !existingInvoice) {
             const currentIssueDate = form.watch("issueDate");
             const currentDueDate = form.getValues("dueDate");
             
-            if (currentIssueDate && currentIssueDate instanceof Date) {
-                // Calculer la nouvelle date d'échéance (délai des paramètres)
+            if (currentIssueDate && currentIssueDate instanceof Date && !isNaN(currentIssueDate.getTime())) {
                 const newDueDate = new Date(currentIssueDate);
                 newDueDate.setDate(newDueDate.getDate() + paymentTermsDays);
                 
-                // Mettre à jour seulement si la date d'échéance actuelle n'a pas été modifiée manuellement
-                // ou si elle n'existe pas
-                if (!currentDueDate || currentDueDate.getTime() === defaultDueDate?.getTime()) {
+                const issueStart = startOfDay(currentIssueDate);
+                const dueStart = currentDueDate && currentDueDate instanceof Date && !isNaN(currentDueDate.getTime())
+                    ? startOfDay(currentDueDate)
+                    : null;
+                
+                // Mettre à jour si : pas d'échéance, ou échéance < date d'émission (incohérent), ou échéance = ancienne valeur auto
+                const mustUpdate = !dueStart || dueStart.getTime() < issueStart.getTime() || (defaultDueDate && dueStart.getTime() === startOfDay(defaultDueDate).getTime());
+                if (mustUpdate) {
                     setMetadata({ dueDate: newDueDate });
                     form.setValue("dueDate", newDueDate, { shouldValidate: true, shouldDirty: true });
                 }
@@ -563,8 +595,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                         id: invoiceId,
                         payload: {
                             clientId: clientId,
-                            issueDate: issueDate.toISOString().split('T')[0],
-                            dueDate: dueDate.toISOString().split('T')[0],
+                            issueDate: toDateOnlyString(issueDate),
+                            dueDate: toDateOnlyString(dueDate),
                             currency: currencyToUse,
                             notes: notes || undefined,
                             status: "draft", // On garde draft pour l'instant, sendInvoice changera le statut
@@ -602,8 +634,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                     // Créer la facture sans envoyer l'email (sendEmail: false)
                     const response = await createInvoice({
                         clientId: clientId,
-                        issueDate: issueDate.toISOString().split('T')[0],
-                        dueDate: dueDate ? dueDate.toISOString().split('T')[0] : undefined,
+                        issueDate: toDateOnlyString(issueDate),
+                        dueDate: dueDate ? toDateOnlyString(dueDate) : undefined,
                         currency: storedCurrency || workspaceCurrency || undefined,
                         items: invoiceItems,
                         notes: notes || undefined,
@@ -791,8 +823,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                         id: invoiceId,
                         payload: {
                             clientId: clientId,
-                            issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
-                            dueDate: dueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
+                            issueDate: toDateOnlyString(issueDate),
+                            dueDate: toDateOnlyString(dueDate),
                             currency: currencyToUse,
                             notes: notes || undefined,
                             status: "draft", // Maintenir le statut brouillon
@@ -845,8 +877,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                     
                     const response = await createInvoice({
                         clientId: clientId,
-                        issueDate: issueDate.toISOString().split('T')[0], // Format YYYY-MM-DD
-                        dueDate: dueDate ? dueDate.toISOString().split('T')[0] : undefined, // Format YYYY-MM-DD (optionnel)
+                        issueDate: toDateOnlyString(issueDate),
+                        dueDate: dueDate ? toDateOnlyString(dueDate) : undefined,
                         currency: storedCurrency || workspaceCurrency || undefined, // Optionnel, utilise la devise de l'entreprise par défaut
                         items: invoiceItems,
                         notes: notes || undefined,
@@ -1053,14 +1085,14 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
             const quantity = parseFloat(item.quantity.toString()) || 0;
             return total + (unitPrice * quantity);
         }, 0);
-        const vatAmount = items.reduce((total, item) => {
+        const vatAmount = isFreelance ? 0 : items.reduce((total, item) => {
             const unitPrice = parseFloat(item.unitPrice.toString()) || 0;
             const quantity = parseFloat(item.quantity.toString()) || 0;
             const vatRate = parseFloat(item.vatRate.toString()) || 0;
             return total + (unitPrice * quantity * vatRate) / 100;
         }, 0);
         return (subtotal + vatAmount).toFixed(2);
-    }, [items]);
+    }, [items, isFreelance]);
 
     useEffect(() => {
         // Devise prise des paramètres (workspace) ou de la facture existante
@@ -1405,8 +1437,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                         <PopoverContent className="w-auto p-0" align="start">
                                             <Calendar
                                                 mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
+                                                selected={field.value instanceof Date && !isNaN(field.value.getTime()) ? field.value : undefined}
+                                                onSelect={(date) => date && field.onChange(date)}
                                                 disabled={(date) => date > new Date("2100-01-01")}
                                                 initialFocus
                                             />
@@ -1444,9 +1476,13 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                         <PopoverContent className="w-auto p-0" align="start">
                                             <Calendar
                                                 mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                disabled={(date) => date < form.getValues("issueDate")}
+                                                selected={field.value instanceof Date && !isNaN(field.value.getTime()) ? field.value : undefined}
+                                                onSelect={(date) => date && field.onChange(date)}
+                                                disabled={(date) => {
+                                                    const issue = form.getValues("issueDate");
+                                                    if (!issue || !(issue instanceof Date) || isNaN(issue.getTime())) return false;
+                                                    return startOfDay(date) < startOfDay(issue);
+                                                }}
                                                 initialFocus
                                             />
                                         </PopoverContent>
@@ -1594,22 +1630,56 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                             <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
                             <p className="text-sm text-slate-500">{t('sections.invoiceLines.description')}</p>
                         </div>
-                        <Button 
-                            type="button" 
-                            size="sm" 
-                            className="gap-2" 
-                            onClick={() => {
-                                addItem({
-                                    description: '',
-                                    quantity: 1,
-                                    unitPrice: 0,
-                                    vatRate: workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18,
-                                });
-                            }}
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                            {t('lines.add')}
-                        </Button>
+                        <div className="flex flex-wrap items-center gap-2">
+                            {products.length > 0 && (
+                                <Select
+                                    value={selectedProductToAdd || "__none__"}
+                                    onValueChange={(value) => {
+                                        if (!value || value === "__none__") return;
+                                        const product = products.find((p) => p.id === value);
+                                        if (product) {
+                                            addItem({
+                                                description: (product.description?.trim() ? product.description : product.name) || "",
+                                                quantity: 1,
+                                                unitPrice: parseFloat(product.unitPrice) || 0,
+                                                vatRate: isFreelance ? 0 : (parseFloat(product.taxRate) || (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18)),
+                                            });
+                                            setSelectedProductToAdd("");
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[220px] h-9 text-xs">
+                                        <SelectValue placeholder={t('lines.addFromProduct')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__none__" className="text-muted-foreground">
+                                            {t('lines.addFromProduct')}
+                                        </SelectItem>
+                                        {products.map((product) => (
+                                            <SelectItem key={product.id} value={product.id}>
+                                                {product.name} — {form.getValues("currency") || "EUR"} {(parseFloat(product.unitPrice) || 0).toFixed(2)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                            <Button 
+                                type="button" 
+                                size="sm" 
+                                className="gap-2" 
+                                onClick={() => {
+                                    addItem({
+                                        description: '',
+                                        quantity: 1,
+                                        unitPrice: 0,
+                                        vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
+                                    });
+                                }}
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                {t('lines.add')}
+                            </Button>
+                        </div>
                     </div>
 
                     <Separator />
@@ -1730,7 +1800,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                             description: '',
                                             quantity: 1,
                                             unitPrice: 0,
-                                            vatRate: workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18,
+                                            vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
                                         });
                                     }}
                                 >
@@ -1745,23 +1815,57 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                         <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-6 text-center">
                             <p className="text-sm font-semibold text-slate-600">{t('sections.invoiceLines.empty.title')}</p>
                             <p className="text-xs text-slate-500">{t('sections.invoiceLines.empty.description')}</p>
-                            <Button 
-                                type="button"
-                                variant="outline" 
-                                size="sm" 
-                                className="gap-2" 
-                                onClick={() => {
-                                    addItem({
-                                        description: '',
-                                        quantity: 1,
-                                        unitPrice: 0,
-                                        vatRate: workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18,
-                                    });
-                                }}
-                            >
-                                <PlusIcon className="h-4 w-4" />
-                                {t('lines.add')}
-                            </Button>
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                                {products.length > 0 && (
+                                    <Select
+                                        value={selectedProductToAdd || "__none__"}
+                                        onValueChange={(value) => {
+                                            if (!value || value === "__none__") return;
+                                            const product = products.find((p) => p.id === value);
+                                            if (product) {
+                                                addItem({
+                                                    description: (product.description?.trim() ? product.description : product.name) || "",
+                                                    quantity: 1,
+                                                    unitPrice: parseFloat(product.unitPrice) || 0,
+                                                    vatRate: isFreelance ? 0 : (parseFloat(product.taxRate) || (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18)),
+                                                });
+                                                setSelectedProductToAdd("");
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[220px] h-9 text-xs">
+                                            <SelectValue placeholder={t('lines.addFromProduct')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="__none__" className="text-muted-foreground">
+                                                {t('lines.addFromProduct')}
+                                            </SelectItem>
+                                            {products.map((product) => (
+                                                <SelectItem key={product.id} value={product.id}>
+                                                    {product.name} — {form.getValues("currency") || "EUR"} {(parseFloat(product.unitPrice) || 0).toFixed(2)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-2" 
+                                    onClick={() => {
+                                        addItem({
+                                            description: '',
+                                            quantity: 1,
+                                            unitPrice: 0,
+                                            vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
+                                        });
+                                    }}
+                                >
+                                    <PlusIcon className="h-4 w-4" />
+                                    {t('lines.add')}
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </section>

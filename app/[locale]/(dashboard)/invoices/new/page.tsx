@@ -24,13 +24,13 @@ const InvoiceBuilderPage = () => {
   const t = useTranslations('invoices.new');
   const invoicesT = useTranslations('invoices');
   const searchParams = useSearchParams();
-  const fromOnboarding = searchParams?.get('from') === 'onboarding';
+  const fromCreateWorkspace = searchParams?.get('from') === 'create-workspace' || searchParams?.get('from') === 'onboarding';
   const clientIdFromUrl = searchParams?.get('clientId') || undefined;
   const [isModalOpen, setModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [currentItem, setCurrentItem] = useState<Item | undefined>(undefined)
   const [invoiceMode, setInvoiceMode] = useState<'quick' | 'full'>('quick') // Mode rapide par défaut
-  const [showTutorial, setShowTutorial] = useState(fromOnboarding) // Afficher le tutoriel si on vient de l'onboarding
+  const [showTutorial, setShowTutorial] = useState(fromCreateWorkspace) // Afficher le tutoriel si on vient de create-workspace
   const { addItem, updateItem, clearItems } = useItemsStore()
   const { reset: resetMetadata } = useInvoiceMetadata()
   

@@ -257,7 +257,37 @@
     "aiSuggestions": "Suggestions IA",
     "aiSuggestionsDescription": "Recommandations basées sur vos données",
     "open": "Ouvrir",
-    "launch": "Lancer"
+    "launch": "Lancer",
+    "intro": {
+      "title": "Tutoriel",
+      "step1": {
+        "title": "Bienvenue sur Facturly",
+        "shortDescription": "Découvrez votre espace de facturation",
+        "fullDescription": "Bienvenue ! Facturly vous permet de créer des factures professionnelles, gérer vos clients et suivre vos paiements. Ce court tutoriel vous présente les bases."
+      },
+      "step2": {
+        "title": "Créez vos factures",
+        "shortDescription": "Facture rapide ou facture complète",
+        "fullDescription": "Deux modes sont à votre disposition : la facture rapide (client + montant, en quelques clics) ou la facture complète pour des devis et factures détaillées avec articles et TVA."
+      },
+      "step3": {
+        "title": "Gérez vos clients",
+        "shortDescription": "Carnet d'adresses et historique",
+        "fullDescription": "Ajoutez vos clients et retrouvez l'historique de leurs factures. Vous pourrez envoyer les factures par email ou lien sécurisé et suivre les paiements."
+      },
+      "step4": {
+        "title": "C'est parti",
+        "shortDescription": "Prêt à facturer",
+        "fullDescription": "Vous êtes prêt à utiliser Facturly. Créez votre première facture depuis le tableau de bord ou explorez les paramètres pour personnaliser votre espace."
+      },
+      "actionCreateInvoice": "Créer une facture",
+      "actionClients": "Voir mes clients",
+      "skip": "Tout passer",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "done": "Terminer",
+      "dontShowAgain": "Ne plus afficher"
+    }
   },
   "invoiceLimit": {
     "close": "Fermer",
@@ -645,6 +675,7 @@
       },
       "lines": {
         "add": "Ajouter une ligne",
+        "addFromProduct": "Ajouter une prestation existante",
         "edit": "Modifier la ligne {description}",
         "delete": "Supprimer la ligne {description}",
         "description": "Description de la prestation",
@@ -2468,6 +2499,7 @@
         "invoicePrefixExample": "Exemple : FAC-2026-001, INV-2026-001",
         "dateFormat": "Format de date",
         "currency": "Devise",
+        "currencyDefinedInWorkspace": "Devise : {currency} — modifiable dans l'onglet Workspace.",
         "taxRate": "Taux de TVA (%)",
         "taxRateInfo": {
           "title": "Taux de TVA automatique",

@@ -145,10 +145,10 @@ export default function RegisterPage() {
         description: t('toasts.successDescription', { name: userName }),
       });
 
-      // Vérifier si un workspace existe, sinon rediriger vers l'onboarding
+      // Vérifier si un workspace existe, sinon rediriger vers la création de workspace
       // Le backend retourne workspace: null si aucun workspace n'existe
       if (!data.workspace) {
-        setRedirectPath("/onboarding");
+        setRedirectPath("/create-workspace");
       } else {
         setRedirectPath("/dashboard");
       }

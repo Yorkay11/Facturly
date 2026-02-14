@@ -126,10 +126,12 @@ const TemplateClassicSerif = ({
               <td className="py-2 px-3 text-xs text-right font-bold">Sous-total HT</td>
               <td className="py-2 px-3 text-xs text-right font-bold">{formatAmount(subtotal)}</td>
             </tr>
-            <tr className="border-b border-[#e0e0e0]">
-              <td className="py-2 px-3 text-xs text-right font-bold">TVA estimée</td>
-              <td className="py-2 px-3 text-xs text-right font-bold">{formatAmount(vatAmount)}</td>
-            </tr>
+            {vatAmount > 0 && (
+              <tr className="border-b border-[#e0e0e0]">
+                <td className="py-2 px-3 text-xs text-right font-bold">TVA estimée</td>
+                <td className="py-2 px-3 text-xs text-right font-bold">{formatAmount(vatAmount)}</td>
+              </tr>
+            )}
             <tr className="border-t-2 border-b-2 border-black text-base font-bold">
               <td className="py-3 px-3 text-right">TOTAL TTC</td>
               <td className="py-3 px-3 text-right">{formatAmount(totalAmount)}</td>

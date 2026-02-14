@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUpdateWorkspaceMutation, useCreateWorkspaceMutation, useGetWorkspaceQuery, Workspace } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { Building2, User, Sparkles, CheckCircle2, ArrowRight, ArrowLeft, Globe, Coins } from "lucide-react";
+import { Building2, User, Sparkles, CheckCircle2, ArrowRight, ArrowLeft, Globe, Coins, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -82,6 +82,22 @@ function getTaxIdConfig(countryCode: string | undefined): { label: string; place
 
 // --- Types & Schema ---
 type WorkspaceType = 'FREELANCE' | 'INDIVIDUAL' | 'COMPANY';
+
+// Infos détaillées par type de workspace (affichées sous les cartes au step 1)
+const WORKSPACE_TYPE_INFO: Record<WorkspaceType, { title: string; description: string }> = {
+  FREELANCE: {
+    title: "Profil Freelance",
+    description: "Idéal si vous travaillez en indépendant dans le digital (développement, design, conseil, rédaction…). Facturly adapte les libellés et vous permet de facturer sans créer de structure juridique dédiée. Vous pourrez ajouter vos informations légales et votre adresse plus tard dans les paramètres si besoin.",
+  },
+  INDIVIDUAL: {
+    title: "Profil Indépendant",
+    description: "Conçu pour les artisans, commerçants et travailleurs indépendants ayant une activité régulière (auto-entrepreneur, activité libérale, petit commerce…). La facturation et les mentions légales sont adaptées à votre statut. Vous pourrez renseigner l'adresse et le numéro d'identification dans les paramètres du workspace.",
+  },
+  COMPANY: {
+    title: "Profil Entreprise",
+    description: "Pour les sociétés (SARL, SAS, SA…) et structures établies. Nous demanderons à l'étape suivante le nom de l'entité, l'adresse complète du siège et le numéro d'identification (NINEA, NIF, RC…) pour que vos factures soient conformes et professionnelles.",
+  },
+};
 
 const workspaceSchema = z.object({
   type: z.enum(['FREELANCE', 'INDIVIDUAL', 'COMPANY']),
@@ -245,6 +261,26 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                   </button>
                 ))}
               </div>
+
+              {/* Bloc d'info détaillée selon le type sélectionné */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedType}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-xl border border-[#470000]/20 bg-[#470000]/5 p-4 text-left"
+                >
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                    <div className="space-y-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground">{WORKSPACE_TYPE_INFO[selectedType].title}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{WORKSPACE_TYPE_INFO[selectedType].description}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </motion.div>
           ) : step === 2 && selectedType === "COMPANY" ? (
             <motion.div 

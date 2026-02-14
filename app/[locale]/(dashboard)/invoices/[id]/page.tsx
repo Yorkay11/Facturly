@@ -637,15 +637,17 @@ export default function InvoiceDetailPage() {
                     <p className="font-semibold tabular-nums">{formatDate(invoiceData.dueDate)}</p>
                   </div>
                 </div>
-                <div className="group flex gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-sm hover:border-primary/30">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                    <Percent className="h-5 w-5" />
+                {parseFloat(invoiceData.taxAmount ?? "0") > 0 && (
+                  <div className="group flex gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-sm hover:border-primary/30">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <Percent className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">TVA</p>
+                      <p className="font-semibold tabular-nums">{formatCurrency(invoiceData.taxAmount ?? "0", invoiceData.currency)}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">TVA</p>
-                    <p className="font-semibold tabular-nums">{formatCurrency(invoiceData.taxAmount ?? "0", invoiceData.currency)}</p>
-                  </div>
-                </div>
+                )}
               </div>
 
               <Separator className="my-2" />

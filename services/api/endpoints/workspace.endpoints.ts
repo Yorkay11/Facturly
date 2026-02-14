@@ -13,8 +13,12 @@ export const workspaceEndpoints = (
     providesTags: ["Workspace"],
     // Ne pas traiter null comme une erreur - c'est une valeur valide quand l'utilisateur n'a pas encore de workspace
     transformResponse: (response: Workspace | null) => {
-      // Si la réponse est null, c'est normal (pas encore de workspace créé)
-      return response;
+      if (!response) return null;
+      // Normaliser la devise : backend peut renvoyer defaultCurrency (camelCase) ou default_currency (snake_case)
+      const raw = response as unknown as Record<string, unknown>;
+      const defaultCurrency =
+        (raw.defaultCurrency as string) ?? (raw.default_currency as string) ?? "XOF";
+      return { ...response, defaultCurrency } as Workspace;
     },
     // Ne pas considérer null comme une erreur
     keepUnusedDataFor: 60, // Garder en cache 60 secondes même si null

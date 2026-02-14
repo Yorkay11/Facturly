@@ -81,11 +81,17 @@ export function ChatMessageList({
   }, [messages]);
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-5">
       {messages.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground text-sm">
-          <p>Posez une question sur vos factures, votre tableau de bord…</p>
-          <p className="mt-1">
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="rounded-2xl bg-muted/40 p-4 mb-4 ring-1 ring-border/40">
+            <FuryMascot mood="focus" size="sm" animated={false} />
+          </div>
+          <p className="text-sm font-medium text-foreground">Posez une question à FURY</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-[260px]">
+            Factures, tableau de bord, statuts…
+          </p>
+          <p className="text-xs text-muted-foreground/80 mt-2">
             Ex : &quot;Résumé de mon mois&quot;, &quot;Où en est la facture #42 ?&quot;
           </p>
         </div>
@@ -94,7 +100,7 @@ export function ChatMessageList({
         <div
           key={m.id}
           className={cn(
-            "flex gap-2 items-start",
+            "flex gap-2.5 items-end",
             m.role === "user" ? "justify-end" : "justify-start"
           )}
         >
@@ -103,18 +109,18 @@ export function ChatMessageList({
               mood="focus"
               size="xs"
               animated={false}
-              className="shrink-0"
+              className="shrink-0 mb-0.5"
             />
           )}
           <div
             className={cn(
-              "rounded-lg px-3 py-2 text-sm max-w-[85%]",
+              "rounded-2xl px-4 py-2.5 text-sm max-w-[85%] shadow-sm",
               m.role === "user"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted"
+                ? "bg-primary text-primary-foreground rounded-br-md"
+                : "bg-muted/80 rounded-bl-md"
             )}
           >
-            <p className="whitespace-pre-wrap">
+            <p className="whitespace-pre-wrap leading-relaxed">
               {getMessageText(m as { content?: unknown; parts?: Part[] }) ||
                 (m.role === "assistant" ? "…" : "")}
             </p>
@@ -122,14 +128,14 @@ export function ChatMessageList({
         </div>
       ))}
       {isLoading && (
-        <div className="flex gap-2 justify-start items-start">
+        <div className="flex gap-2.5 justify-start items-end">
           <FuryMascot
             mood="focus"
             size="xs"
             animated={false}
-            className="shrink-0"
+            className="shrink-0 mb-0.5"
           />
-          <div className="rounded-lg px-3 py-2 bg-muted text-sm text-muted-foreground">
+          <div className="rounded-2xl rounded-bl-md px-4 py-2.5 bg-muted/80 text-sm text-muted-foreground shadow-sm animate-pulse">
             …
           </div>
         </div>

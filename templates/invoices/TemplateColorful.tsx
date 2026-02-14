@@ -133,10 +133,12 @@ const TemplateColorful = ({
             <span>Sous-total HT</span>
             <span>{formatAmount(subtotal)}</span>
           </div>
-          <div className="flex justify-between py-2 text-sm">
-            <span>TVA estimée</span>
-            <span>{formatAmount(vatAmount)}</span>
-          </div>
+          {vatAmount > 0 && (
+            <div className="flex justify-between py-2 text-sm">
+              <span>TVA estimée</span>
+              <span>{formatAmount(vatAmount)}</span>
+            </div>
+          )}
           <div className="flex justify-between pt-4 mt-3 border-t-2 border-white/30 text-2xl font-bold">
             <span>TOTAL TTC</span>
             <span>{formatAmount(totalAmount)}</span>

@@ -126,12 +126,14 @@ const TemplateInvoice = ({
               </TableCell>
               <TableCell className="text-right text-xs font-semibold">{formatAmount(subtotal)}</TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell colSpan={4} className="text-right text-xs opacity-70">
-                TVA estimée
-              </TableCell>
-              <TableCell className="text-right text-xs font-semibold">{formatAmount(vatAmount)}</TableCell>
-            </TableRow>
+            {vatAmount > 0 && (
+              <TableRow>
+                <TableCell colSpan={4} className="text-right text-xs opacity-70">
+                  TVA estimée
+                </TableCell>
+                <TableCell className="text-right text-xs font-semibold">{formatAmount(vatAmount)}</TableCell>
+              </TableRow>
+            )}
             <TableRow>
               <TableCell colSpan={4} className="text-right text-xs opacity-70">
                 Total TTC

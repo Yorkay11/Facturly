@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense, useMemo } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
 import { useForm, Controller } from "react-hook-form";
@@ -36,6 +37,45 @@ import {
 } from "@/components/ui/dialog";
 import { CheckCircle2, Receipt, DollarSign, FileText } from "lucide-react";
 
+// Drapeaux des pays (même source que l'onboarding)
+const COUNTRY_FLAGS: Record<string, string> = {
+  SN: "/images/countries/flag-for-flag-senegal-svgrepo-com.svg",
+  CI: "/images/countries/flag-for-flag-cote-divoire-svgrepo-com.svg",
+  ML: "/images/countries/flag-for-flag-mali-svgrepo-com.svg",
+  BF: "/images/countries/flag-for-flag-burkina-faso-svgrepo-com.svg",
+  BJ: "/images/countries/flag-for-flag-benin-svgrepo-com.svg",
+  TG: "/images/countries/flag-for-flag-togo-svgrepo-com.svg",
+  NE: "/images/countries/flag-for-flag-niger-svgrepo-com.svg",
+  GN: "/images/countries/flag-for-flag-guinea-svgrepo-com.svg",
+  GH: "/images/countries/flag-for-flag-ghana-svgrepo-com.svg",
+  NG: "/images/countries/flag-for-flag-nigeria-svgrepo-com.svg",
+  CM: "/images/countries/flag-for-flag-cameroon-svgrepo-com.svg",
+  GA: "/images/countries/flag-for-flag-gabon-svgrepo-com.svg",
+  TD: "/images/countries/flag-for-flag-tchad-svgrepo-com.svg",
+  CF: "/images/countries/flag-for-flag-central-african-republic-svgrepo-com.svg",
+  CG: "/images/countries/flag-for-flag-congo-brazzaville-svgrepo-com.svg",
+};
+
+const SETTINGS_COUNTRIES: { value: string; label: string }[] = [
+  { value: "none", label: "Non spécifié" },
+  { value: "SN", label: "Sénégal" },
+  { value: "CI", label: "Côte d'Ivoire" },
+  { value: "ML", label: "Mali" },
+  { value: "BF", label: "Burkina Faso" },
+  { value: "BJ", label: "Bénin" },
+  { value: "TG", label: "Togo" },
+  { value: "NE", label: "Niger" },
+  { value: "GN", label: "Guinée" },
+  { value: "GH", label: "Ghana" },
+  { value: "NG", label: "Nigeria" },
+  { value: "CM", label: "Cameroun" },
+  { value: "GA", label: "Gabon" },
+  { value: "TD", label: "Tchad" },
+  { value: "CF", label: "République centrafricaine" },
+  { value: "CG", label: "Congo" },
+  { value: "GQ", label: "Guinée équatoriale" },
+];
+
 type UserFormValues = {
   firstName: string;
   lastName: string;
@@ -59,7 +99,6 @@ type SettingsFormValues = {
   timezone: string;
   invoicePrefix: string;
   dateFormat: string;
-  currency: string;
   paymentTerms: number;
 };
 
@@ -122,7 +161,6 @@ function SettingsContent() {
     timezone: z.string().min(1, t('billing.validation.timezoneRequired')),
     invoicePrefix: z.string().min(1, t('billing.validation.invoicePrefixRequired')),
     dateFormat: z.string().min(1, t('billing.validation.dateFormatRequired')),
-    currency: z.string().min(1, t('billing.validation.currencyRequired')),
     paymentTerms: z.number().min(0, t('billing.validation.paymentTermsPositive')),
   }), [t]);
 
@@ -179,7 +217,6 @@ function SettingsContent() {
       timezone: "Africa/Dakar",
       invoicePrefix: "FAC",
       dateFormat: "DD/MM/YYYY",
-      currency: "XOF",
       paymentTerms: 30,
     },
   });
@@ -221,7 +258,6 @@ function SettingsContent() {
         timezone: settings.timezone,
         invoicePrefix: settings.invoicePrefix,
         dateFormat: settings.dateFormat,
-        currency: settings.currency,
         paymentTerms: settings.paymentTerms,
       });
     }
@@ -286,7 +322,6 @@ function SettingsContent() {
         timezone: values.timezone,
         invoicePrefix: values.invoicePrefix,
         dateFormat: values.dateFormat,
-        currency: values.currency,
         paymentTerms: values.paymentTerms,
       }).unwrap();
       
@@ -448,7 +483,7 @@ function SettingsContent() {
                       name="type"
                       control={workspaceForm.control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingWorkspace}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled>
                           <SelectTrigger className={workspaceForm.formState.errors.type ? "border-destructive" : ""}>
                             <SelectValue placeholder={t('workspace.fields.typePlaceholder')} />
                           </SelectTrigger>
@@ -516,14 +551,21 @@ function SettingsContent() {
                         name="defaultCurrency"
                         control={workspaceForm.control}
                         render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingWorkspace}>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value || "XOF"}
+                            disabled={isUpdatingWorkspace}
+                          >
                             <SelectTrigger className={workspaceForm.formState.errors.defaultCurrency ? "border-destructive" : ""}>
                               <SelectValue placeholder={t('workspace.fields.defaultCurrency')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="EUR">EUR (€)</SelectItem>
-                              <SelectItem value="USD">USD ($)</SelectItem>
-                              <SelectItem value="XOF">XOF (CFA)</SelectItem>
+                              <SelectItem value="XOF">XOF — FCFA (UEMOA, Afrique de l'Ouest)</SelectItem>
+                              <SelectItem value="XAF">XAF — FCFA (CEMAC, Afrique centrale)</SelectItem>
+                              <SelectItem value="EUR">EUR — Euro (€)</SelectItem>
+                              <SelectItem value="USD">USD — Dollar américain ($)</SelectItem>
+                              <SelectItem value="NGN">NGN — Naira nigérian (₦)</SelectItem>
+                              <SelectItem value="GHS">GHS — Cedi ghanéen (₵)</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -572,35 +614,40 @@ function SettingsContent() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="country" className="flex items-center gap-2">
-                        {t('workspace.fields.country')} <span className="text-muted-foreground text-xs">(optionnel)</span>
+                        {t('workspace.fields.country')}
                       </Label>
                       <Controller
                         name="country"
                         control={workspaceForm.control}
                         render={({ field }) => (
-                          <Select 
-                            onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
-                            value={field.value || 'none'} 
+                          <Select
+                            onValueChange={(value) => field.onChange(value === 'none' ? undefined : value)}
+                            value={field.value || 'none'}
                             disabled={isUpdatingWorkspace}
                           >
                             <SelectTrigger className={workspaceForm.formState.errors.country ? "border-destructive" : ""}>
                               <SelectValue placeholder={t('workspace.fields.countryPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">{t('workspace.fields.countryNotSpecified')}</SelectItem>
-                              <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
-                              <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
-                              <SelectItem value="ML">🇲🇱 Mali</SelectItem>
-                              <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                              <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                              <SelectItem value="TG">🇹🇬 Togo</SelectItem>
-                              <SelectItem value="NE">🇳🇪 Niger</SelectItem>
-                              <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
-                              <SelectItem value="GH">🇬🇭 Ghana</SelectItem>
-                              <SelectItem value="NG">🇳🇬 Nigeria</SelectItem>
-                              <SelectItem value="CM">🇨🇲 Cameroun</SelectItem>
-                              <SelectItem value="GA">🇬🇦 Gabon</SelectItem>
-                              <SelectItem value="TD">🇹🇩 Tchad</SelectItem>
+                              {SETTINGS_COUNTRIES.map(({ value, label }) => (
+                                <SelectItem key={value} value={value}>
+                                  <span className="flex items-center gap-2">
+                                    {value !== "none" && COUNTRY_FLAGS[value] ? (
+                                      <Image
+                                        src={COUNTRY_FLAGS[value]}
+                                        alt=""
+                                        width={20}
+                                        height={14}
+                                        className="object-contain shrink-0 rounded-sm"
+                                        unoptimized
+                                      />
+                                    ) : value !== "none" ? (
+                                      <span className="inline-block w-5 h-3.5 shrink-0 rounded-sm bg-muted" aria-hidden />
+                                    ) : null}
+                                    {value === "none" ? t('workspace.fields.countryNotSpecified') : label}
+                                  </span>
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         )}
@@ -615,7 +662,7 @@ function SettingsContent() {
                       )}
                     </div>
                   </div>
-                  <Button type="submit" disabled={isUpdatingWorkspace}>
+                  <Button type="submit" disabled={isUpdatingWorkspace || !workspaceForm.formState.isDirty}>
                     {isUpdatingWorkspace && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t('workspace.buttons.update')}
                   </Button>
@@ -707,36 +754,12 @@ function SettingsContent() {
                         <DollarSign className="h-4 w-4 text-primary" />
                         <h3 className="text-sm font-semibold text-primary">{t('billing.sections.financial')}</h3>
                       </div>
+                      <p className="text-sm text-muted-foreground">
+                        {t('billing.fields.currencyDefinedInWorkspace', {
+                          currency: workspace?.defaultCurrency ?? settings?.currency ?? 'XOF',
+                        })}
+                      </p>
                       <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label htmlFor="currency" className="flex items-center gap-2">
-                            {t('billing.fields.currency')} <span className="text-destructive">*</span>
-                          </Label>
-                          <Controller
-                            name="currency"
-                            control={settingsForm.control}
-                            render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
-                                <SelectTrigger className={settingsForm.formState.errors.currency ? "border-destructive" : ""}>
-                                  <SelectValue placeholder={t('billing.fields.currency')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="XOF">FCFA (XOF) - UEMOA — Afrique de l'Ouest</SelectItem>
-                                  <SelectItem value="XAF">FCFA (XAF) - CEMAC — Afrique Centrale</SelectItem>
-                                  <SelectItem value="NGN">NGN (₦) - Naira nigérian</SelectItem>
-                                  <SelectItem value="GHS">GHS (₵) - Cedi ghanéen</SelectItem>
-                                  <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
-                                  <SelectItem value="USD">USD ($) - Dollar américain</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {settingsForm.formState.errors.currency && (
-                            <p className="text-xs text-destructive">
-                              {settingsForm.formState.errors.currency.message}
-                            </p>
-                          )}
-                        </div>
                         <div className="space-y-2">
                           <Label htmlFor="payment-terms" className="flex items-center gap-2">
                             {t('billing.fields.paymentTerms')} <span className="text-destructive">*</span>

@@ -138,10 +138,12 @@ const TemplateElegant = ({
               </td>
               <td className="py-3 px-4 text-[13px] text-right font-semibold">{formatAmount(subtotal)}</td>
             </tr>
-            <tr className="border-b border-[#ecf0f1]">
-              <td className="py-3 px-4 text-[13px] text-right text-[#7f8c8d] font-medium">TVA estimée</td>
-              <td className="py-3 px-4 text-[13px] text-right font-semibold">{formatAmount(vatAmount)}</td>
-            </tr>
+            {vatAmount > 0 && (
+              <tr className="border-b border-[#ecf0f1]">
+                <td className="py-3 px-4 text-[13px] text-right text-[#7f8c8d] font-medium">TVA estimée</td>
+                <td className="py-3 px-4 text-[13px] text-right font-semibold">{formatAmount(vatAmount)}</td>
+              </tr>
+            )}
             <tr
               className="bg-gradient-to-b from-[#d4af37] to-[#b8941f] text-white"
               style={{

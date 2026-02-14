@@ -420,14 +420,16 @@ export default function PublicInvoicePage() {
                 {formatCurrency(invoice.subtotalAmount, invoice.currency)}
               </TableCell>
             </TableRow>
-            <TableRow className="border-slate-200/60">
-              <TableCell colSpan={3} className="text-right text-sm font-semibold text-slate-700 py-3">
-                {t('labels.vat')}
-              </TableCell>
-              <TableCell className="text-right text-base font-semibold text-slate-900 py-3">
-                {formatCurrency(invoice.taxAmount, invoice.currency)}
-              </TableCell>
-            </TableRow>
+            {parseFloat(invoice.taxAmount ?? "0") > 0 && (
+              <TableRow className="border-slate-200/60">
+                <TableCell colSpan={3} className="text-right text-sm font-semibold text-slate-700 py-3">
+                  {t('labels.vat')}
+                </TableCell>
+                <TableCell className="text-right text-base font-semibold text-slate-900 py-3">
+                  {formatCurrency(invoice.taxAmount, invoice.currency)}
+                </TableCell>
+              </TableRow>
+            )}
             {invoice.amountPaid !== "0.00" && (
               <>
                 <TableRow className="border-slate-200/60">

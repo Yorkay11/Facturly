@@ -94,7 +94,17 @@ const hoverScale = {
   transition: { duration: 0.2 },
 }
 
-function StepPreview({ step, direction }: { step: Step; direction: 1 | -1 }) {
+function StepPreview({
+  step,
+  direction,
+  stepIndex,
+  renderStepPreview,
+}: {
+  step: Step
+  direction: 1 | -1
+  stepIndex?: number
+  renderStepPreview?: (step: Step, stepIndex: number) => React.ReactNode
+}) {
   const controls = useAnimation()
 
   React.useEffect(() => {
@@ -105,25 +115,51 @@ function StepPreview({ step, direction }: { step: Step; direction: 1 | -1 }) {
     })
   }, [controls, step])
 
+  const customPreview =
+    typeof renderStepPreview === "function" && stepIndex !== undefined
+      ? renderStepPreview(step, stepIndex)
+      : null
+
   return (
     <motion.div
       {...slideInOut(direction)}
-      className="relative h-full w-full   overflow-hidden rounded-sm rounded-rb-lg rounded-tl-xl ring-2 ring-black/10 dark:ring-black/10 dark:ring-offset-black ring-offset-8"
+      className="relative h-full w-full   overflow-hidden rounded-sm rounded-rb-lg rounded-tl-xl ring-2 ring-primary/10 dark:ring-primary/10 dark:ring-offset-black ring-offset-8"
     >
-      {step.media ? (
-        <div className="relative bg-black h-full w-full">
+      {customPreview ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={controls}
+          className="relative h-full w-full max-h-[800px] flex items-center justify-center bg-card"
+        >
+          {customPreview}
+        </motion.div>
+      ) : step.media ? (
+        <div className="relative bg-white h-full w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={controls}
-            className="h-full w-full max-h-[700px]"
+            className="h-full w-full max-h-[700px] flex items-center justify-center"
           >
             {step.media.type === "image" ? (
-              <Image
-                src={step.media.src || "/placeholder.svg"}
-                alt={step.media.alt || ""}
-                fill
-                className="object-cover"
-              />
+              <motion.div
+                className="relative h-full w-full"
+                animate={{
+                  y: [0, -6, 0],
+                  scale: [1, 1.02, 1],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <Image
+                  src={step.media.src || "/placeholder.svg"}
+                  alt={step.media.alt || ""}
+                  fill
+                  className="object-contain"
+                />
+              </motion.div>
             ) : (
               <video
                 src={step.media.src}
@@ -224,6 +260,18 @@ interface FeatureDisclosureProps {
   open: boolean
   setOpen: (open: boolean) => void
   forceVariant?: "mobile" | "desktop"
+  /** Dialog title (for i18n) */
+  title?: string
+  /** Custom preview per step (e.g. UI component + mascot). When set, used instead of step.media */
+  renderStepPreview?: (step: Step, stepIndex: number) => React.ReactNode
+  /** Labels for navigation buttons (for i18n) */
+  labels?: {
+    skip?: string
+    previous?: string
+    next?: string
+    done?: string
+    dontShowAgain?: string
+  }
 }
 
 interface StepContentProps {
@@ -237,6 +285,21 @@ interface StepContentProps {
   onStepSelect: (index: number) => void
   direction: 1 | -1
   isDesktop: boolean
+  labels?: {
+    skip?: string
+    previous?: string
+    next?: string
+    done?: string
+    dontShowAgain?: string
+  }
+}
+
+const DEFAULT_LABELS = {
+  skip: "Skip all",
+  previous: "Previous",
+  next: "Next",
+  done: "Done",
+  dontShowAgain: "Don't show this again",
 }
 
 function StepContent({
@@ -251,8 +314,10 @@ function StepContent({
   direction,
   isDesktop,
   stepRef,
+  labels: labelsProp,
 }: StepContentProps & { stepRef: React.RefObject<HTMLButtonElement | null> }) {
   const [skipNextTime, setSkipNextTime] = React.useState(false)
+  const labels = { ...DEFAULT_LABELS, ...labelsProp }
 
   const renderActionButton = (action: Step["action"]) => {
     if (!action) return null
@@ -347,7 +412,7 @@ function StepContent({
               onClick={onSkip}
               className="text-muted-foreground hover:bg-card rounded-full"
             >
-              Skip all
+              {labels.skip}
             </Button>
             <div className="space-x-2">
               {currentStep > 0 && (
@@ -357,7 +422,7 @@ function StepContent({
                   variant="ghost"
                   className="rounded-full hover:bg-transparent"
                 >
-                  Previous
+                  {labels.previous}
                 </Button>
               )}
               <Button
@@ -371,7 +436,7 @@ function StepContent({
                 ref={stepRef as React.RefObject<HTMLButtonElement>}
                 className="rounded-full"
               >
-                {currentStep === steps.length - 1 ? "Done" : "Next"}
+                {currentStep === steps.length - 1 ? labels.done : labels.next}
               </Button>
             </div>
             {/* Don't show again checkbox */}
@@ -386,7 +451,7 @@ function StepContent({
               htmlFor="skipNextTime"
               className="text-sm text-muted-foreground"
             >
-              Don't show this again
+              {labels.dontShowAgain}
             </label>
           </div>
         </motion.div>
@@ -404,7 +469,11 @@ export function IntroDisclosure({
   onSkip,
   showProgressBar = true,
   forceVariant,
+  title,
+  renderStepPreview,
+  labels: labelsProp,
 }: FeatureDisclosureProps) {
+  const labels = { ...DEFAULT_LABELS, ...labelsProp }
   const [currentStep, setCurrentStep] = React.useState(0)
   const [completedSteps, setCompletedSteps] = React.useState<number[]>([0])
   const [direction, setDirection] = React.useState<1 | -1>(1)
@@ -495,11 +564,11 @@ export function IntroDisclosure({
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-5xl p-0 gap-0 overflow-hidden "
+          className="max-w-5xl p-0 gap-0 overflow-hidden"
           onKeyDown={handleKeyDown}
         >
           <DialogHeader className="p-6 space-y-2 bg-muted border-b border-border">
-            <DialogTitle>Feature Tour</DialogTitle>
+            <DialogTitle>{title ?? "Feature Tour"}</DialogTitle>
             {showProgressBar && (
               <div className="flex mt-2 w-full justify-center  ">
                 <Progress
@@ -524,6 +593,7 @@ export function IntroDisclosure({
                 direction={direction}
                 isDesktop={isDesktop}
                 stepRef={stepRef}
+                labels={labels}
               />
             </div>
             <AnimatePresence mode="wait" initial={false}>
@@ -531,6 +601,8 @@ export function IntroDisclosure({
                 key={currentStep}
                 step={steps[currentStep]}
                 direction={direction}
+                stepIndex={currentStep}
+                renderStepPreview={renderStepPreview}
               />
             </AnimatePresence>
           </div>
@@ -575,7 +647,12 @@ export function IntroDisclosure({
               </div>
               {/* Preview */}
               <div className="relative aspect-[16/9] ring-2 ring-border ring-offset-8 ring-offset-background rounded-lg overflow-hidden">
-                <StepPreview step={steps[currentStep]} direction={direction} />
+                <StepPreview
+                  step={steps[currentStep]}
+                  direction={direction}
+                  stepIndex={currentStep}
+                  renderStepPreview={renderStepPreview}
+                />
               </div>
 
               {/* Step content */}
@@ -621,7 +698,7 @@ export function IntroDisclosure({
                   onClick={onSkip}
                   className="text-muted-foreground hover:bg-card rounded-full"
                 >
-                  Skip all
+                  {labels.skip}
                 </Button>
                 <div className="space-x-2">
                   {currentStep > 0 && (
@@ -631,7 +708,7 @@ export function IntroDisclosure({
                       variant="ghost"
                       className="rounded-full hover:bg-transparent"
                     >
-                      Previous
+                      {labels.previous}
                     </Button>
                   )}
                   <Button
@@ -642,7 +719,7 @@ export function IntroDisclosure({
                     ref={stepRef as React.RefObject<HTMLButtonElement>}
                     className="rounded-full"
                   >
-                    {currentStep === steps.length - 1 ? "Done" : "Next"}
+                    {currentStep === steps.length - 1 ? labels.done : labels.next}
                   </Button>
                 </div>
               </div>
@@ -657,7 +734,7 @@ export function IntroDisclosure({
                   htmlFor="skipNextTime"
                   className="text-sm text-muted-foreground"
                 >
-                  Don't show this again
+                  {labels.dontShowAgain}
                 </label>
               </div>
             </div>

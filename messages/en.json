@@ -256,7 +256,37 @@
     "aiSuggestions": "AI Suggestions",
     "aiSuggestionsDescription": "Recommendations based on your data",
     "open": "Open",
-    "launch": "Launch"
+    "launch": "Launch",
+    "intro": {
+      "title": "Tutorial",
+      "step1": {
+        "title": "Welcome to Facturly",
+        "shortDescription": "Discover your invoicing space",
+        "fullDescription": "Welcome! Facturly lets you create professional invoices, manage your clients and track payments. This short tutorial walks you through the basics."
+      },
+      "step2": {
+        "title": "Create your invoices",
+        "shortDescription": "Quick invoice or full invoice",
+        "fullDescription": "Two modes are available: quick invoice (client + amount in a few clicks) or full invoice for detailed quotes and invoices with line items and VAT."
+      },
+      "step3": {
+        "title": "Manage your clients",
+        "shortDescription": "Address book and history",
+        "fullDescription": "Add your clients and view their invoice history. You can send invoices by email or secure link and track payments."
+      },
+      "step4": {
+        "title": "You're all set",
+        "shortDescription": "Ready to invoice",
+        "fullDescription": "You're ready to use Facturly. Create your first invoice from the dashboard or explore settings to customize your workspace."
+      },
+      "actionCreateInvoice": "Create an invoice",
+      "actionClients": "View my clients",
+      "skip": "Skip all",
+      "previous": "Previous",
+      "next": "Next",
+      "done": "Done",
+      "dontShowAgain": "Don't show this again"
+    }
   },
   "invoiceLimit": {
     "close": "Close",
@@ -644,6 +674,7 @@
       },
       "lines": {
         "add": "Add line",
+        "addFromProduct": "Add existing service",
         "edit": "Edit line {description}",
         "delete": "Delete line {description}",
         "description": "Service description",
@@ -2462,6 +2493,7 @@
         "invoicePrefixExample": "Example: FAC-2026-001, INV-2026-001",
         "dateFormat": "Date format",
         "currency": "Currency",
+        "currencyDefinedInWorkspace": "Currency: {currency} — change it in the Workspace tab.",
         "taxRate": "VAT rate (%)",
         "taxRateInfo": {
           "title": "Automatic VAT rate",

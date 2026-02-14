@@ -113,12 +113,14 @@ const TemplateModern = ({
               </TableCell>
               <TableCell className="text-right text-sm font-semibold">{formatAmount(subtotal)}</TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell colSpan={3} className="text-right text-xs uppercase opacity-70">
-                TVA estimée
-              </TableCell>
-              <TableCell className="text-right text-sm font-semibold">{formatAmount(vatAmount)}</TableCell>
-            </TableRow>
+            {vatAmount > 0 && (
+              <TableRow>
+                <TableCell colSpan={3} className="text-right text-xs uppercase opacity-70">
+                  TVA estimée
+                </TableCell>
+                <TableCell className="text-right text-sm font-semibold">{formatAmount(vatAmount)}</TableCell>
+              </TableRow>
+            )}
             <TableRow>
               <TableCell colSpan={3} className="text-right text-xs uppercase opacity-70">
                 Total TTC

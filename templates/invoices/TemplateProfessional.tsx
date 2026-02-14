@@ -153,14 +153,16 @@ const TemplateProfessional = ({
                   {formatAmount(subtotal)}
                 </td>
               </tr>
-              <tr className="border-b border-[#ecf0f1]">
-                <td className="py-2.5 px-4 text-xs text-right text-[#7f8c8d] font-medium uppercase tracking-wide">
-                  TVA estimée
-                </td>
-                <td className="py-2.5 px-4 text-xs text-right font-semibold text-[#2c3e50]">
-                  {formatAmount(vatAmount)}
-                </td>
-              </tr>
+              {vatAmount > 0 && (
+                <tr className="border-b border-[#ecf0f1]">
+                  <td className="py-2.5 px-4 text-xs text-right text-[#7f8c8d] font-medium uppercase tracking-wide">
+                    TVA estimée
+                  </td>
+                  <td className="py-2.5 px-4 text-xs text-right font-semibold text-[#2c3e50]">
+                    {formatAmount(vatAmount)}
+                  </td>
+                </tr>
+              )}
               <tr
                 className="bg-[#2c3e50] text-white"
                 style={{

@@ -144,7 +144,7 @@ const registerResponse = await register(registerDto);
 
 if (!registerResponse.workspace) {
   // Aucun workspace, rediriger vers la page de création de workspace
-  router.push('/onboarding/create-workspace');
+  router.push('/create-workspace');
 } else {
   router.push('/dashboard');
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, Link } from '@/i18n/routing';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import StatCard from "@/components/dashboard/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -23,6 +24,7 @@ import AtRiskCard from "@/components/dashboard/AtRiskCard";
 import ClientModal from "@/components/modals/ClientModal";
 import ProductModal from "@/components/modals/ProductModal";
 import DashboardEmptyState from "@/components/dashboard/DashboardEmptyState";
+import { FacturlyIntroTutorial } from "@/components/dashboard/FacturlyIntroTutorial";
 import { TopClientsCard } from "@/components/reports/TopClientsCard";
 import { RevenueForecastCard } from "@/components/reports/RevenueForecastCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,14 +35,23 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isClientModalOpen, setClientModalOpen] = useState(false);
   const [isProductModalOpen, setProductModalOpen] = useState(false);
+  const [introOpen, setIntroOpen] = useState(false);
   const locale = useLocale();
   const t = useTranslations('dashboard');
   const commonT = useTranslations('common');
   const invoicesT = useTranslations('invoices');
   const clientsT = useTranslations('clients');
   const itemsT = useTranslations('items');
+
+  // Ouvrir le tutoriel après création du workspace (redirection avec ?showIntro=1)
+  useEffect(() => {
+    if (searchParams?.get("showIntro") === "1") {
+      setIntroOpen(true);
+    }
+  }, [searchParams]);
 
   const {
     chartRange,
@@ -68,6 +79,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-8">
+      <FacturlyIntroTutorial open={introOpen} setOpen={setIntroOpen} />
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>

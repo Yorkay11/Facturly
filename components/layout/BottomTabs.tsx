@@ -27,7 +27,7 @@ export function BottomTabs() {
   const unreadCount = unreadCountResponse?.count ?? 0;
 
   // Ne pas afficher sur certaines pages
-  const hiddenPaths = ['/onboarding'];
+  const hiddenPaths = ['/create-workspace'];
   const shouldHide = hiddenPaths.some(path => pathname?.includes(path));
   
   // Afficher sur mobile et tablettes (jusqu'à lg: 1024px)

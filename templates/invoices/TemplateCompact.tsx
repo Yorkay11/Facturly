@@ -110,10 +110,12 @@ const TemplateCompact = ({
           <span>Sous-total HT</span>
           <span>{formatAmount(subtotal)}</span>
         </div>
-        <div className="flex justify-between py-0.5 border-b border-black">
-          <span>TVA estimée</span>
-          <span>{formatAmount(vatAmount)}</span>
-        </div>
+        {vatAmount > 0 && (
+          <div className="flex justify-between py-0.5 border-b border-black">
+            <span>TVA estimée</span>
+            <span>{formatAmount(vatAmount)}</span>
+          </div>
+        )}
         <div className="flex justify-between py-1.5 border-t-2 border-b-2 border-black font-bold text-[11px] mt-1">
           <span>TOTAL TTC</span>
           <span>{formatAmount(totalAmount)}</span>

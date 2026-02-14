@@ -90,9 +90,6 @@ const TemplateClassicSerif = ({
               Prix unitaire
             </TableHead>
             <TableHead className="py-3 px-2 text-right font-bold text-[11px] uppercase">
-              TVA
-            </TableHead>
-            <TableHead className="py-3 px-2 text-right font-bold text-[11px] uppercase">
               Total
             </TableHead>
           </TableRow>
@@ -106,7 +103,6 @@ const TemplateClassicSerif = ({
                 <TableCell className="py-2.5 px-2 text-right text-xs">
                   {formatAmount(item.unitPrice)}
                 </TableCell>
-                <TableCell className="py-2.5 px-2 text-right text-xs">{item.vatRate}%</TableCell>
                 <TableCell className="py-2.5 px-2 text-right text-xs font-bold">
                   {formatAmount(item.unitPrice * item.quantity)}
                 </TableCell>
@@ -114,7 +110,7 @@ const TemplateClassicSerif = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center text-xs py-5">
+              <TableCell colSpan={4} className="text-center text-xs py-5">
                 Aucune ligne ajoutée
               </TableCell>
             </TableRow>
@@ -131,7 +127,7 @@ const TemplateClassicSerif = ({
               <td className="py-2 px-3 text-xs text-right font-bold">{formatAmount(subtotal)}</td>
             </tr>
             <tr className="border-b border-[#e0e0e0]">
-              <td className="py-2 px-3 text-xs text-right font-bold">TVA</td>
+              <td className="py-2 px-3 text-xs text-right font-bold">TVA estimée</td>
               <td className="py-2 px-3 text-xs text-right font-bold">{formatAmount(vatAmount)}</td>
             </tr>
             <tr className="border-t-2 border-b-2 border-black text-base font-bold">

@@ -108,9 +108,6 @@ const TemplateProfessional = ({
                 Prix unitaire
               </TableHead>
               <TableHead className="text-right text-[10px] uppercase tracking-wide font-semibold text-white">
-                TVA
-              </TableHead>
-              <TableHead className="text-right text-[10px] uppercase tracking-wide font-semibold text-white">
                 Total HT
               </TableHead>
             </TableRow>
@@ -126,9 +123,6 @@ const TemplateProfessional = ({
                   <TableCell className="text-right text-xs text-[#2c3e50]">
                     {formatAmount(item.unitPrice)}
                   </TableCell>
-                  <TableCell className="text-right text-xs text-[#2c3e50]">
-                    {item.vatRate}%
-                  </TableCell>
                   <TableCell className="text-right text-xs font-semibold text-[#2c3e50]">
                     {formatAmount(item.unitPrice * item.quantity)}
                   </TableCell>
@@ -137,7 +131,7 @@ const TemplateProfessional = ({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={4}
                   className="text-center py-8 text-[#95a5a6] text-xs"
                 >
                   Aucune ligne de facture
@@ -161,7 +155,7 @@ const TemplateProfessional = ({
               </tr>
               <tr className="border-b border-[#ecf0f1]">
                 <td className="py-2.5 px-4 text-xs text-right text-[#7f8c8d] font-medium uppercase tracking-wide">
-                  TVA
+                  TVA estimée
                 </td>
                 <td className="py-2.5 px-4 text-xs text-right font-semibold text-[#2c3e50]">
                   {formatAmount(vatAmount)}

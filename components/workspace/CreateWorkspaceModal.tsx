@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 
-type WorkspaceType = "INDIVIDUAL" | "COMPANY";
+type WorkspaceType = "FREELANCE" | "INDIVIDUAL" | "COMPANY";
 
 export function CreateWorkspaceModal({
   open,
@@ -42,6 +42,7 @@ export function CreateWorkspaceModal({
   const [defaultCurrency, setDefaultCurrency] = useState("XOF");
 
   const isCompany = type === "COMPANY";
+  const isIndividualOrFreelance = type === "INDIVIDUAL" || type === "FREELANCE";
   const canSubmit = !isCompany || name.trim().length >= 2;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,7 +59,7 @@ export function CreateWorkspaceModal({
       });
       setCurrentWorkspaceId(res.id);
       onOpenChange(false);
-      setType("INDIVIDUAL");
+      setType("FREELANCE");
       setName("");
       setDefaultCurrency("XOF");
     } catch (err: unknown) {
@@ -85,6 +86,14 @@ export function CreateWorkspaceModal({
           <div className="space-y-2">
             <Label>{tOnboard("type.title")}</Label>
             <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={type === "FREELANCE" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setType("FREELANCE")}
+              >
+                {tOnboard("type.freelance.title")}
+              </Button>
               <Button
                 type="button"
                 variant={type === "INDIVIDUAL" ? "default" : "outline"}

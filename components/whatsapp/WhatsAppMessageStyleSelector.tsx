@@ -13,11 +13,20 @@ import { Badge } from "@/components/ui/badge";
 import { FaWhatsapp, FaBolt, FaStar, FaHeart, FaFileAlt, FaComments } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 import type { WhatsAppMessageStyle } from "@/services/api/types/invoice.types";
+import { generateWhatsAppMessage } from "@/utils/whatsapp-message";
+import { format } from "date-fns";
+import { WhatsAppMessagePreview } from "./WhatsAppMessagePreview";
 
 export interface WhatsAppMessageStyleSelectorProps {
   value?: WhatsAppMessageStyle;
   onChange: (value: WhatsAppMessageStyle) => void;
   className?: string;
+  // Props pour l'aperçu du message
+  invoiceNumber?: string;
+  amount?: string;
+  currency?: string;
+  dueDate?: Date | string;
+  companyName?: string;
 }
 
 const MESSAGE_STYLES: Array<{
@@ -74,13 +83,34 @@ export function WhatsAppMessageStyleSelector({
   value = "professional_warm",
   onChange,
   className,
+  invoiceNumber,
+  amount,
+  currency,
+  dueDate,
+  companyName,
 }: WhatsAppMessageStyleSelectorProps) {
   const t = useTranslations("whatsapp.messageStyles");
   const selectedStyle = MESSAGE_STYLES.find((style) => style.value === value);
   const SelectedIcon = selectedStyle?.icon || FaComments;
 
+  // Générer l'aperçu du message si les données sont disponibles
+  const previewMessage = invoiceNumber && amount && currency
+    ? generateWhatsAppMessage({
+        invoiceNumber: invoiceNumber || "FAC-001",
+        amount: amount || "0",
+        currency: currency || "XOF",
+        dueDate: dueDate
+          ? typeof dueDate === "string"
+            ? dueDate
+            : format(new Date(dueDate), "dd/MM/yyyy")
+          : undefined,
+        companyName,
+        style: value,
+      })
+    : null;
+
   return (
-    <div className={cn("space-y-2", className)}>
+    <div className={cn("space-y-3", className)}>
       <Label htmlFor="whatsapp-style" className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
         <FaWhatsapp className="h-3.5 w-3.5 text-green-600" />
         {t("label")}
@@ -147,6 +177,20 @@ export function WhatsAppMessageStyleSelector({
         <p className="text-[10px] text-slate-500 leading-relaxed">
           {t("helperText")}
         </p>
+      )}
+      
+      {/* Aperçu du message dans un mockup WhatsApp */}
+      {previewMessage && (
+        <div className="pt-2">
+          <Label className="text-xs font-semibold text-slate-700 mb-3 block flex items-center gap-1.5">
+            <FaWhatsapp className="h-3.5 w-3.5 text-green-600" />
+            Aperçu du message
+          </Label>
+          <WhatsAppMessagePreview
+            message={previewMessage}
+            companyName={companyName}
+          />
+        </div>
       )}
     </div>
   );

@@ -32,19 +32,8 @@ export default function OnboardingPage() {
     );
   }
 
-  // Le workspace existe toujours maintenant (créé automatiquement à l'inscription)
-  // Si le profil est déjà complet, rediriger vers le dashboard
-  if (!workspace) {
-    // Le workspace devrait toujours exister, mais au cas où...
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-        <div className="w-full max-w-2xl space-y-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </div>
-    );
-  }
+  // Le workspace sera créé lors de l'onboarding si il n'existe pas encore
+  // Si le workspace existe et le profil est déjà complet, rediriger vers le dashboard
 
   return (
     <>
@@ -70,18 +59,16 @@ export default function OnboardingPage() {
         />
       )}
 
-      {!isProfileComplete && (
-        <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
-          <div className="w-full max-w-4xl">
-            <OnboardingWizard 
-              workspace={workspace}
-              onComplete={async () => {
-                await refetch();
-                // Déclencher la redirection vers la création de la première facture
-                setShouldRedirectToInvoice(true);
-              }}
-            />
-          </div>
+      {(!workspace || !isProfileComplete) && (
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 px-4 py-8">
+          <OnboardingWizard 
+            workspace={workspace || null}
+            onComplete={async () => {
+              await refetch();
+              // Déclencher la redirection vers la création de la première facture
+              setShouldRedirectToInvoice(true);
+            }}
+          />
         </div>
       )}
     </>

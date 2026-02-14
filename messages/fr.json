@@ -320,7 +320,8 @@
     "accountInfo": "Informations de votre compte",
     "workspace": "Espace de travail",
     "workspaceTypeCompany": "Entreprise",
-    "workspaceTypeIndividual": "Individuel",
+    "workspaceTypeIndividual": "Indépendant",
+    "workspaceTypeFreelance": "Freelance",
     "preferences": "Préférences",
     "preferencesDescription": "Notifications, mentions légales, branding",
     "manageAccount": "Gérer mon compte",
@@ -592,11 +593,11 @@
       "sections": {
         "invoiceInfo": {
           "title": "Informations facture",
-          "description": "Destinataire, objet, date d'émission et échéance."
+          "description": "Client, objet de la facture, dates d'émission et d'échéance. La devise et la TVA sont définies dans les paramètres du workspace."
         },
         "invoiceLines": {
-          "title": "Lignes de facture",
-          "description": "Ajoutez vos prestations, quantités et tarifs.",
+          "title": "Lignes de facture (prestations)",
+          "description": "Prestations, quantités et tarifs. Devise et TVA appliquées selon les paramètres.",
           "empty": {
             "title": "Aucune ligne pour le moment",
             "description": "Ajoutez votre première prestation en cliquant sur le bouton ci-dessus."
@@ -610,7 +611,7 @@
       },
       "fields": {
         "receiver": {
-          "label": "Destinataire",
+          "label": "Client / Destinataire",
           "placeholder": "Sélectionnez un client",
           "searchPlaceholder": "Rechercher un client...",
           "loading": "Chargement des clients...",
@@ -646,10 +647,11 @@
         "add": "Ajouter une ligne",
         "edit": "Modifier la ligne {description}",
         "delete": "Supprimer la ligne {description}",
-        "description": "Description",
+        "description": "Description de la prestation",
         "unitPrice": "Prix unitaire",
         "quantity": "Quantité",
-        "vat": "TVA",
+        "vat": "TVA (%)",
+        "vatDefaultHint": "Défaut : {rate}% (paramètres)",
         "lineTotal": "Total ligne"
       },
       "addItemModal": {
@@ -2414,9 +2416,11 @@
       "fields": {
         "type": "Type de workspace",
         "typePlaceholder": "Sélectionnez le type",
-        "typeIndividual": "Freelance / Indépendant",
+        "typeFreelance": "Freelance",
+        "typeIndividual": "Indépendant",
         "typeCompany": "Entreprise",
-        "typeIndividualHint": "Pour les travailleurs indépendants et freelances. Le nom du workspace est optionnel.",
+        "typeFreelanceHint": "Pour les freelances (développeurs, designers, consultants digitaux). Le nom du workspace est optionnel.",
+        "typeIndividualHint": "Pour les travailleurs indépendants (artisans, commerçants, professions libérales). Le nom du workspace est optionnel.",
         "typeCompanyHint": "Pour les entreprises et sociétés. Le nom du workspace est recommandé.",
         "name": "Nom du workspace",
         "namePlaceholder": "Ma Société SARL",
@@ -3049,12 +3053,17 @@
     "type": {
       "title": "Choisissez votre profil",
       "description": "Sélectionnez le type qui correspond le mieux à votre activité",
-      "individual": {
-        "title": "Freelance / Indépendant",
+      "freelance": {
+        "title": "Freelance",
         "badge": "Recommandé",
-        "subtitle": "Parfait pour consultants, développeurs, designers",
-        "description": "Sans formalités • Facturez en votre nom",
+        "subtitle": "Parfait pour développeurs, designers, consultants digitaux",
+        "description": "Travail à la mission • Métiers du digital",
         "recommended": true
+      },
+      "individual": {
+        "title": "Indépendant",
+        "subtitle": "Pour artisans, commerçants, professions libérales",
+        "description": "Travailleurs indépendants • Activités diverses"
       },
       "workspaceCompany": {
         "title": "Entreprise",

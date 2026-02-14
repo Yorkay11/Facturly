@@ -131,6 +131,13 @@ export const baseQueryWithAuth: BaseQueryFn<
     return { data: undefined };
   }
   
+  // Traiter les réponses null comme valides (pour /workspaces/me quand l'utilisateur n'a pas encore de workspace)
+  const url = typeof args === "string" ? args : (args as FetchArgs).url ?? "";
+  if (String(url).endsWith("/workspaces/me") && result.data === null) {
+    // null est une valeur valide ici (pas encore de workspace créé)
+    return { data: null };
+  }
+  
   // Gérer les erreurs d'authentification (sauf pour la requête login elle‑même)
   if (result.error && result.error.status === 401) {
     const url = typeof args === "string" ? args : (args as FetchArgs).url ?? "";

@@ -396,7 +396,13 @@ export const Sidebar = ({
                     {workspace?.name || tTopbar('workspace')}
                   </p>
                   <p className="text-[9px] text-white/80 truncate leading-tight mt-0.5">
-                    {workspace ? (workspace.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')) : '…'}
+                    {workspace 
+                      ? workspace.type === 'COMPANY' 
+                        ? tTopbar('workspaceTypeCompany')
+                        : workspace.type === 'FREELANCE'
+                        ? tTopbar('workspaceTypeFreelance')
+                        : tTopbar('workspaceTypeIndividual')
+                      : '…'}
                   </p>
                 </div>
                 <FaChevronDown className="h-3 w-3 text-white/80 shrink-0" />
@@ -432,7 +438,11 @@ export const Sidebar = ({
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
                       <p className="text-xs text-slate-500 truncate">
-                        {w.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
+                        {w.type === 'COMPANY' 
+                          ? tTopbar('workspaceTypeCompany')
+                          : w.type === 'FREELANCE'
+                          ? tTopbar('workspaceTypeFreelance')
+                          : tTopbar('workspaceTypeIndividual')}
                       </p>
                     </div>
                   </button>
@@ -507,7 +517,11 @@ export const Sidebar = ({
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
                       <p className="text-xs text-slate-500 truncate">
-                        {w.type === 'COMPANY' ? tTopbar('workspaceTypeCompany') : tTopbar('workspaceTypeIndividual')}
+                        {w.type === 'COMPANY' 
+                          ? tTopbar('workspaceTypeCompany')
+                          : w.type === 'FREELANCE'
+                          ? tTopbar('workspaceTypeFreelance')
+                          : tTopbar('workspaceTypeIndividual')}
                       </p>
                     </div>
                   </button>

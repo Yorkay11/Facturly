@@ -320,6 +320,7 @@
     "workspace": "Workspace",
     "workspaceTypeCompany": "Company",
     "workspaceTypeIndividual": "Individual",
+    "workspaceTypeFreelance": "Freelance",
     "preferences": "Preferences",
     "preferencesDescription": "Notifications, legal notices, branding",
     "manageAccount": "Manage my account",
@@ -591,11 +592,11 @@
       "sections": {
         "invoiceInfo": {
           "title": "Invoice information",
-          "description": "Recipient, subject, issue date and due date."
+          "description": "Client, invoice subject, issue and due dates. Currency and VAT are set in workspace settings."
         },
         "invoiceLines": {
-          "title": "Invoice lines",
-          "description": "Add your services, quantities and rates.",
+          "title": "Invoice lines (services)",
+          "description": "Services, quantities and rates. Currency and VAT are applied from settings.",
           "empty": {
             "title": "No lines yet",
             "description": "Add your first service by clicking the button above."
@@ -609,7 +610,7 @@
       },
       "fields": {
         "receiver": {
-          "label": "Recipient",
+          "label": "Client / Recipient",
           "placeholder": "Select a client",
           "searchPlaceholder": "Search for a client...",
           "loading": "Loading clients...",
@@ -645,10 +646,11 @@
         "add": "Add line",
         "edit": "Edit line {description}",
         "delete": "Delete line {description}",
-        "description": "Description",
+        "description": "Service description",
         "unitPrice": "Unit price",
         "quantity": "Quantity",
-        "vat": "VAT",
+        "vat": "VAT (%)",
+        "vatDefaultHint": "Default: {rate}% (settings)",
         "lineTotal": "Line total"
       },
       "addItemModal": {
@@ -2408,9 +2410,11 @@
       "fields": {
         "type": "Workspace type",
         "typePlaceholder": "Select type",
-        "typeIndividual": "Freelance / Individual",
+        "typeFreelance": "Freelance",
+        "typeIndividual": "Individual",
         "typeCompany": "Company",
-        "typeIndividualHint": "For freelancers and independent workers. Workspace name is optional.",
+        "typeFreelanceHint": "For freelancers (developers, designers, digital consultants). Workspace name is optional.",
+        "typeIndividualHint": "For independent workers (artisans, merchants, liberal professions). Workspace name is optional.",
         "typeCompanyHint": "For companies and businesses. Workspace name is recommended.",
         "name": "Workspace name",
         "namePlaceholder": "My Company LLC",
@@ -3043,12 +3047,17 @@
     "type": {
       "title": "Choose your profile",
       "description": "Select the type that best matches your activity",
-      "individual": {
-        "title": "Freelance / Individual",
+      "freelance": {
+        "title": "Freelance",
         "badge": "Recommended",
-        "subtitle": "Perfect for consultants, developers, designers",
-        "description": "No formalities • Invoice in your name",
+        "subtitle": "Perfect for developers, designers, digital consultants",
+        "description": "Project-based work • Digital professions",
         "recommended": true
+      },
+      "individual": {
+        "title": "Individual",
+        "subtitle": "For artisans, merchants, liberal professions",
+        "description": "Independent workers • Various activities"
       },
       "workspaceCompany": {
         "title": "Company",

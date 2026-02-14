@@ -71,9 +71,6 @@ const TemplateCompact = ({
               PU
             </TableHead>
             <TableHead className="py-1 px-1.5 text-right font-bold text-[8px] uppercase border border-black text-white">
-              TVA
-            </TableHead>
-            <TableHead className="py-1 px-1.5 text-right font-bold text-[8px] uppercase border border-black text-white">
               Total
             </TableHead>
           </TableRow>
@@ -93,16 +90,13 @@ const TemplateCompact = ({
                   {formatAmount(item.unitPrice)}
                 </TableCell>
                 <TableCell className="py-1 px-1.5 text-right border border-black">
-                  {item.vatRate}%
-                </TableCell>
-                <TableCell className="py-1 px-1.5 text-right border border-black">
                   {formatAmount(item.unitPrice * item.quantity)}
                 </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-2.5 text-[9px] border border-black">
+              <TableCell colSpan={4} className="text-center py-2.5 text-[9px] border border-black">
                 Aucune ligne
               </TableCell>
             </TableRow>
@@ -117,7 +111,7 @@ const TemplateCompact = ({
           <span>{formatAmount(subtotal)}</span>
         </div>
         <div className="flex justify-between py-0.5 border-b border-black">
-          <span>TVA</span>
+          <span>TVA estimée</span>
           <span>{formatAmount(vatAmount)}</span>
         </div>
         <div className="flex justify-between py-1.5 border-t-2 border-b-2 border-black font-bold text-[11px] mt-1">

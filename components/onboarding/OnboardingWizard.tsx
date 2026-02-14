@@ -1,470 +1,493 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUpdateWorkspaceMutation, useGetWorkspaceQuery, Workspace } from "@/services/facturlyApi";
+import { useUpdateWorkspaceMutation, useCreateWorkspaceMutation, useGetWorkspaceQuery, Workspace } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { Loader2, Building2, User, CheckCircle2, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { Building2, User, Sparkles, CheckCircle2, ArrowRight, ArrowLeft, Globe, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { InteractiveDemo } from "./InteractiveDemo";
-import Stepper, { Step } from "@/components/ui/stepper";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface OnboardingWizardProps {
-  workspace: Workspace;
-  onComplete: () => void;
+// Drapeaux des pays (images du projet)
+const COUNTRY_FLAGS: Record<string, string> = {
+  SN: "/images/countries/flag-for-flag-senegal-svgrepo-com.svg",
+  CI: "/images/countries/flag-for-flag-cote-divoire-svgrepo-com.svg",
+  ML: "/images/countries/flag-for-flag-mali-svgrepo-com.svg",
+  BF: "/images/countries/flag-for-flag-burkina-faso-svgrepo-com.svg",
+  BJ: "/images/countries/flag-for-flag-benin-svgrepo-com.svg",
+  TG: "/images/countries/flag-for-flag-togo-svgrepo-com.svg",
+  NE: "/images/countries/flag-for-flag-niger-svgrepo-com.svg",
+  GN: "/images/countries/flag-for-flag-guinea-svgrepo-com.svg",
+  GH: "/images/countries/flag-for-flag-ghana-svgrepo-com.svg",
+  NG: "/images/countries/flag-for-flag-nigeria-svgrepo-com.svg",
+  CM: "/images/countries/flag-for-flag-cameroon-svgrepo-com.svg",
+  GA: "/images/countries/flag-for-flag-gabon-svgrepo-com.svg",
+  TD: "/images/countries/flag-for-flag-tchad-svgrepo-com.svg",
+  CF: "/images/countries/flag-for-flag-central-african-republic-svgrepo-com.svg",
+  CG: "/images/countries/flag-for-flag-congo-brazzaville-svgrepo-com.svg",
+};
+
+const ONBOARDING_COUNTRIES: { value: string; label: string }[] = [
+  { value: "none", label: "Non spécifié" },
+  { value: "SN", label: "Sénégal" },
+  { value: "CI", label: "Côte d'Ivoire" },
+  { value: "ML", label: "Mali" },
+  { value: "BF", label: "Burkina Faso" },
+  { value: "BJ", label: "Bénin" },
+  { value: "TG", label: "Togo" },
+  { value: "NE", label: "Niger" },
+  { value: "GN", label: "Guinée" },
+  { value: "GH", label: "Ghana" },
+  { value: "NG", label: "Nigeria" },
+  { value: "CM", label: "Cameroun" },
+  { value: "GA", label: "Gabon" },
+  { value: "TD", label: "Tchad" },
+  { value: "CF", label: "République centrafricaine" },
+  { value: "CG", label: "Congo" },
+  { value: "GQ", label: "Guinée équatoriale" },
+];
+
+// Libellé et placeholder du numéro d'identification selon le pays
+const TAX_ID_BY_COUNTRY: Record<string, { label: string; placeholder: string }> = {
+  SN: { label: "NINEA", placeholder: "Ex: 12345678901" },
+  CI: { label: "NIF / RC", placeholder: "Ex: CI-ABJ-2024-B-12345" },
+  ML: { label: "NIF / RC", placeholder: "Ex: ML-BKO-2024-12345" },
+  BF: { label: "NIF / RC", placeholder: "Ex: BF-OUA-2024-12345" },
+  BJ: { label: "NIF / RC", placeholder: "Ex: BJ-CO-2024-12345" },
+  TG: { label: "NIF / RC", placeholder: "Ex: TG-LOM-2024-12345" },
+  NE: { label: "NIF / RC", placeholder: "Ex: NE-NIA-2024-12345" },
+  GN: { label: "NIF / RC", placeholder: "Ex: GN-CON-2024-12345" },
+  GH: { label: "TIN / BN", placeholder: "Ex: P0000000000 ou BN-123456" },
+  NG: { label: "RC / BN / TIN", placeholder: "Ex: RC 123456 ou BN 1234567" },
+  CM: { label: "NIU / RC", placeholder: "Ex: 123456789012 ou RC/YDE/2024/B/123" },
+  GA: { label: "NIF / RC", placeholder: "Ex: GA-LBV-2024-12345" },
+  TD: { label: "NIF / RC", placeholder: "Ex: TD-NDJ-2024-12345" },
+  CF: { label: "NIF / RC", placeholder: "Ex: CF-BGF-2024-12345" },
+  CG: { label: "NIF / RC", placeholder: "Ex: CG-BZV-2024-12345" },
+  GQ: { label: "NIF / CIF", placeholder: "Ex: GQ-2024-12345" },
+};
+const DEFAULT_TAX_ID = { label: "Numéro d'identification", placeholder: "SIRET, RC, NIF, NINEA…" };
+
+function getTaxIdConfig(countryCode: string | undefined): { label: string; placeholder: string } {
+  if (!countryCode || countryCode === "none") return DEFAULT_TAX_ID;
+  return TAX_ID_BY_COUNTRY[countryCode] ?? DEFAULT_TAX_ID;
 }
 
-type WorkspaceType = 'INDIVIDUAL' | 'COMPANY';
+// --- Types & Schema ---
+type WorkspaceType = 'FREELANCE' | 'INDIVIDUAL' | 'COMPANY';
 
-export function OnboardingWizard({ workspace, onComplete }: OnboardingWizardProps) {
-  const t = useTranslations('onboarding');
-  const [selectedType, setSelectedType] = useState<WorkspaceType>(workspace?.type || 'INDIVIDUAL');
-  const [showAdvanced, setShowAdvanced] = useState(false); // Masquer les options avancées par défaut
-  const [showDemo, setShowDemo] = useState(true); // Afficher la démo par défaut
-  const [currentStep, setCurrentStep] = useState(1);
-  const [updateWorkspace, { isLoading }] = useUpdateWorkspaceMutation();
-  const { refetch } = useGetWorkspaceQuery();
-
-  // Schéma de validation simplifié - 3 clics max
-  // Pour INDIVIDUAL : Aucun champ requis (tout en option avec valeurs par défaut)
-  // Pour COMPANY : Seulement le nom est requis
-  const workspaceSchema = useMemo(() => z.object({
-    type: z.enum(['INDIVIDUAL', 'COMPANY']),
-    name: z.string().optional().nullable(),
-    defaultCurrency: z.string().optional(), // Optionnel - valeur par défaut XOF
-    country: z.string().optional(),
-  }).refine((data) => {
-    // Pour COMPANY, le nom est requis
-    if (data.type === 'COMPANY' && (!data.name || data.name.trim().length < 2)) {
-      return false;
-    }
+const workspaceSchema = z.object({
+  type: z.enum(['FREELANCE', 'INDIVIDUAL', 'COMPANY']),
+  name: z.string().optional().nullable(),
+  addressLine1: z.string().optional().nullable(),
+  addressLine2: z.string().optional().nullable(),
+  postalCode: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  taxId: z.string().optional().nullable(),
+  defaultCurrency: z.string().min(1, "Devise requise"),
+  country: z.string().optional(),
+})
+  .refine((data) => {
+    if (data.type === 'COMPANY' && (!data.name || String(data.name).trim().length < 2)) return false;
     return true;
-  }, {
-    message: t('validation.nameMin'),
-    path: ['name'],
-  }), [t]);
+  }, { message: "Le nom de l'entreprise est requis (min. 2 caractères)", path: ['name'] })
+  .refine((data) => {
+    if (data.type !== 'COMPANY') return true;
+    return !!(data.addressLine1 && String(data.addressLine1).trim().length >= 2);
+  }, { message: "L'adresse est requise (min. 2 caractères)", path: ['addressLine1'] })
+  .refine((data) => {
+    if (data.type !== 'COMPANY') return true;
+    return !!(data.taxId && String(data.taxId).trim().length >= 2);
+  }, { message: "Le numéro d'identification est requis", path: ['taxId'] });
 
-  type WorkspaceFormValues = z.infer<typeof workspaceSchema>;
+type WorkspaceFormValues = z.infer<typeof workspaceSchema>;
+
+export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspace | null; onComplete: () => void }) {
+  const [step, setStep] = useState(1);
+  const [updateWorkspace, { isLoading: isUpdating }] = useUpdateWorkspaceMutation();
+  const [createWorkspace, { isLoading: isCreating }] = useCreateWorkspaceMutation();
+  const { refetch } = useGetWorkspaceQuery();
+  const isLoading = isUpdating || isCreating;
 
   const form = useForm<WorkspaceFormValues>({
     resolver: zodResolver(workspaceSchema),
     mode: 'onChange',
     defaultValues: {
-      type: workspace?.type || 'INDIVIDUAL',
+      type: workspace?.type || 'FREELANCE',
       name: workspace?.name || '',
+      addressLine1: workspace?.addressLine1 || '',
+      addressLine2: workspace?.addressLine2 || '',
+      postalCode: workspace?.postalCode || '',
+      city: workspace?.city || '',
+      taxId: workspace?.taxId || '',
       defaultCurrency: workspace?.defaultCurrency || 'XOF',
-      country: workspace?.country || '',
+      country: workspace?.country || 'SN',
     },
   });
 
-  const workspaceType = form.watch("type");
-  // Pour INDIVIDUAL : toujours valide (aucun champ requis)
-  // Pour COMPANY : valide si le nom est rempli
-  const isFormValid = workspaceType === 'INDIVIDUAL' 
-    ? true 
-    : form.formState.isValid;
+  const selectedType = form.watch("type");
+  const nameValue = form.watch("name");
+  const addressLine1Value = form.watch("addressLine1");
+  const taxIdValue = form.watch("taxId");
+  const countryValue = form.watch("country");
+  const taxIdConfig = getTaxIdConfig(countryValue);
 
-  const handleTypeSelect = (type: WorkspaceType) => {
-    setSelectedType(type);
-    form.setValue('type', type, { shouldValidate: true });
-    if (type === 'INDIVIDUAL') {
-      form.setValue('name', null, { shouldValidate: true });
-      // Pour INDIVIDUAL, réinitialiser à l'étape 1 (on aura 2 étapes au total)
-      if (currentStep > 2) {
-        setCurrentStep(1);
-      }
-    } else {
-      // Pour COMPANY, on reste sur l'étape 1 (on aura 3 étapes au total)
-      if (currentStep > 3) {
-        setCurrentStep(1);
-      }
-    }
-  };
+  const totalSteps = selectedType === "COMPANY" ? 3 : 2;
+  const isLastStep = (step === 2 && selectedType !== "COMPANY") || (step === 3 && selectedType === "COMPANY");
 
-  const handleStepChange = (step: number) => {
-    // Pour INDIVIDUAL, sauter l'étape 2
-    if (selectedType === 'INDIVIDUAL' && step === 2) {
-      setCurrentStep(3);
-    } else {
-      setCurrentStep(step);
-    }
-  };
+  const canProceedFromStep1 = true;
+  const canProceedFromStep2 =
+    selectedType !== "COMPANY" ||
+    (
+      typeof nameValue === "string" && nameValue.trim().length >= 2 &&
+      typeof addressLine1Value === "string" && addressLine1Value.trim().length >= 2 &&
+      typeof taxIdValue === "string" && taxIdValue.trim().length >= 2
+    );
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    
-    const isValid = await form.trigger();
-    if (!isValid) {
-      const errors = form.formState.errors;
-      if (errors.name) {
-        toast.error(t('validation.nameMin'));
-      }
-      if (errors.defaultCurrency) {
-        toast.error(t('validation.defaultCurrencyRequired'));
-      }
+  const step2CompanyFields: (keyof WorkspaceFormValues)[] = ["type", "name", "addressLine1", "taxId"];
+
+  const onNextStep = async () => {
+    if (step === 1) {
+      setStep(2);
       return;
     }
+    if (step === 2 && selectedType === "COMPANY") {
+      const result = await form.trigger(step2CompanyFields);
+      if (result) setStep(3);
+    }
+  };
 
-    const values = form.getValues();
-    
+  const handleFinalSubmit = async (values: WorkspaceFormValues) => {
     try {
-      await updateWorkspace({
+      const isCompany = values.type === 'COMPANY';
+      const createPayload = {
         type: values.type,
-        name: values.name?.trim() || (values.type === 'INDIVIDUAL' ? null : undefined),
-        // Utiliser la valeur par défaut XOF si non spécifiée
-        defaultCurrency: values.defaultCurrency || 'XOF',
+        name: isCompany ? values.name : null,
+        defaultCurrency: values.defaultCurrency,
         country: values.country || undefined,
-      }).unwrap();
+      };
+      const updatePayload = {
+        ...createPayload,
+        name: isCompany ? values.name : null,
+        addressLine1: isCompany ? (values.addressLine1 || undefined) : undefined,
+        addressLine2: isCompany ? (values.addressLine2 || undefined) : undefined,
+        postalCode: isCompany ? (values.postalCode || undefined) : undefined,
+        city: isCompany ? (values.city || undefined) : undefined,
+        taxId: isCompany ? (values.taxId || undefined) : undefined,
+      };
 
-      toast.success(t('success.title'), {
-        description: t('success.description'),
-      });
+      if (!workspace) {
+        await createWorkspace(createPayload).unwrap();
+        if (isCompany && (values.addressLine1 || values.taxId)) {
+          await updateWorkspace(updatePayload).unwrap();
+        }
+      } else {
+        await updateWorkspace(updatePayload).unwrap();
+      }
 
+      toast.success("Espace configuré ! Bienvenue à bord.");
       await refetch();
       onComplete();
     } catch (error: any) {
-      toast.error(t('errors.title'), {
-        description: error?.data?.message || t('errors.description'),
-      });
+      toast.error(error?.data?.message || "Erreur lors de l'enregistrement");
     }
   };
 
-  // Gérer le changement d'étape quand le type change
-  useEffect(() => {
-    if (selectedType === 'INDIVIDUAL' && currentStep === 2) {
-      // Si on est sur l'étape 2 et qu'on passe à INDIVIDUAL, sauter à l'étape 3
-      setCurrentStep(3);
-    } else if (selectedType === 'COMPANY' && currentStep > 3) {
-      // Si on est au-delà de l'étape 3 et qu'on passe à COMPANY, revenir à l'étape 2
-      setCurrentStep(2);
-    }
-  }, [selectedType, currentStep]);
-
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
-      {/* Démonstration interactive */}
-      {showDemo && (
-        <InteractiveDemo onSkip={() => setShowDemo(false)} />
-      )}
+    <div className="w-full max-w-2xl mx-auto min-h-[500px] flex flex-col">
+      {/* Progress Bar — 2 ou 3 segments selon le type */}
+      <div className="flex justify-center gap-2 mb-10">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((i) => (
+          <div key={i} className={cn("h-1.5 w-12 rounded-full transition-all duration-500", step >= i ? "bg-primary" : "bg-muted")} />
+        ))}
+      </div>
 
-      {/* Stepper d'onboarding */}
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="mb-6 text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-            {t('description')}
-          </p>
-        </div>
+      <form onSubmit={form.handleSubmit(handleFinalSubmit)} className="flex-1 flex flex-col">
+        <AnimatePresence mode="wait">
+          {step === 1 ? (
+            <motion.div 
+              key="step1"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">Parlons de vous</h1>
+                <p className="text-muted-foreground">Quel type de profil correspond le mieux à votre activité ?</p>
+              </div>
 
-        <Stepper
-          currentStep={currentStep}
-          onStepChange={(step) => {
-            setCurrentStep(step);
-          }}
-          onFinalStepCompleted={handleSubmit}
-          backButtonText="Précédent"
-          nextButtonText="Suivant"
-          stepCircleContainerClassName="bg-card"
-          contentClassName="min-h-[300px]"
-          nextButtonProps={{
-            onClick: async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              
-              // Validation avant de passer à l'étape suivante
-              if (currentStep === 2 && selectedType === 'COMPANY') {
-                const isValid = await form.trigger('name');
-                if (!isValid) {
-                  toast.error(t('validation.nameMin'));
-                  return;
-                }
-              }
-              
-              // Déterminer la prochaine étape
-              let nextStep = currentStep + 1;
-              
-              // Pour INDIVIDUAL, sauter l'étape 2
-              if (selectedType === 'INDIVIDUAL' && nextStep === 2) {
-                nextStep = 3;
-              }
-              
-              const totalSteps = 3; // Toujours 3 étapes affichées
-              const isLastStep = nextStep > totalSteps;
-              
-              if (isLastStep) {
-                // Dernière étape - soumettre le formulaire
-                handleSubmit();
-              } else {
-                // Passer à l'étape suivante
-                setCurrentStep(nextStep);
-              }
-            }
-          }}
-        >
-          {/* Étape 1 : Type de profil */}
-          <Step>
-            <div className="space-y-6 py-4">
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-base font-semibold">{t('type.title')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('type.description')}
-                  </p>
-                </div>
-                
-                <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  { id: 'FREELANCE', label: 'Freelance', icon: User, desc: 'Indépendant digital' },
+                  { id: 'INDIVIDUAL', label: 'Indépendant', icon: Sparkles, desc: 'Artisan / Commerçant' },
+                  { id: 'COMPANY', label: 'Entreprise', icon: Building2, desc: 'Société établie' },
+                ].map((item) => (
                   <button
+                    key={item.id}
                     type="button"
-                    onClick={() => handleTypeSelect('INDIVIDUAL')}
+                    onClick={() => form.setValue('type', item.id as WorkspaceType, { shouldValidate: true })}
                     className={cn(
-                      "group relative p-4 rounded-lg border-2 text-left transition-all duration-200 h-full",
-                      selectedType === 'INDIVIDUAL'
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/30 hover:shadow-sm bg-card"
+                      "group flex flex-col items-center p-6 rounded-2xl border-2 transition-all hover:border-primary/50",
+                      selectedType === item.id ? "border-primary bg-primary/5 ring-4 ring-primary/5" : "border-border bg-card"
                     )}
                   >
-                    {selectedType === 'INDIVIDUAL' && (
-                      <div className="absolute top-3 right-3">
-                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                          <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "p-2 rounded-lg transition-colors flex-shrink-0",
-                        selectedType === 'INDIVIDUAL' ? "bg-primary/10" : "bg-muted"
-                      )}>
-                        <User className={cn(
-                          "h-5 w-5 transition-colors",
-                          selectedType === 'INDIVIDUAL' ? "text-primary" : "text-muted-foreground"
-                        )} />
-                      </div>
-                      <div className="flex-1 space-y-0.5 min-w-0">
-                        <h3 className="font-semibold text-sm">{t('type.individual.title')}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {t('type.individual.subtitle')}
-                        </p>
-                      </div>
-                    </div>
+                    <item.icon className={cn("h-8 w-8 mb-3 transition-colors", selectedType === item.id ? "text-primary" : "text-muted-foreground")} />
+                    <span className="font-bold text-sm">{item.label}</span>
+                    <span className="text-[10px] text-muted-foreground mt-1 text-center">{item.desc}</span>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleTypeSelect('COMPANY')}
-                    className={cn(
-                      "group relative p-4 rounded-lg border-2 text-left transition-all duration-200 h-full",
-                      selectedType === 'COMPANY'
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/30 hover:shadow-sm bg-card"
-                    )}
-                  >
-                    {selectedType === 'COMPANY' && (
-                      <div className="absolute top-3 right-3">
-                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                          <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "p-2 rounded-lg transition-colors flex-shrink-0",
-                        selectedType === 'COMPANY' ? "bg-primary/10" : "bg-muted"
-                      )}>
-                        <Building2 className={cn(
-                          "h-5 w-5 transition-colors",
-                          selectedType === 'COMPANY' ? "text-primary" : "text-muted-foreground"
-                        )} />
-                      </div>
-                      <div className="flex-1 space-y-0.5 min-w-0">
-                        <h3 className="font-semibold text-sm">{t('type.workspaceCompany.title')}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {t('type.workspaceCompany.subtitle')}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                </div>
+                ))}
               </div>
-            </div>
-          </Step>
-
-          {/* Étape 2 : Informations de base (seulement pour COMPANY, mais toujours présente) */}
-          <Step>
-            {selectedType === 'COMPANY' ? (
-              <div className="space-y-6 py-4">
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <Label className="text-base font-semibold">{t('basic.title')}</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {t('basic.description')}
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="name" className="text-sm font-medium">
-                        {t('basic.fields.nameLabelCompany')}
-                        <span className="text-destructive ml-1">*</span>
-                      </Label>
-                      <Input
-                        id="name"
-                        {...form.register("name")}
-                        placeholder={t('basic.fields.namePlaceholder')}
-                        disabled={isLoading}
-                        className={cn(
-                          "h-10",
-                          form.formState.errors.name && "border-destructive focus-visible:ring-destructive"
-                        )}
-                      />
-                      {form.formState.errors.name && (
-                        <p className="text-xs text-destructive">
-                          {form.formState.errors.name.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+            </motion.div>
+          ) : step === 2 && selectedType === "COMPANY" ? (
+            <motion.div 
+              key="step2-company"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">Votre entreprise</h1>
+                <p className="text-muted-foreground">Informations du siège et identification.</p>
               </div>
-            ) : (
-              <div className="space-y-6 py-4">
-                <div className="text-center space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    {t('basic.note')}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Vous pouvez passer directement aux options avancées.
-                  </p>
-                </div>
-              </div>
-            )}
-          </Step>
-
-          {/* Étape 3 : Options avancées */}
-          <Step>
-            <div className="space-y-6 py-4">
               <div className="space-y-4">
-                <div className="space-y-1">
-                  <Label className="text-base font-semibold">{t('basic.advancedOptions')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('basic.note')}
-                  </p>
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-primary" />
+                    Pays du siège
+                  </Label>
+                  <Controller
+                    name="country"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
+                        value={field.value || "SN"}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Choisir un pays" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ONBOARDING_COUNTRIES.filter((c) => c.value !== "none").map(({ value, label }) => (
+                            <SelectItem key={value} value={value}>
+                              <span className="flex items-center gap-2">
+                                {COUNTRY_FLAGS[value] ? (
+                                  <Image
+                                    src={COUNTRY_FLAGS[value]}
+                                    alt=""
+                                    width={20}
+                                    height={14}
+                                    className="object-contain shrink-0 rounded-sm"
+                                    unoptimized
+                                  />
+                                ) : (
+                                  <span className="inline-block w-5 h-3.5 shrink-0 rounded-sm bg-muted" aria-hidden />
+                                )}
+                                {label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
-
-                <div className="grid gap-4">
-                  {/* Devise - Optionnel avec valeur par défaut */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="defaultCurrency" className="text-sm font-medium">
-                      {t('basic.fields.defaultCurrency')} <span className="text-muted-foreground text-xs">(optionnel)</span>
-                    </Label>
-                    <Controller
-                      name="defaultCurrency"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value || 'XOF'} 
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder={t('basic.fields.defaultCurrencyPlaceholder')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="XOF">FCFA (XOF) - UEMOA — Afrique de l'Ouest</SelectItem>
-                            <SelectItem value="XAF">FCFA (XAF) - CEMAC — Afrique Centrale</SelectItem>
-                            <SelectItem value="NGN">NGN (₦) - Naira nigérian</SelectItem>
-                            <SelectItem value="GHS">GHS (₵) - Cedi ghanéen</SelectItem>
-                            <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
-                            <SelectItem value="USD">USD ($) - Dollar américain</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Nom de l'entité juridique <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    {...form.register("name")}
+                    placeholder="Ex: Tech Services SARL"
+                    className={cn("h-12 text-base", form.formState.errors.name && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {form.formState.errors.name && (
+                    <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="addressLine1" className="text-sm font-medium">
+                    Adresse <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="addressLine1"
+                    {...form.register("addressLine1")}
+                    placeholder="Numéro et nom de rue"
+                    className={cn("h-12 text-base", form.formState.errors.addressLine1 && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {form.formState.errors.addressLine1 && (
+                    <p className="text-xs text-destructive">{form.formState.errors.addressLine1.message}</p>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine2" className="text-sm font-medium">Complément d'adresse</Label>
+                    <Input
+                      id="addressLine2"
+                      {...form.register("addressLine2")}
+                      placeholder="Bâtiment, étage…"
+                      className="h-12 text-base"
                     />
                   </div>
-
-                  {/* Pays */}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="country" className="text-sm font-medium">
-                      {t('basic.fields.country')} <span className="text-muted-foreground text-xs">(optionnel)</span>
-                    </Label>
-                    <Controller
-                      name="country"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select 
-                          onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
-                          value={field.value || 'none'} 
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger className="h-10">
-                            <SelectValue placeholder={t('basic.fields.countryPlaceholder')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">{t('basic.fields.countryNotSpecified')}</SelectItem>
-                            <SelectItem value="SN">🇸🇳 Sénégal</SelectItem>
-                            <SelectItem value="CI">🇨🇮 Côte d'Ivoire</SelectItem>
-                            <SelectItem value="ML">🇲🇱 Mali</SelectItem>
-                            <SelectItem value="BF">🇧🇫 Burkina Faso</SelectItem>
-                            <SelectItem value="BJ">🇧🇯 Bénin</SelectItem>
-                            <SelectItem value="TG">🇹🇬 Togo</SelectItem>
-                            <SelectItem value="NE">🇳🇪 Niger</SelectItem>
-                            <SelectItem value="GN">🇬🇳 Guinée</SelectItem>
-                            <SelectItem value="GH">🇬🇭 Ghana</SelectItem>
-                            <SelectItem value="NG">🇳🇬 Nigeria</SelectItem>
-                            <SelectItem value="CM">🇨🇲 Cameroun</SelectItem>
-                            <SelectItem value="GA">🇬🇦 Gabon</SelectItem>
-                            <SelectItem value="TD">🇹🇩 Tchad</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode" className="text-sm font-medium">Code postal</Label>
+                    <Input
+                      id="postalCode"
+                      {...form.register("postalCode")}
+                      placeholder="Ex: 12500"
+                      className="h-12 text-base"
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-sm font-medium">Ville</Label>
+                  <Input
+                    id="city"
+                    {...form.register("city")}
+                    placeholder="Ex: Dakar"
+                    className="h-12 text-base"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="taxId" className="text-sm font-medium">
+                    {taxIdConfig.label} <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="taxId"
+                    {...form.register("taxId")}
+                    placeholder={taxIdConfig.placeholder}
+                    className={cn("h-12 text-base", form.formState.errors.taxId && "border-destructive focus-visible:ring-destructive")}
+                  />
+                  {form.formState.errors.taxId && (
+                    <p className="text-xs text-destructive">{form.formState.errors.taxId.message}</p>
+                  )}
                 </div>
               </div>
-            </div>
-          </Step>
-        </Stepper>
-      </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key={step === 2 ? "step2-loc" : "step3"}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              <div className="text-center space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight">Localisation & Devise</h1>
+                <p className="text-muted-foreground">Ces réglages nous permettent d'automatiser vos taxes.</p>
+              </div>
 
-      {/* Bouton Skip - en dehors du stepper */}
-      <div className="flex justify-center">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          disabled={isLoading}
-          onClick={async () => {
-            try {
-              await updateWorkspace({
-                type: 'INDIVIDUAL',
-                defaultCurrency: 'XOF',
-              }).unwrap();
-              
-              toast.success(t('success.skipped'), {
-                description: t('success.skippedDescription'),
-              });
-              
-              await refetch();
-              onComplete();
-            } catch (error: any) {
-              toast.error(t('errors.title'), {
-                description: error?.data?.message || t('errors.description'),
-              });
-            }
-          }}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          {t('buttons.skip')}
-        </Button>
-      </div>
+              <div className="grid gap-6">
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Pays de résidence</Label>
+                  <Controller
+                    name="country"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
+                        value={field.value || "none"}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Choisir un pays" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ONBOARDING_COUNTRIES.map(({ value, label }) => (
+                            <SelectItem key={value} value={value}>
+                              <span className="flex items-center gap-2">
+                                {value !== "none" && COUNTRY_FLAGS[value] ? (
+                                  <Image
+                                    src={COUNTRY_FLAGS[value]}
+                                    alt=""
+                                    width={20}
+                                    height={14}
+                                    className="object-contain shrink-0 rounded-sm"
+                                    unoptimized
+                                  />
+                                ) : value !== "none" ? (
+                                  <span className="inline-block w-5 h-3.5 shrink-0 rounded-sm bg-muted" aria-hidden />
+                                ) : null}
+                                {label}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2"><Coins className="h-4 w-4 text-primary" /> Devise de facturation</Label>
+                  <Controller
+                    name="defaultCurrency"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Choisir une devise" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="XOF">FCFA (XOF) — UEMOA, Afrique de l'Ouest</SelectItem>
+                          <SelectItem value="XAF">FCFA (XAF) — CEMAC, Afrique Centrale</SelectItem>
+                          <SelectItem value="NGN">NGN (₦) — Naira nigérian</SelectItem>
+                          <SelectItem value="GHS">GHS (₵) — Cedi ghanéen</SelectItem>
+                          <SelectItem value="EUR">EUR (€) — Euro</SelectItem>
+                          <SelectItem value="USD">USD ($) — Dollar américain</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer Actions */}
+        <div className="mt-12 flex items-center justify-between pt-6 border-t">
+          {step > 1 ? (
+            <Button type="button" variant="ghost" onClick={() => setStep(step - 1)} disabled={isLoading}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Retour
+            </Button>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex gap-3">
+            {!isLastStep ? (
+              <Button
+                type="button"
+                size="lg"
+                onClick={onNextStep}
+                disabled={step === 2 && selectedType === "COMPANY" ? !canProceedFromStep2 : !canProceedFromStep1}
+                className="px-8 font-semibold transition-all"
+              >
+                Suivant <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                size="lg"
+                disabled={isLoading}
+                onClick={form.handleSubmit(handleFinalSubmit)}
+                className="px-8 font-semibold bg-primary hover:opacity-90"
+              >
+                {isLoading ? "Création..." : "Terminer la configuration"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </form>
     </div>
   );
 }

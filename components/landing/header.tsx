@@ -26,7 +26,7 @@ export function Header() {
     { name: t('howItWorks'), href: "/how-it-works" },
     { name: t('features'), href: "/features" },
     { name: t('pricing'), href: "/pricing" },
-    { name: t('testimonials'), href: "/testimonials" },
+    // { name: t('testimonials'), href: "/testimonials" },
   ]
 
   const handleCTAClick = (e: React.MouseEvent<HTMLAnchorElement>) => {

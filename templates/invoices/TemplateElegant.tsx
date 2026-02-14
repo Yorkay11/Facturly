@@ -97,9 +97,6 @@ const TemplateElegant = ({
               Prix unitaire
             </TableHead>
             <TableHead className="py-4 px-3 text-right font-semibold text-[11px] uppercase tracking-wide text-[#34495e] border-b-2 border-[#bdc3c7]">
-              TVA
-            </TableHead>
-            <TableHead className="py-4 px-3 text-right font-semibold text-[11px] uppercase tracking-wide text-[#34495e] border-b-2 border-[#bdc3c7]">
               Total
             </TableHead>
           </TableRow>
@@ -113,7 +110,6 @@ const TemplateElegant = ({
                 <TableCell className="py-3.5 px-3 text-right">
                   {formatAmount(item.unitPrice)}
                 </TableCell>
-                <TableCell className="py-3.5 px-3 text-right">{item.vatRate}%</TableCell>
                 <TableCell className="py-3.5 px-3 text-right font-semibold">
                   {formatAmount(item.unitPrice * item.quantity)}
                 </TableCell>
@@ -122,7 +118,7 @@ const TemplateElegant = ({
           ) : (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={4}
                 className="text-center py-8 text-[#95a5a6] text-[13px]"
               >
                 Aucune ligne de facture
@@ -143,7 +139,7 @@ const TemplateElegant = ({
               <td className="py-3 px-4 text-[13px] text-right font-semibold">{formatAmount(subtotal)}</td>
             </tr>
             <tr className="border-b border-[#ecf0f1]">
-              <td className="py-3 px-4 text-[13px] text-right text-[#7f8c8d] font-medium">TVA</td>
+              <td className="py-3 px-4 text-[13px] text-right text-[#7f8c8d] font-medium">TVA estimée</td>
               <td className="py-3 px-4 text-[13px] text-right font-semibold">{formatAmount(vatAmount)}</td>
             </tr>
             <tr

@@ -95,7 +95,6 @@ const TemplateInvoice = ({
               <TableHead className="text-xs">Description</TableHead>
               <TableHead className="text-right text-xs">Quantité</TableHead>
               <TableHead className="text-right text-xs">PU</TableHead>
-              <TableHead className="text-right text-xs">TVA</TableHead>
               <TableHead className="text-right text-xs">Total</TableHead>
             </TableRow>
           </TableHeader>
@@ -107,7 +106,6 @@ const TemplateInvoice = ({
                   <TableCell className="text-xs font-medium">{item.description}</TableCell>
                   <TableCell className="text-right text-xs">{item.quantity}</TableCell>
                   <TableCell className="text-right text-xs">{formatAmount(item.unitPrice)}</TableCell>
-                  <TableCell className="text-right text-xs">{item.vatRate}%</TableCell>
                   <TableCell className="text-right text-xs font-semibold">
                     {formatAmount(item.unitPrice * item.quantity)}
                   </TableCell>
@@ -115,7 +113,7 @@ const TemplateInvoice = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-right text-xs opacity-70 py-10">
+                <TableCell colSpan={5} className="text-right text-xs opacity-70 py-10">
                   Aucune ligne ajoutée
                 </TableCell>
               </TableRow>
@@ -123,19 +121,19 @@ const TemplateInvoice = ({
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={5} className="text-right text-xs opacity-70">
+              <TableCell colSpan={4} className="text-right text-xs opacity-70">
                 Sous-total
               </TableCell>
               <TableCell className="text-right text-xs font-semibold">{formatAmount(subtotal)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={5} className="text-right text-xs opacity-70">
+              <TableCell colSpan={4} className="text-right text-xs opacity-70">
                 TVA estimée
               </TableCell>
               <TableCell className="text-right text-xs font-semibold">{formatAmount(vatAmount)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={5} className="text-right text-xs opacity-70">
+              <TableCell colSpan={4} className="text-right text-xs opacity-70">
                 Total TTC
               </TableCell>
               <TableCell className="text-right text-lg font-bold" style={{ color: template.accentColor }}>

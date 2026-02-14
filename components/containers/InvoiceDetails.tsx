@@ -59,7 +59,6 @@ import { useSearchParams } from "next/navigation"
 import { Separator } from "../ui/separator"
 import { Card } from "../ui/card"
 import { Checkbox } from "../ui/checkbox"
-import { devises } from "@/data/datas"
 import { useItemsStore } from "@/hooks/useItemStore"
 import type { Item } from "@/types/items"
 import { SortableItem } from "./SortableItem"
@@ -111,7 +110,6 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     const [recurringEndDate, setRecurringEndDate] = useState<Date | undefined>(undefined);
     const redirect = useRedirect({ checkUnsavedChanges: false });
     
-    const [open, setOpen] = React.useState(false);
     const [clientOpen, setClientOpen] = React.useState(false);
     const [isClientModalOpen, setIsClientModalOpen] = React.useState(false);
     const [commandPaletteOpen, setCommandPaletteOpen] = React.useState(false);
@@ -130,7 +128,6 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     
     // Utiliser la devise du workspace comme valeur par défaut si aucune devise n'est stockée
     const defaultCurrency = storedCurrency || workspaceCurrency;
-    const [value, setValue] = useState(defaultCurrency);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [whatsappMessageStyle, setWhatsappMessageStyle] = useState<WhatsAppMessageStyle>('professional_warm');
     const { openCreate, openEdit } = useItemModalControls();
@@ -305,7 +302,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     const currentStep = useMemo(() => {
         const hasClient = !!(storedClientId || clientIdFromUrl);
         const hasItems = hasValidItems;
-        const hasDates = !!(issueDate && dueDate);
+        // Utiliser les valeurs du formulaire pour une synchronisation immédiate
+        const hasDates = !!(formValues.issueDate && formValues.dueDate);
         const isComplete = completenessInfo.isComplete;
         
         if (!hasClient) return 1; // Étape 1 : Client
@@ -313,22 +311,22 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
         if (!hasDates) return 3; // Étape 3 : Dates
         if (isComplete) return 4; // Étape 4 : Prêt à envoyer
         return 3; // Dates renseignées mais pas encore complet
-    }, [storedClientId, clientIdFromUrl, items.length, issueDate, dueDate, completenessInfo.isComplete]);
+    }, [storedClientId, clientIdFromUrl, items.length, formValues.issueDate, formValues.dueDate, completenessInfo.isComplete]);
     
     // Initialiser la date d'émission dans le store si elle n'est pas définie (mode création)
     useEffect(() => {
         if (!isEditMode && !issueDate && !existingInvoice) {
             const today = new Date();
             setMetadata({ issueDate: today });
-            form.setValue("issueDate", today);
+            form.setValue("issueDate", today, { shouldValidate: true, shouldDirty: true });
             
-            // Calculer et définir la date d'échéance automatiquement (+30 jours)
+            // Calculer et définir la date d'échéance automatiquement (délai des paramètres du workspace)
             const autoDueDate = new Date(today);
-            autoDueDate.setDate(autoDueDate.getDate() + 30);
+            autoDueDate.setDate(autoDueDate.getDate() + paymentTermsDays);
             setMetadata({ dueDate: autoDueDate });
-            form.setValue("dueDate", autoDueDate);
+            form.setValue("dueDate", autoDueDate, { shouldValidate: true, shouldDirty: true });
         }
-    }, [isEditMode, issueDate, existingInvoice, setMetadata, form]);
+    }, [isEditMode, issueDate, existingInvoice, setMetadata, form, paymentTermsDays]);
     
     // Calculer automatiquement la date d'échéance quand la date d'émission change (mode création uniquement)
     useEffect(() => {
@@ -345,7 +343,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                 // ou si elle n'existe pas
                 if (!currentDueDate || currentDueDate.getTime() === defaultDueDate?.getTime()) {
                     setMetadata({ dueDate: newDueDate });
-                    form.setValue("dueDate", newDueDate);
+                    form.setValue("dueDate", newDueDate, { shouldValidate: true, shouldDirty: true });
                 }
             }
         }
@@ -467,12 +465,12 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     useEffect(() => {
         if (existingInvoice && isEditMode && !isLoadingInvoice) {
             // Pré-remplir le formulaire avec les données de la facture
-            form.setValue("receiver", existingInvoice.client.name);
-            form.setValue("subject", existingInvoice.invoiceNumber);
-            form.setValue("issueDate", new Date(existingInvoice.issueDate));
-            form.setValue("dueDate", new Date(existingInvoice.dueDate));
-            form.setValue("currency", existingInvoice.currency);
-            form.setValue("notes", existingInvoice.notes || "");
+            form.setValue("receiver", existingInvoice.client.name, { shouldValidate: true });
+            form.setValue("subject", existingInvoice.invoiceNumber, { shouldValidate: true });
+            form.setValue("issueDate", new Date(existingInvoice.issueDate), { shouldValidate: true });
+            form.setValue("dueDate", new Date(existingInvoice.dueDate), { shouldValidate: true });
+            form.setValue("currency", existingInvoice.currency, { shouldValidate: true });
+            form.setValue("notes", existingInvoice.notes || "", { shouldValidate: true });
             
             // Obtenir le template frontend à partir du templateName backend
             let templateId = invoiceTemplates[0].id; // Par défaut
@@ -1048,18 +1046,32 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
         return () => subscription.unsubscribe()
     }, [form, setMetadata, clients, storedClientId])
 
+    // Calculer le total pour l'aperçu WhatsApp
+    const whatsappTotalAmount = useMemo(() => {
+        const subtotal = items.reduce((total, item) => {
+            const unitPrice = parseFloat(item.unitPrice.toString()) || 0;
+            const quantity = parseFloat(item.quantity.toString()) || 0;
+            return total + (unitPrice * quantity);
+        }, 0);
+        const vatAmount = items.reduce((total, item) => {
+            const unitPrice = parseFloat(item.unitPrice.toString()) || 0;
+            const quantity = parseFloat(item.quantity.toString()) || 0;
+            const vatRate = parseFloat(item.vatRate.toString()) || 0;
+            return total + (unitPrice * quantity * vatRate) / 100;
+        }, 0);
+        return (subtotal + vatAmount).toFixed(2);
+    }, [items]);
+
     useEffect(() => {
-        // Si aucune devise n'est stockée, utiliser celle de l'entreprise
+        // Devise prise des paramètres (workspace) ou de la facture existante
         const currentCurrency = storedCurrency || workspaceCurrency;
-        if (currentCurrency && currentCurrency !== value) {
-            setValue(currentCurrency);
+        if (currentCurrency) {
             form.setValue("currency", currentCurrency);
-            // Mettre à jour le store si nécessaire
             if (!storedCurrency) {
                 setMetadata({ currency: currentCurrency });
             }
         }
-    }, [storedCurrency, workspaceCurrency, value, form, setMetadata])
+    }, [storedCurrency, workspaceCurrency, form, setMetadata])
 
     const itemIds = useMemo(() => items.map((item) => item.id), [items])
 
@@ -1445,63 +1457,6 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                         />
                         <FormField
                             control={form.control}
-                            name="currency"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t('fields.currency.label')}</FormLabel>
-                                    <Popover open={open} onOpenChange={setOpen}>
-                                        <PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={open}
-                                                    className="w-full justify-between"
-                                                >
-                                                    {value
-                                                        ? devises.find((devise) => devise.value === value)?.label
-                                                        : t('fields.currency.placeholder')}
-                                                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-[320px] p-0">
-                                            <Command>
-                                                <CommandInput placeholder={t('fields.currency.searchPlaceholder')} className="h-9" />
-                                                <CommandList>
-                                                    <CommandEmpty>{t('fields.currency.empty')}</CommandEmpty>
-                                                    <CommandGroup>
-                                                        {devises.map((devise) => (
-                                                            <CommandItem
-                                                                key={devise.value}
-                                                                value={devise.value}
-                                                                onSelect={(currentValue) => {
-                                                                    const nextValue = currentValue === value ? "" : currentValue
-                                                                    setValue(nextValue)
-                                                                    field.onChange(nextValue)
-                                                                    setOpen(false)
-                                                                }}
-                                                            >
-                                                                {devise.label}
-                                                                <Check
-                                                                    className={cn(
-                                                                        "ml-auto",
-                                                                        value === devise.value ? "opacity-100" : "opacity-0"
-                                                                    )}
-                                                                />
-                                                            </CommandItem>
-                                                        ))}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
                             name="notes"
                             render={({ field }) => (
                                 <FormItem className="md:col-span-2">
@@ -1516,105 +1471,122 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                     </div>
                 </section>
 
-                {/* Options avancées : facture récurrente (création uniquement) */}
-                {!isEditMode && (
-                    <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-                            <CollapsibleTrigger asChild>
-                                <Button type="button" variant="ghost" className="w-full justify-between p-0 h-auto font-semibold text-slate-900 hover:bg-transparent">
-                                    <span className="flex items-center gap-2">
-                                        <Repeat className="h-4 w-4 text-primary" />
-                                        {t('advanced.title')}
-                                    </span>
-                                    <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
-                                </Button>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent>
-                                <div className="pt-4 space-y-4 border-t mt-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="recurring"
-                                            checked={isRecurring}
-                                            onCheckedChange={(v) => setIsRecurring(!!v)}
-                                        />
-                                        <label htmlFor="recurring" className="text-sm font-medium cursor-pointer">
-                                            {t('advanced.recurring.label')}
-                                        </label>
-                                    </div>
-                                    {isRecurring && (
-                                        <div className="grid gap-4 md:grid-cols-2 pl-6">
-                                            <div>
-                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.frequency')}</label>
-                                                <Select value={recurringFrequency} onValueChange={(v) => setRecurringFrequency(v as RecurrenceFrequency)}>
-                                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="monthly">{t('advanced.recurring.frequencyMonthly')}</SelectItem>
-                                                        <SelectItem value="quarterly">{t('advanced.recurring.frequencyQuarterly')}</SelectItem>
-                                                        <SelectItem value="yearly">{t('advanced.recurring.frequencyYearly')}</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div>
-                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.dayOfMonth')}</label>
-                                                <Input
-                                                    type="number"
-                                                    min={1}
-                                                    max={31}
-                                                    value={recurringDayOfMonth}
-                                                    onChange={(e) => setRecurringDayOfMonth(parseInt(e.target.value, 10) || 1)}
-                                                />
-                                            </div>
-                                            <div className="md:col-span-2">
-                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.endDate')}</label>
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button variant="outline" className="w-full justify-start text-left font-normal">
-                                                            {recurringEndDate ? format(recurringEndDate, "PPP") : t('advanced.recurring.endDateOptional')}
-                                                            <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0" align="start">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={recurringEndDate}
-                                                            onSelect={setRecurringEndDate}
-                                                            disabled={(date) => issueDate ? date < issueDate : false}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-                                            </div>
-                                            <div className="flex items-center space-x-2 md:col-span-2">
-                                                <Checkbox id="recurringAutoSend" checked={recurringAutoSend} onCheckedChange={(v) => setRecurringAutoSend(!!v)} />
-                                                <label htmlFor="recurringAutoSend" className="text-sm font-medium cursor-pointer">{t('advanced.recurring.autoSend')}</label>
-                                            </div>
-                                            {recurringAutoSend && (
-                                                <div className="md:col-span-2">
-                                                    <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.recipientEmail')}</label>
+                {/* Options avancées : facture récurrente (création uniquement) et style WhatsApp */}
+                <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                    <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+                        <CollapsibleTrigger asChild>
+                            <Button type="button" variant="ghost" className="w-full justify-between p-0 h-auto font-semibold text-slate-900 hover:bg-transparent">
+                                <span className="flex items-center gap-2">
+                                    <Repeat className="h-4 w-4 text-primary" />
+                                    {t('advanced.title')}
+                                </span>
+                                <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
+                            </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                            <div className="pt-4 space-y-4 border-t mt-4">
+                                {/* Facture récurrente (création uniquement) */}
+                                {!isEditMode && (
+                                    <>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="recurring"
+                                                checked={isRecurring}
+                                                onCheckedChange={(v) => setIsRecurring(!!v)}
+                                            />
+                                            <label htmlFor="recurring" className="text-sm font-medium cursor-pointer">
+                                                {t('advanced.recurring.label')}
+                                            </label>
+                                        </div>
+                                        {isRecurring && (
+                                            <div className="grid gap-4 md:grid-cols-2 pl-6">
+                                                <div>
+                                                    <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.frequency')}</label>
+                                                    <Select value={recurringFrequency} onValueChange={(v) => setRecurringFrequency(v as RecurrenceFrequency)}>
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="monthly">{t('advanced.recurring.frequencyMonthly')}</SelectItem>
+                                                            <SelectItem value="quarterly">{t('advanced.recurring.frequencyQuarterly')}</SelectItem>
+                                                            <SelectItem value="yearly">{t('advanced.recurring.frequencyYearly')}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.dayOfMonth')}</label>
                                                     <Input
-                                                        type="email"
-                                                        placeholder={t('advanced.recurring.recipientEmailPlaceholder')}
-                                                        value={recurringRecipientEmail}
-                                                        onChange={(e) => setRecurringRecipientEmail(e.target.value)}
+                                                        type="number"
+                                                        min={1}
+                                                        max={31}
+                                                        value={recurringDayOfMonth}
+                                                        onChange={(e) => setRecurringDayOfMonth(parseInt(e.target.value, 10) || 1)}
                                                     />
                                                 </div>
-                                            )}
-                                            <div>
-                                                <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.notificationDaysBefore')}</label>
-                                                <Input
-                                                    type="number"
-                                                    min={0}
-                                                    value={recurringNotificationDaysBefore}
-                                                    onChange={(e) => setRecurringNotificationDaysBefore(parseInt(e.target.value, 10) || 0)}
-                                                />
+                                                <div className="md:col-span-2">
+                                                    <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.endDate')}</label>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <Button variant="outline" className="w-full justify-start text-left font-normal">
+                                                                {recurringEndDate ? format(recurringEndDate, "PPP") : t('advanced.recurring.endDateOptional')}
+                                                                <CalendarIcon className="ml-2 h-4 w-4 opacity-50" />
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="w-auto p-0" align="start">
+                                                            <Calendar
+                                                                mode="single"
+                                                                selected={recurringEndDate}
+                                                                onSelect={setRecurringEndDate}
+                                                                disabled={(date) => issueDate ? date < issueDate : false}
+                                                                initialFocus
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                </div>
+                                                <div className="flex items-center space-x-2 md:col-span-2">
+                                                    <Checkbox id="recurringAutoSend" checked={recurringAutoSend} onCheckedChange={(v) => setRecurringAutoSend(!!v)} />
+                                                    <label htmlFor="recurringAutoSend" className="text-sm font-medium cursor-pointer">{t('advanced.recurring.autoSend')}</label>
+                                                </div>
+                                                {recurringAutoSend && (
+                                                    <div className="md:col-span-2">
+                                                        <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.recipientEmail')}</label>
+                                                        <Input
+                                                            type="email"
+                                                            placeholder={t('advanced.recurring.recipientEmailPlaceholder')}
+                                                            value={recurringRecipientEmail}
+                                                            onChange={(e) => setRecurringRecipientEmail(e.target.value)}
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <label className="text-sm font-medium mb-2 block">{t('advanced.recurring.notificationDaysBefore')}</label>
+                                                    <Input
+                                                        type="number"
+                                                        min={0}
+                                                        value={recurringNotificationDaysBefore}
+                                                        onChange={(e) => setRecurringNotificationDaysBefore(parseInt(e.target.value, 10) || 0)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                        {isRecurring && <div className="border-t pt-4" />}
+                                    </>
+                                )}
+                                
+                                {/* Sélection du style de message WhatsApp */}
+                                <div className={cn(!isEditMode && isRecurring && "pt-4")}>
+                                    <WhatsAppMessageStyleSelector
+                                        value={whatsappMessageStyle}
+                                        onChange={setWhatsappMessageStyle}
+                                        invoiceNumber={existingInvoice?.invoiceNumber || formValues.subject || undefined}
+                                        amount={whatsappTotalAmount}
+                                        currency={formValues.currency || workspaceCurrency}
+                                        dueDate={formValues.dueDate ? formValues.dueDate : undefined}
+                                        companyName={(workspace?.legalName || workspace?.name) ?? undefined}
+                                    />
                                 </div>
-                            </CollapsibleContent>
-                        </Collapsible>
-                    </section>
-                )}
+                            </div>
+                        </CollapsibleContent>
+                    </Collapsible>
+                </section>
 
                 <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -1647,11 +1619,10 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                             <div className="flex flex-col gap-2">
                                 {/* En-têtes du tableau */}
                                 <div className="hidden md:grid md:grid-cols-12 gap-2 px-2 py-1.5 text-[10px] font-semibold text-slate-600 border-b border-slate-200 bg-slate-50/50 rounded-t-md">
-                                    <div className="col-span-5">{t('lines.description')}</div>
-                                    <div className="col-span-1">{t('lines.quantity')}</div>
+                                    <div className="col-span-4">{t('lines.description')}</div>
+                                    <div className="col-span-2 text-left">{t('lines.quantity')}</div>
                                     <div className="col-span-2">{t('lines.unitPrice')}</div>
-                                    <div className="col-span-1">{t('lines.vat')}</div>
-                                    <div className="col-span-2 text-right">{t('lines.lineTotal')}</div>
+                                    <div className="col-span-3 text-right">{t('lines.lineTotal')}</div>
                                     <div className="col-span-1"></div>
                                 </div>
                                 
@@ -1664,7 +1635,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                                 <Card className="rounded-md border border-slate-200 p-2 shadow-sm hover:shadow-md transition-all hover:border-primary/30 bg-white">
                                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
                                                         {/* Description */}
-                                                        <div className="col-span-1 md:col-span-3">
+                                                        <div className="col-span-1 md:col-span-4">
                                                             <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
                                                                 {t('lines.description')}
                                                             </label>
@@ -1677,7 +1648,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                                         </div>
                                                         
                                                         {/* Quantité */}
-                                                        <div className="col-span-1 md:col-span-2">
+                                                        <div className="col-span-1 md:col-span-1">
                                                             <label className="text-[10px]  font-medium text-slate-600 mb-1 block md:hidden">
                                                                 {t('lines.quantity')}
                                                             </label>
@@ -1685,7 +1656,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                                                 type="number"
                                                                 step="1"
                                                                 min="0"
-                                                                value={item.quantity}
+                                                                value={item.quantity}   
                                                                 onChange={(e) => {
                                                                     const val = e.target.value;
                                                                     if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0)) {
@@ -1697,7 +1668,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                                         </div>
                                                         
                                                         {/* Prix unitaire */}
-                                                        <div className="col-span-1 md:col-span-2">
+                                                        <div className="col-span-1 md:col-span-3">
                                                             <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
                                                                 {t('lines.unitPrice')}
                                                             </label>
@@ -1719,30 +1690,8 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                                             </div>
                                                         </div>
                                                         
-                                                        {/* TVA */}
-                                                        <div className="col-span-1 md:col-span-2">
-                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
-                                                                {t('lines.vat')}
-                                                            </label>
-                                                            <div className="relative">
-                                                                <Input
-                                                                    type="text"
-                                                                    
-                                                                    value={item.vatRate}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
-                                                                        if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 100)) {
-                                                                            updateItem(item.id, { vatRate: val === '' ? 0 : parseFloat(val) });
-                                                                        }
-                                                                    }}
-                                                                    className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 pr-5"
-                                                                />
-                                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 font-medium">%</span>
-                                                            </div>
-                                                        </div>
-                                                        
                                                         {/* Total ligne */}
-                                                        <div className="col-span-1 md:col-span-2 text-right">
+                                                        <div className="col-span-1 md:col-span-3 text-right">
                                                             <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
                                                                 {t('lines.lineTotal')}
                                                             </label>
@@ -1947,13 +1896,6 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                             )}
                         </div>
                     )}
-                    {/* Sélection du style de message WhatsApp */}
-                    <div className="pt-4 border-t">
-                        <WhatsAppMessageStyleSelector
-                            value={whatsappMessageStyle}
-                            onChange={setWhatsappMessageStyle}
-                        />
-                    </div>
                     <div className="flex items-center justify-end gap-3">
                         <Button 
                             type="button" 

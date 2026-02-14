@@ -85,9 +85,6 @@ const TemplateColorful = ({
                   Prix unitaire
                 </TableHead>
                 <TableHead className="py-4 px-3 text-right font-semibold text-xs uppercase tracking-wide text-white">
-                  TVA
-                </TableHead>
-                <TableHead className="py-4 px-3 text-right font-semibold text-xs uppercase tracking-wide text-white">
                   Total
                 </TableHead>
               </TableRow>
@@ -104,7 +101,6 @@ const TemplateColorful = ({
                     <TableCell className="py-3 px-3 text-right">
                       {formatAmount(item.unitPrice)}
                     </TableCell>
-                    <TableCell className="py-3 px-3 text-right">{item.vatRate}%</TableCell>
                     <TableCell className="py-3 px-3 text-right font-semibold">
                       {formatAmount(item.unitPrice * item.quantity)}
                     </TableCell>
@@ -113,7 +109,7 @@ const TemplateColorful = ({
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={4}
                     className="text-center py-8 text-[#a0aec0] text-sm"
                   >
                     Aucune ligne de facture
@@ -138,7 +134,7 @@ const TemplateColorful = ({
             <span>{formatAmount(subtotal)}</span>
           </div>
           <div className="flex justify-between py-2 text-sm">
-            <span>TVA</span>
+            <span>TVA estimée</span>
             <span>{formatAmount(vatAmount)}</span>
           </div>
           <div className="flex justify-between pt-4 mt-3 border-t-2 border-white/30 text-2xl font-bold">

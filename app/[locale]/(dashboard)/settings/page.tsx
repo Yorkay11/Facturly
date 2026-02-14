@@ -44,7 +44,7 @@ type UserFormValues = {
 
 type WorkspaceFormValues = {
   name?: string | null;
-  type?: 'INDIVIDUAL' | 'COMPANY';
+  type?: 'FREELANCE' | 'INDIVIDUAL' | 'COMPANY';
   legalName?: string;
   addressLine1?: string;
   addressLine2?: string;
@@ -160,7 +160,7 @@ function SettingsContent() {
   const workspaceForm = useForm<WorkspaceFormValues>({
     resolver: zodResolver(workspaceSchema),
       defaultValues: {
-      type: "COMPANY",
+      type: "FREELANCE",
       name: "",
       legalName: "",
       addressLine1: "",
@@ -255,7 +255,7 @@ function SettingsContent() {
     try {
       await updateWorkspace({
         type: values.type,
-        name: values.name || (values.type === 'INDIVIDUAL' ? null : undefined),
+        name: values.name || (values.type === 'INDIVIDUAL' || values.type === 'FREELANCE' ? null : undefined),
         legalName: values.legalName || undefined,
         addressLine1: values.addressLine1 || undefined,
         addressLine2: values.addressLine2 || undefined,
@@ -453,6 +453,7 @@ function SettingsContent() {
                             <SelectValue placeholder={t('workspace.fields.typePlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="FREELANCE">{t('workspace.fields.typeFreelance')}</SelectItem>
                             <SelectItem value="INDIVIDUAL">{t('workspace.fields.typeIndividual')}</SelectItem>
                             <SelectItem value="COMPANY">{t('workspace.fields.typeCompany')}</SelectItem>
                           </SelectContent>
@@ -477,7 +478,7 @@ function SettingsContent() {
                       <Label htmlFor="workspace-name">
                         {t('workspace.fields.name')} 
                         {workspaceType === 'COMPANY' && <span className="text-destructive">*</span>}
-                        {workspaceType === 'INDIVIDUAL' && (
+                        {(workspaceType === 'INDIVIDUAL' || workspaceType === 'FREELANCE') && (
                           <span className="text-xs text-foreground/60 ml-2">
                             ({t('workspace.fields.nameOptional')})
                           </span>
@@ -485,7 +486,7 @@ function SettingsContent() {
                       </Label>
                       <Input
                         id="workspace-name"
-                        placeholder={workspaceType === 'INDIVIDUAL' 
+                        placeholder={workspaceType === 'INDIVIDUAL' || workspaceType === 'FREELANCE' 
                           ? t('workspace.fields.namePlaceholderIndividual')
                           : t('workspace.fields.namePlaceholder')}
                         {...workspaceForm.register("name")}

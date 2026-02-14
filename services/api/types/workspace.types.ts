@@ -1,6 +1,6 @@
 // ==================== Workspace Types ====================
 
-export type WorkspaceType = 'INDIVIDUAL' | 'COMPANY';
+export type WorkspaceType = 'FREELANCE' | 'INDIVIDUAL' | 'COMPANY';
 
 export interface Workspace {
   id: string;
@@ -25,7 +25,7 @@ export interface Workspace {
 }
 
 export interface CreateWorkspacePayload {
-  type: "INDIVIDUAL" | "COMPANY";
+  type: "FREELANCE" | "INDIVIDUAL" | "COMPANY";
   name?: string | null;
   defaultCurrency: string;
   legalName?: string;

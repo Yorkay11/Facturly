@@ -82,9 +82,6 @@ const TemplateModern = ({
                 P.U.
               </TableHead>
               <TableHead className="text-right text-xs uppercase tracking-wide text-slate-500">
-                TVA
-              </TableHead>
-              <TableHead className="text-right text-xs uppercase tracking-wide text-slate-500">
                 Total
               </TableHead>
             </TableRow>
@@ -96,7 +93,6 @@ const TemplateModern = ({
                   <TableCell className="text-sm font-medium">{item.description}</TableCell>
                   <TableCell className="text-right text-sm">{item.quantity}</TableCell>
                   <TableCell className="text-right text-sm">{formatAmount(item.unitPrice)}</TableCell>
-                  <TableCell className="text-right text-sm">{item.vatRate}%</TableCell>
                   <TableCell className="text-right text-sm font-semibold">
                     {formatAmount(item.unitPrice * item.quantity)}
                   </TableCell>
@@ -104,7 +100,7 @@ const TemplateModern = ({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-sm text-slate-500">
+                <TableCell colSpan={4} className="py-10 text-center text-sm text-slate-500">
                   Ajoutez des lignes pour prévisualiser le rendu de votre facture.
                 </TableCell>
               </TableRow>
@@ -112,19 +108,19 @@ const TemplateModern = ({
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={4} className="text-right text-xs uppercase opacity-70">
+              <TableCell colSpan={3} className="text-right text-xs uppercase opacity-70">
                 Sous-total
               </TableCell>
               <TableCell className="text-right text-sm font-semibold">{formatAmount(subtotal)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={4} className="text-right text-xs uppercase opacity-70">
+              <TableCell colSpan={3} className="text-right text-xs uppercase opacity-70">
                 TVA estimée
               </TableCell>
               <TableCell className="text-right text-sm font-semibold">{formatAmount(vatAmount)}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell colSpan={4} className="text-right text-xs uppercase opacity-70">
+              <TableCell colSpan={3} className="text-right text-xs uppercase opacity-70">
                 Total TTC
               </TableCell>
               <TableCell

@@ -105,7 +105,7 @@ const TemplateMinimal = ({
             <span>{formatAmount(subtotal)}</span>
           </div>
           <div className="flex justify-between mb-2 text-xs">
-            <span>TVA</span>
+            <span>TVA estimée</span>
             <span>{formatAmount(vatAmount)}</span>
           </div>
           <div className="flex justify-between border-t border-slate-200 pt-2 mt-2 text-base font-bold">

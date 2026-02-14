@@ -8,9 +8,16 @@ import type { TagTypes } from '../base';
 export const workspaceEndpoints = (
   builder: EndpointBuilder<BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>, TagTypes, 'facturlyApi'>
 ) => ({
-  getWorkspace: builder.query<Workspace, void>({
+  getWorkspace: builder.query<Workspace | null, void>({
     query: () => "/workspaces/me",
     providesTags: ["Workspace"],
+    // Ne pas traiter null comme une erreur - c'est une valeur valide quand l'utilisateur n'a pas encore de workspace
+    transformResponse: (response: Workspace | null) => {
+      // Si la réponse est null, c'est normal (pas encore de workspace créé)
+      return response;
+    },
+    // Ne pas considérer null comme une erreur
+    keepUnusedDataFor: 60, // Garder en cache 60 secondes même si null
   }),
   getWorkspaces: builder.query<Workspace[], void>({
     query: () => "/workspaces",

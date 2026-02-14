@@ -210,7 +210,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
         <div data-invoice-preview className="bg-white rounded-lg shadow-sm p-6 border border-slate-200/50">
           <TemplateComponent
             metadata={metadata}
-            workspace={workspace}
+            workspace={workspace ?? undefined}
             client={client}
             items={items}
             subtotal={subtotal}
@@ -245,7 +245,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <TemplateComponent
                     metadata={metadata}
-                    workspace={workspace}
+                    workspace={workspace ?? undefined}
                     client={client}
                     items={items}
                     subtotal={subtotal}
@@ -283,7 +283,7 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                 <div className="bg-white p-4 rounded-lg shadow-sm max-w-5xl mx-auto">
                   <TemplateComponent
                     metadata={metadata}
-                    workspace={workspace}
+                    workspace={workspace ?? undefined}
                     client={client}
                     items={items}
                     subtotal={subtotal}

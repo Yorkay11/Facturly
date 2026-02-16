@@ -54,6 +54,8 @@ Gérez votre catalogue de produits et services, réutilisez-les en un clic.
 
 **UI/UX** : Radix UI • Framer Motion • Recharts • Sonner
 
+**Ligne de conduite design** : style premium type Apple (épuré, espace généreux, cartes douces). Voir [docs/DESIGN_GUIDELINES.md](docs/DESIGN_GUIDELINES.md).
+
 ---
 
 ## 🚀 Démarrage rapide

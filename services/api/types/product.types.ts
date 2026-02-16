@@ -26,7 +26,7 @@ export interface CreateProductPayload {
   type: "product" | "service";
   price: string; // Le backend accepte aussi unitPrice
   currency?: string; // Optionnel - le backend utilise automatiquement workspace.defaultCurrency
-  taxRate: string;
+  taxRate?: string; // Optionnel - le backend peut utiliser le taux par défaut du workspace
   unitOfMeasure?: string; // Le backend attend unitOfMeasure, pas unit
   sku?: string;
   isActive?: boolean;

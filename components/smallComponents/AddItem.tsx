@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -243,11 +244,19 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{mode === 'edit' ? t('title.edit') : t('title.create')}</DialogTitle>
-            <DialogDescription>
+      <ResponsiveModal
+        open={isOpen}
+        onOpenChange={onClose}
+        modalMaxWidth="sm:max-w-[640px]"
+        contentClassName="rounded-2xl sm:rounded-[20px] border border-border/40 bg-background shadow-2xl shadow-black/5 p-0 overflow-hidden"
+        closeButtonClassName="right-4 top-4 h-8 w-8 rounded-full bg-muted/60 hover:bg-muted text-foreground/70"
+      >
+        <div className="px-5 pt-5 pb-5">
+          <DialogHeader className="p-0 pb-4 text-left space-y-1">
+            <DialogTitle className="text-[17px] font-semibold tracking-tight text-foreground">
+              {mode === 'edit' ? t('title.edit') : t('title.create')}
+            </DialogTitle>
+            <DialogDescription className="text-[15px] text-muted-foreground">
               {mode === 'create' 
                 ? t('description.create')
                 : t('description.edit')}
@@ -280,8 +289,8 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
               
               <TabsContent value="select" className="space-y-4 mt-4">
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>{t('fields.product')}</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px] font-medium text-foreground">{t('fields.product')}</Label>
                     <Popover open={productOpen} onOpenChange={setProductOpen}>
                       <PopoverTrigger asChild>
                         <Button
@@ -289,9 +298,9 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                           role="combobox"
                           aria-expanded={productOpen}
                           className={cn(
-                            "w-full justify-between",
+                            "w-full justify-between h-11 rounded-xl border-0 bg-muted/30 text-[15px] font-normal",
                             !selectedProductId && "text-muted-foreground",
-                            selectedProductId && "border-primary/50 bg-primary/5  hover:text-white "
+                            selectedProductId && "bg-primary/10 border-primary/30 text-foreground"
                           )}
                           type="button"
                         >
@@ -359,7 +368,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                                         key={product.id}
                                         value={product.name}
                                         onSelect={() => handleProductSelect(product.id)}
-                                        className="cursor-pointer data-[selected=true]:bg-primary"
+                                        className="cursor-pointer rounded-lg mx-1 my-0.5 data-[selected=true]:bg-primary/10 data-[selected=true]:text-foreground"
                                       >
                                         <div className="flex items-start gap-3 flex-1 min-w-0">
                                           <div className="mt-0.5">
@@ -439,8 +448,8 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                     
                     {/* Résumé du produit sélectionné */}
                     {selectedProduct && (
-                      <Card className="border-primary/30 bg-primary/5">
-                        <CardContent className="pt-4">
+                      <Card className="rounded-xl border border-primary/30 bg-primary/5">
+                        <CardContent className="p-4">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <div className="p-1.5 rounded-md bg-primary/10">
@@ -511,8 +520,8 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
               </TabsContent>
               
               <TabsContent value="manual" className="space-y-4 mt-4">
-                <Card className="border-primary/20 bg-primary/5">
-                  <CardContent className="pt-4">
+                <Card className="rounded-xl border border-primary/20 bg-primary/5">
+                  <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <div className="p-2 rounded-lg bg-primary/10 shrink-0">
                         <Package className="h-5 w-5 text-primary" />
@@ -535,20 +544,20 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
           {/* Formulaire d'ajout d'article - Affiché seulement si un produit est sélectionné OU en saisie manuelle OU en mode édition */}
           {(mode === 'edit' || (mode === 'create' && (selectedProductId || activeTab === 'manual'))) && (
             <>
-              <Separator className="my-6" />
+              <div className="border-t border-border/40 my-6"></div>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Section Détails de l'article */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-px flex-1 bg-border"></div>
-                    <span className="text-sm font-semibold text-foreground uppercase tracking-wide">{t('fields.itemDetails')}</span>
-                    <div className="h-px flex-1 bg-border"></div>
+                    <div className="h-px flex-1 bg-border/40"></div>
+                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">{t('fields.itemDetails')}</span>
+                    <div className="h-px flex-1 bg-border/40"></div>
                   </div>
 
                   <div className="space-y-4">
                     {/* Description */}
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="description" className="text-[13px] font-medium text-foreground">
                         {t('fields.description.label')} <span className="text-destructive">*</span>
                       </Label>
                       <Input
@@ -574,14 +583,14 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                         required
                         placeholder={t('fields.description.placeholder')}
                         disabled={!!selectedProductId && !isManualEntry && !hasModifiedFields && activeTab === 'select'}
-                        className="h-10"
+                        className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                       />
                     </div>
 
                     {/* Quantité et Prix en grille */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="quantity" className="text-sm font-medium">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="quantity" className="text-[13px] font-medium text-foreground">
                           {t('fields.quantity.label')}
                         </Label>
                         <Input
@@ -591,11 +600,11 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                           value={quantity}
                           onChange={(e) => setQuantity(e.target.value)}
                           required
-                          className="h-10"
+                          className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="unitPrice" className="text-sm font-medium">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="unitPrice" className="text-[13px] font-medium text-foreground">
                           {t('fields.unitPrice.label')} <span className="text-destructive">*</span>
                         </Label>
                         <div className="relative">
@@ -625,9 +634,9 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                             required
                             placeholder={t('fields.unitPrice.placeholder')}
                             disabled={!!selectedProductId && !isManualEntry && !hasModifiedFields && activeTab === 'select'}
-                            className="h-10 pr-16"
+                            className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20 pr-16"
                           />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-foreground font-medium">
                             {workspaceCurrency}
                           </span>
                         </div>
@@ -638,17 +647,17 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
 
                 {/* Prévisualisation de l'article */}
                 {description && quantity && unitPrice && (
-                  <Card className="border-primary/20 bg-primary/5">
-                    <CardContent className="pt-6">
+                  <Card className="rounded-xl border border-primary/20 bg-primary/5">
+                    <CardContent className="p-5">
                       <div className="flex items-center gap-2 mb-4">
                         <Eye className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold text-foreground">Aperçu</span>
+                        <span className="text-[14px] font-semibold text-foreground">Aperçu</span>
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground mb-1">{description}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[15px] font-medium text-foreground mb-1">{description}</p>
+                            <p className="text-[13px] text-muted-foreground">
                               {quantity} × {parseFloat(unitPrice || '0').toFixed(2)} {workspaceCurrency}
                             </p>
                           </div>
@@ -656,7 +665,7 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                             <p className="text-lg font-bold text-primary">
                               {totalAmount.toFixed(2)} {workspaceCurrency}
                             </p>
-                            <p className="text-xs text-muted-foreground">Total</p>
+                            <p className="text-[12px] text-muted-foreground">Total</p>
                           </div>
                         </div>
                       </div>
@@ -665,13 +674,18 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
                 )}
 
                 {/* Footer avec boutons */}
-                <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={onClose} className="sm:w-auto">
+                <DialogFooter className="flex flex-row justify-end gap-2 pt-4 border-t border-border/40 mt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={onClose} 
+                    className="h-9 rounded-xl text-[15px] font-medium border-border/60"
+                  >
                     {t('buttons.cancel')}
                   </Button>
                   <Button 
                     type="submit" 
-                    className="sm:w-auto min-w-[120px]"
+                    className="h-9 rounded-xl px-4 text-[15px] font-semibold min-w-[120px]"
                     disabled={!description || !quantity || !unitPrice || parseFloat(quantity) <= 0 || parseFloat(unitPrice) <= 0}
                   >
                     {mode === 'edit' ? t('buttons.update') : t('buttons.add')}
@@ -680,56 +694,63 @@ export function AddItemModal({ isOpen, onClose, onSubmit, initialItem, mode = 'c
               </form>
             </>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      </ResponsiveModal>
       
       {/* Dialogue de confirmation pour sauvegarder le produit */}
       <AlertDialog open={showSaveProductDialog} onOpenChange={setShowSaveProductDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
+        <AlertDialogContent className="rounded-2xl border border-border/40 bg-background shadow-2xl">
+          <AlertDialogHeader className="pb-4">
+            <AlertDialogTitle className="flex items-center gap-2 text-[17px] font-semibold">
               <Save className="h-5 w-5 text-primary" />
               {t('saveDialog.title')}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-[15px] text-muted-foreground">
               {t('saveDialog.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="save-product-type">
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="save-product-type" className="text-[13px] font-medium text-foreground">
                 {t('saveDialog.fields.type.label')} <span className="text-destructive">*</span>
               </Label>
               <Select value={productType} onValueChange={(value) => setProductType(value as 'service' | 'product')}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl border-0 bg-muted/30 text-[15px]">
                   <SelectValue placeholder={t('saveDialog.fields.type.placeholder')} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl border border-border/40">
                   <SelectItem value="service">{itemsModalT('fields.typeService')}</SelectItem>
                   <SelectItem value="product">{itemsModalT('fields.typeProduct')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {/* Information sur la devise de l'entreprise */}
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <p className="text-sm text-muted-foreground">
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <p className="text-[13px] text-muted-foreground">
                 {t('saveDialog.fields.currencyInfo', { currency: workspaceCurrency })}
               </p>
             </div>
-            <div className="rounded-lg border border-muted-foreground/20 bg-muted/30 p-3 space-y-1">
-              <p className="text-sm font-medium">{t('saveDialog.fields.summary.title')}</p>
-              <div className="text-xs text-muted-foreground space-y-1">
+            <div className="rounded-xl border border-border/40 bg-muted/30 p-4 space-y-2">
+              <p className="text-[14px] font-semibold text-foreground">{t('saveDialog.fields.summary.title')}</p>
+              <div className="text-[13px] text-muted-foreground space-y-1.5">
                 <p><span className="font-medium">{t('saveDialog.fields.summary.name')}:</span> {description}</p>
                 <p><span className="font-medium">{t('saveDialog.fields.summary.price')}:</span> {unitPrice} {workspaceCurrency}</p>
                 <p><span className="font-medium">{t('saveDialog.fields.summary.type')}:</span> {productType === 'service' ? t('types.service') : t('types.product')}</p>
               </div>
             </div>
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleAddWithoutSaving}>
+          <AlertDialogFooter className="gap-2 pt-4 border-t border-border/40">
+            <AlertDialogCancel 
+              onClick={handleAddWithoutSaving}
+              className="h-9 rounded-xl text-[15px] font-medium border-border/60"
+            >
               {t('saveDialog.buttons.addOnly')}
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleSaveProductAndAdd} disabled={isCreatingProduct}>
+            <AlertDialogAction 
+              onClick={handleSaveProductAndAdd} 
+              disabled={isCreatingProduct}
+              className="h-9 rounded-xl px-4 text-[15px] font-semibold"
+            >
               {isCreatingProduct && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t('saveDialog.buttons.saveAndAdd')}
             </AlertDialogAction>

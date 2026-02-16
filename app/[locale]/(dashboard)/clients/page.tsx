@@ -1,14 +1,8 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Search, ChevronRight, Mail, Phone, MapPin, Calendar } from "lucide-react";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import { useTranslations } from "next-intl";
-import {
-  FaEnvelope,
-  FaPhone,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-} from "react-icons/fa";
 import { IoCloudUploadOutline } from "react-icons/io5";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,131 +59,118 @@ export default function ClientsPage() {
   } = useClientsData();
 
   return (
-    <div className="space-y-8">
-      <Breadcrumb
-        items={[
-          { label: navigationT("dashboard"), href: "/dashboard" },
-          { label: t("title") },
-        ]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-primary">
-              {t("title")}
-            </h1>
-            <p className="mt-1 text-sm text-foreground/70">{t("subtitle")}</p>
+    <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: navigationT("dashboard"), href: "/dashboard" },
+              { label: t("title") },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
+
+        <header className="mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {t("title")}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-2 rounded-full border-border/80 bg-background/80 shadow-sm backdrop-blur-sm"
+                onClick={() => setImportModalOpen(true)}
+              >
+                <IoCloudUploadOutline className="h-4 w-4" />
+                {t("importCSV")}
+              </Button>
+              <Button
+                size="sm"
+                className="h-9 gap-2 rounded-full px-4 font-medium"
+                onClick={() => setModalOpen(true)}
+              >
+                <Plus className="h-4 w-4" />
+                {t("new")}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => setImportModalOpen(true)}
-            >
-              <IoCloudUploadOutline className="h-4 w-4" />
-              {t("importCSV")}
-            </Button>
-            <Button className="gap-2" onClick={() => setModalOpen(true)}>
-              <Plus className="h-4 w-4" />
-              {t("new")}
-            </Button>
-          </div>
-        </div>
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <Card className="flex-1 border-primary/30 bg-primary/5">
+        </header>
+
+        <div className="mb-8 grid grid-cols-3 gap-4">
+          <Card className="rounded-2xl border-border/50 bg-card/50 shadow-sm backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t("activeClients")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">
-                {totalClients}
-              </p>
+              <p className="text-2xl font-bold tabular-nums text-foreground">{totalClients}</p>
             </CardContent>
           </Card>
-          <Card className="flex-1 border-primary/30 bg-primary/5">
+          <Card className="rounded-2xl border-border/50 bg-card/50 shadow-sm backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t("cumulativeInvoices")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">
-                {totalInvoices}
-              </p>
+              <p className="text-2xl font-bold tabular-nums text-foreground">{totalInvoices}</p>
             </CardContent>
           </Card>
-          <Card className="flex-1 border-primary/30 bg-primary/5">
+          <Card className="rounded-2xl border-border/50 bg-card/50 shadow-sm backdrop-blur-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {t("lastAdded")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">
-                {lastClientDate}
-              </p>
-              <p className="text-xs text-foreground/60">
-                {t("lastAddedDescription")}
-              </p>
+              <p className="text-2xl font-bold text-foreground">{lastClientDate}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("lastAddedDescription")}</p>
             </CardContent>
           </Card>
         </div>
-      </div>
 
       {isLoading ? (
-        <div className="space-y-4">
-          <Card className="border-primary/20">
-            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-10 w-full max-w-sm" />
-            </CardHeader>
-          </Card>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Skeleton className="h-9 w-48" />
+            <div className="relative max-w-sm w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Skeleton className="h-10 w-full pl-9" />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(8)].map((_, i) => (
-              <Card key={i} className="border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3 mb-3">
-                    <Skeleton className="h-12 w-12 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-full" />
-                    <Skeleton className="h-3 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </div>
-                </CardContent>
-              </Card>
+              <Skeleton key={i} className="h-44 rounded-2xl" />
             ))}
           </div>
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="rounded-2xl border border-destructive/50 bg-destructive/10 p-6 text-sm text-destructive">
           {t("loadError")}
         </div>
       ) : clients && clients.length ? (
-        <div className="space-y-4">
-          <Card className="border-primary/20">
-            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <CardTitle className="text-primary">{t("directory")}</CardTitle>
-                <p className="text-sm text-foreground/60">
-                  {t("directoryDescription")}
-                </p>
-              </div>
+        <div className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">{t("directory")}</h2>
+              <p className="text-sm text-muted-foreground">{t("directoryDescription")}</p>
+            </div>
+            <div className="relative max-w-sm w-full">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={t("searchPlaceholder")}
-                className="max-w-sm"
+                className="h-10 pl-9 bg-muted/30 border-border"
               />
-            </CardHeader>
-          </Card>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {clients
               .filter((client) => client.id)
               .map((client) => {
@@ -197,9 +178,7 @@ export default function ClientsPage() {
                   if (!client.name) return "?";
                   const parts = client.name.trim().split(/\s+/);
                   if (parts.length >= 2) {
-                    return (
-                      parts[0][0] + parts[parts.length - 1][0]
-                    ).toUpperCase();
+                    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
                   }
                   return client.name.substring(0, 2).toUpperCase();
                 };
@@ -207,30 +186,30 @@ export default function ClientsPage() {
                 return (
                   <Card
                     key={client.id}
-                    className="group relative border-border hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer"
+                    className="group relative cursor-pointer overflow-hidden rounded-xl border border-border/40 bg-background shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-border/60 hover:shadow-xl hover:shadow-black/5"
                     onClick={() => handleRowClick(client.id)}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3 mb-3">
-                        <Avatar className="h-12 w-12 shrink-0">
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                    <CardContent className="p-5">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12 shrink-0 border border-border/40 shadow-sm ring-2 ring-background">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold text-[15px]">
                             {getInitials()}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <h3 className="text-[15px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                             {client.name}
                           </h3>
-                          {client.city && client.country && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {client.city}, {client.country}
+                          {(client.city || client.country) && (
+                            <p className="text-[13px] text-muted-foreground truncate">
+                              {[client.city, client.country].filter(Boolean).join(", ")}
                             </p>
                           )}
                         </div>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          className="h-8 w-8 shrink-0 rounded-lg opacity-0 transition-all group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteClick(e, client);
@@ -238,35 +217,44 @@ export default function ClientsPage() {
                           disabled={isDeleting}
                           title={t("deleteAction")}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="mt-4 space-y-2.5">
                         {client.email && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <FaEnvelope className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground">
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
                             <span className="truncate">{client.email}</span>
                           </div>
                         )}
                         {client.phone && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <FaPhone className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground">
+                            <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
                             <span className="truncate">{client.phone}</span>
                           </div>
                         )}
-                        {client.city && !client.country && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <FaMapMarkerAlt className="h-3 w-3 text-muted-foreground shrink-0" />
-                            <span className="truncate">{client.city}</span>
+                        {(client.addressLine1 || client.city || client.country) && (
+                          <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                            <span className="truncate">
+                              {[client.addressLine1, client.city, client.country].filter(Boolean).join(", ")}
+                            </span>
                           </div>
                         )}
                         {client.createdAt && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 border-t border-border">
-                            <FaCalendarAlt className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <div className="flex items-center gap-2.5 pt-2.5 border-t border-border/30 text-[12px] text-muted-foreground/80">
+                            <Calendar className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
                             <span>{formatDate(client.createdAt)}</span>
                           </div>
                         )}
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between pt-3 border-t border-border/30">
+                        <div className="text-[12px] text-muted-foreground/60 font-medium">
+                          Voir les détails
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
                       </div>
                     </CardContent>
                   </Card>
@@ -275,59 +263,54 @@ export default function ClientsPage() {
           </div>
 
           {totalPages > 1 && (
-            <Card className="border-primary/20">
-              <CardContent className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">
-                    {t("pageInfo", {
-                      current: currentPage,
-                      total: totalPages,
-                      count: totalClients,
-                    })}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={goToPreviousPage}
-                      disabled={currentPage === 1 || isLoading}
-                    >
-                      <IoChevronBackOutline className="h-4 w-4" />
-                      {t("previous")}
-                    </Button>
-                    <div className="text-sm font-medium px-3">
-                      {currentPage} / {totalPages}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={goToNextPage}
-                      disabled={currentPage === totalPages || isLoading}
-                    >
-                      {t("next")}
-                      <IoChevronForwardOutline className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/50 pt-6">
+              <div className="text-sm text-muted-foreground">
+                {t("pageInfo", {
+                  current: currentPage,
+                  total: totalPages,
+                  count: totalClients,
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9"
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1 || isLoading}
+                >
+                  <IoChevronBackOutline className="h-4 w-4" />
+                  {t("previous")}
+                </Button>
+                <div className="text-sm font-medium px-3">{currentPage} / {totalPages}</div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9"
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages || isLoading}
+                >
+                  {t("next")}
+                  <IoChevronForwardOutline className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-6 rounded-xl border border-dashed border-primary/30 bg-card py-16 shadow-sm">
+        <div className="flex flex-col items-center gap-6 rounded-2xl border border-dashed border-border bg-card/50 py-16 shadow-sm">
           <FuryMascot mood="sleepy" size="lg" />
-          <p className="text-xl font-semibold text-primary">
-            {t("noClients")}
-          </p>
-          <p className="max-w-md text-center text-sm text-foreground/60">
+          <p className="text-xl font-semibold text-foreground">{t("noClients")}</p>
+          <p className="max-w-md text-center text-sm text-muted-foreground">
             {t("noClientsDescription")}
           </p>
-          <Button className="gap-2" onClick={() => setModalOpen(true)}>
+          <Button className="gap-2 rounded-full" onClick={() => setModalOpen(true)}>
             <Plus className="h-4 w-4" />
             {t("add")}
           </Button>
         </div>
       )}
+      </div>
 
       <ClientModal
         open={isModalOpen}

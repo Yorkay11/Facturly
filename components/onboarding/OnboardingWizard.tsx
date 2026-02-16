@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Building2, User, Sparkles, CheckCircle2, ArrowRight, ArrowLeft, Globe, Coins, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 // Drapeaux des pays (images du projet)
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -125,7 +126,19 @@ const workspaceSchema = z.object({
 
 type WorkspaceFormValues = z.infer<typeof workspaceSchema>;
 
-export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspace | null; onComplete: () => void }) {
+export interface OnboardingWizardProps {
+  workspace: Workspace | null;
+  onComplete: () => void;
+  /** True when user already has a workspace and is adding another (modal from sidebar). */
+  isAdditionalWorkspace?: boolean;
+}
+
+export function OnboardingWizard({
+  workspace,
+  onComplete,
+  isAdditionalWorkspace = false,
+}: OnboardingWizardProps) {
+  const t = useTranslations("onboarding");
   const [step, setStep] = useState(1);
   const [updateWorkspace, { isLoading: isUpdating }] = useUpdateWorkspaceMutation();
   const [createWorkspace, { isLoading: isCreating }] = useCreateWorkspaceMutation();
@@ -218,10 +231,16 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
 
   return (
     <div className="w-full max-w-2xl mx-auto min-h-[500px] flex flex-col">
-      {/* Progress Bar — 2 ou 3 segments selon le type */}
-      <div className="flex justify-center gap-2 mb-10">
+      {/* Progress — segments type Apple */}
+      <div className="flex justify-center gap-1.5 mb-10">
         {Array.from({ length: totalSteps }, (_, i) => i + 1).map((i) => (
-          <div key={i} className={cn("h-1.5 w-12 rounded-full transition-all duration-500", step >= i ? "bg-primary" : "bg-muted")} />
+          <div
+            key={i}
+            className={cn(
+              "h-1 flex-1 max-w-16 rounded-full transition-all duration-300",
+              step >= i ? "bg-primary" : "bg-muted/70"
+            )}
+          />
         ))}
       </div>
 
@@ -236,8 +255,12 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
               className="space-y-8"
             >
               <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Parlons de vous</h1>
-                <p className="text-muted-foreground">Quel type de profil correspond le mieux à votre activité ?</p>
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  {isAdditionalWorkspace ? t("step1Additional.title") : t("step1.title")}
+                </h1>
+                <p className="text-[15px] text-muted-foreground">
+                  {isAdditionalWorkspace ? t("step1Additional.subtitle") : t("step1.subtitle")}
+                </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -251,18 +274,28 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                     type="button"
                     onClick={() => form.setValue('type', item.id as WorkspaceType, { shouldValidate: true })}
                     className={cn(
-                      "group flex flex-col items-center p-6 rounded-2xl border-2 transition-all hover:border-primary/50",
-                      selectedType === item.id ? "border-primary bg-primary/5 ring-4 ring-primary/5" : "border-border bg-card"
+                      "group flex flex-col items-center p-6 rounded-2xl border transition-all duration-200",
+                      "hover:bg-muted/50 active:bg-muted/70",
+                      selectedType === item.id
+                        ? "border-primary/60 bg-primary/5 dark:bg-primary/10"
+                        : "border-border/40 bg-muted/40 dark:bg-muted/20"
                     )}
                   >
-                    <item.icon className={cn("h-8 w-8 mb-3 transition-colors", selectedType === item.id ? "text-primary" : "text-muted-foreground")} />
-                    <span className="font-bold text-sm">{item.label}</span>
-                    <span className="text-[10px] text-muted-foreground mt-1 text-center">{item.desc}</span>
+                    <div
+                      className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-xl mb-3 transition-colors",
+                        selectedType === item.id ? "bg-primary/15 text-primary" : "bg-background/80 text-muted-foreground"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                    <span className="font-semibold text-[15px] text-foreground">{item.label}</span>
+                    <span className="text-[13px] text-muted-foreground mt-1 text-center">{item.desc}</span>
                   </button>
                 ))}
               </div>
 
-              {/* Bloc d'info détaillée selon le type sélectionné */}
+              {/* Bloc d'info détaillée — style Apple */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedType}
@@ -270,13 +303,15 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.2 }}
-                  className="rounded-xl border border-[#470000]/20 bg-[#470000]/5 p-4 text-left"
+                  className="rounded-2xl border border-border/40 bg-muted/40 dark:bg-muted/20 p-4 text-left"
                 >
                   <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 dark:bg-background/60">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                    </div>
                     <div className="space-y-1 min-w-0">
-                      <p className="font-medium text-sm text-foreground">{WORKSPACE_TYPE_INFO[selectedType].title}</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{WORKSPACE_TYPE_INFO[selectedType].description}</p>
+                      <p className="font-semibold text-[15px] text-foreground">{WORKSPACE_TYPE_INFO[selectedType].title}</p>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">{WORKSPACE_TYPE_INFO[selectedType].description}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -291,13 +326,17 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
               className="space-y-8"
             >
               <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Votre entreprise</h1>
-                <p className="text-muted-foreground">Informations du siège et identification.</p>
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  Votre entreprise
+                </h1>
+                <p className="text-[15px] text-muted-foreground">
+                  Informations du siège et identification.
+                </p>
               </div>
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-primary" />
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium flex items-center gap-2 text-foreground">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
                     Pays du siège
                   </Label>
                   <Controller
@@ -308,10 +347,10 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                         onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
                         value={field.value || "SN"}
                       >
-                        <SelectTrigger className="h-12">
+                        <SelectTrigger className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus:ring-2 focus:ring-ring/20">
                           <SelectValue placeholder="Choisir un pays" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-2xl">
                           {ONBOARDING_COUNTRIES.filter((c) => c.value !== "none").map(({ value, label }) => (
                             <SelectItem key={value} value={value}>
                               <span className="flex items-center gap-2">
@@ -337,74 +376,74 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">
+                  <Label htmlFor="name" className="text-[13px] font-medium text-foreground">
                     Nom de l'entité juridique <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="name"
                     {...form.register("name")}
                     placeholder="Ex: Tech Services SARL"
-                    className={cn("h-12 text-base", form.formState.errors.name && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20", form.formState.errors.name && "border-destructive focus-visible:ring-destructive")}
                   />
                   {form.formState.errors.name && (
-                    <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+                    <p className="text-[12px] text-destructive">{form.formState.errors.name.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="addressLine1" className="text-sm font-medium">
+                  <Label htmlFor="addressLine1" className="text-[13px] font-medium text-foreground">
                     Adresse <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="addressLine1"
                     {...form.register("addressLine1")}
                     placeholder="Numéro et nom de rue"
-                    className={cn("h-12 text-base", form.formState.errors.addressLine1 && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20", form.formState.errors.addressLine1 && "border-destructive focus-visible:ring-destructive")}
                   />
                   {form.formState.errors.addressLine1 && (
-                    <p className="text-xs text-destructive">{form.formState.errors.addressLine1.message}</p>
+                    <p className="text-[12px] text-destructive">{form.formState.errors.addressLine1.message}</p>
                   )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="addressLine2" className="text-sm font-medium">Complément d'adresse</Label>
+                    <Label htmlFor="addressLine2" className="text-[13px] font-medium text-foreground">Complément d'adresse</Label>
                     <Input
                       id="addressLine2"
                       {...form.register("addressLine2")}
                       placeholder="Bâtiment, étage…"
-                      className="h-12 text-base"
+                      className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="postalCode" className="text-sm font-medium">Code postal</Label>
+                    <Label htmlFor="postalCode" className="text-[13px] font-medium text-foreground">Code postal</Label>
                     <Input
                       id="postalCode"
                       {...form.register("postalCode")}
                       placeholder="Ex: 12500"
-                      className="h-12 text-base"
+                      className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city" className="text-sm font-medium">Ville</Label>
+                  <Label htmlFor="city" className="text-[13px] font-medium text-foreground">Ville</Label>
                   <Input
                     id="city"
                     {...form.register("city")}
                     placeholder="Ex: Dakar"
-                    className="h-12 text-base"
+                    className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="taxId" className="text-sm font-medium">
+                  <Label htmlFor="taxId" className="text-[13px] font-medium text-foreground">
                     {taxIdConfig.label} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="taxId"
                     {...form.register("taxId")}
                     placeholder={taxIdConfig.placeholder}
-                    className={cn("h-12 text-base", form.formState.errors.taxId && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20", form.formState.errors.taxId && "border-destructive focus-visible:ring-destructive")}
                   />
                   {form.formState.errors.taxId && (
-                    <p className="text-xs text-destructive">{form.formState.errors.taxId.message}</p>
+                    <p className="text-[12px] text-destructive">{form.formState.errors.taxId.message}</p>
                   )}
                 </div>
               </div>
@@ -418,13 +457,20 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
               className="space-y-8"
             >
               <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Localisation & Devise</h1>
-                <p className="text-muted-foreground">Ces réglages nous permettent d'automatiser vos taxes.</p>
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  Localisation & Devise
+                </h1>
+                <p className="text-[15px] text-muted-foreground">
+                  Ces réglages nous permettent d'automatiser vos taxes.
+                </p>
               </div>
 
               <div className="grid gap-6">
-                <div className="space-y-3">
-                  <Label className="flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Pays de résidence</Label>
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium flex items-center gap-2 text-foreground">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    Pays de résidence
+                  </Label>
                   <Controller
                     name="country"
                     control={form.control}
@@ -433,10 +479,10 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                         onValueChange={(v) => field.onChange(v === "none" ? undefined : v)}
                         value={field.value || "none"}
                       >
-                        <SelectTrigger className="h-12">
+                        <SelectTrigger className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus:ring-2 focus:ring-ring/20">
                           <SelectValue placeholder="Choisir un pays" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-2xl">
                           {ONBOARDING_COUNTRIES.map(({ value, label }) => (
                             <SelectItem key={value} value={value}>
                               <span className="flex items-center gap-2">
@@ -462,17 +508,20 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <Label className="flex items-center gap-2"><Coins className="h-4 w-4 text-primary" /> Devise de facturation</Label>
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium flex items-center gap-2 text-foreground">
+                    <Coins className="h-4 w-4 text-muted-foreground" />
+                    Devise de facturation
+                  </Label>
                   <Controller
                     name="defaultCurrency"
                     control={form.control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className="h-12">
+                        <SelectTrigger className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus:ring-2 focus:ring-ring/20">
                           <SelectValue placeholder="Choisir une devise" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-2xl">
                           <SelectItem value="XOF">FCFA (XOF) — UEMOA, Afrique de l'Ouest</SelectItem>
                           <SelectItem value="XAF">FCFA (XAF) — CEMAC, Afrique Centrale</SelectItem>
                           <SelectItem value="NGN">NGN (₦) — Naira nigérian</SelectItem>
@@ -489,10 +538,16 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
           )}
         </AnimatePresence>
 
-        {/* Footer Actions */}
-        <div className="mt-12 flex items-center justify-between pt-6 border-t">
+        {/* Footer Actions — style Apple */}
+        <div className="mt-12 flex items-center justify-between pt-6 border-t border-border/40">
           {step > 1 ? (
-            <Button type="button" variant="ghost" onClick={() => setStep(step - 1)} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setStep(step - 1)}
+              disabled={isLoading}
+              className="text-[15px] font-medium rounded-xl hover:bg-muted/50"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" /> Retour
             </Button>
           ) : (
@@ -506,7 +561,7 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                 size="lg"
                 onClick={onNextStep}
                 disabled={step === 2 && selectedType === "COMPANY" ? !canProceedFromStep2 : !canProceedFromStep1}
-                className="px-8 font-semibold transition-all"
+                className="px-6 h-11 rounded-xl font-semibold text-[15px] transition-all"
               >
                 Suivant <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -516,7 +571,7 @@ export function OnboardingWizard({ workspace, onComplete }: { workspace: Workspa
                 size="lg"
                 disabled={isLoading}
                 onClick={form.handleSubmit(handleFinalSubmit)}
-                className="px-8 font-semibold bg-primary hover:opacity-90"
+                className="px-6 h-11 rounded-xl font-semibold text-[15px] bg-primary hover:opacity-90 transition-opacity"
               >
                 {isLoading ? "Création..." : "Terminer la configuration"}
               </Button>

@@ -32,6 +32,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -192,14 +193,14 @@ export default function PublicInvoicePage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <Card className="w-full max-w-md border-0 shadow-xl">
-          <CardHeader className="text-center pb-4">
-            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <AlertCircle className="h-6 w-6 text-red-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/30 to-background p-4">
+        <Card className="w-full max-w-md rounded-xl border border-border/40 bg-background shadow-sm">
+          <CardHeader className="text-center pb-4 px-6 pt-6">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
-            <CardTitle className="text-2xl text-slate-900">{t('errors.invalidToken')}</CardTitle>
-            <CardDescription className="text-base mt-2">
+            <CardTitle className="text-[17px] font-semibold text-foreground">{t('errors.invalidToken')}</CardTitle>
+            <CardDescription className="text-[15px] mt-2 text-muted-foreground">
               {t('errors.invalidTokenDescription')}
             </CardDescription>
           </CardHeader>
@@ -210,17 +211,17 @@ export default function PublicInvoicePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-4 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background p-4 py-12">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex justify-center">
-            <Skeleton className="h-12 w-48 rounded-lg" />
+            <Skeleton className="h-12 w-48 rounded-xl" />
           </div>
-          <Card className="border-0 shadow-lg">
+          <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
             <CardContent className="pt-8 p-8">
               <div className="space-y-8">
                 <div className="flex items-center justify-center gap-4">
                   <Skeleton className="h-16 w-16 rounded-xl" />
-                  <Skeleton className="h-12 w-72" />
+                  <Skeleton className="h-12 w-72 rounded-xl" />
                 </div>
                 <Skeleton className="h-[600px] w-full rounded-xl" />
               </div>
@@ -233,14 +234,14 @@ export default function PublicInvoicePage() {
 
   if (isError || !invoiceData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <Card className="w-full max-w-md border-0 shadow-xl">
-          <CardHeader className="text-center pb-4">
-            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <AlertCircle className="h-6 w-6 text-red-600" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted/30 to-background p-4">
+        <Card className="w-full max-w-md rounded-xl border border-border/40 bg-background shadow-sm">
+          <CardHeader className="text-center pb-4 px-6 pt-6">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
-            <CardTitle className="text-2xl text-slate-900">{t('errors.error')}</CardTitle>
-            <CardDescription className="text-base mt-2">
+            <CardTitle className="text-[17px] font-semibold text-foreground">{t('errors.error')}</CardTitle>
+            <CardDescription className="text-[15px] mt-2 text-muted-foreground">
               {error && typeof error === "object" && "data" in error
                 ? (error.data as { message?: string })?.message ||
                   t('errors.loadError')
@@ -275,7 +276,7 @@ export default function PublicInvoicePage() {
   // Fonction pour rendre la facture
   const renderInvoiceContent = () => (
     <div
-      className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden"
+      className="bg-background rounded-xl shadow-sm border border-border/40 overflow-hidden"
       style={{
         backgroundColor: template.backgroundColor || "#fff",
         color: template.textColor || "#1F1B2E",
@@ -283,24 +284,24 @@ export default function PublicInvoicePage() {
     >
       {/* Header avec gradient */}
       <div 
-        className="px-8 py-10 bg-gradient-to-br from-slate-50 to-white border-b border-slate-200/60"
+        className="px-8 py-10 bg-gradient-to-br from-muted/30 to-background border-b border-border/40"
         style={{ borderBottomColor: `${template.accentColor}20` }}
       >
         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-8">
           {/* Émetteur */}
           <div className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3" style={{ color: template.accentColor }}>
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-3" style={{ color: template.accentColor }}>
               {t('labels.issuer')}
             </p>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-900" style={{ color: template.textColor }}>
+              <h2 className="text-2xl font-semibold text-foreground" style={{ color: template.textColor }}>
                 {invoice.issuer?.name || "N/A"}
               </h2>
               {invoice.issuer?.legalName && (
-                <p className="text-sm text-slate-600">{invoice.issuer.legalName}</p>
+                <p className="text-[13px] text-muted-foreground">{invoice.issuer.legalName}</p>
               )}
               {invoice.issuer?.addressLine1 && (
-                <div className="text-sm text-slate-500 leading-relaxed space-y-1">
+                <div className="text-[13px] text-muted-foreground leading-relaxed space-y-1">
                   <p>{invoice.issuer.addressLine1}</p>
                   {invoice.issuer.addressLine2 && <p>{invoice.issuer.addressLine2}</p>}
                   {(invoice.issuer.postalCode || invoice.issuer.city || invoice.issuer.country) && (
@@ -313,7 +314,7 @@ export default function PublicInvoicePage() {
                 </div>
               )}
               {invoice.issuer?.email && (
-                <p className="text-sm text-slate-500 mt-3">{invoice.issuer.email}</p>
+                <p className="text-[13px] text-muted-foreground mt-3">{invoice.issuer.email}</p>
               )}
             </div>
           </div>
@@ -322,19 +323,19 @@ export default function PublicInvoicePage() {
           <div className="flex flex-col items-start md:items-end gap-6">
             <div className="text-left md:text-right space-y-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">{t('labels.number')}</p>
-                <p className="text-xl font-bold" style={{ color: template.accentColor }}>
+                <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{t('labels.number')}</p>
+                <p className="text-xl font-semibold text-primary" style={{ color: template.accentColor }}>
                   {invoice.invoiceNumber}
                 </p>
               </div>
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">{t('labels.issuedOn')}</p>
-                  <p className="text-sm font-semibold text-slate-900">{formatDate(invoice.issueDate)}</p>
+                  <p className="text-[12px] text-muted-foreground mb-1">{t('labels.issuedOn')}</p>
+                  <p className="text-[13px] font-semibold text-foreground tabular-nums">{formatDate(invoice.issueDate)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">{t('labels.dueDate')}</p>
-                  <p className="text-sm font-semibold text-slate-900">{formatDate(invoice.dueDate)}</p>
+                  <p className="text-[12px] text-muted-foreground mb-1">{t('labels.dueDate')}</p>
+                  <p className="text-[13px] font-semibold text-foreground tabular-nums">{formatDate(invoice.dueDate)}</p>
                 </div>
               </div>
             </div>
@@ -343,20 +344,20 @@ export default function PublicInvoicePage() {
       </div>
 
       {/* Destinataire */}
-      <div className="px-8 py-8 border-b border-slate-200/60">
+      <div className="px-8 py-8 border-b border-border/40">
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3" style={{ color: template.accentColor }}>
+          <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground mb-3" style={{ color: template.accentColor }}>
             {t('labels.recipient')}
           </p>
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-slate-900" style={{ color: template.textColor }}>
+            <h3 className="text-lg font-semibold text-foreground" style={{ color: template.textColor }}>
               {invoice.recipient?.name || "N/A"}
             </h3>
             {invoice.recipient?.email && (
-              <p className="text-sm text-slate-600">{invoice.recipient.email}</p>
+              <p className="text-[13px] text-muted-foreground">{invoice.recipient.email}</p>
             )}
             {invoice.recipient?.addressLine1 && (
-              <div className="text-sm text-slate-500 leading-relaxed">
+              <div className="text-[13px] text-muted-foreground leading-relaxed">
                 <p>{invoice.recipient.addressLine1}</p>
                 {(invoice.recipient.city || invoice.recipient.country) && (
                   <p>
@@ -372,104 +373,106 @@ export default function PublicInvoicePage() {
 
       {/* Table des articles */}
       <div className="px-8 py-8">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-slate-200/60 hover:bg-transparent">
-              <TableHead className="text-sm font-semibold text-slate-700 py-4" style={{ color: template.accentColor }}>
-                {t('labels.description')}
-              </TableHead>
-              <TableHead className="text-right text-sm font-semibold text-slate-700 py-4" style={{ color: template.accentColor }}>
-                {t('labels.quantity')}
-              </TableHead>
-              <TableHead className="text-right text-sm font-semibold text-slate-700 py-4" style={{ color: template.accentColor }}>
-                {t('labels.unitPrice')}
-              </TableHead>
-              <TableHead className="text-right text-sm font-semibold text-slate-700 py-4" style={{ color: template.accentColor }}>
-                {t('labels.total')}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.length > 0 ? (
-              items.map((item, index) => (
-                <TableRow key={item.id} className="border-slate-200/60 hover:bg-slate-50/50 transition-colors">
-                  <TableCell className="py-5 text-base text-slate-900">{item.description}</TableCell>
-                  <TableCell className="text-right py-5 text-base text-slate-700">{item.quantity}</TableCell>
-                  <TableCell className="text-right py-5 text-base text-slate-600">
-                    {formatCurrency(item.unitPrice, invoice.currency)}
-                  </TableCell>
-                  <TableCell className="text-right py-5 text-base font-semibold text-slate-900">
-                    {formatCurrency(item.totalAmount, invoice.currency)}
+        <div className="rounded-lg border border-border/40 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 border-border/40 hover:bg-muted/40">
+                <TableHead className="text-[13px] font-semibold text-foreground py-4" style={{ color: template.accentColor }}>
+                  {t('labels.description')}
+                </TableHead>
+                <TableHead className="text-right text-[13px] font-semibold text-foreground py-4" style={{ color: template.accentColor }}>
+                  {t('labels.quantity')}
+                </TableHead>
+                <TableHead className="text-right text-[13px] font-semibold text-foreground py-4" style={{ color: template.accentColor }}>
+                  {t('labels.unitPrice')}
+                </TableHead>
+                <TableHead className="text-right text-[13px] font-semibold text-foreground py-4" style={{ color: template.accentColor }}>
+                  {t('labels.total')}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.length > 0 ? (
+                items.map((item, index) => (
+                  <TableRow key={item.id} className="border-border/40 hover:bg-muted/20 transition-colors">
+                    <TableCell className="py-4 text-[15px] text-foreground font-medium">{item.description}</TableCell>
+                    <TableCell className="text-right py-4 text-[15px] text-muted-foreground tabular-nums">{item.quantity}</TableCell>
+                    <TableCell className="text-right py-4 text-[15px] text-muted-foreground tabular-nums">
+                      {formatCurrency(item.unitPrice, invoice.currency)}
+                    </TableCell>
+                    <TableCell className="text-right py-4 text-[15px] font-semibold text-foreground tabular-nums">
+                      {formatCurrency(item.totalAmount, invoice.currency)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="py-12 text-center text-[13px] text-muted-foreground">
+                    {t('empty.noItems')}
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} className="py-12 text-center text-sm text-slate-500">
-                  {t('empty.noItems')}
+              )}
+            </TableBody>
+            <TableFooter className="bg-muted/20">
+              <TableRow className="border-border/40">
+                <TableCell colSpan={3} className="text-right text-[13px] font-semibold text-foreground py-4">
+                  {t('labels.subtotalHT')}
+                </TableCell>
+                <TableCell className="text-right text-[15px] font-semibold text-foreground py-4 tabular-nums">
+                  {formatCurrency(invoice.subtotalAmount, invoice.currency)}
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-          <TableFooter className="bg-slate-50/50">
-            <TableRow className="border-slate-200/60">
-              <TableCell colSpan={3} className="text-right text-sm font-semibold text-slate-700 py-4">
-                {t('labels.subtotalHT')}
-              </TableCell>
-              <TableCell className="text-right text-base font-semibold text-slate-900 py-4">
-                {formatCurrency(invoice.subtotalAmount, invoice.currency)}
-              </TableCell>
-            </TableRow>
-            {parseFloat(invoice.taxAmount ?? "0") > 0 && (
-              <TableRow className="border-slate-200/60">
-                <TableCell colSpan={3} className="text-right text-sm font-semibold text-slate-700 py-3">
-                  {t('labels.vat')}
+              {parseFloat(invoice.taxAmount ?? "0") > 0 && (
+                <TableRow className="border-border/40">
+                  <TableCell colSpan={3} className="text-right text-[13px] font-semibold text-foreground py-3">
+                    {t('labels.vat')}
+                  </TableCell>
+                  <TableCell className="text-right text-[15px] font-semibold text-foreground py-3 tabular-nums">
+                    {formatCurrency(invoice.taxAmount, invoice.currency)}
+                  </TableCell>
+                </TableRow>
+              )}
+              {invoice.amountPaid !== "0.00" && (
+                <>
+                  <TableRow className="border-border/40">
+                    <TableCell colSpan={3} className="text-right text-[13px] font-semibold text-foreground py-3">
+                      {t('labels.amountPaid')}
+                    </TableCell>
+                    <TableCell className="text-right text-[15px] font-semibold text-emerald-600 dark:text-emerald-400 py-3 tabular-nums">
+                      {formatCurrency(invoice.amountPaid, invoice.currency)}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow className="border-border/40">
+                    <TableCell colSpan={3} className="text-right text-[13px] font-semibold text-foreground py-3">
+                      {t('labels.remaining')}
+                    </TableCell>
+                    <TableCell className="text-right text-[15px] font-semibold text-foreground py-3 tabular-nums">
+                      {formatCurrency(invoice.remainingAmount, invoice.currency)}
+                    </TableCell>
+                  </TableRow>
+                </>
+              )}
+              <TableRow className="bg-primary/10 border-t-2 border-primary/30">
+                <TableCell colSpan={3} className="text-right text-[15px] font-semibold text-foreground py-5">
+                  {t('labels.totalTTC')}
                 </TableCell>
-                <TableCell className="text-right text-base font-semibold text-slate-900 py-3">
-                  {formatCurrency(invoice.taxAmount, invoice.currency)}
+                <TableCell className="text-right text-xl font-semibold text-primary py-5 tabular-nums" style={{ color: template.accentColor }}>
+                  {formatCurrency(invoice.totalAmount, invoice.currency)}
                 </TableCell>
               </TableRow>
-            )}
-            {invoice.amountPaid !== "0.00" && (
-              <>
-                <TableRow className="border-slate-200/60">
-                  <TableCell colSpan={3} className="text-right text-sm font-semibold text-slate-700 py-3">
-                    {t('labels.amountPaid')}
-                  </TableCell>
-                  <TableCell className="text-right text-base font-semibold text-green-600 py-3">
-                    {formatCurrency(invoice.amountPaid, invoice.currency)}
-                  </TableCell>
-                </TableRow>
-                <TableRow className="border-slate-200/60">
-                  <TableCell colSpan={3} className="text-right text-sm font-semibold text-slate-700 py-3">
-                    {t('labels.remaining')}
-                  </TableCell>
-                  <TableCell className="text-right text-base font-semibold text-slate-900 py-3">
-                    {formatCurrency(invoice.remainingAmount, invoice.currency)}
-                  </TableCell>
-                </TableRow>
-              </>
-            )}
-            <TableRow className="bg-slate-900 border-slate-200/60">
-              <TableCell colSpan={3} className="text-right text-base font-bold text-white py-5">
-                {t('labels.totalTTC')}
-              </TableCell>
-              <TableCell className="text-right text-2xl font-bold text-white py-5" style={{ color: template.accentColor }}>
-                {formatCurrency(invoice.totalAmount, invoice.currency)}
-              </TableCell>
-            </TableRow>
-          </TableFooter>
-        </Table>
+            </TableFooter>
+          </Table>
+        </div>
       </div>
 
       {/* Notes */}
       {invoice.notes && (
-        <div className="px-8 py-8 border-t border-slate-200/60 bg-slate-50/30">
+        <div className="px-8 py-8 border-t border-border/40 bg-muted/20">
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500" style={{ color: template.accentColor }}>
+            <p className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground" style={{ color: template.accentColor }}>
               {t('labels.notes')}
             </p>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{invoice.notes}</p>
+            <p className="text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap">{invoice.notes}</p>
           </div>
         </div>
       )}
@@ -492,9 +495,9 @@ export default function PublicInvoicePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-muted/30 via-background to-muted/30">
       {/* Header minimaliste */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200/60 shadow-sm">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
@@ -507,11 +510,11 @@ export default function PublicInvoicePage() {
                 priority
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <Button
                 variant="ghost"
                 size="icon"
-                className="hidden md:flex text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                className="hidden md:flex h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 onClick={() => setIsFullscreenOpen(true)}
                 title={t('actions.maximize')}
               >
@@ -528,19 +531,19 @@ export default function PublicInvoicePage() {
         <div className="mb-10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
+              <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground mb-3">
                 {documentTitle} {invoice.invoiceNumber}
               </h1>
-              <div className="flex flex-wrap items-center gap-2 mt-3">
+              <div className="flex flex-wrap items-center gap-2.5 mt-3">
                 <InvoiceStatusBadge status={invoice.status} />
                 {isPaid && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">
+                  <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20">
                     <CheckCircle2 className="h-3 w-3 mr-1.5" />
                     {t('status.paid')}
                   </Badge>
                 )}
                 {isRejected && (
-                  <Badge variant="destructive">
+                  <Badge variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20">
                     <XCircle className="h-3 w-3 mr-1.5" />
                     {t('status.rejected')}
                   </Badge>
@@ -559,10 +562,10 @@ export default function PublicInvoicePage() {
 
           {/* Actions sidebar */}
           <div className="space-y-6">
-            <Card className="border-0 shadow-lg sticky top-24">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-slate-900">{t('actions.title')}</CardTitle>
-                <CardDescription className="text-sm text-slate-600">
+            <Card className="rounded-xl border border-border/40 bg-background shadow-sm sticky top-24">
+              <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                <CardTitle className="text-[15px] font-semibold text-foreground">{t('actions.title')}</CardTitle>
+                <CardDescription className="text-[13px] mt-1 text-muted-foreground">
                   {isPaid
                     ? t('actions.paidDescription')
                     : isRejected
@@ -572,23 +575,23 @@ export default function PublicInvoicePage() {
                     : t('actions.noActionDescription')}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="px-6 py-6 space-y-4">
                 {/* Status Messages */}
                 {isPaid && (
-                  <div className="rounded-lg bg-green-50 border border-green-200 p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-green-700">
+                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
+                    <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400">
                       <CheckCircle2 className="h-5 w-5" />
-                      <p className="font-semibold text-sm">{t('paid.title')}</p>
+                      <p className="font-semibold text-[15px]">{t('paid.title')}</p>
                     </div>
-                    <p className="text-sm text-green-700 leading-relaxed">
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">
                       {t('paid.description', { amount: formatCurrency(invoice.totalAmount, invoice.currency) })}
                     </p>
                     {invoice.payments && invoice.payments.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-green-200 space-y-2">
+                      <div className="mt-3 pt-3 border-t border-emerald-500/20 space-y-2">
                         {invoice.payments.map((payment) => (
-                          <div key={payment.id} className="flex items-center justify-between text-xs text-green-700 bg-white/60 rounded px-2 py-1.5">
+                          <div key={payment.id} className="flex items-center justify-between text-[13px] text-foreground bg-background/60 rounded-lg px-3 py-2">
                             <span className="font-medium">{formatCurrency(payment.amount, payment.currency || invoice.currency)}</span>
-                            <span className="text-green-600">{formatDate(payment.paidAt || payment.paymentDate || '')}</span>
+                            <span className="text-muted-foreground">{formatDate(payment.paidAt || payment.paymentDate || '')}</span>
                           </div>
                         ))}
                       </div>
@@ -597,24 +600,24 @@ export default function PublicInvoicePage() {
                 )}
 
                 {isRejected && (
-                  <div className="rounded-lg bg-red-50 border border-red-200 p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-red-700">
+                  <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-3">
+                    <div className="flex items-center gap-2.5 text-destructive">
                       <XCircle className="h-5 w-5" />
-                      <p className="font-semibold text-sm">{t('paid.rejectedTitle')}</p>
+                      <p className="font-semibold text-[15px]">{t('paid.rejectedTitle')}</p>
                     </div>
                     {invoice.rejectionComment && (
-                      <div className="text-sm text-red-700 bg-white/60 rounded p-3">
-                        <p className="font-semibold mb-1">{t('paid.comment')} :</p>
-                        <p className="whitespace-pre-wrap leading-relaxed">{invoice.rejectionComment}</p>
+                      <div className="text-[13px] text-foreground bg-background/60 rounded-lg p-3">
+                        <p className="font-semibold mb-1.5">{t('paid.comment')} :</p>
+                        <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{invoice.rejectionComment}</p>
                       </div>
                     )}
                     {invoice.rejectionReason && (
-                      <div className="text-xs text-red-600 bg-white/60 rounded px-2 py-1.5">
-                        <span className="font-semibold">{t('paid.reason')} :</span> {invoice.rejectionReason}
+                      <div className="text-[13px] text-foreground bg-background/60 rounded-lg px-3 py-2">
+                        <span className="font-semibold">{t('paid.reason')} :</span> <span className="text-muted-foreground">{invoice.rejectionReason}</span>
                       </div>
                     )}
                     {invoice.rejectedAt && (
-                      <div className="text-xs text-red-600">
+                      <div className="text-[13px] text-muted-foreground">
                         {t('paid.rejectedOn', { date: formatDate(invoice.rejectedAt) })}
                       </div>
                     )}
@@ -622,12 +625,12 @@ export default function PublicInvoicePage() {
                 )}
 
                 {isExpired && (
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-amber-700">
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 space-y-3">
+                    <div className="flex items-center gap-2.5 text-amber-600 dark:text-amber-400">
                       <AlertCircle className="h-5 w-5" />
-                      <p className="font-semibold text-sm">{t('expired.title')}</p>
+                      <p className="font-semibold text-[15px]">{t('expired.title')}</p>
                     </div>
-                    <p className="text-sm text-amber-700 leading-relaxed">
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">
                       {t('expired.description', { 
                         date: invoice.validUntil ? formatDate(invoice.validUntil) : '' 
                       })}
@@ -639,7 +642,7 @@ export default function PublicInvoicePage() {
                 {canAccept && (
                   <div className="space-y-3">
                     <Button
-                      className="w-full h-11 text-base font-semibold bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all"
+                      className="w-full h-11 rounded-xl text-[15px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm hover:shadow-md transition-all"
                       onClick={handleAcceptClick}
                       disabled={isAccepting}
                       size="lg"
@@ -657,12 +660,12 @@ export default function PublicInvoicePage() {
                       )}
                     </Button>
                     <Button
-                      className="w-full h-11 text-base font-semibold"
+                      className="w-full h-11 rounded-xl text-[15px] font-medium border-border/60"
                       variant="destructive"
                       onClick={handleRejectClick}
                       size="lg"
                     >
-                      <X className="h-4 w-4 mr-2 text-white" />
+                      <X className="h-4 w-4 mr-2" />
                       {t('actions.reject')}
                     </Button>
                   </div>
@@ -670,45 +673,45 @@ export default function PublicInvoicePage() {
 
                 {canPay && !isPaid && !isRejected && (
                   <div className="space-y-3">
-                    <div className="rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-4 mb-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-slate-900">Montant à payer</span>
-                        <span className="text-xl font-bold" style={{ color: template.accentColor }}>
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-muted-foreground">Montant à payer</span>
+                        <span className="text-xl font-semibold text-primary tabular-nums">
                           {formatCurrency(invoice.remainingAmount || invoice.totalAmount, invoice.currency)}
                         </span>
                       </div>
                     </div>
                     <Button
-                      className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full h-12 rounded-xl text-[15px] font-semibold bg-primary hover:bg-primary/90 text-white shadow-sm hover:shadow-md transition-all"
                       onClick={handleAcceptClick}
                       disabled={isAccepting}
                       size="lg"
                     >
                       {isAccepting ? (
                         <>
-                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                           {t('actions.accepting')}
                         </>
                       ) : (
                         <>
-                          <span className="text-2xl mr-2">💳</span>
+                          <span className="text-lg mr-2">💳</span>
                           {t('actions.payNow')}
                         </>
                       )}
                     </Button>
-                    <p className="text-xs text-center text-slate-500">
+                    <p className="text-[12px] text-center text-muted-foreground">
                       Paiement sécurisé via Moneroo
                     </p>
                   </div>
                 )}
 
                 {!canAccept && !canPay && !isPaid && !isRejected && (
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-                    <div className="flex items-center gap-2 text-amber-700 mb-2">
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+                    <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-2">
                       <AlertCircle className="h-4 w-4" />
-                      <p className="font-semibold text-sm">{t('actions.unavailable')}</p>
+                      <p className="font-semibold text-[13px]">{t('actions.unavailable')}</p>
                     </div>
-                    <p className="text-sm text-amber-700 leading-relaxed">
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">
                       {t('actions.unavailableDescription')}
                     </p>
                   </div>
@@ -731,43 +734,46 @@ export default function PublicInvoicePage() {
 
       {/* Soft Commitment Modal */}
       <Dialog open={showCommitmentModal} onOpenChange={setShowCommitmentModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              {isQuote ? t('commitment.quoteTitle') : t('commitment.invoiceTitle')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {isQuote 
-                ? t('commitment.quoteMessage', { 
-                    amount: formatCurrency(invoice.totalAmount, invoice.currency),
-                    number: invoice.invoiceNumber
-                  })
-                : t('commitment.invoiceMessage', { 
-                    amount: formatCurrency(invoice.totalAmount, invoice.currency),
-                    number: invoice.invoiceNumber
-                  })}
-            </p>
-            <div className="rounded-lg bg-slate-50 border border-slate-200 p-4">
+        <DialogContent className="sm:max-w-md rounded-2xl border border-border/40 bg-background shadow-2xl shadow-black/5 p-0 overflow-hidden">
+          <div className="px-5 pt-5 pb-4 border-b border-border/40">
+            <DialogHeader className="p-0 text-left space-y-1">
+              <DialogTitle className="text-[17px] font-semibold tracking-tight text-foreground">
+                {isQuote ? t('commitment.quoteTitle') : t('commitment.invoiceTitle')}
+              </DialogTitle>
+              <DialogDescription className="text-[15px] text-muted-foreground">
+                {isQuote 
+                  ? t('commitment.quoteMessage', { 
+                      amount: formatCurrency(invoice.totalAmount, invoice.currency),
+                      number: invoice.invoiceNumber
+                    })
+                  : t('commitment.invoiceMessage', { 
+                      amount: formatCurrency(invoice.totalAmount, invoice.currency),
+                      number: invoice.invoiceNumber
+                    })}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="px-5 py-4 space-y-4">
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
-                <div className="space-y-1 text-sm">
-                  <p className="font-semibold text-slate-900">{t('commitment.confirmation')}</p>
-                  <p className="text-slate-600">{t('commitment.legalNote')}</p>
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                <div className="space-y-1.5 text-[13px]">
+                  <p className="font-semibold text-foreground">{t('commitment.confirmation')}</p>
+                  <p className="text-muted-foreground leading-relaxed">{t('commitment.legalNote')}</p>
                 </div>
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2">
+          <DialogFooter className="px-5 py-4 border-t border-border/40 bg-muted/20 shrink-0 flex-row justify-end gap-2">
             <Button
               variant="outline"
+              className="h-9 rounded-xl px-4 text-[15px] font-medium border-border/60"
               onClick={() => setShowCommitmentModal(false)}
             >
               {t('commitment.cancel')}
             </Button>
             <Button
-              className="bg-green-600 hover:bg-green-700"
+              className="h-9 rounded-xl px-4 text-[15px] font-semibold bg-emerald-600 hover:bg-emerald-700"
               onClick={handleAcceptConfirm}
               disabled={isAccepting}
             >
@@ -790,26 +796,28 @@ export default function PublicInvoicePage() {
       {/* Fullscreen Invoice Sheet */}
       {isLargeScreen && (
         <Sheet open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-y-auto p-0 bg-slate-50">
-            <SheetHeader className="px-6 pt-6 pb-4 bg-white border-b border-slate-200 sticky top-0 z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-slate-600" />
-                  <SheetTitle className="text-xl font-semibold text-slate-900">
-                    {documentTitle} {invoice.invoiceNumber}
-                  </SheetTitle>
+          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-hidden rounded-t-[28px] border-t border-border/40 bg-background shadow-2xl shadow-black/5 p-0 flex flex-col [&>button]:hidden">
+            <div className="px-6 pt-6 pb-4 border-b border-border/40 shrink-0">
+              <SheetHeader className="p-0 text-left">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <SheetTitle className="text-[17px] font-semibold tracking-tight text-foreground">
+                      {documentTitle} {invoice.invoiceNumber}
+                    </SheetTitle>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsFullscreenOpen(false)}
+                    className="h-8 w-8 rounded-full hover:bg-muted/50"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsFullscreenOpen(false)}
-                  className="hover:bg-slate-100"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </SheetHeader>
-            <div className="flex-1 overflow-y-auto p-6">
+              </SheetHeader>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-6">
               <div className="max-w-4xl mx-auto">
                 {renderInvoiceContent()}
               </div>

@@ -123,7 +123,7 @@ function StepPreview({
   return (
     <motion.div
       {...slideInOut(direction)}
-      className="relative h-full w-full   overflow-hidden rounded-sm rounded-rb-lg rounded-tl-xl ring-2 ring-primary/10 dark:ring-primary/10 dark:ring-offset-black ring-offset-8"
+      className="relative h-full w-full overflow-hidden rounded-2xl border border-border/40 bg-muted/30 dark:bg-muted/20 ring-2 ring-border/30 ring-offset-4 ring-offset-background"
     >
       {customPreview ? (
         <motion.div
@@ -213,21 +213,23 @@ function StepTab({ step, isActive, onClick, isCompleted }: StepTabProps) {
       {...hoverScale}
       onClick={onClick}
       className={cn(
-        "flex flex-col items-start rounded-lg px-4 py-2 text-left transition-colors w-full",
-        isActive ? "bg-muted border border-border" : "hover:bg-muted/70",
+        "flex flex-col items-start rounded-xl px-4 py-3 text-left transition-colors w-full border",
+        isActive
+          ? "bg-muted/60 dark:bg-muted/40 border-border/50"
+          : "border-transparent hover:bg-muted/50 dark:hover:bg-muted/30",
         "relative"
       )}
       aria-current={isActive ? "step" : undefined}
       aria-label={`${step.title}${isCompleted ? " (completed)" : ""}`}
     >
-      <div className="mb-1 text-sm font-medium">{step.title}</div>
-      <div className="text-xs hidden md:block text-muted-foreground line-clamp-2">
+      <div className="mb-0.5 text-[15px] font-semibold text-foreground">{step.title}</div>
+      <div className="text-[13px] hidden md:block text-muted-foreground line-clamp-2">
         {step.short_description}
       </div>
       {isCompleted && (
-        <motion.div {...fadeInScale} className="absolute right-2 top-2">
+        <motion.div {...fadeInScale} className="absolute right-3 top-3">
           <div className="rounded-full bg-primary p-1">
-            <CheckIcon className="w-2 h-2 text-primary-foreground" />
+            <CheckIcon className="w-2.5 h-2.5 text-primary-foreground" />
           </div>
         </motion.div>
       )}
@@ -324,12 +326,10 @@ function StepContent({
 
     if (action.href) {
       return (
-        <Button asChild className="w-full " size="sm" variant="link">
-          <a href={action.href} target="_blank" rel="noopener noreferrer">
-            <span className="flex items-center gap-2">
-              {action.label}
-              <ExternalLinkIcon className="w-4 h-4" />
-            </span>
+        <Button asChild className="w-full rounded-xl h-10 text-[15px] font-medium" size="sm" variant="outline">
+          <a href={action.href} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+            {action.label}
+            <ExternalLinkIcon className="w-4 h-4" />
           </a>
         </Button>
       )
@@ -337,9 +337,8 @@ function StepContent({
 
     return (
       <Button
-        className="w-full rounded-full"
+        className="w-full rounded-xl h-10 text-[15px] font-semibold"
         size="sm"
-        variant="secondary"
         onClick={action.onClick}
       >
         {action.label}
@@ -410,17 +409,17 @@ function StepContent({
             <Button
               variant="ghost"
               onClick={onSkip}
-              className="text-muted-foreground hover:bg-card rounded-full"
+              className="text-[15px] font-medium text-muted-foreground hover:bg-muted/50 rounded-xl"
             >
               {labels.skip}
             </Button>
-            <div className="space-x-2">
+            <div className="flex gap-2">
               {currentStep > 0 && (
                 <Button
                   onClick={onPrevious}
                   size="sm"
-                  variant="ghost"
-                  className="rounded-full hover:bg-transparent"
+                  variant="outline"
+                  className="h-9 rounded-xl text-[15px] font-medium border-border/60"
                 >
                   {labels.previous}
                 </Button>
@@ -434,12 +433,11 @@ function StepContent({
                 }}
                 size="sm"
                 ref={stepRef as React.RefObject<HTMLButtonElement>}
-                className="rounded-full"
+                className="h-9 rounded-xl px-4 font-semibold text-[15px]"
               >
                 {currentStep === steps.length - 1 ? labels.done : labels.next}
               </Button>
             </div>
-            {/* Don't show again checkbox */}
           </div>
           <div className="flex items-center space-x-2 pb-4 px-4">
             <Checkbox
@@ -449,7 +447,7 @@ function StepContent({
             />
             <label
               htmlFor="skipNextTime"
-              className="text-sm text-muted-foreground"
+              className="text-[13px] text-muted-foreground"
             >
               {labels.dontShowAgain}
             </label>
@@ -646,7 +644,7 @@ export function IntroDisclosure({
                 ))}
               </div>
               {/* Preview */}
-              <div className="relative aspect-[16/9] ring-2 ring-border ring-offset-8 ring-offset-background rounded-lg overflow-hidden">
+              <div className="relative aspect-[16/9] rounded-2xl border border-border/40 overflow-hidden bg-muted/30">
                 <StepPreview
                   step={steps[currentStep]}
                   direction={direction}
@@ -656,8 +654,8 @@ export function IntroDisclosure({
               </div>
 
               {/* Step content */}
-              <div className="space-y-4 border border-border p-3 rounded-lg">
-                <p className="text-muted-foreground">
+              <div className="space-y-4 rounded-2xl border border-border/40 bg-muted/40 dark:bg-muted/20 p-4">
+                <p className="text-[15px] text-muted-foreground leading-relaxed">
                   {steps[currentStep]?.short_description}
                 </p>
                 {steps[currentStep]?.action && (
@@ -690,34 +688,32 @@ export function IntroDisclosure({
           </div>
 
           {/* Fixed bottom navigation */}
-          <div className="absolute bottom-0 left-0 right-0 border-t bg-background">
+          <div className="absolute bottom-0 left-0 right-0 border-t border-border/40 bg-background/95 backdrop-blur-sm">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <Button
                   variant="ghost"
                   onClick={onSkip}
-                  className="text-muted-foreground hover:bg-card rounded-full"
+                  className="text-[15px] font-medium text-muted-foreground hover:bg-muted/50 rounded-xl"
                 >
                   {labels.skip}
                 </Button>
-                <div className="space-x-2">
+                <div className="flex gap-2">
                   {currentStep > 0 && (
                     <Button
                       onClick={handlePrevious}
                       size="sm"
-                      variant="ghost"
-                      className="rounded-full hover:bg-transparent"
+                      variant="outline"
+                      className="h-9 rounded-xl text-[15px] font-medium border-border/60"
                     >
                       {labels.previous}
                     </Button>
                   )}
                   <Button
-                    onClick={() => {
-                      handleNext()
-                    }}
+                    onClick={() => handleNext()}
                     size="sm"
                     ref={stepRef as React.RefObject<HTMLButtonElement>}
-                    className="rounded-full"
+                    className="h-9 rounded-xl px-4 font-semibold text-[15px]"
                   >
                     {currentStep === steps.length - 1 ? labels.done : labels.next}
                   </Button>
@@ -726,13 +722,11 @@ export function IntroDisclosure({
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="skipNextTime"
-                  onCheckedChange={(checked) => {
-                    hideFeature()
-                  }}
+                  onCheckedChange={(checked) => { if (checked) hideFeature(); }}
                 />
                 <label
                   htmlFor="skipNextTime"
-                  className="text-sm text-muted-foreground"
+                  className="text-[13px] text-muted-foreground"
                 >
                   {labels.dontShowAgain}
                 </label>

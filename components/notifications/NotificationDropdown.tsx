@@ -14,7 +14,7 @@ export function NotificationDropdown() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  const { data: notificationsResponse, isLoading, refetch } = useGetNotificationsQuery(
+  const { data: notificationsResponse, isLoading } = useGetNotificationsQuery(
     { page: 1, limit: 10 },
     { skip: !isOpen }
   );
@@ -30,7 +30,7 @@ export function NotificationDropdown() {
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (open) refetch();
+    // When open becomes true, skip becomes false and the query runs automatically — no refetch needed
   };
 
   const handleMarkAsRead = async (id: string) => {
@@ -64,8 +64,8 @@ export function NotificationDropdown() {
 
   return (
     <StaggeredDropdown open={isOpen} onOpenChange={handleOpenChange}>
-      <StaggeredDropdown.Trigger>
-        <NotificationBadge count={unreadCount} />
+      <StaggeredDropdown.Trigger className="rounded-full">
+        <NotificationBadge count={unreadCount} className="h-9 w-9 rounded-full" />
       </StaggeredDropdown.Trigger>
       <StaggeredDropdown.Content
         align="right"

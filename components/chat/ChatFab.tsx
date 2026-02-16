@@ -36,18 +36,19 @@ function ChatDrawerUI({
 }) {
   return (
     <>
-      <div className="flex-1 min-h-0 overflow-y-auto relative bg-gradient-to-b from-violet-50/30 dark:from-violet-950/10 to-muted/20">
+      <div className="flex-1 min-h-0 overflow-y-auto relative bg-muted/20 dark:bg-muted/10">
         <ChatMessageList messages={messages} isLoading={isLoading} />
       </div>
 
       {error && (
-        <div className="shrink-0 px-5 py-3 bg-destructive/10 text-destructive text-sm border-t border-destructive/20">
+        <div className="shrink-0 px-5 py-3 bg-destructive/5 text-destructive text-[15px] border-t border-destructive/20">
           {error.message}
         </div>
       )}
 
-      <DrawerFooter className="shrink-0 border-t border-border/80 bg-card/80 backdrop-blur-sm px-5 py-4">
+      <DrawerFooter className="shrink-0 border-t border-border/40 bg-background/95 dark:bg-background/98 backdrop-blur-sm px-5 py-4">
         <AiInput
+          variant="drawer"
           width="100%"
           placeholder="Votre message…"
           rows={2}
@@ -98,7 +99,7 @@ function ChatFabWithPersistedState({
       <DrawerTrigger asChild>
         <Button
           size="icon"
-          className="fixed bottom-20 right-6 z-50 h-14 w-14 rounded-full shadow-xl shadow-black/25 transition-transform hover:scale-105 hover:shadow-2xl hover:shadow-black/30 active:scale-95 bg-primary hover:bg-primary/90 overflow-hidden md:bottom-6"
+          className="fixed bottom-20 right-6 z-50 h-14 w-14 rounded-full shadow-lg shadow-black/15 transition-transform hover:scale-105 active:scale-95 bg-primary hover:bg-primary/90 overflow-hidden md:bottom-6 border-0"
           aria-label="Ouvrir le chat FURY"
         >
           <Image
@@ -113,29 +114,10 @@ function ChatFabWithPersistedState({
       </DrawerTrigger>
       <DrawerContent
         className={cn(
-          "inset-x-auto left-auto right-0 top-0 bottom-0 mt-0 h-full w-full max-w-md rounded-l-2xl rounded-t-none flex flex-col bg-card border-l border-border/80 shadow-2xl shadow-black/20",
+          "inset-x-auto left-auto right-0 top-0 bottom-0 mt-0 h-full w-full max-w-md !rounded-l-[28px] rounded-t-none rounded-r-none flex flex-col bg-background/95 dark:bg-background/98 backdrop-blur-2xl border-l border-border/40 shadow-2xl shadow-black/5 overflow-hidden outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:ring-0 [&:focus]:ring-0 [&:focus]:outline-none",
           "[&>div:first-child]:hidden"
         )}
       >
-        <div className="relative shrink-0 overflow-hidden rounded-b-2xl shadow-lg shadow-violet-900/25">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-500 to-pink-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/10" />
-          <DrawerHeader className="relative flex flex-row items-center gap-3 border-0 px-5 py-5 text-left text-white">
-            <FuryMascot mood="focus" size="sm" animated={false} className="shrink-0 ring-2 ring-white/30 rounded-full shadow-md" />
-            <DrawerTitle className="text-lg font-semibold text-white tracking-tight flex-1 drop-shadow-sm">FURY</DrawerTitle>
-            <DrawerClose asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 h-9 w-9 text-white/90 hover:text-white hover:bg-white/25 rounded-full transition-colors"
-                aria-label="Fermer"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </DrawerClose>
-          </DrawerHeader>
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-violet-950/40 to-transparent pointer-events-none" />
-        </div>
         <ChatDrawerUI
           messages={messages}
           sendMessage={sendMessage}
@@ -156,7 +138,7 @@ export function ChatFab() {
         <DrawerTrigger asChild>
           <Button
             size="icon"
-            className="fixed bottom-20 right-6 z-50 h-14 w-14 rounded-full shadow-xl shadow-black/25 transition-transform hover:scale-105 hover:shadow-2xl hover:shadow-black/30 active:scale-95 bg-primary hover:bg-primary/90 overflow-hidden md:bottom-6"
+            className="fixed bottom-20 right-6 z-50 h-14 w-14 rounded-full shadow-lg shadow-black/15 transition-transform hover:scale-105 active:scale-95 bg-primary hover:bg-primary/90 overflow-hidden md:bottom-6 border-0"
             aria-label="Ouvrir le chat FURY"
           >
             <Image
@@ -171,19 +153,19 @@ export function ChatFab() {
         </DrawerTrigger>
         <DrawerContent
           className={cn(
-            "inset-x-auto left-auto right-0 top-0 bottom-0 mt-0 h-full w-full max-w-md rounded-l-2xl rounded-t-none flex flex-col bg-card border-l border-border/80 shadow-2xl shadow-black/20",
+            "inset-x-auto left-auto right-0 top-0 bottom-0 mt-0 h-full w-full max-w-md !rounded-l-[28px] rounded-t-none rounded-r-none flex flex-col bg-background/95 dark:bg-background/98 backdrop-blur-2xl border-l border-border/40 shadow-2xl shadow-black/5 overflow-hidden outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:ring-0 [&:focus]:ring-0 [&:focus]:outline-none",
             "[&>div:first-child]:hidden"
           )}
         >
           <div className="flex flex-col items-center justify-center gap-6 p-8 text-center min-h-[280px]">
-            <div className="rounded-2xl bg-muted/50 p-4 ring-1 ring-border/50">
+            <div className="rounded-2xl bg-muted/40 dark:bg-muted/20 p-4 border border-border/40">
               <FuryMascot mood="sleepy" size="md" />
             </div>
-            <p className="text-sm text-muted-foreground max-w-[240px]">
+            <p className="text-[15px] text-muted-foreground max-w-[260px]">
               Connectez-vous pour discuter avec FURY.
             </p>
             <DrawerClose asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="rounded-full h-9 px-4 text-[15px] font-medium">
                 Fermer
               </Button>
             </DrawerClose>

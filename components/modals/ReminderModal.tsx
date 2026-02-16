@@ -14,6 +14,7 @@ import { useGetInvoicesQuery, useSendReminderMutation, type InvoiceSummary } fro
 import { toast } from "sonner";
 import { useTranslations, useLocale } from 'next-intl';
 import { FuryMascot } from "@/components/mascot/FuryMascot";
+import { cn } from "@/lib/utils";
 
 type ReminderFormValues = {
   invoiceId: string;
@@ -158,19 +159,24 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
       open={open}
       onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
       modalMaxWidth="sm:max-w-[600px]"
+      contentClassName="rounded-2xl sm:rounded-[20px] border border-border/40 bg-background shadow-2xl shadow-black/5 p-0 overflow-hidden"
+      closeButtonClassName="right-4 top-4 h-8 w-8 rounded-full bg-muted/60 hover:bg-muted text-foreground/70"
     >
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-primary" />
-          {t('title')}
-        </DialogTitle>
-        <DialogDescription>
-          {t('description')}
-        </DialogDescription>
-      </DialogHeader>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="invoice">
+      <div className="px-5 pt-5 pb-4 border-b border-border/40">
+        <DialogHeader className="p-0 text-left space-y-1">
+          <DialogTitle className="text-[17px] font-semibold tracking-tight text-foreground flex items-center gap-2">
+            <Mail className="h-5 w-5 text-primary" />
+            {t('title')}
+          </DialogTitle>
+          <DialogDescription className="text-[15px] text-muted-foreground">
+            {t('description')}
+          </DialogDescription>
+        </DialogHeader>
+      </div>
+
+      <form onSubmit={form.handleSubmit(onSubmit)} className="px-5 py-4 space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="invoice" className="text-[13px] font-medium text-foreground">
             {t('fields.invoice')} <span className="text-destructive">*</span>
           </Label>
           <Controller
@@ -182,21 +188,27 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
                 onValueChange={field.onChange}
                 disabled={isLoading || !!preselectedInvoiceId}
               >
-                <SelectTrigger id="invoice" className={form.formState.errors.invoiceId ? "border-destructive" : ""}>
+                <SelectTrigger 
+                  id="invoice" 
+                  className={cn(
+                    "h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20",
+                    form.formState.errors.invoiceId && "border border-destructive focus-visible:ring-destructive/30"
+                  )}
+                >
                   <SelectValue placeholder={t('fields.invoicePlaceholder')} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl border border-border/40">
                   {availableInvoices.length === 0 ? (
                     <div className="flex flex-col items-center justify-center px-2 py-6 text-center">
                       <FuryMascot mood="reminder" size="md" className="mb-3" />
-                      <p className="text-sm text-foreground/60">{t('empty.noInvoices')}</p>
+                      <p className="text-sm text-muted-foreground">{t('empty.noInvoices')}</p>
                     </div>
                   ) : (
                     availableInvoices.map((invoice) => (
                       <SelectItem key={invoice.id} value={invoice.id}>
                         <div className="flex flex-col">
-                          <span className="font-semibold">{invoice.invoiceNumber}</span>
-                          <span className="text-xs text-foreground/60">
+                          <span className="font-semibold text-[15px]">{invoice.invoiceNumber}</span>
+                          <span className="text-[13px] text-muted-foreground">
                             {invoice.client.name} • {formatCurrency(invoice.totalAmount, invoice.currency)} • {t('fields.dueDate')} {formatDate(invoice.dueDate)}
                           </span>
                         </div>
@@ -208,17 +220,17 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
             )}
           />
           {form.formState.errors.invoiceId && (
-            <p className="text-xs text-destructive">{form.formState.errors.invoiceId.message}</p>
+            <p className="text-[13px] text-destructive mt-1">{form.formState.errors.invoiceId.message}</p>
           )}
         </div>
 
         {selectedInvoice && (
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-primary mt-0.5" />
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-semibold text-primary">{selectedInvoice.invoiceNumber}</p>
-                <p className="text-xs text-foreground/70">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <p className="text-[15px] font-semibold text-primary">{selectedInvoice.invoiceNumber}</p>
+                <p className="text-[13px] text-foreground/70">
                   {t('fields.client')} {selectedInvoice.client.name}
                 </p>
                 {(() => {
@@ -230,15 +242,15 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
                     }
                   }
                   return clientEmail ? (
-                    <p className="text-xs text-foreground/70">
+                    <p className="text-[13px] text-foreground/70">
                       {t('fields.email')} {clientEmail}
                     </p>
                   ) : null;
                 })()}
-                <p className="text-xs text-foreground/70">
+                <p className="text-[13px] text-foreground/70">
                   {t('fields.amount')} {formatCurrency(selectedInvoice.totalAmount, selectedInvoice.currency)}
                 </p>
-                <p className="text-xs text-foreground/70">
+                <p className="text-[13px] text-foreground/70">
                   {t('fields.dueDate')} {formatDate(selectedInvoice.dueDate)}
                 </p>
               </div>
@@ -246,19 +258,29 @@ export const ReminderModal = ({ open, onClose, preselectedInvoiceId }: ReminderM
           </div>
         )}
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
+        <DialogFooter className="flex flex-row justify-end gap-2 pt-4 border-t border-border/40 mt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="h-9 rounded-xl text-[15px] font-medium border-border/60"
+            onClick={handleClose} 
+            disabled={isLoading}
+          >
             {t('buttons.cancel')}
           </Button>
-          <Button type="submit" disabled={isLoading || availableInvoices.length === 0}>
+          <Button 
+            type="submit" 
+            className="h-9 rounded-xl px-4 text-[15px] font-semibold"
+            disabled={isLoading || availableInvoices.length === 0}
+          >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 {t('buttons.sending')}
               </>
             ) : (
               <>
-                <Mail className="h-4 w-4" />
+                <Mail className="h-4 w-4 mr-2" />
                 {t('buttons.send')}
               </>
             )}

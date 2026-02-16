@@ -52,7 +52,7 @@ export const StatCard = ({ title, value, helper, icon, trend, variant = "default
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-md border p-3 shadow-sm transition-all duration-300",
+        "group relative overflow-hidden rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm p-3 transition-all duration-300",
         variantStyles[variant]
       )}
     >

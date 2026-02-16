@@ -1,14 +1,14 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { History, Trash2, Pencil } from "lucide-react";
+import { History, Trash2, Pencil, ArrowLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from '@/i18n/routing';
 import { useParams } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
-import ProductModal from "@/components/modals/ProductModal";
-import { useGetProductByIdQuery, useGetInvoicesQuery, useDeleteProductMutation } from "@/services/facturlyApi";
+import { CreateProductModal } from "@/components/modals/ProductModal";
+import { useGetProductByIdQuery, useGetInvoicesQuery, useDeleteProductMutation, useUpdateProductMutation, useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -49,8 +49,10 @@ export default function ProductDetailPage() {
     productId || "",
     { skip: shouldSkip }
   );
+  const { data: workspace } = useGetWorkspaceQuery();
   const { data: invoicesResponse } = useGetInvoicesQuery({ page: 1, limit: 100 });
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [updateProduct] = useUpdateProductMutation();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
@@ -117,166 +119,176 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Filtrer les factures qui contiennent ce produit
-  // Note: On ne peut pas vérifier directement car InvoiceSummary n'a pas les items
-  // On affiche les factures récentes, mais idéalement il faudrait un endpoint pour filtrer par productId
   const relatedInvoices = (invoicesResponse?.data ?? []).slice(0, 4);
+  const priceFormatted = new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
+    style: "currency",
+    currency: product.currency || "EUR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(parseFloat(product.unitPrice || product.price || "0"));
+  const typeLabel = product.type === 'service' ? itemsModalT('fields.typeService') : itemsModalT('fields.typeProduct');
 
   return (
-    <div className="space-y-6">
-      <Breadcrumb
-        items={[
-          { label: t('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: t('breadcrumb.items'), href: "/items" },
-          { label: product.name },
-        ]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">{product?.name}</h1>
-          <p className="text-sm text-foreground/60">
-            {t('subtitle')}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setEditModalOpen(true)}
-          >
-            <Pencil className="h-4 w-4" />
-            {t('buttons.edit')}
-          </Button>
-          <Button
-            variant="destructive"
-            className="gap-2"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={isDeleting}
-          >
-            <Trash2 className="h-4 w-4" />
-            {t('buttons.delete')}
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+        {/* Breadcrumb minimal */}
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: t('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: t('breadcrumb.items'), href: "/items" },
+              { label: product.name },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('summary.title')}</CardTitle>
-          <CardDescription>{t('summary.description', { id: product?.id.slice(0, 8) })}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <p className="text-xs uppercase text-foreground/50">{t('summary.priceHT')}</p>
-            <p className="text-2xl font-semibold text-primary">
-              {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
-                style: "currency",
-                currency: product.currency || "EUR",
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }).format(parseFloat(product.unitPrice || product.price || "0"))}
-            </p>
-            <p className="text-xs text-foreground/50">{t('summary.defaultVAT', { rate: product.taxRate ?? "0" })}</p>
+        {/* Hero: nom + badge + prix */}
+        <header className="mb-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-3">
+              <Badge variant="secondary" className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                {typeLabel}
+              </Badge>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {product.name}
+              </h1>
+              <p className="text-base text-muted-foreground">
+                {t('subtitle')}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 sm:shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-2 rounded-full border-border/80 bg-background/80 px-4 text-sm font-medium shadow-sm backdrop-blur-sm"
+                onClick={() => setEditModalOpen(true)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                {t('buttons.edit')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-2 rounded-full px-4 text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {t('buttons.delete')}
+              </Button>
+            </div>
           </div>
+        </header>
+
+        {/* Prix en vedette */}
+        <section className="mb-10 rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm backdrop-blur-sm sm:p-8">
+          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            {t('summary.priceHT')}
+          </p>
+          <p className="mt-2 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+            {priceFormatted}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {t('summary.defaultVAT', { rate: product.taxRate ?? "0" })}
+          </p>
           {product.updatedAt && (
-            <div className="space-y-2">
-              <p className="text-xs uppercase text-foreground/50">{t('summary.lastUpdate')}</p>
-              <p className="text-2xl font-semibold">
-                {new Date(product.updatedAt).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </p>
-              <p className="text-xs text-foreground/50">
-                {new Date(product.updatedAt).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              {t('summary.lastUpdate')} · {new Date(product.updatedAt).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
           )}
-        </CardContent>
-      </Card>
+        </section>
 
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <Card className="self-start">
-          <CardHeader>
-            <CardTitle>{t('description.title')}</CardTitle>
-            <CardDescription>
-              {t('description.description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-foreground/70">
-            {product.description ? (
-              <p className="whitespace-pre-wrap">{product.description}</p>
-            ) : (
-              <p className="text-foreground/50">{t('description.noDescription')}</p>
-            )}
-            <Separator />
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-foreground/60">{t('description.type')}</span>
-                <span className="font-medium capitalize">{product.type === 'service' ? itemsModalT('fields.typeService') : product.type === 'product' ? itemsModalT('fields.typeProduct') : product.type || "—"}</span>
+        <div className="grid gap-6 md:grid-cols-[1fr_340px]">
+          {/* Description */}
+          <section className="rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm backdrop-blur-sm sm:p-8">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              {t('description.title')}
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-foreground/90">
+              {product.description ? (
+                <span className="whitespace-pre-wrap">{product.description}</span>
+              ) : (
+                <span className="text-muted-foreground">{t('description.noDescription')}</span>
+              )}
+            </p>
+            <div className="mt-6 flex items-center gap-2 rounded-xl bg-muted/40 px-4 py-3">
+              <span className="text-sm text-muted-foreground">{t('description.type')}</span>
+              <span className="text-sm font-medium text-foreground">{typeLabel}</span>
+            </div>
+          </section>
+
+          {/* Factures récentes - style liste iOS */}
+          <section className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+            <div className="border-b border-border/50 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <History className="h-4 w-4 text-muted-foreground" />
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                  {t('invoiceHistory.title')}
+                </h2>
               </div>
-              {product.unitOfMeasure && (
-                <div className="flex justify-between">
-                  <span className="text-foreground/60">{t('description.unit')}</span>
-                  <span className="font-medium">{product.unitOfMeasure}</span>
-                </div>
-              )}
-              {product.sku && (
-                <div className="flex justify-between">
-                  <span className="text-foreground/60">{t('description.reference')}</span>
-                  <span className="font-medium">{product.sku}</span>
-                </div>
-              )}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t('invoiceHistory.description')}
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="self-start">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-base">{t('invoiceHistory.title')}</CardTitle>
-              <CardDescription>{t('invoiceHistory.description')}</CardDescription>
-            </div>
-            <History className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {relatedInvoices.length > 0 ? (
-              <>
-                {relatedInvoices.map((invoice) => (
-                  <Link
-                    key={invoice.id}
-                    href={`/invoices/${invoice.id}`}
-                    className="block rounded-lg border border-border/60 bg-secondary/60 p-3 text-foreground/70 hover:bg-secondary/80 transition-colors"
-                  >
-                    <p className="font-semibold text-foreground">{invoice.invoiceNumber}</p>
-                    <p className="text-xs">{t('invoiceHistory.client')} {invoice.client.name}</p>
-                    <p className="text-xs">
-                      {t('invoiceHistory.amount')} {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
-                        style: "currency",
-                        currency: invoice.currency,
-                        maximumFractionDigits: 2,
-                      }).format(parseFloat(invoice.totalAmount))}
-                    </p>
-                    <p className="text-xs">{t('invoiceHistory.status')} {invoice.status}</p>
-                  </Link>
-                ))}
-                {invoicesResponse?.meta && invoicesResponse.meta.total > relatedInvoices.length && (
-                  <Button variant="ghost" className="w-full justify-center text-primary" asChild>
-                    <Link href={`/invoices?productId=${product.id}`}>
-                      {t('invoiceHistory.viewAll', { count: invoicesResponse.meta.total })}
+            <div className="divide-y divide-border/50">
+              {relatedInvoices.length > 0 ? (
+                <>
+                  {relatedInvoices.map((invoice) => (
+                    <Link
+                      key={invoice.id}
+                      href={`/invoices/${invoice.id}`}
+                      className="flex items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-muted/30 active:bg-muted/50"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {invoice.invoiceNumber}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {invoice.client.name} · {new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
+                            style: "currency",
+                            currency: invoice.currency,
+                            maximumFractionDigits: 0,
+                          }).format(parseFloat(invoice.totalAmount))}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/60" />
                     </Link>
-                  </Button>
-                )}
-              </>
-            ) : (
-              <p className="text-center text-xs text-foreground/60">{t('invoiceHistory.noInvoices')}</p>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                  {invoicesResponse?.meta && invoicesResponse.meta.total > relatedInvoices.length && (
+                    <Link
+                      href={`/invoices?productId=${product.id}`}
+                      className="flex items-center justify-center gap-2 px-5 py-4 text-sm font-medium text-primary hover:bg-muted/30"
+                    >
+                      {t('invoiceHistory.viewAll', { count: invoicesResponse.meta.total })}
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <div className="px-5 py-8 text-center">
+                  <p className="text-sm text-muted-foreground">{t('invoiceHistory.noInvoices')}</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Retour liste */}
+        <div className="mt-10">
+          <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" asChild>
+            <Link href="/items">
+              <ArrowLeft className="h-4 w-4" />
+              {t('buttons.backToList')}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -299,12 +311,32 @@ export default function ProductDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
-      <ProductModal
+
+      <CreateProductModal
         open={isEditModalOpen}
-        productId={productId}
-        onClose={() => setEditModalOpen(false)}
-        onSuccess={() => {
+        setOpen={setEditModalOpen}
+        workspaceCurrency={workspace?.defaultCurrency ?? product?.currency ?? 'EUR'}
+        productId={product?.id}
+        initialValues={
+          product
+            ? {
+                name: product.name,
+                description: product.description ?? '',
+                price: product.unitPrice || product.price || '',
+              }
+            : undefined
+        }
+        onSubmitProduct={async (data) => {
+          if (!product?.id) return;
+          await updateProduct({
+            id: product.id,
+            payload: {
+              name: data.name,
+              description: data.description || undefined,
+              type: product.type ?? 'service',
+              price: data.price,
+            },
+          }).unwrap();
           toast.success(itemsT('success.updateSuccess'), {
             description: itemsT('success.updateSuccessDescription'),
           });

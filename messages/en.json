@@ -364,6 +364,11 @@
     "logoutError": "Logout error",
     "logoutErrorDescription": "You have been logged out locally."
   },
+  "createWorkspace": {
+    "profileCompleteHint": "Your workspace profile is complete. Create another workspace or go back to the dashboard.",
+    "openModalToAddAnother": "Create another workspace",
+    "backToDashboard": "Back to dashboard"
+  },
   "invoices": {
     "title": "Invoices",
     "subtitle": "Track your drafts, sent invoices and received payments.",
@@ -423,6 +428,22 @@
       "amount": "Amount",
       "actions": "Actions",
       "view": "View"
+    },
+    "stats": {
+      "thisMonth": "This month"
+    },
+    "sort": {
+      "priority": "Priority (overdue)",
+      "recent": "Most recent",
+      "oldest": "Oldest",
+      "amountDesc": "Amount descending",
+      "amountAsc": "Amount ascending"
+    },
+    "listPage": {
+      "noSearchResults": "No invoices found",
+      "noSearchResultsDescription": "No invoices match your criteria.",
+      "resetFilters": "Reset filters",
+      "invoiceCount": "{count, plural, one {# invoice} other {# invoices}}"
     },
     "empty": {
       "title": "No invoices yet",
@@ -557,24 +578,33 @@
       "next": "Next",
       "finish": "Finish",
       "step1": {
-        "title": "Welcome to Quick Invoice Mode!",
-        "description": "This mode allows you to create and send an invoice in just 3 clicks. It's the fastest way to invoice your clients."
+        "title": "Welcome to Quick Invoice",
+        "description": "Create and send an invoice in 3 clicks. The fastest way to get paid by your clients.",
+        "previewTagline": "3 steps. Done."
       },
       "step2": {
-        "title": "1. Select a client",
-        "description": "Click on the client field to choose an existing client or quickly create a new one."
+        "title": "Select a client",
+        "description": "Click the client field to choose an existing client or add a new one in seconds.",
+        "previewPlaceholder": "Choose client...",
+        "client1": "Apple Inc.",
+        "client2": "Google LLC",
+        "client3": "Microsoft Corporation"
       },
       "step3": {
-        "title": "2. Enter amount",
-        "description": "Enter the total amount of your invoice. You can use decimals (e.g., 15000.50)."
+        "title": "Enter the amount",
+        "description": "Enter the total amount. Use decimals if needed — currency is set automatically.",
+        "previewLabel": "Amount",
+        "amountExample": "12,500.00"
       },
       "step4": {
-        "title": "3. Send invoice",
-        "description": "Click 'Send invoice' to automatically create and send your invoice via WhatsApp to your client."
+        "title": "Send your invoice",
+        "description": "Click Send to create the invoice and deliver it to your client via WhatsApp.",
+        "sendButtonLabel": "Send invoice"
       },
       "step5": {
-        "title": "You're done!",
-        "description": "Your invoice has been created and sent. You can now create more invoices or view your invoices in the list."
+        "title": "You're all set",
+        "description": "Your invoice has been created and sent. Create another or view all in your invoice list.",
+        "successLabel": "Invoice sent"
       }
     },
     "form": {
@@ -1330,7 +1360,10 @@
     "catalog": {
       "title": "Catalog",
       "description": "List of your available services.",
-      "searchPlaceholder": "Search for a service"
+      "searchPlaceholder": "Search for a service",
+      "noSearchResults": "No results for « {query} »",
+      "noSearchResultsHint": "Change your search or clear it.",
+      "clearSearch": "Clear search"
     },
     "table": {
       "reference": "Reference",
@@ -2404,7 +2437,13 @@
       "profile": "Profile",
       "workspace": "Workspace",
       "billing": "Billing",
-      "subscription": "Subscription"
+      "subscription": "Subscription",
+      "general": "General"
+    },
+    "onboarding": {
+      "title": "App introduction",
+      "description": "Watch the getting started tutorial and overview of Facturly features again.",
+      "relaunch": "Relaunch onboarding"
     },
     "profile": {
       "title": "Personal Information",
@@ -2669,7 +2708,8 @@
       "description": "{count} bill{plural} received{plural}",
       "searchPlaceholder": "Search by number or supplier...",
       "filterPlaceholder": "Filter by status",
-      "allStatuses": "All statuses"
+      "allStatuses": "All statuses",
+      "clearSearch": "Clear search"
     },
     "status": {
       "received": "Received",
@@ -3028,6 +3068,14 @@
   "onboarding": {
     "title": "Create your billing profile",
     "description": "You're 2 minutes away from your first invoice",
+    "step1": {
+      "title": "Let's talk about you",
+      "subtitle": "Which profile type best matches your activity?"
+    },
+    "step1Additional": {
+      "title": "New workspace",
+      "subtitle": "Choose the type for this new workspace."
+    },
     "steps": {
       "type": "Type",
       "basic": "Basic Information",

@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRevenueForecastQuery, useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { useLocale } from 'next-intl';
@@ -28,11 +27,11 @@ export function RevenueForecastCard() {
   const getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
     switch (confidence) {
       case 'high':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800';
       case 'low':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
+        return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800';
     }
   };
 
@@ -48,12 +47,12 @@ export function RevenueForecastCard() {
   };
 
   return (
-    <Card className="border-primary/20 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-semibold text-primary">
-          <IoTrendingUpOutline className="h-4 w-4" />
+    <div className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+      <div className="flex flex-row items-center justify-between px-4 py-3 border-b border-border/50">
+        <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+          <IoTrendingUpOutline className="h-4 w-4 text-primary" />
           {t('revenueForecast')}
-        </CardTitle>
+        </h3>
         <Link
           href="/reports"
           className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -61,19 +60,19 @@ export function RevenueForecastCard() {
           {t('viewDetails')}
           <IoArrowForwardOutline className="h-3 w-3" />
         </Link>
-      </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+      </div>
+      <div className="p-4 space-y-3">
         {isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
+          <>
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </>
         ) : forecast ? (
           <>
-            <div className="rounded-md border border-primary/10 bg-primary/5 p-3">
+            <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-foreground/60">{t('projectedAnnual')}</p>
-                <Badge className={getConfidenceColor(forecast.forecastMonths[0]?.confidence || 'medium')}>
+                <p className="text-xs text-muted-foreground">{t('projectedAnnual')}</p>
+                <Badge variant="secondary" className={getConfidenceColor(forecast.forecastMonths[0]?.confidence || 'medium')}>
                   {getConfidenceLabel(forecast.forecastMonths[0]?.confidence || 'medium')}
                 </Badge>
               </div>
@@ -81,33 +80,35 @@ export function RevenueForecastCard() {
                 {formatCurrency(forecast.projectedAnnualRevenue)}
               </p>
             </div>
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-foreground/70">{t('nextMonths')}</p>
-              {forecast.forecastMonths.slice(0, 3).map((month, index) => {
-                const monthName = new Date(month.year, month.month - 1, 1).toLocaleDateString(
-                  locale === 'fr' ? "fr-FR" : "en-US",
-                  { month: 'short', year: 'numeric' }
-                );
-                return (
-                  <div
-                    key={`${month.year}-${month.month}`}
-                    className="flex items-center justify-between rounded-md border border-primary/10 bg-white p-2"
-                  >
-                    <span className="text-xs text-foreground/70">{monthName}</span>
-                    <span className="text-sm font-semibold text-foreground">
-                      {formatCurrency(month.forecastedRevenue)}
-                    </span>
-                  </div>
-                );
-              })}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">{t('nextMonths')}</p>
+              <div className="divide-y divide-border/50 rounded-xl border border-border/50 overflow-hidden">
+                {forecast.forecastMonths.slice(0, 3).map((month) => {
+                  const monthName = new Date(month.year, month.month - 1, 1).toLocaleDateString(
+                    locale === 'fr' ? "fr-FR" : "en-US",
+                    { month: 'short', year: 'numeric' }
+                  );
+                  return (
+                    <div
+                      key={`${month.year}-${month.month}`}
+                      className="flex items-center justify-between px-3 py-2.5 hover:bg-muted/30 transition-colors"
+                    >
+                      <span className="text-sm text-foreground/80">{monthName}</span>
+                      <span className="text-sm font-semibold text-foreground">
+                        {formatCurrency(month.forecastedRevenue)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </>
         ) : (
-          <div className="rounded-md border border-dashed border-primary/30 bg-white py-6 text-center">
-            <p className="text-xs text-foreground/60">{t('noData')}</p>
+          <div className="rounded-xl border border-dashed border-border/50 bg-muted/20 py-8 text-center">
+            <p className="text-xs text-muted-foreground">{t('noData')}</p>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

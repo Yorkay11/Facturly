@@ -83,42 +83,55 @@ export const Topbar = () => {
 
   return (
     <header className={cn(
-      "fixed top-0 right-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80",
-      "h-12 transition-all duration-300",
+      "fixed top-0 right-0 z-30 transition-[left] duration-300 ease-out",
+      "h-14 border-b border-border/40",
+      "bg-background/75 backdrop-blur-2xl supports-[backdrop-filter]:bg-background/60",
+      "shadow-[0_1px_0_0_var(--border)]",
       isCollapsed ? "left-16" : "left-64"
     )}>
-      <div className="flex h-full items-center justify-between px-2 lg:px-3">
-        {/* Left: Logo + Search */}
-        <div className="flex items-center gap-2 min-w-0">
-          <Link href="/dashboard" className="shrink-0 flex items-center">
+      <div className="flex h-full items-center justify-between gap-6 px-4 sm:px-5 lg:px-8">
+        {/* Left: Logo + Spotlight-style search pill */}
+        <div className="flex items-center gap-4 min-w-0 flex-1 max-w-2xl">
+          <Link
+            href="/dashboard"
+            className="shrink-0 flex items-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <Image
               src="/logos/logo.png"
               alt="Facturly"
               width={100}
               height={32}
-              className="h-6 w-auto object-contain"
+              className="h-7 w-auto object-contain"
             />
           </Link>
-          <Button
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 shrink-0 border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-          onClick={() => setSearchOpen(true)}
-          aria-label={t('spotlightPlaceholder')}
-        >
-          <FaMagnifyingGlass className="h-4 w-4" />
-        </Button>
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label={t('spotlightPlaceholder')}
+            className={cn(
+              "flex items-center gap-2.5 min-w-0 flex-1 max-w-md",
+              "h-9 pl-3.5 pr-3 rounded-full",
+              "bg-muted/40 border border-border/50",
+              "text-sm text-muted-foreground placeholder:text-muted-foreground/80",
+              "hover:bg-muted/60 hover:border-border/70 hover:text-foreground/90",
+              "transition-colors duration-200 ease-out"
+            )}
+          >
+            <FaMagnifyingGlass className="h-4 w-4 shrink-0 text-muted-foreground/90" />
+            <span className="hidden sm:inline truncate">{t('spotlightPlaceholder')}</span>
+            <kbd className="hidden lg:inline-flex ml-auto shrink-0 h-5 items-center gap-0.5 rounded bg-muted/80 px-1.5 font-sans text-[10px] font-medium text-muted-foreground">
+              ⌘K
+            </kbd>
+          </button>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 ml-2">
-          {/* Balance Display */}
-          <BalanceDisplay variant="default" />
-          
-          {/* New Invoice Button */}
+        {/* Right: Actions — pill group */}
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink-0">
+          <BalanceDisplay variant="default" className="rounded-full h-9 px-3.5 text-xs font-medium border-border/50 bg-muted/30 hover:bg-muted/50" />
+
           <MovingBorderButton
             wrapperClassName="shrink-0"
-            className="gap-1.5 h-8 text-xs px-3"
+            className="gap-2 h-9 text-xs font-medium px-4 rounded-full"
             onClick={(e) => {
               e.preventDefault();
               handleNavigation("/invoices/new");
@@ -128,40 +141,43 @@ export const Topbar = () => {
             <span className="hidden sm:inline">{t('newInvoice')}</span>
           </MovingBorderButton>
 
-          {/* Notifications */}
+          <div className="w-px h-5 bg-border/50 mx-0.5" aria-hidden />
+
           <NotificationDropdown />
 
-          {/* Help/Support */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-9 w-9 rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors duration-200"
                 aria-label={t('support')}
               >
                 <FaCircleQuestion className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-1" align="end" sideOffset={8}>
+            <PopoverContent
+              className="w-64 rounded-2xl border-border/60 p-1.5 shadow-xl shadow-black/5 bg-background/95 backdrop-blur-xl"
+              align="end"
+              sideOffset={10}
+            >
               <a
                 href="https://docs.facturly.online"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors hover:bg-muted/60 focus:bg-muted/60"
               >
                 {tTopbar('supportDocumentation')}
               </a>
               <a
                 href="mailto:support@facturly.online"
-                className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground break-all"
+                className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors hover:bg-muted/60 focus:bg-muted/60 break-all"
               >
                 {tTopbar('supportContact')} — {tTopbar('supportEmail')}
               </a>
             </PopoverContent>
           </Popover>
 
-          {/* Language Switcher */}
           <LanguageSwitcher />
         </div>
       </div>

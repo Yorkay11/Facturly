@@ -3,21 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { BellRing, Mail } from "lucide-react";
+import { BellRing, Mail, Search, ChevronRight } from "lucide-react";
 import { Link } from '@/i18n/routing';
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
 import { useGetInvoicesQuery } from "@/services/facturlyApi";
 import ReminderModal from "@/components/modals/ReminderModal";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations, useLocale } from 'next-intl';
 import { FuryMascot } from "@/components/mascot/FuryMascot";
 
@@ -27,6 +19,7 @@ export default function RemindersPage() {
   
   const [isReminderModalOpen, setReminderModalOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | undefined>();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const formatDate = (value: string) =>
     new Date(value).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
@@ -84,8 +77,17 @@ export default function RemindersPage() {
   ];
 
   const totalPending = reminders.length;
+
+  const filteredReminders = useMemo(() => {
+    if (!searchQuery.trim()) return reminders;
+    const q = searchQuery.trim().toLowerCase();
+    return reminders.filter(
+      (inv) =>
+        inv.invoiceNumber?.toLowerCase().includes(q) ||
+        inv.client?.name?.toLowerCase().includes(q)
+    );
+  }, [reminders, searchQuery]);
   
-  // Calculer le montant total en EUR (simplification - en production, convertir les devises)
   const totalAmount = reminders.reduce((sum, invoice) => {
     const amount = typeof invoice.totalAmount === "string" 
       ? parseFloat(invoice.totalAmount) 
@@ -95,25 +97,29 @@ export default function RemindersPage() {
   }, 0);
 
   return (
-    <div className="space-y-8">
-      <Breadcrumb
-        items={[
-          { label: t('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: t('breadcrumb.reminders') },
-        ]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-primary">{t('title')}</h1>
-            <p className="mt-1 text-sm text-foreground/70">
-              {t('subtitle')}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              className="gap-2" 
+    <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: t('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: t('breadcrumb.reminders') },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
+
+        <header className="mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {t('title')}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+            </div>
+            <Button
+              size="sm"
+              className="h-9 gap-2 rounded-full px-4 font-medium"
               onClick={() => {
                 setSelectedInvoiceId(undefined);
                 setReminderModalOpen(true);
@@ -123,109 +129,110 @@ export default function RemindersPage() {
               {t('buttons.create')}
             </Button>
           </div>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">{t('stats.active')}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">{totalPending}</p>
-              <p className="text-xs text-foreground/60">{t('stats.activeDescription')}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">{t('stats.overdueAmount')}</CardTitle>
-            </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-2xl font-semibold text-primary">
-                  {totalAmount > 0 ? formatCurrency(totalAmount, "EUR") : "—"}
-                </p>
-              </CardContent>
-          </Card>
+        </header>
+
+        {/* Stats en row */}
+        <section className="mb-8 grid grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-border/50 bg-card/50 p-5 shadow-sm backdrop-blur-sm">
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              {t('stats.active')}
+            </p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+              {totalPending}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t('stats.activeDescription')}</p>
+          </div>
+          <div className="rounded-2xl border border-border/50 bg-card/50 p-5 shadow-sm backdrop-blur-sm">
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              {t('stats.overdueAmount')}
+            </p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+              {totalAmount > 0 ? formatCurrency(totalAmount, "EUR") : "—"}
+            </p>
+          </div>
+        </section>
+
+        {/* Liste des relances */}
+        <div className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">{t('table.title')}</h2>
+              <p className="text-sm text-muted-foreground">{t('table.description')}</p>
+            </div>
+            {reminders.length > 0 && (
+              <div className="relative max-w-sm w-full">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={t('table.searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-10 bg-muted/30 border-border"
+                />
+              </div>
+            )}
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-24 w-full rounded-2xl" />
+              <Skeleton className="h-24 w-full rounded-2xl" />
+            </div>
+          ) : isError ? (
+            <div className="rounded-2xl border border-destructive/50 bg-destructive/10 p-6 text-sm text-destructive">
+              {t('errors.loadingError')}
+            </div>
+          ) : filteredReminders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center">
+              <FuryMascot mood="reminder" size="lg" className="mb-4" />
+              <p className="text-sm text-muted-foreground">{t('empty.noReminders')}</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredReminders.map((invoice) => (
+                <div
+                  key={invoice.id}
+                  className="group flex flex-col gap-3 rounded-2xl border border-border/50 bg-card/50 p-5 shadow-sm backdrop-blur-sm transition-colors hover:border-border sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <Link
+                    href={`/invoices/${invoice.id}`}
+                    className="min-w-0 flex-1 space-y-1 sm:pr-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <p className="font-semibold text-foreground">{invoice.invoiceNumber}</p>
+                      <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">
+                        {t('table.overdue')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{invoice.client?.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('table.dueDate')} · {formatDate(invoice.dueDate)}
+                    </p>
+                  </Link>
+                  <div className="flex items-center justify-between gap-4 sm:justify-end">
+                    <p className="text-lg font-semibold tabular-nums text-foreground">
+                      {formatCurrency(invoice.totalAmount, invoice.currency)}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 gap-2 rounded-full shrink-0"
+                      onClick={() => {
+                        setSelectedInvoiceId(invoice.id);
+                        setReminderModalOpen(true);
+                      }}
+                    >
+                      <Mail className="h-4 w-4" />
+                      {t('buttons.remind')}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <Card className="border-primary/20">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <CardTitle className="text-primary">{t('table.title')}</CardTitle>
-            <CardDescription>
-              {t('table.description')}
-            </CardDescription>
-          </div>
-          <Input placeholder={t('table.searchPlaceholder')} className="max-w-sm" />
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {isLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : isError ? (
-            <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
-              {t('errors.loadingError')}
-            </div>
-          ) : reminders && reminders.length > 0 ? (
-            <Table>
-              <TableHeader className="bg-primary/5">
-                <TableRow>
-                  <TableHead>{t('table.invoice')}</TableHead>
-                  <TableHead>{t('table.client')}</TableHead>
-                  <TableHead>{t('table.dueDate')}</TableHead>
-                  <TableHead className="text-right">{t('table.amount')}</TableHead>
-                  <TableHead>{t('table.status')}</TableHead>
-                  <TableHead className="text-right">{t('table.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {reminders.map((invoice) => (
-                  <TableRow key={invoice.id} className="hover:bg-primary/5">
-                    <TableCell className="text-sm font-semibold text-primary">
-                      <Link href={`/invoices/${invoice.id}`} className="hover:underline">
-                        {invoice.invoiceNumber}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-sm text-foreground/70">{invoice.client.name}</TableCell>
-                    <TableCell className="text-sm text-foreground/60">{formatDate(invoice.dueDate)}</TableCell>
-                    <TableCell className="text-right text-sm font-semibold text-primary">
-                      {formatCurrency(invoice.totalAmount, invoice.currency)}
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-rose-100 text-rose-700 border border-rose-200">
-                        {t('table.overdue')}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="gap-2 text-primary"
-                        onClick={() => {
-                          setSelectedInvoiceId(invoice.id);
-                          setReminderModalOpen(true);
-                        }}
-                      >
-                        <Mail className="h-4 w-4" />
-                        {t('buttons.remind')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-primary/30 bg-white py-16 text-center">
-              <FuryMascot mood="reminder" size="lg" className="mb-4" />
-              <p className="text-sm text-foreground/60">{t('empty.noReminders')}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      
       <ReminderModal 
         open={isReminderModalOpen} 
         onClose={() => {

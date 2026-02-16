@@ -25,7 +25,7 @@ export const AtRiskCard = ({ title, description, items, className, seeMoreLink, 
   const displayLabel = seeMoreLabel || "Voir plus";
   
   return (
-    <div className={cn("rounded-md border border-amber-200 dark:border-amber-900 bg-card p-3 shadow-sm", className)}>
+    <div className={cn("rounded-2xl border border-amber-200/60 dark:border-amber-900/50 bg-card/50 shadow-sm backdrop-blur-sm p-4", className)}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-2 flex-1 min-w-0">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">

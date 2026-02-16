@@ -278,7 +278,7 @@ export function QuickInvoice({ onSwitchToFullMode, initialClientId }: QuickInvoi
   });
 
   return (
-    <Card className={cn("border-2 border-primary/20 shadow-lg", isMobile && "mx-0")}>
+    <Card className={cn("border-none shadow-md", isMobile && "mx-0")}>
       <CardHeader className={cn("pb-4", isMobile && "pb-3")}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export type FuryMood = 
+export type FuryMood =
   | "welcome"
   | "happy"
   | "smile"
@@ -29,42 +29,62 @@ const sizeMap = {
   xl: 200,
 };
 
-export function FuryMascot({ 
-  mood, 
+/** Padding autour de l’image dans la bulle (par taille) */
+const paddingMap = {
+  xs: 6,
+  sm: 10,
+  md: 14,
+  lg: 18,
+  xl: 22,
+};
+
+export function FuryMascot({
+  mood,
   className,
   size = "md",
-  animated = true 
+  animated = true,
 }: FuryMascotProps) {
   const imageSize = sizeMap[size];
+  const padding = paddingMap[size];
+  const bubbleSize = imageSize + padding * 2;
   const imagePath = `/mascot/fury_${mood}.webp`;
 
   return (
-    <div 
+    <div
       className={cn(
-        "relative inline-flex items-center justify-center",
+        "relative inline-flex items-center justify-center select-none",
         className
       )}
     >
-      {/* Bulle flottante avec animation */}
-      <div 
+      <div
         className={cn(
-          "relative",
+          "relative transition-transform duration-300 ease-out",
           animated && "animate-float"
         )}
       >
-        {/* Ombre portée pour effet de profondeur */}
-        <div className="absolute inset-0 translate-y-1 rounded-full bg-black/10 blur-xl" />
-        
-        {/* Bulle principale */}
-        <div 
-          className="relative rounded-full bg-gradient-to-br from-white via-white to-slate-50 shadow-lg ring-2 ring-white/50 overflow-hidden"
+        {/* Ombre douce type Apple — pas de gros blur */}
+        <div
+          className="absolute rounded-full bg-black/[0.06] dark:bg-black/20"
           style={{
-            width: `${imageSize + (size === 'xs' ? 8 : 24)}px`,
-            height: `${imageSize + (size === 'xs' ? 8 : 24)}px`,
-            padding: size === 'xs' ? '4px' : '12px'
+            width: bubbleSize,
+            height: bubbleSize,
+            bottom: -4,
+            left: "50%",
+            transform: "translateX(-50%)",
+            filter: "blur(8px)",
+          }}
+        />
+
+        {/* Bulle — dégradé discret, ring fin, ombres superposées */}
+        <div
+          className="relative rounded-full overflow-hidden bg-white dark:bg-white/95 ring-[1px] ring-border/30 shadow-[0_2px_12px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.15)]"
+          style={{
+            width: bubbleSize,
+            height: bubbleSize,
+            padding,
           }}
         >
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center rounded-full">
             <Image
               src={imagePath}
               alt={`Fury ${mood}`}

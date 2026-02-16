@@ -1,24 +1,21 @@
 "use client";
 
-import { Link, useRouter } from '@/i18n/routing';
+import { Link, useRouter } from "@/i18n/routing";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useLocale } from 'next-intl';
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useLocale } from "next-intl";
+import { Suspense, useEffect, useState } from "react";
 import { useForm, useFormState } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react";
-import { useTranslations } from 'next-intl';
-import { removeLocalePrefix } from '@/utils/path-utils';
-import { Redirect } from '@/components/navigation';
+import { useTranslations } from "next-intl";
+import { removeLocalePrefix } from "@/utils/path-utils";
+import { Redirect } from "@/components/navigation";
 
-import { MagicCard } from "@/components/ui/magic-card";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { useLoginMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
 
@@ -36,7 +33,7 @@ function LoginFieldError({
   const { errors } = useFormState({ control, name });
   const message = name === "email" ? errors.email?.message : errors.password?.message;
   if (!message) return null;
-  return <p className="text-[10px] text-destructive ml-0.5">{message}</p>;
+  return <p className="text-[13px] text-destructive mt-1">{message}</p>;
 }
 
 function LoginForm() {
@@ -63,7 +60,7 @@ function LoginForm() {
 
   const { register, handleSubmit, control, formState: { errors, isValid } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    mode: "onChange", // Permet au bouton de s'activer dynamiquement
+    mode: "onTouched", // Validation au blur → moins de re-renders à chaque frappe, meilleure réactivité du champ
     defaultValues: { email: "", password: "" },
   });
 
@@ -131,69 +128,104 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Section gauche : Identique */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-6 relative overflow-hidden">
-        <DotPattern className="text-white opacity-20" glow />
-        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-md">
-          <Image src="/logos/logo.png" alt="Facturly" width={300} height={100} className="w-auto h-24 brightness-0 invert" priority />
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-white">{t('heroTitle')}</h2>
-            <p className="text-white/80 text-lg leading-relaxed">{t('heroDescription')}</p>
+    <div className="flex min-h-screen bg-background">
+      {/* Left: Hero — Apple-style gradient + pattern */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-8 relative overflow-hidden">
+        <DotPattern className="text-white opacity-[0.12]" glow />
+        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-sm">
+          <Image
+            src="/logos/logo.png"
+            alt="Facturly"
+            width={280}
+            height={92}
+            className="w-auto h-20 brightness-0 invert"
+            priority
+          />
+          <div className="space-y-3">
+            <h2 className="text-[28px] font-semibold tracking-tight text-white">
+              {t("heroTitle")}
+            </h2>
+            <p className="text-[15px] text-white/85 leading-relaxed">
+              {t("heroDescription")}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Section droite : Formulaire */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-gray-50/50">
-        <div className="w-full max-w-md space-y-8">
-          <MagicCard className="rounded-xl shadow-2xl">
-            <CardHeader className="text-center pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold">{t('login')}</CardTitle>
-              <CardDescription className="text-xs">{t('welcomeBack')}</CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4 px-6 pb-6">
+      {/* Right: Form — premium card */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 bg-gradient-to-b from-muted/20 to-background">
+        <div className="w-full max-w-[400px]">
+          <div className="rounded-[24px] border border-border/40 bg-background/95 dark:bg-background/98 backdrop-blur-sm shadow-2xl shadow-black/5 overflow-hidden">
+            {/* Header */}
+            <div className="px-5 pt-5 pb-4 text-center">
+              <h1 className="text-[24px] font-semibold tracking-tight text-foreground">
+                {t("login")}
+              </h1>
+              <p className="mt-1 text-[15px] text-muted-foreground">
+                {t("welcomeBack")}
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="px-5 pb-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                {/* Email Field */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('email')}</Label>
+                  <Label
+                    htmlFor="email"
+                    className="text-[13px] font-medium text-foreground"
+                  >
+                    {t("email")}
+                  </Label>
                   <div className="relative group">
-                    <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
                       id="email"
                       type="email"
                       autoComplete="email"
-                      placeholder="vous@entreprise.com"
-                      className="pl-9 h-10 text-sm"
+                      placeholder="you@company.com"
+                      className="pl-10 h-11 rounded-xl border-border/50 bg-muted/30 border-0 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                       {...register("email")}
                     />
                   </div>
                   <LoginFieldError control={control} name="email" />
                 </div>
 
-                {/* Password Field */}
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('password')}</Label>
-                    <Link href="#" className="text-[10px] text-primary hover:underline">{t('forgotPassword')}</Link>
+                    <Label
+                      htmlFor="password"
+                      className="text-[13px] font-medium text-foreground"
+                    >
+                      {t("password")}
+                    </Label>
+                    <Link
+                      href="#"
+                      className="text-[13px] text-primary font-medium hover:underline"
+                    >
+                      {t("forgotPassword")}
+                    </Link>
                   </div>
                   <div className="relative group">
-                    <Lock className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
                       placeholder="••••••••"
-                      className="pl-9 pr-9 h-10 text-sm"
+                      className="pl-10 pr-10 h-11 rounded-xl border-border/50 bg-muted/30 border-0 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                       {...register("password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted/50 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                   <LoginFieldError control={control} name="password" />
@@ -202,39 +234,53 @@ function LoginForm() {
                 <Button
                   type="submit"
                   disabled={!isValid || isLoading}
-                  className="w-full gap-2 h-10"
+                  className="w-full h-11 rounded-xl text-[15px] font-semibold gap-2"
                 >
                   {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {t('signIn')}
+                  {t("signIn")}
                 </Button>
               </form>
 
-              {/* Séparateur & Google */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center"><Separator className="w-full" /></div>
-                <div className="relative flex justify-center text-[10px] uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">{t('orContinueWith')}</span>
+              {/* Divider */}
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/50" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-background px-3 text-[13px] text-muted-foreground">
+                    {t("orContinueWith")}
+                  </span>
                 </div>
               </div>
 
               <Button
                 variant="outline"
-                className="w-full gap-2 h-10"
+                className="w-full h-11 rounded-xl text-[15px] font-medium gap-2 border-border/60 bg-muted/20 hover:bg-muted/40"
                 onClick={handleGoogleLogin}
                 disabled={isGoogleLoading || isLoading}
               >
-                {isGoogleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-                {t('continueWithGoogle')}
+                {isGoogleLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <GoogleIcon />
+                )}
+                {t("continueWithGoogle")}
               </Button>
-            </CardContent>
+            </div>
 
-            <div className="p-4 bg-gray-50/50 border-t rounded-b-xl text-center">
-              <p className="text-xs text-muted-foreground">
-                {t('dontHaveAccount')}{" "}
-                <Link href="/register" className="text-primary font-semibold hover:underline">{t('createAccount')}</Link>
+            {/* Footer */}
+            <div className="px-5 py-4 border-t border-border/40 bg-muted/20 text-center">
+              <p className="text-[15px] text-muted-foreground">
+                {t("dontHaveAccount")}{" "}
+                <Link
+                  href="/register"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  {t("createAccount")}
+                </Link>
               </p>
             </div>
-          </MagicCard>
+          </div>
         </div>
       </div>
     </div>
@@ -255,33 +301,29 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen">
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-6">
-          <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-md">
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen bg-background">
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-8">
             <Image
               src="/logos/logo.png"
               alt="Facturly"
-              width={300}
-              height={100}
-              className="w-auto h-24 object-contain brightness-0 invert"
+              width={280}
+              height={92}
+              className="w-auto h-20 brightness-0 invert"
               priority
             />
           </div>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-white">
-          <div className="w-full max-w-md">
-            <Card className="border-primary/20 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex-1 flex items-center justify-center p-6 lg:p-10 bg-gradient-to-b from-muted/20 to-background">
+            <div className="w-full max-w-[400px] rounded-[24px] border border-border/40 bg-background/95 shadow-2xl shadow-black/5 overflow-hidden">
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

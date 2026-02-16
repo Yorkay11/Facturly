@@ -141,114 +141,127 @@ export const RejectInvoiceModal = ({
       open={open}
       onOpenChange={(isOpen) => { if (!isOpen) handleClose(); }}
       modalMaxWidth="sm:max-w-[600px]"
+      contentClassName="rounded-2xl border border-border/40 bg-background shadow-2xl shadow-black/5 p-0 overflow-hidden"
+      closeButtonClassName="right-4 top-4 h-8 w-8 rounded-full bg-muted/60 hover:bg-muted text-foreground/70"
     >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <div className="px-5 pt-5 pb-4 border-b border-border/40">
+        <DialogHeader className="p-0 text-left space-y-1">
+          <DialogTitle className="flex items-center gap-2.5 text-[17px] font-semibold tracking-tight text-foreground">
             <XCircle className="h-5 w-5 text-destructive" />
             {t('title')}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-[15px] text-muted-foreground">
             {t('description')}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="reason">
-              {t('fields.reason.label')} <span className="text-muted-foreground">{t('fields.reason.optional')}</span>
-            </Label>
-            <Controller
-              name="reason"
-              control={form.control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
-                  <SelectTrigger id="reason">
-                    <SelectValue placeholder={t('fields.reason.placeholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{t('fields.reason.none')}</SelectItem>
-                    {rejectionReasonOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex flex-col">
-                          <span className="font-semibold">{option.label}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {option.description}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {form.formState.errors.reason && (
-              <p className="text-xs text-destructive">{form.formState.errors.reason.message}</p>
+      </div>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="px-5 py-4 space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="reason" className="text-[13px] font-medium text-foreground">
+            {t('fields.reason.label')} <span className="text-muted-foreground">{t('fields.reason.optional')}</span>
+          </Label>
+          <Controller
+            name="reason"
+            control={form.control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
+                <SelectTrigger id="reason" className="h-11 rounded-xl border-0 bg-muted/30 text-[15px]">
+                  <SelectValue placeholder={t('fields.reason.placeholder')} />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border border-border/40">
+                  <SelectItem value="none" className="text-[15px]">{t('fields.reason.none')}</SelectItem>
+                  {rejectionReasonOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-[15px]">
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{option.label}</span>
+                        <span className="text-[13px] text-muted-foreground">
+                          {option.description}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-          </div>
+          />
+          {form.formState.errors.reason && (
+            <p className="text-[13px] text-destructive mt-1">{form.formState.errors.reason.message}</p>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="comment">
-              {t('fields.comment.label')} <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="comment"
-              placeholder={t('fields.comment.placeholder')}
-              {...form.register("comment")}
-              disabled={isLoading}
-              rows={6}
-              className={form.formState.errors.comment ? "border-destructive" : ""}
-              maxLength={1000}
-            />
-            <div className="flex items-center justify-between">
-              {form.formState.errors.comment && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.comment.message}
-                </p>
-              )}
-              <p
-                className={`text-xs ml-auto ${
-                  commentLength < 10 ? "text-destructive" : "text-muted-foreground"
-                }`}
-              >
-                {t('fields.comment.counter', { count: commentLength })}
+        <div className="space-y-1.5">
+          <Label htmlFor="comment" className="text-[13px] font-medium text-foreground">
+            {t('fields.comment.label')} <span className="text-destructive">*</span>
+          </Label>
+          <Textarea
+            id="comment"
+            placeholder={t('fields.comment.placeholder')}
+            {...form.register("comment")}
+            disabled={isLoading}
+            rows={6}
+            className={`h-auto rounded-xl border-0 bg-muted/30 text-[15px] resize-none ${
+              form.formState.errors.comment ? "ring-2 ring-destructive/50" : ""
+            }`}
+            maxLength={1000}
+          />
+          <div className="flex items-center justify-between">
+            {form.formState.errors.comment && (
+              <p className="text-[13px] text-destructive">
+                {form.formState.errors.comment.message}
+              </p>
+            )}
+            <p
+              className={`text-[13px] ml-auto ${
+                commentLength < 10 ? "text-destructive" : "text-muted-foreground"
+              }`}
+            >
+              {t('fields.comment.counter', { count: commentLength })}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <p className="text-[15px] font-semibold text-foreground">{t('alert.title')}</p>
+              <p className="text-[13px] text-muted-foreground">
+                {t('alert.description')}
               </p>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 space-y-2">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-yellow-700 mt-0.5" />
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-semibold text-yellow-700">{t('alert.title')}</p>
-                <p className="text-xs text-yellow-600">
-                  {t('alert.description')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
-              {t('buttons.cancel')}
-            </Button>
-            <Button
-              type="submit"
-              variant="destructive"
-              disabled={isLoading || !form.formState.isValid}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('buttons.processing')}
-                </>
-              ) : (
-                <>
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {t('buttons.confirm')}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter className="px-0 pt-4 border-t border-border/40 mt-4 flex-row justify-end gap-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={handleClose} 
+            disabled={isLoading}
+            className="h-9 rounded-xl px-4 text-[15px] font-medium border-border/60"
+          >
+            {t('buttons.cancel')}
+          </Button>
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={isLoading || !form.formState.isValid}
+            className="h-9 rounded-xl px-4 text-[15px] font-semibold"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t('buttons.processing')}
+              </>
+            ) : (
+              <>
+                <XCircle className="h-4 w-4 mr-2" />
+                {t('buttons.confirm')}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </form>
     </ResponsiveModal>
   );
 };

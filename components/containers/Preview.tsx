@@ -271,16 +271,23 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
       {/* Sheet pour grands écrans */}
       {isLargeScreen && (
         <Sheet open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-          <SheetContent side="bottom" className="h-[95vh] w-full max-w-full overflow-y-auto p-4">
-            <SheetHeader>
-              <SheetTitle>{t('fullscreenTitle')}</SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <div className="flex flex-col gap-4 mb-6">
+          <SheetContent 
+            side="bottom" 
+            className="h-[95vh] w-full max-w-full overflow-hidden rounded-t-[28px] border-t border-border/40 bg-background shadow-2xl shadow-black/5 p-0 flex flex-col"
+          >
+            <div className="px-6 pt-6 pb-4 border-b border-border/40 shrink-0">
+              <SheetHeader className="p-0 text-left space-y-1">
+                <SheetTitle className="text-[17px] font-semibold tracking-tight text-foreground">
+                  {t('fullscreenTitle')}
+                </SheetTitle>
+              </SheetHeader>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="flex flex-col gap-6 mb-6">
                 <TemplateSelector activeTemplate={activeTemplate} onChange={setActiveTemplate} />
               </div>
               {isHydrated ? (
-                <div className="bg-white p-4 rounded-lg shadow-sm max-w-5xl mx-auto">
+                <div className="bg-background rounded-xl border border-border/40 shadow-sm max-w-5xl mx-auto p-6">
                   <TemplateComponent
                     metadata={metadata}
                     workspace={workspace ?? undefined}
@@ -295,9 +302,9 @@ const Preview = ({ invoiceId }: PreviewProps = {}) => {
                   />
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-4 w-full" />
+                <div className="space-y-4 max-w-5xl mx-auto">
+                  <Skeleton className="h-6 w-48 rounded-xl" />
+                  <Skeleton className="h-4 w-full rounded-xl" />
                   <Skeleton className="h-[280px] rounded-xl" />
                 </div>
               )}

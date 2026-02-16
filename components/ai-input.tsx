@@ -35,7 +35,8 @@ const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
 );
 ActionButton.displayName = "ActionButton";
 
-const Placeholder = ({ placeholder }: { placeholder: string }) => {
+const Placeholder = ({ placeholder, variant }: { placeholder: string; variant?: "default" | "drawer" }) => {
+  const textClass = variant === "drawer" ? "text-muted-foreground" : "text-white/60 font-extralight";
   return (
     <div className="flex items-center justify-start gap-0">
       {placeholder.split("").map((word, i) => {
@@ -53,7 +54,7 @@ const Placeholder = ({ placeholder }: { placeholder: string }) => {
               type: "spring",
             }}
             key={`placeholder-text-${i}-${word}`}
-            className="text-white/60 font-extralight"
+            className={textClass}
           >
             {word}
           </motion.span>
@@ -74,6 +75,7 @@ type AiInputProps = {
   loading?: boolean;
   onSubmit?: (value: string, file: File | null) => void | Promise<void>;
   animationStyle?: "orbit" | "pulse";
+  variant?: "default" | "drawer";
 } & Omit<React.ComponentProps<"textarea">, "onSubmit">;
 
 const AiInput = ({
@@ -87,6 +89,7 @@ const AiInput = ({
   loading: externalLoading,
   onSubmit,
   animationStyle = "orbit",
+  variant = "default",
   ...props
 }: AiInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -307,52 +310,62 @@ const AiInput = ({
     setFile(null);
   };
 
+  const isDrawer = variant === "drawer";
+
   return (
     <div style={{ width }} className="w-full relative flex items-center justify-center">
 
-      <motion.span
-        initial={{
-          top: animationStyle === "orbit" ? "0%" : "50%",
-          left: "0%",
-          translateY: "-50%",
-          translateX: "-40%",
-          height: "80px",
-          width: "80px",
-        }}
-        animate={leftBlob}
-        style={{
-          background: `radial-gradient(ellipse,color-mix(in srgb,${mainColor},30% white),transparent 50%)`,
-        }}
-        className={cn("inline-block absolute opacity-0 z-[0]")}
-      />
-      <motion.span
-        initial={{
-          top: animationStyle === "orbit" ? "100%" : "50%",
-          left: animationStyle === "orbit" ? "100%" : "0%",
-          translateY: "-50%",
-          translateX: "-60%",
-          height: "80px",
-          width: "80px",
-        }}
-        animate={rightBlob}
-        style={{
-          background: `radial-gradient(ellipse,color-mix(in srgb,${mainColor},30% white),transparent 50%)`,
-        }}
-        className={cn("inline-block absolute top-full opacity-0 z-[0]")}
-      />
+      {!isDrawer && (
+        <>
+          <motion.span
+            initial={{
+              top: animationStyle === "orbit" ? "0%" : "50%",
+              left: "0%",
+              translateY: "-50%",
+              translateX: "-40%",
+              height: "80px",
+              width: "80px",
+            }}
+            animate={leftBlob}
+            style={{
+              background: `radial-gradient(ellipse,color-mix(in srgb,${mainColor},30% white),transparent 50%)`,
+            }}
+            className={cn("inline-block absolute opacity-0 z-[0]")}
+          />
+          <motion.span
+            initial={{
+              top: animationStyle === "orbit" ? "100%" : "50%",
+              left: animationStyle === "orbit" ? "100%" : "0%",
+              translateY: "-50%",
+              translateX: "-60%",
+              height: "80px",
+              width: "80px",
+            }}
+            animate={rightBlob}
+            style={{
+              background: `radial-gradient(ellipse,color-mix(in srgb,${mainColor},30% white),transparent 50%)`,
+            }}
+            className={cn("inline-block absolute top-full opacity-0 z-[0]")}
+          />
+        </>
+      )}
 
       <div
-        style={{ width }}
+        style={width ? { width } : undefined}
         ref={containerRef}
         className={cn(
-          "border-2 border-white/10 hover:border-white/15 focus-within:hover:border-white/20 focus-within:border-white/20",
-          "rounded-xl bg-white relative z-20 transition-all duration-200",
-          loading && "!border-transparent"
+          "relative z-20 transition-all duration-200",
+          isDrawer
+            ? "rounded-xl border border-border/40 bg-muted/30 dark:bg-muted/20 focus-within:border-primary/40 focus-within:ring-0"
+            : cn(
+                "border-2 border-white/10 hover:border-white/15 focus-within:hover:border-white/20 focus-within:border-white/20 rounded-xl bg-white",
+                loading && "!border-transparent"
+              )
         )}
       >
         {!value && (
           <div className="absolute inset-0 px-3 py-2 pointer-events-none">
-            <Placeholder placeholder={placeholder} />
+            <Placeholder placeholder={placeholder} variant={variant} />
           </div>
         )}
 
@@ -363,7 +376,10 @@ const AiInput = ({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           className={cn(
-            "w-full px-3 py-2 placeholder:text-black/40 text-black/80 bg-transparent outline-none",
+            "w-full px-3 py-2 bg-transparent outline-none",
+            isDrawer
+              ? "text-foreground placeholder:text-muted-foreground"
+              : "placeholder:text-black/40 text-black/80",
             className
           )}
           placeholder="Votre message…"
@@ -376,36 +392,16 @@ const AiInput = ({
           onClick={() => textareaRef.current?.focus()}
           className="flex items-center justify-end p-1 gap-1"
         >
-          {/* {file && (
-            <button
-              type="button"
-              onClick={handleFileInputRemove}
-              className="flex items-center gap-1 px-2 py-2 hover:bg-zinc-900 rounded-full cursor-pointer"
-            >
-              <p className="text-xs text-black/80">{file.name}</p>
-              <X size={16} className="text-white/80" />
-            </button>
-          )} */}
-          {/* <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileInputChange}
-          /> */}
-          {/* <ActionButton
-            type="button"
-            onClick={handleFileInputClick}
-            className="bg-zinc-800 shadow-sm rounded-lg"
-          >
-            <Paperclip size={16} />
-          </ActionButton> */}
           <ActionButton
             ref={submitButtonRef}
             type="button"
             onClick={handleSubmit}
             disabled={loading || value.length === 0}
             style={{ backgroundColor: mainColor }}
-            className="shadow-sm rounded-lg text-white"
+            className={cn(
+              "shadow-sm text-white",
+              isDrawer ? "rounded-full p-2.5" : "rounded-lg"
+            )}
           >
             <AnimatePresence mode="popLayout" initial={false}>
               {loading ? (

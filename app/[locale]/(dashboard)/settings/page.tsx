@@ -14,7 +14,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
@@ -35,7 +34,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CheckCircle2, Receipt, DollarSign, FileText } from "lucide-react";
+import { CheckCircle2, Receipt, DollarSign, FileText, PlayCircle } from "lucide-react";
+import { Link } from "@/i18n/routing";
 
 // Drapeaux des pays (même source que l'onboarding)
 const COUNTRY_FLAGS: Record<string, string> = {
@@ -116,6 +116,7 @@ function SettingsContent() {
     { value: "profile", label: t('tabs.profile') },
     { value: "workspace", label: t('tabs.workspace') },
     { value: "billing", label: t('tabs.billing') },
+    { value: "general", label: t('tabs.general') },
   ], [t]);
   
   // Valider que le tab est dans la liste des sections valides
@@ -251,13 +252,20 @@ function SettingsContent() {
   // Récupérer le type actuel du workspace pour l'affichage conditionnel
   const workspaceType = workspaceForm.watch("type");
   
+  const dateFormatOptions = ["DD/MM/YYYY", "YYYY-MM-DD"] as const;
+
   useEffect(() => {
     if (settings) {
+      const rawDateFormat = settings.dateFormat;
+      const dateFormat =
+        rawDateFormat && dateFormatOptions.includes(rawDateFormat as (typeof dateFormatOptions)[number])
+          ? rawDateFormat
+          : "DD/MM/YYYY";
       settingsForm.reset({
         language: settings.language,
         timezone: settings.timezone,
         invoicePrefix: settings.invoicePrefix,
-        dateFormat: settings.dateFormat,
+        dateFormat,
         paymentTerms: settings.paymentTerms,
       });
     }
@@ -342,44 +350,49 @@ function SettingsContent() {
   const isLoading = isLoadingUser || isLoadingWorkspace || isLoadingSettings;
   
   return (
-    <div className="space-y-8">
-      <Breadcrumb
-        items={[
-          { label: t('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: t('breadcrumb.settings') },
-        ]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold tracking-tight text-primary">{t('title')}</h1>
-        <p className="text-sm text-foreground/70">
-          {t('subtitle')}
-        </p>
-      </div>
+    <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10 space-y-8">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: t('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: t('breadcrumb.settings') },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
+        <header className="mb-10">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            {t('title')}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t('subtitle')}</p>
+        </header>
 
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      ) : (
-        <DirectionAwareTabs
-          className="w-full mb-6"
-          tabs={[
-            {
-              id: 0,
-              label: sections[0].label,
-              content: (
-                <>
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-64 w-full rounded-2xl" />
+          </div>
+        ) : (
+          <DirectionAwareTabs
+            className="w-full mb-4"
+            tabs={[
+              {
+                id: 0,
+                label: sections[0].label,
+                content: (
+                  <>
           {/* Profil utilisateur */}
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-primary">{t('profile.title')}</CardTitle>
-                <CardDescription>
+            <Card className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+              <CardHeader className="pb-4">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                  {t('profile.title')}
+                </h2>
+                <CardDescription className="mt-1 text-[15px]">
                   {t('profile.description')}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <form onSubmit={userForm.handleSubmit(onUserSubmit)} className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
@@ -449,7 +462,7 @@ function SettingsContent() {
                       </p>
                     </div>
                   </div>
-                  <Button type="submit" disabled={isUpdatingUser}>
+                  <Button type="submit" disabled={isUpdatingUser} className="rounded-full px-6">
                     {isUpdatingUser && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t('profile.buttons.update')}
                   </Button>
@@ -465,14 +478,16 @@ function SettingsContent() {
               content: (
                 <>
           {/* Entreprise */}
-            <Card className="border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-primary">{t('workspace.title')}</CardTitle>
-                <CardDescription>
+            <Card className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+              <CardHeader className="pb-4">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                  {t('workspace.title')}
+                </h2>
+                <CardDescription className="mt-1 text-[15px]">
                   {t('workspace.description')}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <form onSubmit={workspaceForm.handleSubmit(onWorkspaceSubmit)} className="space-y-4">
                   {/* Sélecteur de type */}
                   <div className="space-y-2">
@@ -679,9 +694,9 @@ function SettingsContent() {
                 <>
           {/* Paramètres de facturation */}
             <div className="space-y-6">
-              <Card className="border-primary/20">
+              <Card className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-primary flex items-center gap-2">
+                  <CardTitle className="text-foreground flex items-center gap-2">
                     <Receipt className="h-5 w-5" />
                     {t('billing.title')}
                   </CardTitle>
@@ -728,7 +743,11 @@ function SettingsContent() {
                             name="dateFormat"
                             control={settingsForm.control}
                             render={({ field }) => (
-                              <Select onValueChange={field.onChange} value={field.value} disabled={isUpdatingSettings}>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value || "DD/MM/YYYY"}
+                                disabled={isUpdatingSettings}
+                              >
                                 <SelectTrigger className={settingsForm.formState.errors.dateFormat ? "border-destructive" : ""}>
                                   <SelectValue placeholder={t('billing.fields.dateFormat')} />
                                 </SelectTrigger>
@@ -825,8 +844,8 @@ function SettingsContent() {
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t">
-                      <Button type="submit" disabled={isUpdatingSettings} size="lg">
+                    <div className="flex justify-end pt-6 border-t border-border/50">
+                      <Button type="submit" disabled={isUpdatingSettings} size="lg" className="rounded-full px-6">
                         {isUpdatingSettings ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -847,12 +866,39 @@ function SettingsContent() {
                 </>
               ),
             },
+            {
+              id: 3,
+              label: sections[3].label,
+              content: (
+                <>
+                  <Card className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+                    <CardHeader className="pb-4">
+                      <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                        {t('onboarding.title')}
+                      </h2>
+                      <CardDescription className="mt-1 text-[15px]">
+                        {t('onboarding.description')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Link href="/dashboard?showIntro=1">
+                        <Button type="button" variant="outline" className="rounded-full gap-2">
+                          <PlayCircle className="h-4 w-4" />
+                          {t('onboarding.relaunch')}
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </>
+              ),
+            },
           ]}
           value={activeTabId >= 0 ? activeTabId : 0}
           onValueChange={(id) => handleTabChange(sections[id].value)}
         />
       )}
 
+      </div>
     </div>
   );
 }

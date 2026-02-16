@@ -365,6 +365,11 @@
     "logoutError": "Erreur lors de la déconnexion",
     "logoutErrorDescription": "Vous avez été déconnecté localement."
   },
+  "createWorkspace": {
+    "profileCompleteHint": "Votre espace est déjà configuré. Créez un autre espace ou retournez au tableau de bord.",
+    "openModalToAddAnother": "Créer un autre espace",
+    "backToDashboard": "Retour au tableau de bord"
+  },
   "invoices": {
     "title": "Factures",
     "subtitle": "Suivez vos brouillons, factures envoyées et paiements reçus.",
@@ -424,6 +429,22 @@
       "amount": "Montant",
       "actions": "Actions",
       "view": "Voir"
+    },
+    "stats": {
+      "thisMonth": "Ce mois"
+    },
+    "sort": {
+      "priority": "Priorité (en retard)",
+      "recent": "Plus récentes",
+      "oldest": "Plus anciennes",
+      "amountDesc": "Montant décroissant",
+      "amountAsc": "Montant croissant"
+    },
+    "listPage": {
+      "noSearchResults": "Aucune facture trouvée",
+      "noSearchResultsDescription": "Aucune facture ne correspond à vos critères.",
+      "resetFilters": "Réinitialiser les filtres",
+      "invoiceCount": "{count, plural, one {# facture} other {# factures}}"
     },
     "empty": {
       "title": "Aucune facture pour le moment",
@@ -558,24 +579,33 @@
       "next": "Suivant",
       "finish": "Terminer",
       "step1": {
-        "title": "Bienvenue dans le mode Facture Rapide !",
-        "description": "Ce mode vous permet de créer et envoyer une facture en seulement 3 clics. C'est le moyen le plus rapide de facturer vos clients."
+        "title": "Bienvenue en Facture Rapide",
+        "description": "Créez et envoyez une facture en 3 clics. Le moyen le plus rapide de vous faire payer.",
+        "previewTagline": "3 étapes. Terminé."
       },
       "step2": {
-        "title": "1. Sélectionnez un client",
-        "description": "Cliquez sur le champ client pour choisir un client existant ou créer un nouveau client rapidement."
+        "title": "Sélectionnez un client",
+        "description": "Cliquez sur le champ client pour choisir un client existant ou en ajouter un en quelques secondes.",
+        "previewPlaceholder": "Choisir un client...",
+        "client1": "Apple Inc.",
+        "client2": "Google LLC",
+        "client3": "Microsoft Corporation"
       },
       "step3": {
-        "title": "2. Entrez le montant",
-        "description": "Saisissez le montant total de votre facture. Vous pouvez utiliser les décimales (ex: 15000.50)."
+        "title": "Saisissez le montant",
+        "description": "Entrez le montant total. Les décimales sont acceptées — la devise est définie automatiquement.",
+        "previewLabel": "Montant",
+        "amountExample": "12 500,00"
       },
       "step4": {
-        "title": "3. Envoyez la facture",
-        "description": "Cliquez sur 'Envoyer la facture' pour créer et envoyer automatiquement votre facture par WhatsApp à votre client."
+        "title": "Envoyez votre facture",
+        "description": "Cliquez sur Envoyer pour créer la facture et l'envoyer à votre client par WhatsApp.",
+        "sendButtonLabel": "Envoyer la facture"
       },
       "step5": {
-        "title": "C'est terminé !",
-        "description": "Votre facture a été créée et envoyée. Vous pouvez maintenant créer d'autres factures ou consulter vos factures dans la liste."
+        "title": "C'est fait",
+        "description": "Votre facture a été créée et envoyée. Créez-en une autre ou consultez la liste de vos factures.",
+        "successLabel": "Facture envoyée"
       }
     },
     "form": {
@@ -1331,7 +1361,10 @@
     "catalog": {
       "title": "Catalogue",
       "description": "Liste de vos prestations disponibles.",
-      "searchPlaceholder": "Rechercher une prestation"
+      "searchPlaceholder": "Rechercher une prestation",
+      "noSearchResults": "Aucun résultat pour « {query} »",
+      "noSearchResultsHint": "Modifiez la recherche ou réinitialisez.",
+      "clearSearch": "Effacer la recherche"
     },
     "table": {
       "reference": "Référence",
@@ -2410,7 +2443,13 @@
       "profile": "Profil",
       "workspace": "Espace de travail",
       "billing": "Facturation",
-      "subscription": "Abonnement"
+      "subscription": "Abonnement",
+      "general": "Général"
+    },
+    "onboarding": {
+      "title": "Présentation de l'application",
+      "description": "Revoyez le tutoriel de prise en main et la présentation des fonctionnalités de Facturly.",
+      "relaunch": "Relancer l'onboarding"
     },
     "profile": {
       "title": "Informations personnelles",
@@ -2675,7 +2714,8 @@
       "description": "{count} facture{plural} reçue{plural}",
       "searchPlaceholder": "Rechercher par numéro ou fournisseur...",
       "filterPlaceholder": "Filtrer par statut",
-      "allStatuses": "Tous les statuts"
+      "allStatuses": "Tous les statuts",
+      "clearSearch": "Effacer la recherche"
     },
     "status": {
       "received": "Reçue",
@@ -3034,6 +3074,14 @@
   "onboarding": {
     "title": "Créez votre profil de facturation",
     "description": "Vous êtes à 2 minutes de votre première facture",
+    "step1": {
+      "title": "Parlons de vous",
+      "subtitle": "Quel type de profil correspond le mieux à votre activité ?"
+    },
+    "step1Additional": {
+      "title": "Nouvel espace",
+      "subtitle": "Choisissez le type de ce nouvel espace."
+    },
     "steps": {
       "type": "Type",
       "basic": "Informations de base",

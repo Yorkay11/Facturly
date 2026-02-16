@@ -3,14 +3,24 @@
 import { Link } from '@/i18n/routing';
 import { useParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
-import { ArrowLeft, Mail, Phone, MapPin, Building2, Trash2, Plus, History, TrendingUp, Pencil } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Trash2, Plus, History, TrendingUp, Pencil, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Skeleton from "@/components/ui/skeleton";
 import ClientModal from "@/components/modals/ClientModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   useGetClientByIdQuery,
   useGetInvoicesQuery,
@@ -19,17 +29,16 @@ import {
 } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { useTranslations, useLocale } from 'next-intl';
-import { useState } from "react";
 
 export default function ClientDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations('clients.detail');
   const clientsT = useTranslations('clients');
-  const navigationT = useTranslations('navigation');
   const commonT = useTranslations('common');
   const locale = useLocale();
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Dans Next.js 16, useParams retourne directement les paramètres
   // Vérifier que l'ID existe et n'est pas "undefined" (chaîne)
@@ -85,34 +94,23 @@ export default function ClientDetailPage() {
   }, 0);
 
   const handleDelete = async () => {
-    if (!confirm(t('errors.deleteConfirm'))) {
-      return;
-    }
-
     if (!clientId) {
-      toast.error(commonT('error'), {
-        description: t('errors.missingIdError'),
-      });
+      toast.error(commonT('error'), { description: t('errors.missingIdError') });
       return;
     }
-
     try {
       await deleteClientMutation(clientId).unwrap();
       toast.success(clientsT('deleteSuccess'), {
         description: clientsT('deleteSuccessDescription', { name: client?.name || '' }),
       });
+      setShowDeleteDialog(false);
       router.push("/clients");
     } catch (error) {
-      let errorMessage = t('errors.deleteErrorGeneric');
-      if (error && typeof error === "object" && error !== null && "data" in error) {
-        errorMessage =
-          (error.data as { message?: string })?.message ??
-          t('errors.deleteError');
-      }
-      
-      toast.error(commonT('error'), {
-        description: errorMessage,
-      });
+      const errorMessage =
+        error && typeof error === "object" && error !== null && "data" in error
+          ? (error.data as { message?: string })?.message ?? t('errors.deleteError')
+          : t('errors.deleteErrorGeneric');
+      toast.error(commonT('error'), { description: errorMessage });
     }
   };
 
@@ -159,274 +157,317 @@ export default function ClientDetailPage() {
     );
   }
 
+  const addressParts = [
+    client.addressLine1,
+    client.addressLine2,
+    [client.postalCode, client.city].filter(Boolean).join(" "),
+    client.country,
+  ].filter(Boolean);
+  const initial = client.name?.charAt(0)?.toUpperCase() ?? "?";
+
   return (
-    <div className="space-y-6">
-      <Breadcrumb
-        items={[
-          { label: t('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: t('breadcrumb.clients'), href: "/clients" },
-          { label: client.name },
-        ]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          
-          <h1 className="text-3xl font-semibold tracking-tight text-primary">{client.name}</h1>
-          <p className="text-sm text-foreground/60">
-            {t('subtitle')}
-          </p>
+    <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: t('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: t('breadcrumb.clients'), href: "/clients" },
+              { label: client.name },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
+
+        {/* Hero: avatar + nom + actions */}
+        <header className="mb-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex gap-5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-2xl font-semibold text-primary shadow-sm">
+                {initial}
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  {client.name}
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-2 rounded-full border-border/80 bg-background/80 px-4 text-sm font-medium shadow-sm backdrop-blur-sm"
+                onClick={() => setEditModalOpen(true)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                {t('buttons.edit')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-2 rounded-full px-4 text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {t('buttons.delete')}
+              </Button>
+              <Button size="sm" className="h-9 gap-2 rounded-full px-4 text-sm font-medium" asChild>
+                <Link href={`/invoices/new?clientId=${client.id}`}>
+                  <Plus className="h-3.5 w-3.5" />
+                  {t('buttons.createInvoice')}
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Stats principales */}
+        <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-border/40 bg-background p-6 shadow-sm">
+            <p className="text-[13px] font-medium text-muted-foreground">
+              {t('statistics.totalInvoices')}
+            </p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+              {totalInvoices}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border/40 bg-background p-6 shadow-sm">
+            <p className="text-[13px] font-medium text-muted-foreground">
+              {t('statistics.totalAmount')}
+            </p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+              {totalAmount > 0 ? formatCurrency(totalAmount, invoices[0]?.currency || "EUR") : "—"}
+            </p>
+          </div>
+        </section>
+
+        {/* Contenu principal */}
+        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+          {/* Colonne gauche */}
+          <div className="space-y-6">
+            {/* Informations de contact */}
+            <section className="rounded-xl border border-border/40 bg-background p-6 shadow-sm">
+              <h2 className="text-[15px] font-semibold text-foreground mb-6">
+                {t('contactInfo.title')}
+              </h2>
+              <div className="space-y-4">
+                {client.email && (
+                  <a
+                    href={`mailto:${client.email}`}
+                    className="flex items-center gap-4 rounded-lg p-4 transition-colors hover:bg-muted/40 -mx-2"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Mail className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-medium text-muted-foreground mb-0.5">{t('contactInfo.email')}</p>
+                      <p className="truncate text-[15px] font-medium text-foreground">{client.email}</p>
+                    </div>
+                  </a>
+                )}
+                {client.phone && (
+                  <a
+                    href={`tel:${client.phone}`}
+                    className="flex items-center gap-4 rounded-lg p-4 transition-colors hover:bg-muted/40 -mx-2"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Phone className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-medium text-muted-foreground mb-0.5">{t('contactInfo.phone')}</p>
+                      <p className="text-[15px] font-medium text-foreground">{client.phone}</p>
+                    </div>
+                  </a>
+                )}
+                {addressParts.length > 0 && (
+                  <div className="flex items-start gap-4 rounded-lg p-4 -mx-2">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 mt-0.5">
+                      <MapPin className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[12px] font-medium text-muted-foreground mb-1">{t('contactInfo.address')}</p>
+                      <p className="text-[15px] leading-relaxed text-foreground">
+                        {addressParts.join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {!client.email && !client.phone && addressParts.length === 0 && (
+                  <div className="rounded-lg bg-muted/30 px-4 py-6 text-center">
+                    <p className="text-sm text-muted-foreground">{t('contactInfo.description')}</p>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Factures récentes */}
+            <section className="rounded-xl border border-border/40 bg-background shadow-sm overflow-hidden">
+              <div className="border-b border-border/30 px-6 py-4 bg-muted/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <History className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="text-[15px] font-semibold text-foreground">
+                    {t('recentInvoices.title')}
+                  </h2>
+                </div>
+                <p className="text-[13px] text-muted-foreground">{t('recentInvoices.description')}</p>
+              </div>
+              <div className="divide-y divide-border/30">
+                {isLoadingInvoices ? (
+                  <div className="p-6 space-y-3">
+                    <Skeleton className="h-16 w-full rounded-lg" />
+                    <Skeleton className="h-16 w-full rounded-lg" />
+                  </div>
+                ) : invoices.length > 0 ? (
+                  <>
+                    {invoices.map((invoice) => (
+                      <Link
+                        key={invoice.id}
+                        href={`/invoices/${invoice.id}`}
+                        className="flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-muted/30 active:bg-muted/50"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[15px] font-semibold text-foreground mb-1">{invoice.invoiceNumber}</p>
+                          <p className="text-[13px] text-muted-foreground">
+                            {formatDate(invoice.issueDate)} · {formatCurrency(invoice.totalAmount, invoice.currency)}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                      </Link>
+                    ))}
+                    {totalInvoices > invoices.length && (
+                      <Link
+                        href={`/invoices?clientId=${client.id}`}
+                        className="flex items-center justify-center gap-2 px-6 py-4 text-[14px] font-medium text-primary hover:bg-muted/30 transition-colors"
+                      >
+                        {t('recentInvoices.viewAll', { count: totalInvoices })}
+                        <ChevronRight className="h-4 w-4" />
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <div className="px-6 py-12 text-center">
+                    <p className="text-sm text-muted-foreground mb-4">{t('recentInvoices.noInvoices')}</p>
+                    <Button size="sm" className="gap-2 rounded-xl" asChild>
+                      <Link href={`/invoices/new?clientId=${client.id}`}>
+                        <Plus className="h-4 w-4" />
+                        {t('buttons.createInvoice')}
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Notes */}
+            {client.notes && (
+              <section className="rounded-xl border border-border/40 bg-background p-6 shadow-sm">
+                <h2 className="text-[15px] font-semibold text-foreground mb-4">{t('notes.title')}</h2>
+                <p className="text-[15px] leading-relaxed text-foreground/90 whitespace-pre-wrap">{client.notes}</p>
+              </section>
+            )}
+          </div>
+
+          {/* Colonne droite */}
+          <div className="space-y-6">
+            {/* Statistiques */}
+            {client.createdAt && (
+              <section className="rounded-xl border border-border/40 bg-background p-6 shadow-sm">
+                <h2 className="text-[15px] font-semibold text-foreground mb-4">
+                  {t('statistics.title')}
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[13px] font-medium text-muted-foreground mb-1">
+                      {t('statistics.addedDate')}
+                    </p>
+                    <p className="text-[17px] font-semibold text-foreground">
+                      {formatDate(client.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Revenus mensuels */}
+            {clientRevenue && clientRevenue.monthlyRevenues.length > 0 && (
+              <section className="rounded-xl border border-border/40 bg-background shadow-sm overflow-hidden">
+                <div className="border-b border-border/30 px-6 py-4 bg-muted/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <h2 className="text-[15px] font-semibold text-foreground">
+                      {t('monthlyRevenue.title')}
+                    </h2>
+                  </div>
+                  <p className="text-[13px] text-muted-foreground">{t('monthlyRevenue.description')}</p>
+                </div>
+                <div className="divide-y divide-border/30">
+                  {isLoadingRevenue ? (
+                    <div className="p-6 space-y-3">
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                      <Skeleton className="h-16 w-full rounded-lg" />
+                    </div>
+                  ) : (
+                    clientRevenue.monthlyRevenues.slice().reverse().map((monthData) => {
+                      const date = new Date(monthData.year, monthData.month - 1, 1);
+                      const monthName = date.toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", { month: "long", year: "numeric" });
+                      const revenue = monthData.revenue[0];
+                      return (
+                        <div
+                          key={`${monthData.month}-${monthData.year}`}
+                          className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-muted/30"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[15px] font-semibold text-foreground capitalize mb-1">{monthName}</p>
+                            <p className="text-[13px] text-muted-foreground">
+                              {t('monthlyRevenue.invoicesSent', { count: monthData.invoicesSent })} · {t('monthlyRevenue.invoicesPaid', { paid: monthData.invoicesPaid })}
+                            </p>
+                          </div>
+                          <p className="text-[15px] font-semibold tabular-nums text-foreground shrink-0 ml-4">
+                            {revenue ? formatCurrency(revenue.amount, revenue.currency) : "—"}
+                          </p>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </section>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setEditModalOpen(true)}
-          >
-            <Pencil className="h-4 w-4" />
-            {t('buttons.edit')}
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-2 text-destructive hover:!bg-destructive hover:!text-white"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            <Trash2 className="h-4 w-4" />
-            {t('buttons.delete')}
-          </Button>
-          <Button className="gap-2" asChild>
-            <Link href={`/invoices/new?clientId=${client.id}`}>
-              <Plus className="h-4 w-4" />
-              {t('buttons.createInvoice')}
+
+        <div className="mt-10">
+          <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" asChild>
+            <Link href="/clients">
+              <ArrowLeft className="h-4 w-4" />
+              {t('buttons.backToList')}
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('contactInfo.title')}</CardTitle>
-              <CardDescription>{t('contactInfo.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                {client.email && (
-                  <div className="flex items-start gap-3">
-                    <Mail className="h-5 w-5 text-primary/60 mt-0.5" />
-                    <div>
-                      <p className="text-xs uppercase text-foreground/50">{t('contactInfo.email')}</p>
-                      <a
-                        href={`mailto:${client.email}`}
-                        className="text-sm font-medium text-primary hover:underline"
-                      >
-                        {client.email}
-                      </a>
-                    </div>
-                  </div>
-                )}
-                {client.phone && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="h-5 w-5 text-primary/60 mt-0.5" />
-                    <div>
-                      <p className="text-xs uppercase text-foreground/50">{t('contactInfo.phone')}</p>
-                      <a
-                        href={`tel:${client.phone}`}
-                        className="text-sm font-medium text-primary hover:underline"
-                      >
-                        {client.phone}
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-              {(client.addressLine1 || client.city || client.country) && (
-                <>
-                  <Separator />
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-primary/60 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-xs uppercase text-foreground/50">{t('contactInfo.address')}</p>
-                      <div className="text-sm text-foreground/70">
-                        {client.addressLine1 && <p>{client.addressLine1}</p>}
-                        {client.addressLine2 && <p>{client.addressLine2}</p>}
-                        <p>
-                          {client.postalCode && `${client.postalCode} `}
-                          {client.city}
-                          {client.city && client.country && ", "}
-                          {client.country}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{clientsT('deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {clientsT('deleteDescription', { name: client?.name ?? '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{commonT('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? clientsT('processing') : t('buttons.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base">{t('recentInvoices.title')}</CardTitle>
-                <CardDescription>{t('recentInvoices.description')}</CardDescription>
-              </div>
-              <History className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              {isLoadingInvoices ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              ) : invoices.length > 0 ? (
-                <div className="space-y-3">
-                  {invoices.map((invoice) => (
-                    <Link
-                      key={invoice.id}
-                      href={`/invoices/${invoice.id}`}
-                      className="block rounded-lg border border-primary/20 bg-primary/5 p-3 hover:bg-primary/10 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-semibold text-sm text-primary">{invoice.invoiceNumber}</p>
-                          <p className="text-xs text-foreground/60">
-                            {formatDate(invoice.issueDate)} - {formatDate(invoice.dueDate)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-primary">
-                            {formatCurrency(invoice.totalAmount, invoice.currency)}
-                          </p>
-                          <p className="text-xs text-foreground/60">{invoice.status}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                  {totalInvoices > invoices.length && (
-                    <Button variant="ghost" className="w-full justify-center text-primary" asChild>
-                      <Link href={`/invoices?clientId=${client.id}`}>
-                        {t('recentInvoices.viewAll', { count: totalInvoices })}
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-lg border border-dashed border-primary/30 bg-white py-8 text-center">
-                  <p className="text-sm text-foreground/60">{t('recentInvoices.noInvoices')}</p>
-                  <Button variant="ghost" className="mt-2 gap-2 text-primary" asChild>
-                    <Link href={`/invoices/new?clientId=${client.id}`}>
-                      <Plus className="h-4 w-4" />
-                      {t('buttons.createInvoice')}
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {client.notes && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('notes.title')}</CardTitle>
-                <CardDescription>{t('notes.description')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-foreground/70 whitespace-pre-wrap">{client.notes}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('statistics.title')}</CardTitle>
-              <CardDescription>{t('statistics.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-xs uppercase text-foreground/50">{t('statistics.totalInvoices')}</p>
-                <p className="text-2xl font-semibold text-primary">{totalInvoices}</p>
-              </div>
-              <Separator />
-              <div className="space-y-2">
-                <p className="text-xs uppercase text-foreground/50">{t('statistics.totalAmount')}</p>
-                <p className="text-2xl font-semibold text-primary">
-                  {totalAmount > 0 
-                    ? formatCurrency(totalAmount, invoices[0]?.currency || "EUR")
-                    : "—"
-                  }
-                </p>
-              </div>
-              {client.createdAt && (
-                <>
-                  <Separator />
-                  <div className="space-y-2">
-                    <p className="text-xs uppercase text-foreground/50">{t('statistics.addedDate')}</p>
-                    <p className="text-sm font-medium text-primary">{formatDate(client.createdAt)}</p>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {clientRevenue && clientRevenue.monthlyRevenues.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  {t('monthlyRevenue.title')}
-                </CardTitle>
-                <CardDescription>{t('monthlyRevenue.description')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingRevenue ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {clientRevenue.monthlyRevenues.slice().reverse().map((monthData, index) => {
-                      const date = new Date(monthData.year, monthData.month - 1, 1);
-                      const monthName = date.toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", { month: "long", year: "numeric" });
-                      const revenue = monthData.revenue[0];
-                      
-                      return (
-                        <div
-                          key={`${monthData.month}-${monthData.year}`}
-                          className="rounded-lg border border-primary/20 bg-primary/5 p-3"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-semibold text-primary capitalize">{monthName}</p>
-                              <p className="text-xs text-foreground/60">
-                                {t('monthlyRevenue.invoicesSent', { count: monthData.invoicesSent })} • {t('monthlyRevenue.invoicesPaid', { paid: monthData.invoicesPaid })}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-semibold text-primary">
-                                {revenue
-                                  ? formatCurrency(revenue.amount, revenue.currency)
-                                  : "—"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          
-        </div>
-      </div>
-      
       <ClientModal
         open={isEditModalOpen}
         clientId={clientId}

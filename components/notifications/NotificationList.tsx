@@ -48,12 +48,10 @@ export function NotificationList({
 
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-6 px-3 text-center">
-        <div className="mb-3">
-          <FuryMascot mood="smile" size="md" />
-        </div>
-        <p className="text-xs font-medium text-foreground mb-0.5">{t('empty.title')}</p>
-        <p className="text-[11px] text-muted-foreground">
+      <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4 text-center">
+        <FuryMascot mood="smile" size="lg" className="mb-4" />
+        <p className="text-[15px] font-semibold text-foreground tracking-tight mb-1">{t('empty.title')}</p>
+        <p className="text-[13px] text-muted-foreground max-w-xs">
           {t('empty.description')}
         </p>
       </div>

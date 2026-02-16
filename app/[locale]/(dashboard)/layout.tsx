@@ -12,7 +12,6 @@ import { RedirectLoader } from "@/components/navigation/RedirectLoader";
 import { useInvoiceMetadata } from "@/hooks/useInvoiceMetadata";
 import { useItemsStore } from "@/hooks/useItemStore";
 import { usePathname } from '@/i18n/routing';
-import { useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
 import { WorkspaceProvider, useWorkspace } from "@/contexts/WorkspaceContext";
 import { cn } from "@/lib/utils";
@@ -50,34 +49,35 @@ function NavigationBlockLoader() {
   );
 }
 
-// Composant pour gérer la redirection vers la création de workspace
-function CreateWorkspaceRedirect() {
+// Même logique que CreateWorkspaceRedirect pour savoir si le profil workspace est incomplet
+function useWorkspaceIncomplete() {
+  const { currentWorkspace, isLoadingCurrent } = useWorkspace();
+  if (isLoadingCurrent) return { incomplete: false, loading: true };
+  const incomplete =
+    !currentWorkspace ||
+    (currentWorkspace && (
+      (currentWorkspace.profileCompletion ?? 0) < 100 ||
+      (currentWorkspace.type === "COMPANY" ? !currentWorkspace.name : false)
+    ));
+  return { incomplete: !!incomplete, loading: false };
+}
+
+// Redirection vers create-workspace uniquement si on n’ouvre pas le modal (ex: page create-workspace elle-même gère le contenu)
+function CreateWorkspaceRedirect({ skipRedirect }: { skipRedirect?: boolean }) {
   const pathname = usePathname();
-  const { data: workspace, isLoading, error } = useGetWorkspaceQuery();
+  const { currentWorkspace, isLoadingCurrent } = useWorkspace();
 
-  // Ne pas rediriger si on est déjà sur la page create-workspace
-  if (pathname?.includes('/create-workspace') || isLoading) {
+  if (pathname?.includes("/create-workspace") || isLoadingCurrent || skipRedirect) {
     return null;
   }
 
-  // Vérifier si le profil doit être complété → redirection vers create-workspace
   const shouldRedirectToCreateWorkspace =
-    // Cas 1: Pas de workspace du tout (404) ou workspace null
-    !workspace || (error && 'status' in error && error.status === 404) ||
-    // Cas 2: Workspace existe mais incomplet
-    (workspace && (() => {
-      const workspaceCompletion = workspace.profileCompletion ?? 0;
-      // Pour les entreprises, vérifier si le nom est présent
-      const hasMissingWorkspaceInfo = workspace.type === 'COMPANY'
-        ? !workspace.name
-        : false;
+    !currentWorkspace ||
+    (currentWorkspace &&
+      ((currentWorkspace.profileCompletion ?? 0) < 100 ||
+        (currentWorkspace.type === "COMPANY" ? !currentWorkspace.name : false)));
 
-      return workspaceCompletion < 100 || hasMissingWorkspaceInfo;
-    })());
-
-  if (!shouldRedirectToCreateWorkspace) {
-    return null;
-  }
+  if (!shouldRedirectToCreateWorkspace) return null;
 
   return (
     <ConditionalRedirect
@@ -102,7 +102,10 @@ function DashboardLayoutContent({
   const [profileOpen, setProfileOpen] = useState(false);
   const { isCollapsed } = useSidebar();
   const { isChangingWorkspace } = useWorkspace();
+  const { incomplete: workspaceIncomplete, loading: workspaceLoading } = useWorkspaceIncomplete();
   const locale = useLocale();
+
+  const openCreateWorkspaceModal = !workspaceLoading && workspaceIncomplete && !isCreateWorkspacePage;
 
   useNotificationsPush();
   useWebPushSubscribe(locale);
@@ -126,11 +129,12 @@ function DashboardLayoutContent({
       />
       
       {/* Sidebar */}
-      <Sidebar 
-        isOpen={sidebarOpen} 
+      <Sidebar
+        isOpen={sidebarOpen}
         onOpenChange={setSidebarOpen}
         profileOpen={profileOpen}
         onProfileOpenChange={setProfileOpen}
+        openCreateWorkspaceModal={openCreateWorkspaceModal}
       />
       
       {/* Topbar (Desktop) */}
@@ -149,7 +153,7 @@ function DashboardLayoutContent({
       <BottomTabs />
       <ChatFab />
       <NavigationBlockLoader />
-      <CreateWorkspaceRedirect />
+      <CreateWorkspaceRedirect skipRedirect={openCreateWorkspaceModal} />
       {isChangingWorkspace && (
         <RedirectLoader 
           text="Chargement du workspace..."

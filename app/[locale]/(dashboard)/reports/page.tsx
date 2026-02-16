@@ -703,100 +703,89 @@ export default function ReportsPage() {
   ], [t, loadingEvolution, revenueEvolution, evolutionChartData, formatCurrency, loadingClients, revenueByClient, revenueByClientChartData, loadingProducts, revenueByProduct, revenueByProductChartData, loadingMonths, revenueByMonthChartData, loadingTopClients, topClients, locale, loadingForecast, revenueForecast]);
 
   return (
-    <div className="space-y-6">
-      <Breadcrumb
-        items={[
-          { label: commonT('dashboard'), href: "/dashboard" },
-          { label: t('title') },
-        ]}
-        className="text-xs"
-      />
+    <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10 space-y-8">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: commonT('dashboard'), href: "/dashboard" },
+              { label: t('title') },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
 
-      {/* Header amélioré */}
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {t('title')}
             </h1>
-            <p className="mt-2 text-sm md:text-base text-muted-foreground">{t('subtitle')}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
+              className="h-9 gap-2 rounded-full"
               onClick={handleExportExcel}
               disabled={isExportingExcel}
-              className="group hover:bg-green-50 hover:border-green-500/50 hover:text-green-700 transition-all"
             >
-              <FaFileExcel className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+              <FaFileExcel className="h-4 w-4" />
               {isExportingExcel ? t('export.exporting') : t('export.excel')}
             </Button>
             <Button
               variant="outline"
               size="sm"
+              className="h-9 gap-2 rounded-full"
               onClick={handleExportPDF}
               disabled={isExportingPDF}
-              className="group hover:bg-red-50 hover:border-red-500/50 hover:text-red-700 transition-all"
             >
-              <FaFilePdf className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+              <FaFilePdf className="h-4 w-4" />
               {isExportingPDF ? t('export.exporting') : t('export.pdf')}
             </Button>
           </div>
-        </div>
+        </header>
 
-        {/* Statistiques clés */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats en row */}
+        <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {statsCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -2 }}
-                className={`
-                  group relative overflow-hidden rounded-xl border ${stat.borderColor}
-                  bg-gradient-to-br ${stat.color}
-                  p-4 shadow-sm hover:shadow-md transition-all duration-300
-                `}
+                transition={{ delay: index * 0.05 }}
+                className="rounded-2xl border border-border/50 bg-card/50 p-5 shadow-sm backdrop-blur-sm"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
                       {stat.label}
                     </p>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
                       {stat.value}
                     </p>
                   </div>
-                  <div className={`
-                    flex items-center justify-center w-10 h-10 rounded-lg
-                    bg-white/50 group-hover:bg-white/70
-                    ${stat.iconColor} transition-all duration-300
-                    group-hover:scale-110
-                  `}>
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${stat.iconColor}`}>
                     <Icon className="h-5 w-5" />
                   </div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </motion.div>
             );
           })}
-        </div>
-      </div>
+        </section>
 
-      {/* Filtres améliorés */}
-      <Card className="border-primary/20 shadow-sm bg-gradient-to-br from-card to-card/50">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <FaCalendar className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold text-primary">{t('filters.title')}</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+        {/* Filtres */}
+        <Card className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <FaCalendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-semibold text-foreground">{t('filters.title')}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <label className="text-xs font-medium text-foreground/70 flex items-center gap-1.5">
                 <span>{t('filters.month')}</span>
@@ -863,13 +852,14 @@ export default function ReportsPage() {
         </CardContent>
       </Card>
 
-      {/* Onglets de rapports améliorés */}
-      <DirectionAwareTabs
-        className="w-full mb-6"
-        tabs={reportTabs}
-        value={activeTab}
-        onValueChange={setActiveTab}
-      />
+        {/* Onglets de rapports */}
+        <DirectionAwareTabs
+          className="w-full"
+          tabs={reportTabs}
+          value={activeTab}
+          onValueChange={setActiveTab}
+        />
+      </div>
     </div>
   );
 }

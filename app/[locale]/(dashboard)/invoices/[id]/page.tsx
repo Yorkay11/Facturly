@@ -35,7 +35,8 @@ import { store } from "@/lib/redux/store";
 import { toast } from "sonner";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import { ReminderModal } from "@/components/modals/ReminderModal";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -453,38 +454,42 @@ export default function InvoiceDetailPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <Breadcrumb
-        items={[
-          { label: invoicesT('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: invoicesT('breadcrumb.invoices'), href: "/invoices" },
-          { label: invoiceData.invoiceNumber },
-        ]}
-        className="text-xs"
-      />
+    <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: invoicesT('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: invoicesT('breadcrumb.invoices'), href: "/invoices" },
+              { label: invoiceData.invoiceNumber },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
 
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between pb-6 border-b">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {invoiceData.invoiceNumber}
-            </h1>
-            <InvoiceStatusBadge status={invoiceData.status} />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {clientName}
-          </p>
-          <p className="text-lg font-semibold text-primary tabular-nums">
-            {formatCurrency(invoiceData.totalAmount, invoiceData.currency)}
-          </p>
-        </div>
+        <header className="mb-8 pb-6 border-b border-border/40">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-3.5">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  {invoiceData.invoiceNumber}
+                </h1>
+                <InvoiceStatusBadge status={invoiceData.status} />
+              </div>
+              <p className="text-[15px] text-muted-foreground">
+                {clientName}
+              </p>
+              <p className="text-2xl font-semibold text-primary tabular-nums">
+                {formatCurrency(invoiceData.totalAmount, invoiceData.currency)}
+              </p>
+            </div>
 
-        <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5 sm:shrink-0">
               {(invoiceData.status === "draft" || invoiceData.status === "cancelled") && (
                 <>
                   <Button 
                     size="sm"
-                    className="gap-2 shadow-sm"
+                    className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium"
                     onClick={() => router.push(`/invoices/${invoiceId}/edit`)}
                   >
                     <Edit className="h-4 w-4" />
@@ -494,7 +499,7 @@ export default function InvoiceDetailPage() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="gap-2 shadow-sm"
+                    className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium"
                     disabled={isSendingQuote || !invoiceData.client?.phone}
                     onClick={async () => {
                       if (!invoiceId) return;
@@ -521,7 +526,7 @@ export default function InvoiceDetailPage() {
               <Button
                 size="sm"
                 variant="outline"
-                className="gap-2"
+                className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium border-border/60"
                 onClick={handleDuplicate}
                 disabled={isDuplicating}
               >
@@ -533,7 +538,7 @@ export default function InvoiceDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="gap-2 shadow-sm"
+                    className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium border-border/60"
                     onClick={handleCopyPublicLink}
                   >
                     <LinkIcon className="h-4 w-4" />
@@ -543,7 +548,7 @@ export default function InvoiceDetailPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-2 shadow-sm"
+                      className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium border-border/60"
                       onClick={handleCopyPaymentLink}
                     >
                       <LinkIcon className="h-4 w-4" />
@@ -557,7 +562,7 @@ export default function InvoiceDetailPage() {
                   <Button 
                     size="sm"
                     variant="outline"
-                    className="gap-2"
+                    className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium border-border/60"
                     onClick={() => setShowReminderModal(true)}
                   >
                     <Mail className="h-4 w-4" />
@@ -565,7 +570,7 @@ export default function InvoiceDetailPage() {
                   </Button>
                   <Button 
                     size="sm"
-                    className="gap-2"
+                    className="h-9 gap-2 rounded-xl px-4 text-[15px] font-semibold"
                     onClick={() => {
                       setPaymentAmount((parseFloat(invoiceData.totalAmount) - parseFloat(invoiceData.amountPaid || "0")).toString());
                       setShowMarkPaidDialog(true);
@@ -579,7 +584,7 @@ export default function InvoiceDetailPage() {
               <Button
                 size="sm"
                 variant="destructive"
-                className="gap-2"
+                className="h-9 gap-2 rounded-xl px-4 text-[15px] font-medium"
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={isDeleting || isCancelling || invoiceData.status === "cancelled"}
               >
@@ -590,108 +595,112 @@ export default function InvoiceDetailPage() {
                 )}
                 {invoiceData.status === "draft" ? t('buttons.delete') : t('buttons.cancel')}
               </Button>
-        </div>
-      </header>
+            </div>
+          </div>
+        </header>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="space-y-6">
-          <Card className="transition-shadow hover:shadow-md overflow-hidden">
-            <CardHeader className="pb-4 border-b bg-muted/20">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">{t('summary.title')}</CardTitle>
-                  <CardDescription>{t('summary.description')}</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="group flex gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-sm hover:border-primary/30">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('summary.client')}</p>
-                    <p className="font-semibold truncate" title={clientName}>{clientName}</p>
-                    {clientEmail && <p className="text-sm text-muted-foreground mt-0.5 truncate" title={clientEmail}>{clientEmail}</p>}
-                  </div>
-                </div>
-                <div className="group flex gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-sm hover:border-primary/30">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    <Calendar className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('summary.issueDate')}</p>
-                    <p className="font-semibold tabular-nums">{formatDate(invoiceData.issueDate)}</p>
-                  </div>
-                </div>
-                <div className="group flex gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-sm hover:border-primary/30">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                    <Clock className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('summary.dueDate')}</p>
-                    <p className="font-semibold tabular-nums">{formatDate(invoiceData.dueDate)}</p>
-                  </div>
-                </div>
-                {parseFloat(invoiceData.taxAmount ?? "0") > 0 && (
-                  <div className="group flex gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-sm hover:border-primary/30">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      <Percent className="h-5 w-5" />
+        {/* Informations principales */}
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+          {/* Colonne gauche */}
+          <div className="space-y-6">
+            {/* Informations générales */}
+            <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
+              <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                <CardTitle className="text-[15px] font-semibold">{t('summary.title')}</CardTitle>
+                <CardDescription className="text-[13px] mt-1">{t('summary.description')}</CardDescription>
+              </CardHeader>
+              <CardContent className="px-6 py-6">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-start gap-3.5 rounded-lg p-4 bg-muted/20 hover:bg-muted/30 transition-all hover:shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <User className="h-5 w-5" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">TVA</p>
-                      <p className="font-semibold tabular-nums">{formatCurrency(invoiceData.taxAmount ?? "0", invoiceData.currency)}</p>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <p className="text-[12px] font-medium text-muted-foreground mb-1.5">{t('summary.client')}</p>
+                      <p className="text-[15px] font-semibold text-foreground truncate" title={clientName}>{clientName}</p>
+                      {clientEmail && <p className="text-[13px] text-muted-foreground mt-1 truncate" title={clientEmail}>{clientEmail}</p>}
                     </div>
                   </div>
-                )}
-              </div>
-
-              <Separator className="my-2" />
-
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold">{t('items.title') || 'Articles'}</h3>
-                  {items.length > 0 && (
-                    <span className="text-xs text-muted-foreground font-medium">{items.length} {items.length === 1 ? 'ligne' : 'lignes'}</span>
+                  <div className="flex items-start gap-3.5 rounded-lg p-4 bg-muted/20 hover:bg-muted/30 transition-all hover:shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <p className="text-[12px] font-medium text-muted-foreground mb-1.5">{t('summary.issueDate')}</p>
+                      <p className="text-[15px] font-semibold text-foreground tabular-nums">{formatDate(invoiceData.issueDate)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3.5 rounded-lg p-4 bg-muted/20 hover:bg-muted/30 transition-all hover:shadow-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <p className="text-[12px] font-medium text-muted-foreground mb-1.5">{t('summary.dueDate')}</p>
+                      <p className="text-[15px] font-semibold text-foreground tabular-nums">{formatDate(invoiceData.dueDate)}</p>
+                    </div>
+                  </div>
+                  {parseFloat(invoiceData.taxAmount ?? "0") > 0 && (
+                    <div className="flex items-start gap-3.5 rounded-lg p-4 bg-muted/20 hover:bg-muted/30 transition-all hover:shadow-sm">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        <Percent className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="text-[12px] font-medium text-muted-foreground mb-1.5">TVA</p>
+                        <p className="text-[15px] font-semibold text-foreground tabular-nums">{formatCurrency(invoiceData.taxAmount ?? "0", invoiceData.currency)}</p>
+                      </div>
+                    </div>
                   )}
                 </div>
-                <div className="rounded-xl border overflow-hidden">
+              </CardContent>
+            </Card>
+
+            {/* Articles */}
+            <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
+              <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-[15px] font-semibold">{t('items.title') || 'Articles'}</CardTitle>
+                    <CardDescription className="text-[13px] mt-1">{t('items.description') || 'Détails des articles facturés'}</CardDescription>
+                  </div>
+                  {items.length > 0 && (
+                    <span className="text-[13px] text-muted-foreground font-medium">{items.length} {items.length === 1 ? 'ligne' : 'lignes'}</span>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 py-6">
+                <div className="rounded-lg border border-border/40 overflow-hidden bg-background">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-muted/50 hover:bg-muted/50">
-                        <TableHead className="font-semibold">{t('items.description')}</TableHead>
-                        <TableHead className="text-right w-20 font-semibold">{t('items.quantity')}</TableHead>
-                        <TableHead className="text-right font-semibold">{t('items.unitPrice')}</TableHead>
-                        <TableHead className="text-right font-semibold w-28">{t('items.total')}</TableHead>
+                      <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/40">
+                        <TableHead className="font-semibold text-[13px] h-11">{t('items.description')}</TableHead>
+                        <TableHead className="text-right w-20 font-semibold text-[13px]">{t('items.quantity')}</TableHead>
+                        <TableHead className="text-right font-semibold text-[13px]">{t('items.unitPrice')}</TableHead>
+                        <TableHead className="text-right font-semibold w-28 text-[13px]">{t('items.total')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {items.length > 0 ? (
                         <>
-                          {items.map((item) => (
-                            <TableRow key={item.id} className="hover:bg-muted/30 transition-colors">
-                              <TableCell className="font-medium">{item.description}</TableCell>
-                              <TableCell className="text-right text-muted-foreground tabular-nums">{item.quantity}</TableCell>
-                              <TableCell className="text-right text-muted-foreground tabular-nums">{formatCurrency(item.unitPrice, invoiceData.currency)}</TableCell>
-                              <TableCell className="text-right font-medium tabular-nums">{formatCurrency(item.totalAmount, invoiceData.currency)}</TableCell>
+                          {items.map((item, idx) => (
+                            <TableRow key={item.id} className="hover:bg-muted/20 transition-colors border-b border-border/30 last:border-0">
+                              <TableCell className="font-medium text-[15px] py-3.5">{item.description}</TableCell>
+                              <TableCell className="text-right text-muted-foreground tabular-nums text-[15px] py-3.5">{item.quantity}</TableCell>
+                              <TableCell className="text-right text-muted-foreground tabular-nums text-[15px] py-3.5">{formatCurrency(item.unitPrice, invoiceData.currency)}</TableCell>
+                              <TableCell className="text-right font-semibold tabular-nums text-[15px] py-3.5">{formatCurrency(item.totalAmount, invoiceData.currency)}</TableCell>
                             </TableRow>
                           ))}
-                          <TableRow className="bg-muted/30 hover:bg-muted/40 font-semibold">
-                            <TableCell colSpan={3} className="text-right">
+                          <TableRow className="bg-muted/20 border-t-2 border-border/50 font-semibold">
+                            <TableCell colSpan={3} className="text-right text-[15px] py-4">
                               Total
                             </TableCell>
-                            <TableCell className="text-right text-primary tabular-nums">
+                            <TableCell className="text-right text-primary tabular-nums text-[15px] font-semibold py-4">
                               {formatCurrency(invoiceData.totalAmount, invoiceData.currency)}
                             </TableCell>
                           </TableRow>
                         </>
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-10">
+                          <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-12">
                             {t('items.empty')}
                           </TableCell>
                         </TableRow>
@@ -699,18 +708,66 @@ export default function InvoiceDetailPage() {
                     </TableBody>
                   </Table>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
 
-        <div className="space-y-6">
-          <Card className="transition-shadow hover:shadow-md">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">{t('timeline.title')}</CardTitle>
-              <CardDescription className="text-xs">{t('timeline.description')}</CardDescription>
-            </CardHeader>
-            <CardContent>
+            {/* Notes */}
+            {invoiceData.notes && (
+              <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
+                <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                  <CardTitle className="text-[15px] font-semibold">{t('notes.title')}</CardTitle>
+                  <CardDescription className="text-[13px] mt-1">{t('notes.description')}</CardDescription>
+                </CardHeader>
+                <CardContent className="px-6 py-6">
+                  <div className="rounded-lg bg-muted/20 p-5 border border-border/30">
+                    <p className="text-[15px] text-foreground/90 whitespace-pre-wrap leading-relaxed">{invoiceData.notes}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Paiements */}
+            {invoiceData.payments && invoiceData.payments.length > 0 && (
+              <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
+                <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                  <CardTitle className="text-[15px] font-semibold">{t('payments.title')}</CardTitle>
+                  <CardDescription className="text-[13px] mt-1">{t('payments.description')}</CardDescription>
+                </CardHeader>
+                <CardContent className="px-6 py-6">
+                  <div className="space-y-3">
+                    {invoiceData.payments.map((payment) => {
+                      const paymentDate = payment.paymentDate || payment.paidAt || payment.createdAt;
+                      return (
+                        <div key={payment.id} className="rounded-lg border border-l-4 border-l-primary/50 bg-muted/20 p-4 transition-all hover:bg-muted/30 hover:shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1.5 min-w-0 flex-1">
+                              <p className="text-[15px] font-semibold text-foreground tabular-nums">{formatCurrency(payment.amount, invoiceData.currency)}</p>
+                              <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[13px] text-muted-foreground">
+                                {paymentDate && <span>{t('payments.date', { date: formatDate(paymentDate) })}</span>}
+                                <span>{t('payments.method', { method: payment.method })}</span>
+                              </div>
+                              {payment.notes && <p className="text-[13px] text-muted-foreground mt-2.5 pt-2.5 border-t border-border/30">{payment.notes}</p>}
+                            </div>
+                            <Badge variant={payment.status === "completed" ? "default" : "secondary"} className="shrink-0 text-[12px] font-medium">
+                              {payment.status === "completed" ? t('payments.completed') : payment.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
+              <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                <CardTitle className="text-[15px] font-semibold">{t('timeline.title')}</CardTitle>
+                <CardDescription className="text-[13px] mt-1">{t('timeline.description')}</CardDescription>
+              </CardHeader>
+              <CardContent className="px-6 py-6">
               {timeline.length > 0 ? (
                 <div className="relative">
                   <div className="absolute left-[15px] top-3 bottom-3 w-0.5 bg-gradient-to-b from-primary/40 via-border to-transparent rounded-full" />
@@ -737,12 +794,12 @@ export default function InvoiceDetailPage() {
                           <div className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-background ${iconBg}`}>
                             <Icon className="h-4 w-4" />
                           </div>
-                          <div className={`min-w-0 flex-1 pb-4 ${isFirst ? 'rounded-lg bg-muted/30 ring-1 ring-primary/20' : ''} px-3 py-2.5`}>
+                          <div className={`min-w-0 flex-1 pb-4 ${isFirst ? 'rounded-lg bg-muted/30 ring-1 ring-primary/20' : ''} px-4 py-3`}>
                             <div className="flex items-baseline justify-between gap-2">
-                              <p className="text-sm font-semibold">{event.title}</p>
-                              <span className="text-xs text-muted-foreground tabular-nums shrink-0">{event.date}</span>
+                              <p className="text-[15px] font-semibold text-foreground">{event.title}</p>
+                              <span className="text-[13px] text-muted-foreground tabular-nums shrink-0">{event.date}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{event.description}</p>
+                            <p className="text-[13px] text-muted-foreground mt-1.5 leading-relaxed">{event.description}</p>
                           </div>
                         </div>
                       );
@@ -761,84 +818,38 @@ export default function InvoiceDetailPage() {
             </CardContent>
           </Card>
 
-          {reminders && reminders.length > 0 && (
-            <Card className="transition-shadow hover:shadow-md">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">{t('reminders.title')}</CardTitle>
-                <CardDescription className="text-xs">
-                  {t('reminders.description', { count: reminders.length, plural: reminders.length > 1 ? 's' : '' })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {reminders.map((reminder) => (
-                    <div key={reminder.id} className="rounded-lg border bg-muted/20 p-3 transition-colors hover:bg-muted/30">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium">{t('reminders.reminderNumber', { number: reminder.reminderNumber })}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {t('reminders.sentOn', { date: formatDate(reminder.sentAt), days: reminder.daysAfterDue, plural: reminder.daysAfterDue > 1 ? 's' : '' })}
-                          </p>
+            {reminders && reminders.length > 0 && (
+              <Card className="rounded-xl border border-border/40 bg-background shadow-sm">
+                <CardHeader className="pb-4 border-b border-border/40 px-6 pt-6">
+                  <CardTitle className="text-[15px] font-semibold">{t('reminders.title')}</CardTitle>
+                  <CardDescription className="text-[13px] mt-1">
+                    {t('reminders.description', { count: reminders.length, plural: reminders.length > 1 ? 's' : '' })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="px-6 py-6">
+                  <div className="space-y-3">
+                    {reminders.map((reminder) => (
+                      <div key={reminder.id} className="rounded-lg border border-border/40 bg-muted/20 p-4 transition-all hover:bg-muted/30 hover:shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[15px] font-semibold text-foreground">{t('reminders.reminderNumber', { number: reminder.reminderNumber })}</p>
+                            <p className="text-[13px] text-muted-foreground mt-1.5">
+                              {t('reminders.sentOn', { date: formatDate(reminder.sentAt), days: reminder.daysAfterDue, plural: reminder.daysAfterDue > 1 ? 's' : '' })}
+                            </p>
+                          </div>
+                          <Badge variant={reminder.reminderType === "manual" ? "default" : "secondary"} className="shrink-0 text-[12px] font-medium">
+                            {reminder.reminderType === "manual" ? t('reminders.manual') : t('reminders.automatic')}
+                          </Badge>
                         </div>
-                        <Badge variant={reminder.reminderType === "manual" ? "default" : "secondary"} className="shrink-0 text-xs">
-                          {reminder.reminderType === "manual" ? t('reminders.manual') : t('reminders.automatic')}
-                        </Badge>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
-
-      {invoiceData.notes && (
-        <Card className="transition-shadow hover:shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('notes.title')}</CardTitle>
-            <CardDescription className="text-xs">{t('notes.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg bg-muted/20 p-4">
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{invoiceData.notes}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {invoiceData.payments && invoiceData.payments.length > 0 && (
-        <Card className="transition-shadow hover:shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{t('payments.title')}</CardTitle>
-            <CardDescription className="text-xs">{t('payments.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {invoiceData.payments.map((payment) => {
-                const paymentDate = payment.paymentDate || payment.paidAt || payment.createdAt;
-                return (
-                  <div key={payment.id} className="rounded-lg border border-l-4 border-l-primary/40 bg-muted/20 p-4 transition-colors hover:bg-muted/30">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1 min-w-0">
-                        <p className="font-semibold tabular-nums">{formatCurrency(payment.amount, invoiceData.currency)}</p>
-                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                          {paymentDate && <span>{t('payments.date', { date: formatDate(paymentDate) })}</span>}
-                          <span>{t('payments.method', { method: payment.method })}</span>
-                        </div>
-                        {payment.notes && <p className="text-xs text-muted-foreground mt-2 pt-2 border-t">{payment.notes}</p>}
-                      </div>
-                      <Badge variant={payment.status === "completed" ? "default" : "secondary"} className="shrink-0">
-                        {payment.status === "completed" ? t('payments.completed') : payment.status}
-                      </Badge>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <ReminderModal
         open={showReminderModal}
@@ -846,134 +857,151 @@ export default function InvoiceDetailPage() {
         preselectedInvoiceId={invoiceId}
       />
 
-      <Dialog open={showMarkPaidDialog} onOpenChange={setShowMarkPaidDialog}>
-        <DialogContent className="sm:max-w-[480px]">
-          <DialogHeader>
-            <DialogTitle>{t('markPaidDialog.title')}</DialogTitle>
-            <DialogDescription>
+      <ResponsiveModal
+        open={showMarkPaidDialog}
+        onOpenChange={setShowMarkPaidDialog}
+        modalMaxWidth="sm:max-w-[480px]"
+        contentClassName="rounded-2xl sm:rounded-[20px] border border-border/40 bg-background shadow-2xl shadow-black/5 p-0 overflow-hidden"
+        closeButtonClassName="right-4 top-4 h-8 w-8 rounded-full bg-muted/60 hover:bg-muted text-foreground/70"
+      >
+        <div className="px-5 pt-5 pb-4 border-b border-border/40">
+          <DialogHeader className="p-0 text-left space-y-1">
+            <DialogTitle className="text-[17px] font-semibold tracking-tight text-foreground">
+              {t('markPaidDialog.title')}
+            </DialogTitle>
+            <DialogDescription className="text-[15px] text-muted-foreground">
               {t('markPaidDialog.description', { invoiceNumber: invoice.invoiceNumber })}
             </DialogDescription>
           </DialogHeader>
+        </div>
 
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="payment-amount">{t('markPaidDialog.amountLabel')}</Label>
-              <div className="relative">
-                <Input
-                  id="payment-amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max={parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")}
-                  value={paymentAmount}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "" || value === "0" || value === "0.") {
-                      setPaymentAmount(value);
-                      return;
-                    }
-                    const numValue = parseFloat(value);
-                    const remaining = parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0");
-                    if (!isNaN(numValue) && numValue > 0 && numValue <= remaining) {
-                      setPaymentAmount(value);
-                    }
-                  }}
-                  className="pl-12"
-                  placeholder={formatCurrency(
+        <div className="px-5 py-4 space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="payment-amount" className="text-[13px] font-medium text-foreground">
+              {t('markPaidDialog.amountLabel')}
+            </Label>
+            <div className="relative">
+              <Input
+                id="payment-amount"
+                type="number"
+                step="0.01"
+                min="0"
+                max={parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")}
+                value={paymentAmount}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === "" || value === "0" || value === "0.") {
+                    setPaymentAmount(value);
+                    return;
+                  }
+                  const numValue = parseFloat(value);
+                  const remaining = parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0");
+                  if (!isNaN(numValue) && numValue > 0 && numValue <= remaining) {
+                    setPaymentAmount(value);
+                  }
+                }}
+                className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20 pl-12"
+                placeholder={formatCurrency(
+                  (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")).toString(),
+                  invoice.currency
+                )}
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-foreground font-medium">
+                {invoice.currency}
+              </span>
+            </div>
+            {paymentAmount &&
+              !isNaN(parseFloat(paymentAmount)) &&
+              parseFloat(paymentAmount) > 0 &&
+              parseFloat(paymentAmount) > (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")) && (
+              <p className="flex items-center gap-2 text-[13px] text-destructive mt-1">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {t('markPaidDialog.errorAmountExceeded', {
+                  amount: formatCurrency(
                     (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")).toString(),
                     invoice.currency
-                  )}
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                  {invoice.currency}
-                </span>
-              </div>
-              {paymentAmount &&
-                !isNaN(parseFloat(paymentAmount)) &&
-                parseFloat(paymentAmount) > 0 &&
-                parseFloat(paymentAmount) > (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")) && (
-                <p className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                  {t('markPaidDialog.errorAmountExceeded', {
-                    amount: formatCurrency(
-                      (parseFloat(invoice.totalAmount) - parseFloat(invoice.amountPaid || "0")).toString(),
-                      invoice.currency
-                    ),
-                  })}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payment-date">{t('markPaidDialog.dateLabel')}</Label>
-              <Input
-                id="payment-date"
-                type="date"
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('markPaidDialog.methodLabel')}</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger id="payment-method">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bank_transfer">{t('paymentMethods.bank_transfer')}</SelectItem>
-                  <SelectItem value="cash">{t('paymentMethods.cash')}</SelectItem>
-                  <SelectItem value="check">{t('paymentMethods.check')}</SelectItem>
-                  <SelectItem value="online_payment">{t('paymentMethods.online_payment')}</SelectItem>
-                  <SelectItem value="card">{t('paymentMethods.card')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="payment-notes">{t('markPaidDialog.notesLabel')}</Label>
-              <Textarea
-                id="payment-notes"
-                placeholder={t('markPaidDialog.notesPlaceholder')}
-                value={paymentNotes}
-                onChange={(e) => setPaymentNotes(e.target.value)}
-                rows={2}
-                className="resize-none"
-              />
-            </div>
+                  ),
+                })}
+              </p>
+            )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => setShowMarkPaidDialog(false)}
-              disabled={isMarkingPaid}
-            >
-              {t('markPaidDialog.cancel')}
-            </Button>
-            <Button
-              onClick={handleMarkPaid}
-              disabled={
-                isMarkingPaid ||
-                !paymentAmount ||
-                !paymentDate ||
-                parseFloat(paymentAmount) <= 0 ||
-                parseFloat(paymentAmount) > (parseFloat(invoiceData.totalAmount) - parseFloat(invoiceData.amountPaid || "0"))
-              }
-            >
-              {isMarkingPaid ? (
-                <>
-                  <RefreshCcw className="h-4 w-4 animate-spin" />
-                  {t('markPaidDialog.processing')}
-                </>
-              ) : (
-                t('markPaidDialog.save')
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-1.5">
+            <Label htmlFor="payment-date" className="text-[13px] font-medium text-foreground">
+              {t('markPaidDialog.dateLabel')}
+            </Label>
+            <Input
+              id="payment-date"
+              type="date"
+              value={paymentDate}
+              onChange={(e) => setPaymentDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              className="h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[13px] font-medium text-foreground">{t('markPaidDialog.methodLabel')}</Label>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger id="payment-method" className="h-11 rounded-xl border-0 bg-muted/30 text-[15px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border/40">
+                <SelectItem value="bank_transfer">{t('paymentMethods.bank_transfer')}</SelectItem>
+                <SelectItem value="cash">{t('paymentMethods.cash')}</SelectItem>
+                <SelectItem value="check">{t('paymentMethods.check')}</SelectItem>
+                <SelectItem value="online_payment">{t('paymentMethods.online_payment')}</SelectItem>
+                <SelectItem value="card">{t('paymentMethods.card')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="payment-notes" className="text-[13px] font-medium text-foreground">
+              {t('markPaidDialog.notesLabel')}
+            </Label>
+            <Textarea
+              id="payment-notes"
+              placeholder={t('markPaidDialog.notesPlaceholder')}
+              value={paymentNotes}
+              onChange={(e) => setPaymentNotes(e.target.value)}
+              rows={2}
+              className="resize-none rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="flex flex-row justify-end gap-2 pt-4 border-t border-border/40 mt-4 px-5 pb-5">
+          <Button
+            variant="outline"
+            className="h-9 rounded-xl text-[15px] font-medium border-border/60"
+            onClick={() => setShowMarkPaidDialog(false)}
+            disabled={isMarkingPaid}
+          >
+            {t('markPaidDialog.cancel')}
+          </Button>
+          <Button
+            className="h-9 rounded-xl px-4 text-[15px] font-semibold"
+            onClick={handleMarkPaid}
+            disabled={
+              isMarkingPaid ||
+              !paymentAmount ||
+              !paymentDate ||
+              parseFloat(paymentAmount) <= 0 ||
+              parseFloat(paymentAmount) > (parseFloat(invoiceData.totalAmount) - parseFloat(invoiceData.amountPaid || "0"))
+            }
+          >
+            {isMarkingPaid ? (
+              <>
+                <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                {t('markPaidDialog.processing')}
+              </>
+            ) : (
+              t('markPaidDialog.save')
+            )}
+          </Button>
+        </DialogFooter>
+      </ResponsiveModal>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

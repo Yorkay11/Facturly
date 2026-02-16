@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from '@/i18n/routing';
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, useFormState, Controller } from "react-hook-form";
@@ -9,18 +9,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Mail, User } from "lucide-react";
 import type { Control } from "react-hook-form";
 
-import { MagicCard } from "@/components/ui/magic-card";
-import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Separator } from "@/components/ui/separator";
 import { useRegisterMutation } from "@/services/facturlyApi";
 import { toast } from "sonner";
-import { useTranslations, useLocale } from 'next-intl';
-import { Redirect } from '@/components/navigation';
-import { removeLocalePrefix } from '@/utils/path-utils';
+import { useTranslations, useLocale } from "next-intl";
+import { Redirect } from "@/components/navigation";
+import { removeLocalePrefix } from "@/utils/path-utils";
 
 import { DotPattern } from "@/components/ui/dot-pattern";
 
@@ -54,7 +51,7 @@ function RegisterFieldError({
   const { errors } = useFormState({ control, name });
   const message = errors[name]?.message;
   if (!message) return null;
-  return <p className="text-[10px] text-destructive ml-0.5">{message}</p>;
+  return <p className="text-[13px] text-destructive mt-1">{message}</p>;
 }
 
 /** Champ mot de passe avec erreur isolée (useFormState sur "password" uniquement). */
@@ -68,6 +65,7 @@ function RegisterPasswordField({
   translationNamespace: string;
   compact?: boolean;
   className?: string;
+  inputClassName?: string;
 }) {
   const { errors } = useFormState({ control, name: "password" });
   return (
@@ -85,6 +83,7 @@ function RegisterPasswordField({
           translationNamespace={props.translationNamespace}
           compact={props.compact}
           className={props.className}
+          inputClassName={props.inputClassName}
           placeholder={props.placeholder}
           label={props.label}
         />
@@ -145,13 +144,9 @@ export default function RegisterPage() {
         description: t('toasts.successDescription', { name: userName }),
       });
 
-      // Vérifier si un workspace existe, sinon rediriger vers la création de workspace
-      // Le backend retourne workspace: null si aucun workspace n'existe
-      if (!data.workspace) {
-        setRedirectPath("/create-workspace");
-      } else {
-        setRedirectPath("/dashboard");
-      }
+      // Toujours rediriger vers le dashboard : si pas de workspace ou profil incomplet,
+      // le layout ouvrira le CreateWorkspaceModal au lieu de rediriger vers /create-workspace
+      setRedirectPath("/dashboard");
       setShouldRedirect(true);
     }
   }, [data, isSuccess, t]);
@@ -226,168 +221,208 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Section gauche : Logo avec fond sombre */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-6 relative overflow-hidden">
-        <DotPattern className="text-white opacity-20" glow />
-        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-md">
+    <div className="flex min-h-screen bg-background">
+      {/* Left: Hero — Apple-style gradient + pattern */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-primary/95 to-primary/90 items-center justify-center p-8 relative overflow-hidden">
+        <DotPattern className="text-white opacity-[0.12]" glow />
+        <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-8 max-w-sm">
           <Image
             src="/logos/logo.png"
             alt="Facturly"
-            width={300}
-            height={100}
-            className="w-auto h-24 object-contain brightness-0 invert"
+            width={280}
+            height={92}
+            className="w-auto h-20 brightness-0 invert"
             priority
           />
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-white">
-              {t('heroTitle')}
+          <div className="space-y-3">
+            <h2 className="text-[28px] font-semibold tracking-tight text-white">
+              {t("heroTitle")}
             </h2>
-            <p className="text-white/80 text-lg leading-relaxed">
-              {t('heroDescription')}
+            <p className="text-[15px] text-white/85 leading-relaxed">
+              {t("heroDescription")}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Section droite : Formulaire */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-6 bg-gray-50/50">
-        <div className="w-full max-w-md space-y-8">
+      {/* Right: Form — premium card */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-10 bg-gradient-to-b from-muted/20 to-background overflow-y-auto">
+        <div className="w-full max-w-[400px] space-y-6">
           <div className="text-center lg:hidden">
             <Image
               src="/icon.png"
               alt="Facturly"
               width={64}
               height={64}
-              className="h-16 w-16 mx-auto object-contain rounded-xl shadow-md"
+              className="h-14 w-14 mx-auto object-contain rounded-2xl shadow-lg"
               priority
             />
           </div>
 
-          <MagicCard className="border-none shadow-2xl bg-white/80 backdrop-blur-xl">
-            <CardHeader className="space-y-0.5 text-center pb-4 pt-6 px-6">
-              <CardTitle className="text-xl font-bold tracking-tight">{t('cardTitle')}</CardTitle>
-              <CardDescription className="text-muted-foreground text-xs">
-                {t('cardDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 px-6 pb-6">
+          <div className="rounded-[24px] border border-border/40 bg-background/95 dark:bg-background/98 backdrop-blur-sm shadow-2xl shadow-black/5 overflow-hidden">
+            {/* Header */}
+            <div className="px-5 pt-5 pb-4 text-center">
+              <h1 className="text-[24px] font-semibold tracking-tight text-foreground">
+                {t("cardTitle")}
+              </h1>
+              <p className="mt-1 text-[15px] text-muted-foreground">
+                {t("cardDescription")}
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="px-5 pb-5">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="firstName" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('fields.firstName')}</Label>
+                    <Label htmlFor="firstName" className="text-[13px] font-medium text-foreground">
+                      {t("fields.firstName")}
+                    </Label>
                     <div className="relative group">
-                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <Input
                         id="firstName"
                         type="text"
                         autoComplete="given-name"
-                        placeholder={t('placeholders.firstName')}
-                        className="pl-9 h-10 text-sm"
+                        placeholder={t("placeholders.firstName")}
+                        className="pl-10 h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                         {...register("firstName")}
                       />
                     </div>
                     <RegisterFieldError control={control} name="firstName" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="lastName" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('fields.lastName')}</Label>
+                    <Label htmlFor="lastName" className="text-[13px] font-medium text-foreground">
+                      {t("fields.lastName")}
+                    </Label>
                     <div className="relative group">
-                      <User className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <Input
                         id="lastName"
                         type="text"
                         autoComplete="family-name"
-                        placeholder={t('placeholders.lastName')}
-                        className="pl-9 h-10 text-sm"
+                        placeholder={t("placeholders.lastName")}
+                        className="pl-10 h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                         {...register("lastName")}
                       />
                     </div>
                     <RegisterFieldError control={control} name="lastName" />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-[10px] uppercase text-muted-foreground ml-0.5">{t('fields.email')}</Label>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-[13px] font-medium text-foreground">
+                    {t("fields.email")}
+                  </Label>
                   <div className="relative group">
-                    <Mail className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
                       id="email"
                       type="email"
                       autoComplete="email"
-                      placeholder={t('placeholders.email')}
-                      className="pl-9 h-10 text-sm"
+                      placeholder={t("placeholders.email")}
+                      className="pl-10 h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                       {...register("email")}
                     />
                   </div>
                   <RegisterFieldError control={control} name="email" />
                 </div>
+
                 <RegisterPasswordField
                   control={control}
-                  placeholder={t('placeholders.password')}
-                  label={t('fields.password')}
+                  placeholder={t("placeholders.password")}
+                  label={t("fields.password")}
                   translationNamespace="auth.register.passwordStrength"
                   compact
                   className="space-y-1.5"
+                  inputClassName="pl-10 pr-10 h-11 rounded-xl border-0 bg-muted/30 text-[15px] focus-visible:ring-2 focus-visible:ring-ring/20"
                 />
 
                 <Button
                   type="submit"
                   disabled={!isValid || isLoading}
-                  className="w-full gap-2 h-10"
+                  className="w-full h-11 rounded-xl text-[15px] font-semibold gap-2"
                 >
                   {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {isLoading ? t('buttons.creating') : t('buttons.createAccount')}
+                  {isLoading ? t("buttons.creating") : t("buttons.createAccount")}
                 </Button>
               </form>
 
+              {/* Divider */}
               <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center"><Separator className="w-full" /></div>
-                <div className="relative flex justify-center text-[10px] uppercase">
-                  <span className="bg-white px-2 text-muted-foreground">{tAuth('orContinueWith')}</span>
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/50" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-background px-3 text-[13px] text-muted-foreground">
+                    {tAuth("orContinueWith")}
+                  </span>
                 </div>
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full gap-2 h-10"
+                className="w-full h-11 rounded-xl text-[15px] font-medium gap-2 border-border/60 bg-muted/20 hover:bg-muted/40"
                 onClick={handleGoogleLogin}
                 disabled={isGoogleLoading || isLoading}
               >
-                {isGoogleLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                <GoogleIcon />
-                {tAuth('continueWithGoogle')}
+                {isGoogleLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <GoogleIcon />
+                )}
+                {tAuth("continueWithGoogle")}
               </Button>
-            </CardContent>
-            <div className="p-4 bg-gray-50/50 border-t border-gray-100 rounded-b-xl text-center">
-              <p className="text-xs text-muted-foreground">
-                {t('alreadyHaveAccount')} {" "}
-                <Link href="/login" className="text-primary font-semibold hover:underline">
-                  {t('signInLink')}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-4 border-t border-border/40 bg-muted/20 text-center">
+              <p className="text-[15px] text-muted-foreground">
+                {t("alreadyHaveAccount")}{" "}
+                <Link
+                  href="/login"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  {t("signInLink")}
                 </Link>
               </p>
             </div>
-          </MagicCard>
-          <p className="text-center text-xs text-muted-foreground/60 px-4">
-            {locale === 'fr' ? (
+          </div>
+
+          <p className="text-center text-[13px] text-muted-foreground/80 px-2">
+            {locale === "fr" ? (
               <>
-                En créant un compte, vous acceptez nos{' '}
-                <Link href="/terms" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
-                  conditions d'utilisation
-                </Link>
-                {' '}et notre{' '}
-                <Link href="/privacy" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
+                En créant un compte, vous acceptez nos{" "}
+                <Link
+                  href="/terms"
+                  className="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                >
+                  conditions d&apos;utilisation
+                </Link>{" "}
+                et notre{" "}
+                <Link
+                  href="/privacy"
+                  className="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                >
                   politique de confidentialité
                 </Link>
                 .
               </>
             ) : (
               <>
-                By creating an account, you agree to our{' '}
-                <Link href="/terms" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
+                By creating an account, you agree to our{" "}
+                <Link
+                  href="/terms"
+                  className="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                >
                   terms of use
-                </Link>
-                {' '}and{' '}
-                <Link href="/privacy" className="text-muted-foreground hover:text-primary hover:underline transition-colors">
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  className="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                >
                   privacy policy
                 </Link>
                 .

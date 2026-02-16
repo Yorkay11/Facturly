@@ -6,19 +6,21 @@ import { IntroDisclosure } from "@/components/ui/intro-disclosure";
 import { FuryMascot } from "@/components/mascot";
 import { toast } from "sonner";
 import type { FuryMood } from "@/components/mascot";
-import DashboardIntelligence from "@/components/landing/bento/dashboard-intelligence";
-import InvoiceCreation from "@/components/landing/bento/invoice-creation";
-import ClientManagement from "@/components/landing/bento/client-management";
-import PaymentTracking from "@/components/landing/bento/payment-tracking";
+import {
+  IntroStep1Welcome,
+  IntroStep2CreateInvoice,
+  IntroStep3Clients,
+  IntroStep4AllSet,
+} from "@/components/dashboard/intro-tutorial-previews";
 
 const FEATURE_ID = "facturly-intro";
 
-// Composants bento (code UI du landing) + humeur Fury par étape
+// Preview dédié à chaque étape du tutoriel + humeur Fury
 const STEP_PREVIEWS: { Component: React.ComponentType; furyMood: FuryMood }[] = [
-  { Component: DashboardIntelligence, furyMood: "welcome" },
-  { Component: InvoiceCreation, furyMood: "focus" },
-  { Component: ClientManagement, furyMood: "smile" },
-  { Component: PaymentTracking, furyMood: "happy" },
+  { Component: IntroStep1Welcome, furyMood: "welcome" },
+  { Component: IntroStep2CreateInvoice, furyMood: "focus" },
+  { Component: IntroStep3Clients, furyMood: "smile" },
+  { Component: IntroStep4AllSet, furyMood: "happy" },
 ];
 
 export function FacturlyIntroTutorial({

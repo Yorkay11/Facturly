@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { FaFileInvoice, FaUsers, FaPlus, FaArrowRight, FaWandMagicSparkles, FaArrowTrendUp } from "react-icons/fa6";
+import { FaFileInvoice, FaUsers, FaArrowRight, FaArrowTrendUp } from "react-icons/fa6";
 import { useTranslations } from "next-intl";
 import { FuryMascot } from "@/components/mascot/FuryMascot";
 
@@ -18,9 +17,9 @@ export default function DashboardEmptyState({
   const t = useTranslations("dashboard.emptyState");
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card className="border-dashed border-primary/20 bg-primary/5">
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+    <div className="flex flex-col gap-8">
+      <div className="rounded-2xl border border-dashed border-primary/30 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
           <div className="mb-6">
             <FuryMascot mood="welcome" size="lg" />
           </div>
@@ -30,63 +29,69 @@ export default function DashboardEmptyState({
           <p className="max-w-lg text-muted-foreground mb-8">
             {t("description") || "C'est ici que vous pourrez suivre votre activité. Pour commencer, créez votre première facture ou ajoutez un client."}
           </p>
-          
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-            <Button 
-              size="lg" 
-              className="flex-1 gap-2" 
+            <Button
+              size="lg"
+              className="flex-1 gap-2 rounded-full"
               onClick={onCreateInvoice}
             >
               <FaFileInvoice className="h-4 w-4" />
               {t("createInvoice") || "Créer une facture"}
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="flex-1 gap-2" 
+            <Button
+              variant="outline"
+              size="lg"
+              className="flex-1 gap-2 rounded-full"
               onClick={onAddClient}
             >
               <FaUsers className="h-4 w-4" />
               {t("addClient") || "Ajouter un client"}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-              <FaFileInvoice className="h-5 w-5" />
+        {[
+          {
+            icon: FaFileInvoice,
+            iconClass: "bg-primary/10 text-primary",
+            titleKey: "step1.title",
+            titleFallback: "1. Facturez",
+            descKey: "step1.description",
+            descFallback: "Créez des factures professionnelles en quelques secondes.",
+          },
+          {
+            icon: FaArrowRight,
+            iconClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+            titleKey: "step2.title",
+            titleFallback: "2. Envoyez",
+            descKey: "step2.description",
+            descFallback: "Envoyez vos factures par email ou lien sécurisé.",
+          },
+          {
+            icon: FaArrowTrendUp,
+            iconClass: "bg-primary/10 text-primary",
+            titleKey: "step3.title",
+            titleFallback: "3. Encaissez",
+            descKey: "step3.description",
+            descFallback: "Suivez vos paiements et relancez les impayés.",
+          },
+        ].map((step) => {
+          const StepIcon = step.icon;
+          return (
+            <div
+              key={step.titleKey}
+              className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm p-6"
+            >
+              <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${step.iconClass}`}>
+                <StepIcon className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">{t(step.titleKey) || step.titleFallback}</h3>
+              <p className="text-sm text-muted-foreground">{t(step.descKey) || step.descFallback}</p>
             </div>
-            <h3 className="font-semibold text-slate-900 mb-1">{t("step1.title") || "1. Facturez"}</h3>
-            <p className="text-sm text-slate-500">
-              {t("step1.description") || "Créez des factures professionnelles en quelques secondes."}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-              <FaArrowRight className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-1">{t("step2.title") || "2. Envoyez"}</h3>
-            <p className="text-sm text-slate-500">
-              {t("step2.description") || "Envoyez vos factures par email ou lien sécurisé."}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-slate-200">
-          <CardContent className="pt-6">
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
-              <FaArrowTrendUp className="h-5 w-5" />
-            </div>
-            <h3 className="font-semibold text-slate-900 mb-1">{t("step3.title") || "3. Encaissez"}</h3>
-            <p className="text-sm text-slate-500">
-              {t("step3.description") || "Suivez vos paiements et relancez les impayés."}
-            </p>
-          </CardContent>
-        </Card>
+          );
+        })}
       </div>
     </div>
   );

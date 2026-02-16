@@ -1630,56 +1630,22 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                             <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
                             <p className="text-sm text-slate-500">{t('sections.invoiceLines.description')}</p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            {products.length > 0 && (
-                                <Select
-                                    value={selectedProductToAdd || "__none__"}
-                                    onValueChange={(value) => {
-                                        if (!value || value === "__none__") return;
-                                        const product = products.find((p) => p.id === value);
-                                        if (product) {
-                                            addItem({
-                                                description: (product.description?.trim() ? product.description : product.name) || "",
-                                                quantity: 1,
-                                                unitPrice: parseFloat(product.unitPrice) || 0,
-                                                vatRate: isFreelance ? 0 : (parseFloat(product.taxRate) || (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18)),
-                                            });
-                                            setSelectedProductToAdd("");
-                                        }
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[220px] h-9 text-xs">
-                                        <SelectValue placeholder={t('lines.addFromProduct')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="__none__" className="text-muted-foreground">
-                                            {t('lines.addFromProduct')}
-                                        </SelectItem>
-                                        {products.map((product) => (
-                                            <SelectItem key={product.id} value={product.id}>
-                                                {product.name} — {form.getValues("currency") || "EUR"} {(parseFloat(product.unitPrice) || 0).toFixed(2)}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            )}
-                            <Button 
-                                type="button" 
-                                size="sm" 
-                                className="gap-2" 
-                                onClick={() => {
-                                    addItem({
-                                        description: '',
-                                        quantity: 1,
-                                        unitPrice: 0,
-                                        vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
-                                    });
-                                }}
-                            >
-                                <PlusIcon className="h-4 w-4" />
-                                {t('lines.add')}
-                            </Button>
-                        </div>
+                        <Button 
+                            type="button" 
+                            size="sm" 
+                            className="gap-2" 
+                            onClick={() => {
+                                addItem({
+                                    description: '',
+                                    quantity: 1,
+                                    unitPrice: 0,
+                                    vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
+                                });
+                            }}
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            {t('lines.add')}
+                        </Button>
                     </div>
 
                     <Separator />
@@ -1788,25 +1754,6 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                                         );
                                     })
                                 ) : null}
-                                
-                                {/* Bouton pour ajouter une nouvelle ligne */}
-                                <Button 
-                                    type="button" 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-2 h-9 border-dashed border-slate-300 hover:border-primary hover:bg-primary/5"
-                                    onClick={() => {
-                                        addItem({
-                                            description: '',
-                                            quantity: 1,
-                                            unitPrice: 0,
-                                            vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
-                                        });
-                                    }}
-                                >
-                                    <PlusIcon className="h-3.5 w-3.5" />
-                                    <span className="text-xs">{t('lines.add')}</span>
-                                </Button>
                             </div>
                         </SortableContext>
                     </DndContext>

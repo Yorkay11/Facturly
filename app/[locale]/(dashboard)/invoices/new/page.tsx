@@ -12,13 +12,12 @@ import { useItemsStore } from '@/hooks/useItemStore'
 import { useInvoiceMetadata } from '@/hooks/useInvoiceMetadata'
 import Skeleton from '@/components/ui/skeleton'
 import { useNavigationBlock } from '@/contexts/NavigationBlockContext'
-import { Link } from '@/i18n/routing'
 import { useTranslations } from 'next-intl'
-// import { QuickInvoice } from '@/components/invoices/QuickInvoice'
 import { InvoiceTutorial } from '@/components/invoices/InvoiceTutorial'
 import { DirectionAwareTabs } from '@/components/ui/direction-aware-tabs'
 import { useSearchParams } from 'next/navigation'
-import { QuickInvoice } from '@/components/invoices/QuickInvoice';
+import { QuickInvoice } from '@/components/invoices/QuickInvoice'
+import Breadcrumb from '@/components/ui/breadcrumb'
 
 const InvoiceBuilderPage = () => {
   const t = useTranslations('invoices.new');
@@ -95,130 +94,109 @@ const InvoiceBuilderPage = () => {
     }
   }
 
-  const handleMockSave = () => {
-    toast.success({
-      title: t('toasts.draftSaved'),
-      description: t('toasts.draftSavedDescription'),
-    });
-  };
-
   return (
     <ItemModalContext.Provider value={{ openCreate, openEdit, close: closeModal, mode: modalMode, item: currentItem }}>
-      <div className='space-y-4 pb-6 lg:space-y-5'>
-        <div className="flex items-center space-x-1.5 text-[10px]">
-          <Link 
-            href="/dashboard" 
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavigation('/dashboard')
-            }}
-            className="text-foreground/60 hover:text-foreground"
-          >
-            {invoicesT('breadcrumb.dashboard')}
-          </Link>
-          <span className="text-foreground/40">/</span>
-          <Link 
-            href="/invoices" 
-            onClick={(e) => {
-              e.preventDefault()
-              handleNavigation('/invoices')
-            }}
-            className="text-foreground/60 hover:text-foreground"
-          >
-            {invoicesT('breadcrumb.invoices')}
-          </Link>
-          <span className="text-foreground/40">/</span>
-          <span className="text-foreground">{t('breadcrumb.newInvoice')}</span>
-        </div>
-        <div className='space-y-1 text-center lg:text-left'>
-          <p className='text-xl font-bold text-primary lg:text-2xl'>{t('title')}</p>
-          <p className='text-xs text-foreground/70'>{t('description')}</p>
-        </div>
+      <div className="min-h-screen w-full bg-gradient-to-b from-muted/30 to-background">
+        <div className="w-full px-4 py-8 pb-6 sm:px-6 sm:py-10">
+          <nav className="mb-8">
+            <Breadcrumb
+              items={[
+                { label: invoicesT('breadcrumb.dashboard'), href: '/dashboard' },
+                { label: invoicesT('breadcrumb.invoices'), href: '/invoices' },
+                { label: t('breadcrumb.newInvoice') },
+              ]}
+              className="text-xs text-muted-foreground"
+            />
+          </nav>
 
-        {/* Toggle entre mode rapide et mode complet — pattern DirectionAwareTabs (id, label, content) */}
-        <DirectionAwareTabs
-          className="w-full mb-4"
-          tabs={useMemo(
-            () => [
-              {
-                id: 0,
-                label: t("modes.quick"),
-                content: (
-                  <div className="w-full">
-                    <QuickInvoice 
-                      onSwitchToFullMode={() => setInvoiceMode("full")} 
-                      initialClientId={clientIdFromUrl}
-                    />
-                    {showTutorial && (
-                      <InvoiceTutorial
-                        onComplete={() => {
-                          setShowTutorial(false);
-                          localStorage.setItem("invoiceTutorialCompleted", "true");
-                        }}
-                        onSkip={() => {
-                          setShowTutorial(false);
-                          localStorage.setItem("invoiceTutorialCompleted", "true");
-                        }}
-                      />
-                    )}
-                  </div>
-                ),
-              },
-              {
-                id: 1,
-                label: t("modes.full"),
-                content: (
-                  <div className="flex flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-start">
-                    <div className="w-full order-1 xl:order-none">
-                      <Suspense
-                        fallback={
-                          <div className="space-y-3">
-                            <Skeleton className="h-48 w-full" />
-                            <Skeleton className="h-48 w-full" />
-                          </div>
-                        }
-                      >
-                        <InvoiceDetails
-                          initialRecurring={searchParams?.get("recurring") === "1"}
-                          onSaveDraftReady={handleSaveDraftReady}
-                          onHasUnsavedChanges={handleHasUnsavedChanges}
+          <header className="mb-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  {t('title')}
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
+              </div>
+            </div>
+          </header>
+
+          {/* Tabs: mode rapide / mode complet */}
+          <div className="space-y-6">
+            <DirectionAwareTabs
+              className="w-full"
+              tabs={useMemo(
+                () => [
+                  {
+                    id: 0,
+                    label: t("modes.quick"),
+                    content: (
+                      <div className="w-full pt-2">
+                        <QuickInvoice
+                          onSwitchToFullMode={() => setInvoiceMode("full")}
+                          initialClientId={clientIdFromUrl}
                         />
-                      </Suspense>
-                    </div>
-                    <div className="w-full order-2 xl:order-none relative p-4 rounded-lg bg-muted/50 min-h-[600px]">
-                      <div
-                        className="absolute inset-0 rounded-lg pointer-events-none border-border"
-                        style={{
-                          backgroundImage: `
-                            linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-                            linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
-                          `,
-                          backgroundSize: "24px 24px",
-                          opacity: 0.5,
-                        }}
-                      />
-                      <div
-                        className="absolute inset-0 rounded-lg pointer-events-none"
-                        style={{
-                          backgroundImage:
-                            "radial-gradient(circle, hsl(var(--muted-foreground) / 0.4) 1.5px, transparent 1.5px)",
-                          backgroundSize: "20px 20px",
-                          opacity: 0.4,
-                        }}
-                      />
-                      <div className="relative z-10">
-                        <Preview />
+                        {showTutorial && (
+                          <InvoiceTutorial
+                            onComplete={() => {
+                              setShowTutorial(false);
+                              localStorage.setItem("invoiceTutorialCompleted", "true");
+                            }}
+                            onSkip={() => {
+                              setShowTutorial(false);
+                              localStorage.setItem("invoiceTutorialCompleted", "true");
+                            }}
+                          />
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ),
-              },
-            ],
-            [t, showTutorial, searchParams]
-          )}
-          value={invoiceMode === "quick" ? 0 : 1}
-          onValueChange={(id) => setInvoiceMode(id === 0 ? "quick" : "full")}
-        />
+                    ),
+                  },
+                  {
+                    id: 1,
+                    label: t("modes.full"),
+                    content: (
+                      <div className="w-full pt-2 flex flex-col gap-6 xl:grid xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] xl:items-start">
+                        <div className="w-full order-1 xl:order-none">
+                          <Suspense
+                            fallback={
+                              <div className="space-y-3">
+                                <Skeleton className="h-48 w-full rounded-xl bg-muted/60" />
+                                <Skeleton className="h-48 w-full rounded-xl bg-muted/60" />
+                              </div>
+                            }
+                          >
+                            <InvoiceDetails
+                              initialRecurring={searchParams?.get("recurring") === "1"}
+                              onSaveDraftReady={handleSaveDraftReady}
+                              onHasUnsavedChanges={handleHasUnsavedChanges}
+                            />
+                          </Suspense>
+                        </div>
+                        <div className="w-full order-2 xl:order-none relative min-h-[560px]">
+                          <div
+                            className="absolute inset-0 pointer-events-none opacity-[0.35] rounded-2xl"
+                            style={{
+                              backgroundImage: `
+                                linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+                                linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
+                              `,
+                              backgroundSize: "20px 20px",
+                            }}
+                          />
+                          <div className="relative z-10 p-6">
+                            <Preview />
+                          </div>
+                        </div>
+                      </div>
+                    ),
+                  },
+                ],
+                [t, showTutorial, searchParams]
+              )}
+              value={invoiceMode === "quick" ? 0 : 1}
+              onValueChange={(id) => setInvoiceMode(id === 0 ? "quick" : "full")}
+            />
+          </div>
+        </div>
       </div>
       <AddItemModal
         isOpen={isModalOpen}

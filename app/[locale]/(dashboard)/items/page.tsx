@@ -1,22 +1,14 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Search, ChevronRight } from "lucide-react";
 import Skeleton from "@/components/ui/skeleton";
-import { useState } from "react";
-import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
-import { Link, useRouter } from '@/i18n/routing';
+import { useState, useMemo } from "react";
+import { IoChevronBackOutline, IoChevronForwardOutline, IoBriefcaseOutline, IoCubeOutline } from "react-icons/io5";
+import { useRouter } from '@/i18n/routing';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +20,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Breadcrumb from "@/components/ui/breadcrumb";
-import ProductModal from "@/components/modals/ProductModal";
+import { CreateProductModal } from "@/components/modals/ProductModal";
 import ImportProductsModal from "@/components/modals/ImportProductsModal";
-import { useGetProductsQuery, Product, useDeleteProductMutation } from "@/services/facturlyApi";
+import { useGetProductsQuery, Product, useDeleteProductMutation, useCreateProductMutation, useGetWorkspaceQuery } from "@/services/facturlyApi";
 import { toast } from "sonner";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { useTranslations, useLocale } from 'next-intl';
@@ -55,27 +47,39 @@ const ITEMS_PER_PAGE = 20;
 export default function ItemsPage() {
   const t = useTranslations('items');
   const commonT = useTranslations('common');
-  const navigationT = useTranslations('navigation');
   const locale = useLocale();
   const router = useRouter();
   
   const [currentPage, setCurrentPage] = useState(1);
-  const { data: productsResponse, isLoading, isError, refetch: refetchProducts } = useGetProductsQuery({ page: currentPage, limit: ITEMS_PER_PAGE });
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: productsResponse, isLoading, isError } = useGetProductsQuery({ page: currentPage, limit: ITEMS_PER_PAGE });
+  const { data: workspace } = useGetWorkspaceQuery();
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
+  const [createProduct] = useCreateProductMutation();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isImportModalOpen, setImportModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const products = productsResponse?.data ?? [];
+  const rawProducts = productsResponse?.data ?? [];
   const totalProducts = productsResponse?.meta?.total ?? 0;
   const totalPages = productsResponse?.meta?.totalPages ?? 1;
+
+  const products = useMemo(() => {
+    if (!searchQuery.trim()) return rawProducts;
+    const q = searchQuery.trim().toLowerCase();
+    return rawProducts.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q)
+    );
+  }, [rawProducts, searchQuery]);
 
   const handleDeleteClick = (e: React.MouseEvent, product: { id: string; name: string }) => {
     e.stopPropagation(); // Empêcher la navigation vers la page de détails
     setProductToDelete({ id: product.id, name: product.name });
   };
 
-  const handleRowClick = (productId: string) => {
+  const handleCardClick = (productId: string) => {
     router.push(`/items/${productId}`);
   };
 
@@ -98,225 +102,292 @@ export default function ItemsPage() {
       });
     }
   };
-  return (
-    <div className="space-y-8">
-      <Breadcrumb
-        items={[
-          { label: t('breadcrumb.dashboard'), href: "/dashboard" },
-          { label: t('breadcrumb.items') },
-        ]}
-        className="text-xs"
-      />
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-primary">{t('title')}</h1>
-            <p className="mt-1 text-sm text-foreground/70">
-              {t('subtitle')}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => setImportModalOpen(true)}>
-              <IoCloudUploadOutline className="h-4 w-4" />
-              {t('buttons.importCsv')}
-            </Button>
-            <Button className="gap-2" onClick={() => setModalOpen(true)}>
-              <Plus className="h-4 w-4" />
-              {t('buttons.new')}
-            </Button>
-          </div>
-        </div>
-        <div className={`grid gap-4 ${products && products.length > 0 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">{t('stats.available')}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">{totalProducts}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary/80">{t('stats.averagePrice')}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-primary">
-                {products && products.length > 0 
-                  ? (() => {
-                      const total = products.reduce((sum, p) => {
-                        const price = getPrice(p);
-                        return sum + price;
-                      }, 0);
-                      const average = total / products.length;
-                      return new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
-                        style: "currency",
-                        currency: products[0]?.currency || "EUR",
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      }).format(average);
-                    })()
-                  : "—"}
-              </p>
-              <p className="text-xs text-foreground/60">{t('stats.averagePriceDescription')}</p>
-            </CardContent>
-          </Card>
-          {products && products.length > 0 && (() => {
-            const latestProduct = products.reduce((latest, p) => {
-              if (!latest || !p.updatedAt) return latest || p;
-              if (!latest.updatedAt) return p;
-              return new Date(p.updatedAt) > new Date(latest.updatedAt) ? p : latest;
-            }, null as Product | null);
-            
-            return latestProduct?.updatedAt ? (
-              <Card className="border-primary/30 bg-primary/5">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-primary/80">{t('stats.lastUpdate')}</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-2xl font-semibold text-primary">
-                    {new Date(latestProduct.updatedAt).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
-                  </p>
-                  <p className="text-xs text-foreground/60">{t('stats.lastUpdateDescription')}</p>
-                </CardContent>
-              </Card>
-            ) : null;
-          })()}
-        </div>
-      </div>
+  const averagePrice = rawProducts.length > 0
+    ? rawProducts.reduce((sum, p) => sum + getPrice(p), 0) / rawProducts.length
+    : 0;
+  const latestProduct = rawProducts.length > 0
+    ? rawProducts.reduce((acc, p) => {
+        if (!acc || !p.updatedAt) return acc || p;
+        if (!acc.updatedAt) return p;
+        return new Date(p.updatedAt) > new Date(acc.updatedAt) ? p : acc;
+      }, null as Product | null)
+    : null;
 
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-48 w-full" />
-        </div>
-      ) : isError ? (
-        <div className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
-          {t('errors.loadingError')}
-        </div>
-      ) : products && products.length ? (
-        <Card className="border-primary/20">
-          <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-muted/30 to-background">
+      <div className="w-full px-4 py-8 sm:px-6 sm:py-10">
+        <nav className="mb-8">
+          <Breadcrumb
+            items={[
+              { label: t('breadcrumb.dashboard'), href: "/dashboard" },
+              { label: t('breadcrumb.items') },
+            ]}
+            className="text-xs text-muted-foreground"
+          />
+        </nav>
+
+        {/* Header */}
+        <header className="mb-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-primary">{t('catalog.title')}</CardTitle>
-              <p className="text-sm text-foreground/60">
-                {t('catalog.description')}
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {t('title')}
+              </h1>
+              <p className="mt-2 text-base text-muted-foreground">
+                {t('subtitle')}
               </p>
             </div>
-            <Input placeholder={t('catalog.searchPlaceholder')} className="max-w-sm" />
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-primary/5">
-                <TableRow>
-                  <TableHead>{t('table.reference')}</TableHead>
-                  <TableHead>{t('table.name')}</TableHead>
-                  <TableHead className="text-right">{t('table.priceHT')}</TableHead>
-                  <TableHead className="text-right">{t('table.defaultVAT')}</TableHead>
-                  <TableHead className="w-[100px] text-right">{t('table.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products.map((product) => {
-                  const price = getPrice(product);
-                  const currency = product.currency || "EUR";
-                  const formattedPrice = new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-2 rounded-full border-border/80 bg-background/80 px-4 text-sm font-medium shadow-sm backdrop-blur-sm"
+                onClick={() => setImportModalOpen(true)}
+              >
+                <IoCloudUploadOutline className="h-3.5 w-3.5" />
+                {t('buttons.importCsv')}
+              </Button>
+              <Button
+                size="sm"
+                className="h-9 gap-2 rounded-full px-4 text-sm font-medium shadow-sm"
+                onClick={() => setModalOpen(true)}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {t('buttons.new')}
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Stats - cartes premium */}
+        <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t('stats.available')}
+            </p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums sm:text-3xl">
+              {totalProducts}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t('stats.averagePrice')}
+            </p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums sm:text-3xl">
+              {rawProducts.length > 0
+                ? new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
                     style: "currency",
-                    currency: currency,
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(price);
-                  
-                  return (
-                    <TableRow 
-                      key={product.id} 
-                      className="hover:bg-primary/5 cursor-pointer"
-                      onClick={() => handleRowClick(product.id)}
-                    >
-                      <TableCell className="font-medium text-foreground">#{product.id.slice(0, 8)}</TableCell>
-                      <TableCell className="text-sm text-foreground/70">
-                        {product.name}
-                      </TableCell>
-                      <TableCell className="text-right text-sm font-semibold text-primary">
-                        {formattedPrice}
-                      </TableCell>
-                      <TableCell className="text-right text-sm text-foreground/60">{product.taxRate ?? "0"}%</TableCell>
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    currency: rawProducts[0]?.currency || "EUR",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }).format(averagePrice)
+                : "—"}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t('stats.averagePriceDescription')}</p>
+          </div>
+          {latestProduct?.updatedAt && (
+            <div className="rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm backdrop-blur-sm">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                {t('stats.lastUpdate')}
+              </p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                {new Date(latestProduct.updatedAt).toLocaleDateString(locale === 'fr' ? "fr-FR" : "en-US", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{t('stats.lastUpdateDescription')}</p>
+            </div>
+          )}
+        </section>
+
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full max-w-md rounded-xl" />
+            <div className="rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm">
+              <div className="divide-y divide-border/50">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : isError ? (
+          <div className="rounded-2xl border border-border/50 bg-card/50 p-6 shadow-sm">
+            <p className="text-sm text-destructive">{t('errors.loadingError')}</p>
+          </div>
+        ) : rawProducts.length ? (
+          <>
+            {/* Catalogue - liste type iOS */}
+            <section className="rounded-2xl border border-border/50 bg-card/50 shadow-sm backdrop-blur-sm overflow-hidden">
+              <div className="border-b border-border/50 px-5 py-4 sm:px-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+                      {t('catalog.title')}
+                    </h2>
+                    <p className="mt-1 text-xs text-muted-foreground">{t('catalog.description')}</p>
+                  </div>
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder={t('catalog.searchPlaceholder')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-10 rounded-xl border-border/80 bg-muted/30 pl-9 text-sm focus-visible:ring-primary/40"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {products.length === 0 ? (
+                <div className="px-5 py-12 text-center sm:px-6">
+                  <Search className="mx-auto h-10 w-10 text-muted-foreground/50" />
+                  <p className="mt-3 text-sm font-medium text-muted-foreground">
+                    {t('catalog.noSearchResults', { query: searchQuery })}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t('catalog.noSearchResultsHint')}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4 rounded-full"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    {t('catalog.clearSearch')}
+                  </Button>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {products.map((product) => {
+                    const price = getPrice(product);
+                    const currency = product.currency || "EUR";
+                    const formattedPrice = new Intl.NumberFormat(locale === 'fr' ? "fr-FR" : "en-US", {
+                      style: "currency",
+                      currency,
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    }).format(price);
+                    const isService = product.type === "service";
+                    const typeLabel = isService
+                      ? t('modal.fields.typeService')
+                      : t('modal.fields.typeProduct');
+                    return (
+                      <div
+                        key={product.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleCardClick(product.id)}
+                        onKeyDown={(e) => e.key === "Enter" && handleCardClick(product.id)}
+                        className="group flex cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/30 active:bg-muted/50 sm:px-6"
+                      >
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isService ? "bg-primary/15 text-primary" : "bg-primary/10 text-primary/80"}`}
+                        >
+                          {isService ? (
+                            <IoBriefcaseOutline className="h-5 w-5" />
+                          ) : (
+                            <IoCubeOutline className="h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">{product.name}</p>
+                          {product.description && (
+                            <p className="truncate text-xs text-muted-foreground">{product.description}</p>
+                          )}
+                        </div>
+                        <Badge variant="secondary" className="shrink-0 text-[10px] font-medium uppercase tracking-wider">
+                          {typeLabel}
+                        </Badge>
+                        <p className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                          {formattedPrice}
+                        </p>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => handleDeleteClick(e, product)}
+                          className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteClick(e, product);
+                          }}
                           disabled={isDeleting}
                           title={t('buttons.delete')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t px-6 py-4">
-              <div className="text-sm text-muted-foreground">
-                {t('pagination.pageInfo', { current: currentPage, total: totalPages, count: totalProducts })}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1 || isLoading}
-                >
-                  <IoChevronBackOutline className="h-4 w-4" />
-                  {t('buttons.previous')}
-                </Button>
-                <div className="text-sm font-medium px-3">
-                  {currentPage} / {totalPages}
+                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                      </div>
+                    );
+                  })}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages || isLoading}
-                >
-                  {t('buttons.next')}
-                  <IoChevronForwardOutline className="h-4 w-4" />
-                </Button>
+              )}
+            </section>
+
+            {totalPages > 1 && (
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
+                  {t('pagination.pageInfo', { current: currentPage, total: totalPages, count: totalProducts })}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 rounded-full px-3"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1 || isLoading}
+                  >
+                    <IoChevronBackOutline className="h-4 w-4" />
+                  </Button>
+                  <span className="min-w-[4rem] text-center text-sm font-medium">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 rounded-full px-3"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages || isLoading}
+                  >
+                    <IoChevronForwardOutline className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-        </Card>
-      ) : (
-        <div className="flex flex-col items-center gap-6 rounded-xl border border-dashed border-primary/30 bg-white py-16 shadow-sm">
-          <FuryMascot mood="focus" size="lg" />
-          <p className="text-xl font-semibold text-primary">{t('noItems')}</p>
-          <p className="max-w-md text-center text-sm text-foreground/60">
-            {t('noItemsDescription')}
-          </p>
-          <Button className="gap-2" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" />
-            {t('buttons.add')}
-          </Button>
-        </div>
-      )}
-      <ProductModal 
+            )}
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-6 rounded-2xl border border-dashed border-border/80 bg-card/50 py-16 shadow-sm backdrop-blur-sm">
+            <FuryMascot mood="focus" size="lg" />
+            <p className="text-xl font-semibold tracking-tight text-foreground">{t('noItems')}</p>
+            <p className="max-w-md text-center text-sm text-muted-foreground">
+              {t('noItemsDescription')}
+            </p>
+            <Button
+              size="sm"
+              className="gap-2 rounded-full px-5 shadow-sm"
+              onClick={() => setModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              {t('buttons.add')}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <CreateProductModal 
         open={isModalOpen} 
-        onClose={() => {
-          setModalOpen(false);
-        }}
-        onSuccess={() => {
+        setOpen={setModalOpen}
+        workspaceCurrency={workspace?.defaultCurrency ?? 'EUR'}
+        onSubmitProduct={async (data) => {
+          await createProduct({
+            name: data.name,
+            description: data.description || undefined,
+            type: 'service',
+            price: data.price,
+          }).unwrap();
           toast.success(t('success.createSuccess'), {
             description: t('success.createSuccessDescription'),
           });
           setModalOpen(false);
-          // RTK Query invalide déjà le cache, pas besoin de refetch manuel
         }}
       />
       <ImportProductsModal

@@ -37,6 +37,34 @@ function loadDraft(): InvoiceDraftData | null {
   }
 }
 
+/**
+ * Vérifie si le draft contient des données significatives
+ * (au moins un champ rempli ou au moins un item avec des données)
+ */
+function hasSignificantData(draft: InvoiceDraftData): boolean {
+  // Vérifier si au moins un champ du formulaire est rempli
+  const hasFormData = !!(
+    (draft.formData.receiver && draft.formData.receiver.trim()) ||
+    (draft.formData.subject && draft.formData.subject.trim()) ||
+    (draft.formData.notes && draft.formData.notes.trim()) ||
+    draft.formData.issueDate ||
+    draft.formData.dueDate ||
+    (draft.formData.currency && draft.formData.currency.trim())
+  );
+
+  // Vérifier si au moins un item a des données significatives
+  const hasItemsData = draft.items?.some(item => 
+    (item.description && item.description.trim()) ||
+    (item.quantity && Number(item.quantity) > 0) ||
+    (item.unitPrice && Number(item.unitPrice) > 0)
+  ) || false;
+
+  // Vérifier si metadata contient des données
+  const hasMetadata = !!(draft.metadata?.clientId || draft.metadata?.templateId);
+
+  return hasFormData || hasItemsData || hasMetadata;
+}
+
 export function clearInvoiceDraft(): void {
   if (typeof window === 'undefined') return;
   try {
@@ -88,6 +116,9 @@ export function useInvoiceDraftPersistence({
     const draft = loadDraft();
     if (!draft) return;
 
+    // Vérifier si le draft contient des données significatives avant de restaurer
+    const hasData = hasSignificantData(draft);
+    
     didRestoreRef.current = true;
 
     // Restore form
@@ -119,7 +150,11 @@ export function useInvoiceDraftPersistence({
     });
 
     setDidRestoreDraft(true);
-    onRestored?.();
+    
+    // Afficher le toast seulement si le draft contient des données significatives
+    if (hasData) {
+      onRestored?.();
+    }
   }, [isEditMode, form, setItems, setMetadata, onRestored]);
 
   // Save draft on change (creation mode only, debounced)

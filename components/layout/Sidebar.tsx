@@ -30,7 +30,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigationBlock } from "@/contexts/NavigationBlockContext";
 import { useGetMeQuery, useLogoutMutation } from "@/services/facturlyApi";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
-import { CreateWorkspaceModal } from "@/components/workspace/CreateWorkspaceModal";
 import { clearWorkspaceIdCookie } from "@/lib/workspace-cookie";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -42,12 +41,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { CreateWorkspaceModal } from "@/components/workspace/CreateWorkspaceModal";
 
 interface SidebarProps {
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   profileOpen?: boolean;
   onProfileOpenChange?: (open: boolean) => void;
+  /** Quand true, ouvre le modal de création de workspace (profil incomplet) au lieu de rediriger vers /create-workspace */
+  openCreateWorkspaceModal?: boolean;
 }
 
 // Composant pour les items de navigation en mode collapsed (sans enfants)
@@ -77,22 +79,22 @@ const CollapsedNavItem = ({
             setIsHovered(false);
           }}
           className={cn(
-            "relative w-full flex items-center justify-center rounded-md py-2 text-xs font-medium transition-colors ",
+            "relative w-full flex items-center justify-center rounded-xl py-2.5 text-xs font-medium transition-all duration-200",
             active
-              ? "bg-white/15 text-white"
-              : "text-white hover:bg-white/10"
+              ? "bg-white/[0.1] text-white"
+              : "text-white/90 hover:bg-white/[0.06] hover:text-white"
           )}
           title={item.label}
         >
-          <Icon className="h-4 w-4 mb-2" />
-          {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />}
+          <Icon className="h-4 w-4" />
+          {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-white rounded-r-full" aria-hidden />}
         </Link>
       </PopoverTrigger>
       <PopoverContent
         side="right"
         align="center"
-        className="p-2 text-xs font-medium bg-slate-900 text-white border-slate-700 shadow-lg rounded-md w-fit whitespace-nowrap"
-        sideOffset={8}
+        className="px-3 py-2 text-xs font-medium rounded-xl border-border/60 shadow-xl shadow-black/10 bg-background/95 backdrop-blur-xl w-fit whitespace-nowrap"
+        sideOffset={12}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -149,28 +151,28 @@ const CollapsedNavItemWithChildren = ({
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           className={cn(
-            "relative w-full flex items-center justify-center rounded-md p-2 pb-2.5 text-xs font-medium transition-all duration-200",
+            "relative w-full flex items-center justify-center rounded-xl py-2.5 text-xs font-medium transition-all duration-200",
             active
-              ? "bg-white/15 text-white"
-              : "text-white hover:bg-white/10"
+              ? "bg-white/[0.1] text-white"
+              : "text-white/90 hover:bg-white/[0.06] hover:text-white"
           )}
           title={item.label}
         >
-          <Icon className="h-4 w-4 transition-transform duration-200" />
-          {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />}
+          <Icon className="h-4 w-4" />
+          {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-white rounded-r-full" aria-hidden />}
         </button>
       </PopoverTrigger>
       <PopoverContent
         side="right"
         align="start"
-        className="w-56 p-2 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1 duration-200 bg-white border border-slate-200 shadow-lg rounded-lg"
-        sideOffset={8}
+        className="w-56 p-2 rounded-2xl border-border/60 shadow-xl shadow-black/10 bg-background/95 backdrop-blur-xl"
+        sideOffset={12}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="space-y-1">
-          <div className="px-2 py-1.5 text-xs font-semibold text-slate-900 border-b border-slate-200">
+        <div className="space-y-0.5">
+          <div className="px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {item.label}
           </div>
           {item.children?.map((child) => {
@@ -185,10 +187,10 @@ const CollapsedNavItemWithChildren = ({
                   setIsHovered(false);
                 }}
                 className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors duration-150",
+                  "flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors duration-200",
                   childActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground hover:bg-muted/80"
                 )}
               >
                 {child.label}
@@ -205,7 +207,8 @@ export const Sidebar = ({
   isOpen: controlledOpen, 
   onOpenChange,
   profileOpen: controlledProfileOpen,
-  onProfileOpenChange
+  onProfileOpenChange,
+  openCreateWorkspaceModal = false,
 }: SidebarProps) => {
   const pathname = usePathname();
   const isMobile = useIsMobile();
@@ -225,7 +228,6 @@ export const Sidebar = ({
     isLoadingWorkspaces,
   } = useWorkspace();
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [workspacePopoverOpen, setWorkspacePopoverOpen] = useState(false);
   const isChangingWorkspaceRef = useRef(false);
   
@@ -236,6 +238,9 @@ export const Sidebar = ({
   const [internalProfileOpen, setInternalProfileOpen] = useState(false);
   const isProfileOpen = controlledProfileOpen !== undefined ? controlledProfileOpen : internalProfileOpen;
   const setProfileOpen = onProfileOpenChange || setInternalProfileOpen;
+
+  const [createWorkspaceModalOpen, setCreateWorkspaceModalOpen] = useState(false);
+  const isCreateWorkspaceModalOpen = openCreateWorkspaceModal || createWorkspaceModalOpen;
   
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const { isCollapsed, toggleCollapsed } = useSidebar();
@@ -353,7 +358,7 @@ export const Sidebar = ({
         {!isMobile && (
           <Button
             variant="default"
-            className="h-4 w-4 shrink-0 text-white hover:bg-white/10 bg-transparent"
+            className="h-4 w-4 shrink-0 text-white hover:bg-white/10 bg-transparent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 shadow-none"
             onClick={toggleCollapsed}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -367,7 +372,7 @@ export const Sidebar = ({
         {isMobile && (
           <Button
             variant="default"
-            className="h-4 w-4 shrink-0 text-white hover:bg-white/10 bg-transparent"
+            className="h-4 w-4 shrink-0 text-white hover:bg-white/10 bg-transparent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 shadow-none"
             onClick={() => setIsOpen(false)}
             aria-label="Fermer le menu"
           >
@@ -379,23 +384,24 @@ export const Sidebar = ({
       {/* Workspace Selection */}
       {!effectiveCollapsed && (workspace || isLoadingWorkspaces) && (
         <div className={cn(
-          "border-b border-white/10 flex-shrink-0",
-          isMobile ? "px-3 py-2" : "px-2 py-1.5"
+          "border-b border-white/[0.06] flex-shrink-0",
+          isMobile ? "px-3 py-2" : "px-2.5 py-2"
         )}>
           <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
               <button className={cn(
-                "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors hover:bg-white/10 text-left touch-manipulation text-white",
-                isMobile ? "px-3 py-2.5" : "px-2 py-1.5"
+                "w-full flex items-center gap-2.5 rounded-xl text-left touch-manipulation transition-colors duration-200",
+                "hover:bg-white/[0.06] active:bg-white/[0.08]",
+                isMobile ? "px-3 py-2.5" : "px-2.5 py-2"
               )}>
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/15 text-white">
-                  <FaBuilding className="h-3 w-3" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-white">
+                  <FaBuilding className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold text-white truncate leading-tight">
+                  <p className="text-xs font-medium text-white truncate leading-tight">
                     {workspace?.name || tTopbar('workspace')}
                   </p>
-                  <p className="text-[9px] text-white/80 truncate leading-tight mt-0.5">
+                  <p className="text-[10px] text-white/70 truncate leading-tight mt-0.5">
                     {workspace 
                       ? workspace.type === 'COMPANY' 
                         ? tTopbar('workspaceTypeCompany')
@@ -405,12 +411,12 @@ export const Sidebar = ({
                       : '…'}
                   </p>
                 </div>
-                <FaChevronDown className="h-3 w-3 text-white/80 shrink-0" />
+                <FaChevronDown className="h-3.5 w-3.5 text-white/60 shrink-0" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-3" align="start">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-slate-500 px-1">{tTopbar('yourWorkspaces')}</p>
+            <PopoverContent className="w-72 rounded-2xl border-border/60 p-2 shadow-xl shadow-black/10 bg-background/95 backdrop-blur-xl" align="start" sideOffset={12}>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">{tTopbar('yourWorkspaces')}</p>
                 {workspaces.map((w) => (
                   <button
                     key={w.id}
@@ -426,18 +432,18 @@ export const Sidebar = ({
                       }, 500);
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
+                      "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                       w.id === currentWorkspaceId
                         ? "bg-primary/10 text-primary"
-                        : "hover:bg-slate-100 text-slate-700"
+                        : "hover:bg-muted/80 text-foreground"
                     )}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <FaBuilding className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {w.type === 'COMPANY' 
                           ? tTopbar('workspaceTypeCompany')
                           : w.type === 'FREELANCE'
@@ -447,14 +453,15 @@ export const Sidebar = ({
                     </div>
                   </button>
                 ))}
-                <div className="border-t border-white/10 pt-2 space-y-1">
+                <div className="border-t border-border/60 pt-2 mt-2 space-y-0.5">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs text-white hover:bg-white/10 hover:text-white"
+                    className="w-full justify-start text-xs rounded-xl hover:bg-muted/80 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={() => {
-                      setCreateModalOpen(true);
+                      setCreateWorkspaceModalOpen(true);
                       setWorkspacePopoverOpen(false);
+                      if (isMobile) setIsOpen(false);
                     }}
                   >
                     <FaPlus className="h-3.5 w-3.5 mr-2" />
@@ -463,7 +470,7 @@ export const Sidebar = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs text-white hover:bg-white/10 hover:text-white"
+                    className="w-full justify-start text-xs rounded-xl hover:bg-muted/80 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={() => {
                       handleNavigation("/settings?tab=workspace");
                       setWorkspacePopoverOpen(false);
@@ -480,16 +487,16 @@ export const Sidebar = ({
         </div>
       )}
       {effectiveCollapsed && (workspace || isLoadingWorkspaces) && (
-        <div className="border-b border-white/10 py-1.5 flex justify-center">
+        <div className="border-b border-white/[0.06] py-2 flex justify-center">
           <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
-              <button className="flex h-7 w-7 items-center justify-center rounded-md bg-white/15 text-white hover:bg-white/25 transition-colors">
-                <FaBuilding className="h-3.5 w-3.5" />
+              <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.08] text-white hover:bg-white/[0.12] transition-colors duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0" aria-label={tTopbar('workspace')}>
+                <FaBuilding className="h-4 w-4" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-3" align="start">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-slate-500 px-1">{tTopbar('yourWorkspaces')}</p>
+            <PopoverContent className="w-72 rounded-2xl border-border/60 p-2 shadow-xl shadow-black/10 bg-background/95 backdrop-blur-xl" align="start" sideOffset={12}>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1.5">{tTopbar('yourWorkspaces')}</p>
                 {workspaces.map((w) => (
                   <button
                     key={w.id}
@@ -505,18 +512,18 @@ export const Sidebar = ({
                       }, 500);
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
+                      "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                       w.id === currentWorkspaceId
                         ? "bg-primary/10 text-primary"
-                        : "hover:bg-slate-100 text-slate-700"
+                        : "hover:bg-muted/80 text-foreground"
                     )}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <FaBuilding className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {w.type === 'COMPANY' 
                           ? tTopbar('workspaceTypeCompany')
                           : w.type === 'FREELANCE'
@@ -526,14 +533,15 @@ export const Sidebar = ({
                     </div>
                   </button>
                 ))}
-                <div className="border-t border-white/10 pt-2 space-y-1">
+                <div className="border-t border-border/60 pt-2 mt-2 space-y-0.5">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs text-white hover:bg-white/10"
+                    className="w-full justify-start text-xs rounded-xl hover:bg-muted/80 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={() => {
-                      setCreateModalOpen(true);
+                      setCreateWorkspaceModalOpen(true);
                       setWorkspacePopoverOpen(false);
+                      if (isMobile) setIsOpen(false);
                     }}
                   >
                     <FaPlus className="h-3.5 w-3.5 mr-2" />
@@ -542,7 +550,7 @@ export const Sidebar = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start text-xs text-white hover:bg-white/10"
+                    className="w-full justify-start text-xs rounded-xl hover:bg-muted/80 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={() => {
                       handleNavigation("/settings?tab=workspace");
                       setWorkspacePopoverOpen(false);
@@ -561,8 +569,8 @@ export const Sidebar = ({
 
       {/* Navigation */}
       <nav className={cn(
-        "flex-1 overflow-y-auto overscroll-contain py-1.5 space-y-0.5",
-        isMobile && "py-2 space-y-1"
+        "flex-1 overflow-y-auto overscroll-contain py-2 space-y-0.5",
+        isMobile && "py-3 space-y-1 px-2"
       )}>
         {navItems.map((item) => {
           const active = isActive(item.href, item.children);
@@ -596,40 +604,41 @@ export const Sidebar = ({
             );
           }
 
-          const btnCls = "w-full flex items-center justify-between rounded-md text-xs font-medium transition-colors touch-manipulation";
-          const linkCls = "w-full flex items-center gap-2 rounded-md text-xs font-medium transition-colors touch-manipulation";
-          const navClsActive = "bg-white/15 text-white";
-          const navClsInactive = "text-white hover:bg-white/10";
-          const navBar = <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />;
-          const padY = isMobile ? "py-3 px-3" : "px-2 py-1.5";
-          const childPadY = isMobile ? "py-2.5 px-3" : "px-2 py-1";
-          const childMl = isMobile ? "ml-4" : "ml-6";
+          const padX = isMobile ? "px-3" : "px-2.5";
+          const padY = isMobile ? "py-3" : "py-2";
+          const childPadY = isMobile ? "py-2.5 pl-5" : "py-1.5 pl-5";
+          const childMl = isMobile ? "ml-2" : "ml-2";
 
           return (
-            <div key={item.href}>
+            <div key={item.href} className={padX}>
               {item.children ? (
-                <div>
+                <div className="space-y-0.5">
                   <button
                     onClick={() => toggleExpanded(item.href)}
                     className={cn(
-                      "relative", btnCls, padY,
-                      active || hasActiveChild ? navClsActive : navClsInactive
+                      "relative w-full flex items-center justify-between rounded-xl text-xs font-medium transition-all duration-200 touch-manipulation",
+                      padY,
+                      active || hasActiveChild
+                        ? "bg-white/[0.1] text-white"
+                        : "text-white/90 hover:bg-white/[0.06] hover:text-white"
                     )}
                   >
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <Icon className="h-4 w-4 shrink-0" />
                       <span className="truncate">{item.label}</span>
                     </div>
-                    {(active || hasActiveChild) && navBar}
+                    {(active || hasActiveChild) && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-white rounded-r-full" aria-hidden />
+                    )}
                     <FaChevronDown 
                       className={cn(
-                        "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
+                        "h-3.5 w-3.5 shrink-0 text-white/70 transition-transform duration-200",
                         isExpanded ? "rotate-180" : ""
                       )} 
                     />
                   </button>
                   {isExpanded && (
-                    <div className={cn(childMl, "mt-0.5 space-y-0.5")}>
+                    <div className={cn(childMl, "space-y-0.5")}>
                       {item.children.map((child) => {
                         const childActive = pathname === child.href || pathname?.startsWith(`${child.href}/`);
                         return (
@@ -641,15 +650,17 @@ export const Sidebar = ({
                               handleNavClick(child.href);
                             }}
                             className={cn(
-                              "relative block rounded-md text-[11px] transition-colors touch-manipulation",
+                              "relative flex items-center rounded-xl text-[11px] font-medium transition-all duration-200 touch-manipulation",
                               childPadY,
                               childActive
-                                ? "bg-white/15 text-white font-medium"
-                                : "text-white hover:bg-white/10"
+                                ? "bg-white/[0.1] text-white"
+                                : "text-white/80 hover:bg-white/[0.06] hover:text-white"
                             )}
                           >
+                            {childActive && (
+                              <span className="absolute left-0 top-1 bottom-1 w-1 bg-white rounded-r-full" aria-hidden />
+                            )}
                             {child.label}
-                            {childActive && <span className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" aria-hidden />}
                           </Link>
                         );
                       })}
@@ -664,13 +675,18 @@ export const Sidebar = ({
                     handleNavClick(item.href);
                   }}
                   className={cn(
-                    "relative", linkCls, padY,
-                    active ? navClsActive : navClsInactive
+                    "relative flex items-center gap-2.5 rounded-xl text-xs font-medium transition-all duration-200 touch-manipulation w-full",
+                    padY,
+                    active
+                      ? "bg-white/[0.1] text-white"
+                      : "text-white/90 hover:bg-white/[0.06] hover:text-white"
                   )}
                 >
+                  {active && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-white rounded-r-full" aria-hidden />
+                  )}
                   <Icon className="h-4 w-4 shrink-0" />
                   <span className="truncate">{item.label}</span>
-                  {active && navBar}
                 </Link>
               )}
             </div>
@@ -680,7 +696,7 @@ export const Sidebar = ({
 
       {/* User profile */}
       <div className={cn(
-        "border-t border-white/10 p-2 flex-shrink-0",
+        "border-t border-white/[0.06] p-2.5 flex-shrink-0",
         isMobile && "p-3"
       )}>
         {effectiveCollapsed ? (
@@ -689,10 +705,10 @@ export const Sidebar = ({
               <button
                 type="button"
                 onClick={() => setProfileOpen(true)}
-                className="w-full flex items-center justify-center rounded-md border border-white/20 bg-white/10 p-1 transition-colors hover:bg-white/15"
+                className="w-full flex items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.06] p-2 transition-colors duration-200 hover:bg-white/[0.1] focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 title={getUserDisplayName()}
               >
-                <Avatar className="h-7 w-7 shrink-0">
+                <Avatar className="h-8 w-8 shrink-0">
                   <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                     {isLoadingUser ? "..." : getInitials()}
                   </AvatarFallback>
@@ -702,18 +718,19 @@ export const Sidebar = ({
             <PopoverContent 
               side="right" 
               align="end"
-              className="w-56 p-2 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1 duration-200"
+              className="w-60 rounded-2xl border-border/60 p-2 shadow-xl shadow-black/10 bg-background/95 backdrop-blur-xl"
+              sideOffset={12}
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <div className="space-y-2">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                  <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-muted/50">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
                       {isLoadingUser ? "..." : getInitials()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-slate-900 truncate">
+                    <p className="text-sm font-semibold text-foreground truncate">
                       {isLoadingUser ? "..." : getUserDisplayName()}
                     </p>
                   </div>
@@ -721,10 +738,8 @@ export const Sidebar = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full justify-start text-xs"
-                  onClick={() => {
-                    setProfileOpen(true);
-                  }}
+                  className="w-full justify-start text-xs rounded-xl hover:bg-muted/80 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  onClick={() => setProfileOpen(true)}
                 >
                   <FaUser className="h-3.5 w-3.5 mr-2" />
                   {tTopbar('userProfile')}
@@ -737,13 +752,13 @@ export const Sidebar = ({
             type="button"
             onClick={() => setProfileOpen(true)}
             className={cn(
-              "w-full flex items-center gap-2 rounded-md border border-white/20 bg-white/10 transition-colors hover:bg-white/15 touch-manipulation text-white",
-              isMobile ? "p-3" : "p-2"
+              "w-full flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.06] transition-colors duration-200 hover:bg-white/[0.1] touch-manipulation text-white focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
+              isMobile ? "p-3" : "p-2.5"
             )}
           >
-            <Avatar className={cn("shrink-0", isMobile ? "h-9 w-9" : "h-7 w-7")}>
+            <Avatar className={cn("shrink-0", isMobile ? "h-9 w-9" : "h-8 w-8")}>
               <AvatarFallback className={cn(
-                "bg-white/20 text-white border border-white/30",
+                "bg-white/20 text-white border border-white/20",
                 isMobile ? "text-xs" : "text-[10px]"
               )}>
                 {isLoadingUser ? "..." : getInitials()}
@@ -751,8 +766,8 @@ export const Sidebar = ({
             </Avatar>
             <div className="flex-1 text-left min-w-0">
               <p className={cn(
-                "font-semibold text-white truncate leading-tight",
-                isMobile ? "text-sm" : "text-[11px]"
+                "font-medium text-white truncate leading-tight",
+                isMobile ? "text-sm" : "text-xs"
               )}>
                 {isLoadingUser ? "..." : getUserDisplayName()}
               </p>
@@ -763,106 +778,143 @@ export const Sidebar = ({
     </div>
   );
 
+  const workspaceTypeLabel = workspace
+    ? workspace.type === 'COMPANY'
+      ? tTopbar('workspaceTypeCompany')
+      : workspace.type === 'FREELANCE'
+        ? tTopbar('workspaceTypeFreelance')
+        : tTopbar('workspaceTypeIndividual')
+    : null;
+  const workspaceSubline = [
+    workspace?.name || workspaceTypeLabel,
+    workspace?.defaultCurrency,
+    [workspace?.city, workspace?.country].filter(Boolean).join(', ') || null,
+  ].filter(Boolean).join(' · ') || (workspaceTypeLabel ?? '');
+
   const ProfileSheet = () => (
     <Sheet open={isProfileOpen} onOpenChange={setProfileOpen}>
-      <SheetContent side="right" className="w-full max-w-sm space-y-6">
-        <SheetHeader>
-          <SheetTitle>{tTopbar('userProfile')}</SheetTitle>
-          <SheetDescription>
-            {tTopbar('accountInfo')}
-          </SheetDescription>
-        </SheetHeader>
-        {isLoadingUser ? (
-          <div className="flex flex-col items-center gap-3 pt-2">
-            <div className="h-16 w-16 rounded-full bg-muted animate-pulse" />
-            <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+      <SheetContent
+        side="right"
+        className="w-full max-w-[360px] p-0 gap-0 overflow-hidden rounded-l-[28px] border-l border-border/40 bg-background/95 dark:bg-background/98 backdrop-blur-2xl shadow-2xl shadow-black/5 [&>button]:right-4 [&>button]:top-5 [&>button]:h-9 [&>button]:w-9 [&>button]:rounded-full [&>button]:bg-muted/60 [&>button]:hover:bg-muted [&>button]:opacity-80 [&>button]:hover:opacity-100 [&>button]:text-foreground/70 [&>button]:focus:outline-none [&>button]:focus:ring-0 [&>button]:focus-visible:ring-0 data-[state=open]:duration-300 data-[state=closed]:duration-250"
+      >
+        <div className="flex flex-col h-full min-h-0">
+          {/* Barre titre — minimal Apple */}
+          <div className="flex items-center justify-between px-5 pt-5 pb-1 shrink-0">
+            <SheetTitle className="text-[17px] font-semibold text-foreground tracking-tight">
+              {tTopbar('userProfile')}
+            </SheetTitle>
           </div>
-        ) : (
-          <>
-            <div className="flex flex-col items-center gap-3 pt-2">
-              <Avatar className="h-16 w-16">
-                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-center">
-                <p className="text-base font-semibold text-foreground">
+
+          {isLoadingUser ? (
+            <div className="flex flex-col items-center gap-4 px-6 py-10">
+              <div className="h-20 w-20 rounded-full bg-muted/80 animate-pulse" />
+              <div className="h-4 w-40 bg-muted/80 rounded-lg animate-pulse" />
+              <div className="h-3 w-32 bg-muted/60 rounded-lg animate-pulse" />
+            </div>
+          ) : (
+            <>
+              {/* Hero profil — centré, typo premium */}
+              <div className="px-6 pt-2 pb-8 flex flex-col items-center text-center">
+                <Avatar className="h-20 w-20 rounded-full ring-[1px] ring-border/50 shadow-lg">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground text-xl font-medium rounded-full">
+                    {getInitials()}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="mt-4 text-[19px] font-semibold text-foreground tracking-tight">
                   {getUserDisplayName()}
                 </p>
-                <p className="text-sm text-foreground/60">{user?.email}</p>
+                <p className="mt-1 text-[15px] text-muted-foreground">
+                  {user?.email}
+                </p>
               </div>
-            </div>
-            <div className="space-y-3 text-sm">
-              {workspace && (
-                <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <FaUser className="h-4 w-4 text-slate-600" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground">{tTopbar('workspace')}</p>
-                    <p className="text-xs text-slate-600 truncate">
-                      {workspace.name || workspace.city || workspace.country || ''}
-                    </p>
-                  </div>
+
+              {/* Liste groupée type Réglages iOS */}
+              <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-6">
+                <div className="rounded-2xl bg-muted/40 dark:bg-muted/20 overflow-hidden">
+                  {workspace && (
+                    <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border/50 last:border-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 dark:bg-background/60">
+                        <FaBuilding className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-foreground">
+                          {tTopbar('workspace')}
+                        </p>
+                        <p className="text-[12px] text-muted-foreground truncate mt-0.5">
+                          {workspace.name || workspaceTypeLabel || tTopbar('workspace')}
+                        </p>
+                        {workspaceSubline ? (
+                          <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">
+                            {workspaceSubline}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavigation("/settings?tab=profile");
+                      setProfileOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/60 dark:hover:bg-muted/40 active:bg-muted/80 rounded-b-2xl focus:outline-none focus:ring-0"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 dark:bg-background/60">
+                      <FaUser className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span className="text-[15px] font-medium text-foreground flex-1">
+                      {tTopbar('manageAccount')}
+                    </span>
+                    <FaChevronRight className="h-4 w-4 text-muted-foreground/70 shrink-0" />
+                  </button>
                 </div>
-              )}
-            </div>
-          </>
-        )}
-        <SheetFooter className="flex flex-col gap-2">
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavigation("/settings?tab=profile");
-              setProfileOpen(false);
-            }}
-          >
-            {tTopbar('manageAccount')}
-          </Button>
-          <Button 
-            variant="destructive" 
-            className="w-full"
-            onClick={async (e) => {
-              e.preventDefault();
-              try {
-                await logout().unwrap();
-                if (typeof window !== "undefined") {
-                  document.cookie = "facturly_access_token=; path=/; max-age=0";
-                  document.cookie = "facturly_refresh_token=; path=/; max-age=0";
-                }
-                toast.success(tTopbar('logoutSuccess'), {
-                  description: tTopbar('logoutSuccessDescription'),
-                });
-                setProfileOpen(false);
-                router.push("/login");
-              } catch (error) {
-                if (typeof window !== "undefined") {
-                  document.cookie = "facturly_access_token=; path=/; max-age=0";
-                  document.cookie = "facturly_refresh_token=; path=/; max-age=0";
-                  clearWorkspaceIdCookie();
-                }
-                toast.error(tTopbar('logoutError'), {
-                  description: tTopbar('logoutErrorDescription'),
-                });
-                setProfileOpen(false);
-                router.push("/login");
-              }
-            }}
-            disabled={isLoggingOut}
-          >
-            {isLoggingOut ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                {tTopbar('loggingOut')}
-              </>
-            ) : (
-              <>
-                <FaRightFromBracket className="h-4 w-4 mr-2" />
-                {tTopbar('logout')}
-              </>
-            )}
-          </Button>
-        </SheetFooter>
+
+                {/* Déconnexion — ligne destructive */}
+                <div className="mt-4 rounded-2xl bg-muted/40 dark:bg-muted/20 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await logout().unwrap();
+                        if (typeof window !== "undefined") {
+                          document.cookie = "facturly_access_token=; path=/; max-age=0";
+                          document.cookie = "facturly_refresh_token=; path=/; max-age=0";
+                        }
+                        toast.success(tTopbar('logoutSuccess'), {
+                          description: tTopbar('logoutSuccessDescription'),
+                        });
+                        setProfileOpen(false);
+                        router.push("/login");
+                      } catch (error) {
+                        if (typeof window !== "undefined") {
+                          document.cookie = "facturly_access_token=; path=/; max-age=0";
+                          document.cookie = "facturly_refresh_token=; path=/; max-age=0";
+                          clearWorkspaceIdCookie();
+                        }
+                        toast.error(tTopbar('logoutError'), {
+                          description: tTopbar('logoutErrorDescription'),
+                        });
+                        setProfileOpen(false);
+                        router.push("/login");
+                      }
+                    }}
+                    disabled={isLoggingOut}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-[15px] font-medium text-destructive hover:bg-destructive/10 active:bg-destructive/15 transition-colors disabled:opacity-60 focus:outline-none focus:ring-0"
+                  >
+                    {isLoggingOut ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FaRightFromBracket className="h-4 w-4" />
+                    )}
+                    {isLoggingOut ? tTopbar('loggingOut') : tTopbar('logout')}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   );
@@ -873,7 +925,7 @@ export const Sidebar = ({
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetContent
             side="left"
-            className="w-[85vw] max-w-[300px] p-0 gap-0 [&>button]:hidden h-full flex flex-col overflow-hidden bg-gradient-to-b from-[#2e1065] via-[#3b0764] to-[#4c0519] backdrop-blur-xl border-r border-white/10"
+            className="w-[85vw] max-w-[300px] p-0 gap-0 [&>button]:hidden h-full flex flex-col overflow-hidden rounded-r-2xl border-r border-white/[0.06] bg-gradient-to-b from-[#2e1065] via-[#3b0764] to-[#4c0519] backdrop-blur-2xl shadow-xl"
           >
             <div className="flex flex-col h-full overflow-hidden min-h-0">
               <SidebarContent />
@@ -881,7 +933,11 @@ export const Sidebar = ({
           </SheetContent>
         </Sheet>
         <ProfileSheet />
-        <CreateWorkspaceModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
+        <CreateWorkspaceModal
+          open={isCreateWorkspaceModalOpen}
+          onOpenChange={setCreateWorkspaceModalOpen}
+          isAdditionalWorkspace={createWorkspaceModalOpen}
+        />
       </>
     );
   }
@@ -889,15 +945,20 @@ export const Sidebar = ({
   return (
     <>
       <aside className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-r border-white/10 transition-all duration-300",
+        "fixed left-0 top-0 z-40 h-screen transition-[width] duration-300 ease-out",
+        "rounded-r-2xl border-r border-white/[0.06]",
         "bg-gradient-to-b from-[#2e1065] via-[#3b0764] to-[#4c0519]",
-        "backdrop-blur-xl",
+        "backdrop-blur-2xl shadow-[4px_0_24px_-4px_rgba(0,0,0,0.2)]",
         isCollapsed ? "w-16" : "w-64"
       )}>
         <SidebarContent />
       </aside>
       <ProfileSheet />
-      <CreateWorkspaceModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
+      <CreateWorkspaceModal
+        open={isCreateWorkspaceModalOpen}
+        onOpenChange={setCreateWorkspaceModalOpen}
+        isAdditionalWorkspace={createWorkspaceModalOpen}
+      />
     </>
   );
 };

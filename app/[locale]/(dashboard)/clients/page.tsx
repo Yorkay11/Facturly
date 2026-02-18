@@ -43,6 +43,8 @@ export default function ClientsPage() {
     currentPage,
     goToPreviousPage,
     goToNextPage,
+    searchQuery,
+    setSearchQuery,
     isModalOpen,
     setModalOpen,
     isImportModalOpen,
@@ -166,6 +168,8 @@ export default function ClientsPage() {
               <Input
                 placeholder={t("searchPlaceholder")}
                 className="h-10 pl-9 bg-muted/30 border-border"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>

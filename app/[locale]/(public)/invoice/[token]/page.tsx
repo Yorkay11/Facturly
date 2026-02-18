@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from '@/i18n/routing';
 import Image from "next/image";
 import { CheckCircle2, AlertCircle, FileText, XCircle, Check, X, Loader2, Maximize2, Download, Share2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,20 +78,27 @@ export default function PublicInvoicePage() {
 
   const { data: invoiceData, isLoading, isError, error, refetch } = useGetPublicInvoiceQuery(
     token || "",
-    { skip: !token }
+    {
+      skip: !token,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    }
   );
 
-  // Gérer le retour de Moneroo après paiement
+  const paymentReturnHandledRef = useRef(false);
+  const paymentStatus = searchParams?.get('paymentStatus') ?? null;
+  const paymentIdFromUrl = searchParams?.get('paymentId') ?? null;
+
+  // Gérer le retour de Moneroo après paiement (une seule fois par retour)
   useEffect(() => {
-    const monerooStatus = searchParams?.get('paymentStatus');
-    const paymentId = searchParams?.get('paymentId');
-    
-    const finalStatus = monerooStatus;
-    
+    const finalStatus = paymentStatus;
+
     if (!finalStatus) return;
-    
+    if (paymentReturnHandledRef.current) return;
+    paymentReturnHandledRef.current = true;
+
     refetch();
-    
+
     if (finalStatus === 'success') {
       toast.success(t('toasts.paymentSuccess') || 'Paiement réussi', {
         description: t('toasts.paymentSuccessDescription') || 'Votre paiement a été traité avec succès. Merci !',
@@ -113,10 +120,12 @@ export default function PublicInvoicePage() {
         duration: 5000,
       });
     }
-    
+
     const newUrl = window.location.pathname;
     window.history.replaceState({}, '', newUrl);
-  }, [searchParams, refetch, t]);
+    // Dépendances limitées volontairement : on ne réagit qu'au retour paiement (paymentStatus/paymentId).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch/t utilisés une seule fois via paymentReturnHandledRef
+  }, [paymentStatus, paymentIdFromUrl]);
   const [acceptInvoice, { isLoading: isAccepting }] = useAcceptPublicInvoiceMutation();
 
   const formatDate = (value: string) =>
@@ -179,17 +188,23 @@ export default function PublicInvoicePage() {
     }
   };
 
+  const rejectSuccessHandledRef = useRef(false);
+
   const handleRejectClick = () => {
+    rejectSuccessHandledRef.current = false; // permettre un nouveau refus à chaque ouverture
     setShowRejectModal(true);
   };
 
-  const handleRejectSuccess = () => {
+  const handleRejectSuccess = useCallback(() => {
+    if (rejectSuccessHandledRef.current) return;
+    rejectSuccessHandledRef.current = true;
     setShowRejectModal(false);
     refetch();
     toast.success(t('toasts.rejected'), {
       description: t('toasts.rejectedDescription'),
+      id: 'invoice-rejected',
     });
-  };
+  }, [refetch, t]);
 
   if (!token) {
     return (

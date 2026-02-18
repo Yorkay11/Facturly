@@ -142,7 +142,7 @@ export default function InvoicesPage() {
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-500" />
               <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                {t("sent")}
+                {t("stats.active")}
               </span>
             </div>
             <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-foreground">
@@ -199,6 +199,8 @@ export default function InvoicesPage() {
                 <SelectItem value="sent">{t("sent")}</SelectItem>
                 <SelectItem value="paid">{t("paid")}</SelectItem>
                 <SelectItem value="overdue">{t("overdue")}</SelectItem>
+                <SelectItem value="cancelled">{t("cancelled")}</SelectItem>
+                <SelectItem value="rejected">{t("rejected")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortType)}>
@@ -275,6 +277,7 @@ export default function InvoicesPage() {
                               | "paid"
                               | "overdue"
                               | "cancelled"
+                              | "rejected"
                           }
                         />
                       </div>

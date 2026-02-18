@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 const statusClassMap: Record<
-  "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled",
+  "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled" | "rejected",
   string
 > = {
   draft: "bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-900/20 dark:text-amber-400",
@@ -12,11 +12,12 @@ const statusClassMap: Record<
   sent: "bg-indigo-100 text-indigo-800 border border-indigo-300 dark:bg-indigo-900/20 dark:text-indigo-400",
   paid: "bg-green-100 text-green-800 border border-green-400 dark:bg-green-900/20 dark:text-green-400",
   overdue: "bg-orange-100 text-orange-800 border border-orange-400 dark:bg-orange-900/20 dark:text-orange-400",
-  cancelled: "bg-slate-200 text-slate-700 border border-slate-400 dark:bg-slate-800 dark:text-slate-300",
+  cancelled: "bg-slate-100 text-slate-700 border border-slate-300 dark:bg-slate-700/50 dark:text-slate-300",
+  rejected: "bg-red-100 text-red-800 border border-red-300 dark:bg-red-900/20 dark:text-red-400",
 };
 
 interface InvoiceStatusBadgeProps {
-  status: "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled";
+  status: "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled" | "rejected";
 }
 
 export const InvoiceStatusBadge = ({ status }: InvoiceStatusBadgeProps) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -79,8 +79,13 @@ export const RejectInvoiceModal = ({
     },
   ], [t]);
 
-  const [rejectInvoice, { isLoading, isSuccess, isError, error }] =
-    useRejectPublicInvoiceMutation();
+  const [rejectInvoice, { isLoading }] = useRejectPublicInvoiceMutation();
+  const isSubmittingRef = useRef(false);
+
+  // Réinitialiser la garde à chaque ouverture du modal pour permettre une nouvelle soumission
+  useEffect(() => {
+    if (open) isSubmittingRef.current = false;
+  }, [open]);
 
   const form = useForm<RejectFormValues>({
     resolver: zodResolver(rejectSchema),
@@ -90,14 +95,8 @@ export const RejectInvoiceModal = ({
     },
   });
 
-  useEffect(() => {
-    if (isSuccess) {
-      form.reset();
-      onSuccess();
-    }
-  }, [isSuccess, form, onSuccess]);
-
   const onSubmit = async (values: RejectFormValues) => {
+    if (isSubmittingRef.current) return;
     if (!token) {
       toast.error(commonT('error'), {
         description: t('errors.invalidToken'),
@@ -105,16 +104,19 @@ export const RejectInvoiceModal = ({
       return;
     }
 
+    isSubmittingRef.current = true;
     try {
       await rejectInvoice({
         token,
         payload: {
           comment: values.comment.trim(),
-          // Convertir "none" en undefined pour ne pas envoyer cette valeur au backend
           reason: values.reason === "none" ? undefined : values.reason,
         },
       }).unwrap();
+      form.reset();
+      onSuccess();
     } catch (err: any) {
+      isSubmittingRef.current = false;
       const baseMessage = t('errors.rejectError');
       const errorMessage =
         err && typeof err === 'object' && 'data' in err
@@ -129,6 +131,7 @@ export const RejectInvoiceModal = ({
 
   const handleClose = () => {
     if (!isLoading) {
+      isSubmittingRef.current = false;
       form.reset();
       onClose();
     }

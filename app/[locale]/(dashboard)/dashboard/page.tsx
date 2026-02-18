@@ -144,7 +144,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </>
-        ) : stats.invoicesSent === 0 ? (
+        ) : (stats.totalEmittedInvoices ?? stats.activeInvoices ?? 0) === 0 ? (
         <DashboardEmptyState
           onCreateInvoice={() => router.push("/invoices/new")}
           onAddClient={() => setClientModalOpen(true)}
@@ -160,7 +160,7 @@ export default function DashboardPage() {
               />
               <StatCard
                 title={t('invoicesSent')}
-                value={stats.invoicesSent.toString()}
+                value={(stats.totalEmittedInvoices ?? stats.invoicesSent ?? 0).toString()}
                 icon={<FaChartPie className="h-5 w-5" />}
               />
               <StatCard
@@ -328,7 +328,7 @@ export default function DashboardPage() {
                         <span className="text-xs text-muted-foreground">{t('averageRevenue')}</span>
                       </div>
                       <span className="text-sm font-semibold tabular-nums text-foreground">
-                        {isLoading || stats.invoicesSent === 0 ? "—" : formatCurrency(stats.monthlyRevenue / stats.invoicesSent)}
+                        {isLoading || (stats.totalEmittedInvoices ?? stats.invoicesSent ?? 0) === 0 ? "—" : formatCurrency(stats.monthlyRevenue / (stats.totalEmittedInvoices ?? stats.invoicesSent ?? 1))}
                       </span>
                     </div>
                   </div>

@@ -239,6 +239,8 @@ export function useDashboardData() {
       return {
         monthlyRevenue: monthlyRev,
         invoicesSent: dashboardStats.invoicesSent ?? 0,
+        activeInvoices: dashboardStats.activeInvoices ?? 0,
+        totalEmittedInvoices: dashboardStats.totalEmittedInvoices ?? 0,
         totalPaid: parseFloat(dashboardStats.totalPaid || "0"),
         totalUnpaid: parseFloat(dashboardStats.totalUnpaid || "0"),
       };
@@ -247,6 +249,9 @@ export function useDashboardData() {
     // Fallback: calculer depuis les factures
     const paidInvoices = invoices.filter((inv) => inv.status === "paid");
     const sentInvoices = invoices.filter((inv) => inv.status === "sent");
+    const overdueInvoices = invoices.filter((inv) => inv.status === "overdue");
+    const cancelledInvoices = invoices.filter((inv) => inv.status === "cancelled");
+    const quoteInvoices = invoices.filter((inv) => inv.status === "quote");
 
     const totalRevenue = paidInvoices.reduce((sum, inv) => {
       return sum + parseFloat(inv.totalAmount || "0");
@@ -256,9 +261,19 @@ export function useDashboardData() {
       return sum + parseFloat(inv.totalAmount || "0");
     }, 0);
 
+    const activeInvoices = sentInvoices.length + overdueInvoices.length;
+    const totalEmittedInvoices =
+      sentInvoices.length +
+      overdueInvoices.length +
+      paidInvoices.length +
+      cancelledInvoices.length +
+      quoteInvoices.length;
+
     return {
       monthlyRevenue: totalRevenue,
       invoicesSent: sentInvoices.length,
+      activeInvoices,
+      totalEmittedInvoices,
       totalPaid: totalRevenue,
       totalUnpaid: pendingAmount,
     };

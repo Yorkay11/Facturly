@@ -93,21 +93,19 @@ export function WhatsAppMessageStyleSelector({
   const selectedStyle = MESSAGE_STYLES.find((style) => style.value === value);
   const SelectedIcon = selectedStyle?.icon || FaComments;
 
-  // Générer l'aperçu du message si les données sont disponibles
-  const previewMessage = invoiceNumber && amount && currency
-    ? generateWhatsAppMessage({
-        invoiceNumber: invoiceNumber || "FAC-001",
-        amount: amount || "0",
-        currency: currency || "XOF",
-        dueDate: dueDate
-          ? typeof dueDate === "string"
-            ? dueDate
-            : format(new Date(dueDate), "dd/MM/yyyy")
-          : undefined,
-        companyName,
-        style: value,
-      })
-    : null;
+  // Toujours générer un aperçu (valeurs réelles ou exemples) pour que l'utilisateur voie le message que le client recevra
+  const previewMessage = generateWhatsAppMessage({
+    invoiceNumber: invoiceNumber || "FAC-001",
+    amount: amount || "0,00",
+    currency: currency || "XOF",
+    dueDate: dueDate
+      ? typeof dueDate === "string"
+        ? dueDate
+        : format(new Date(dueDate), "dd/MM/yyyy")
+      : undefined,
+    companyName,
+    style: value,
+  });
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -179,19 +177,22 @@ export function WhatsAppMessageStyleSelector({
         </p>
       )}
       
-      {/* Aperçu du message dans un mockup WhatsApp */}
-      {previewMessage && (
-        <div className="pt-2">
-          <Label className="text-xs font-semibold text-slate-700 mb-3 block flex items-center gap-1.5">
-            <FaWhatsapp className="h-3.5 w-3.5 text-green-600" />
-            Aperçu du message
-          </Label>
+      {/* Aperçu du message que le client recevra par WhatsApp — largeur fixe */}
+      <div className="pt-4 min-w-0">
+        <Label className="text-xs font-semibold text-slate-600 mb-3 block flex items-center gap-1.5">
+          <FaWhatsapp className="h-3.5 w-3.5 text-[#075e54]" />
+          {t("previewLabel")}
+        </Label>
+        <div
+          className="rounded-2xl bg-gradient-to-b from-slate-100/90 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-900/60 p-8 flex justify-center items-start border border-slate-200/70 dark:border-slate-700/50 shadow-sm"
+          style={{ minWidth: 320 }}
+        >
           <WhatsAppMessagePreview
             message={previewMessage}
-            companyName={companyName}
+            companyName={companyName || undefined}
           />
         </div>
-      )}
+      </div>
     </div>
   );
 }

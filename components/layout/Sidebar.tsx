@@ -394,8 +394,16 @@ export const Sidebar = ({
                 "hover:bg-white/[0.06] active:bg-white/[0.08]",
                 isMobile ? "px-3 py-2.5" : "px-2.5 py-2"
               )}>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-white">
-                  <FaBuilding className="h-4 w-4" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-white overflow-hidden">
+                  {workspace?.logoUrl ? (
+                    <img
+                      src={workspace.logoUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <FaBuilding className="h-4 w-4" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-white truncate leading-tight">
@@ -438,8 +446,12 @@ export const Sidebar = ({
                         : "hover:bg-muted/80 text-foreground"
                     )}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <FaBuilding className="h-4 w-4" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-primary/10 text-primary">
+                      {w.logoUrl ? (
+                        <img src={w.logoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <FaBuilding className="h-4 w-4" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
@@ -490,8 +502,16 @@ export const Sidebar = ({
         <div className="border-b border-white/[0.06] py-2 flex justify-center">
           <Popover open={workspacePopoverOpen} onOpenChange={setWorkspacePopoverOpen}>
             <PopoverTrigger asChild>
-              <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.08] text-white hover:bg-white/[0.12] transition-colors duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0" aria-label={tTopbar('workspace')}>
-                <FaBuilding className="h-4 w-4" />
+              <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.08] text-white hover:bg-white/[0.12] transition-colors duration-200 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 overflow-hidden" aria-label={tTopbar('workspace')}>
+                {workspace?.logoUrl ? (
+                  <img
+                    src={workspace.logoUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <FaBuilding className="h-4 w-4" />
+                )}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-72 rounded-2xl border-border/60 p-2 shadow-xl shadow-black/10 bg-background/95 backdrop-blur-xl" align="start" sideOffset={12}>
@@ -518,8 +538,12 @@ export const Sidebar = ({
                         : "hover:bg-muted/80 text-foreground"
                     )}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <FaBuilding className="h-4 w-4" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-primary/10 text-primary">
+                      {w.logoUrl ? (
+                        <img src={w.logoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <FaBuilding className="h-4 w-4" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{w.name || tTopbar('workspace')}</p>
@@ -833,8 +857,12 @@ export const Sidebar = ({
                 <div className="rounded-2xl bg-muted/40 dark:bg-muted/20 overflow-hidden">
                   {workspace && (
                     <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border/50 last:border-0">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 dark:bg-background/60">
-                        <FaBuilding className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-background/80 dark:bg-background/60">
+                        {workspace.logoUrl ? (
+                          <img src={workspace.logoUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <FaBuilding className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium text-foreground">

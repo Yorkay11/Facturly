@@ -1,0 +1,271 @@
+<!--
+  Email confirmation waitlist – version FR puis EN (même principe que email-invoice).
+  Le backend envoie les deux dans le même email, langue préférée en premier.
+-->
+<!-- WAITLIST_EMAIL_FR -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Bienvenue sur Facturly – Vous êtes sur la liste !</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        table { border-spacing: 0; border-collapse: collapse; }
+        td { padding: 0; }
+        img { border: 0; display: block; line-height: 100%; }
+        .button { background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(131, 66, 212, 0.3); transition: all 0.3s ease; }
+        .checkmark { display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%); border-radius: 50%; color: white; text-align: center; line-height: 24px; font-size: 14px; margin-right: 12px; }
+        @media only screen and (max-width: 600px) {
+            .container { width: 100% !important; }
+            .mobile-padding { padding: 20px !important; }
+            .mobile-text { font-size: 14px !important; }
+            .button { padding: 16px 36px !important; font-size: 15px !important; }
+            h1 { font-size: 28px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa;">
+    <span style="display: none; font-size: 1px; color: #f8f9fa; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden;">🎉 Vous êtes inscrit ! Bienvenue sur la liste d'attente Facturly.</span>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8f9fa;">
+        <tr>
+            <td align="center" style="padding: 30px 15px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" class="container" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);">
+                    <tr>
+                        <td style="padding: 50px 40px 40px; text-align: center; background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%);">
+                            <img src="https://api.tryholo.ai/storage/v1/object/public/user-uploads/1f29c662-8001-4a5c-bd8d-5762fe6fea48/logos/60ce0842-7646-4511-9c39-a885b212b460.png" alt="Facturly" width="140" style="display: inline-block; max-width: 140px; height: auto; margin-bottom: 30px; filter: brightness(0) invert(1);">
+                            <h1 style="margin: 0; font-size: 36px; color: #ffffff; font-weight: 700; line-height: 1.3;">🎉 Vous êtes sur la liste !</h1>
+                            <p style="margin: 15px 0 0; font-size: 18px; line-height: 1.5; color: #ffffff; opacity: 0.95;">Merci d'avoir rejoint la liste d'attente Facturly</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 50px 40px 40px; text-align: center;" class="mobile-padding">
+                            <h2 style="margin: 0 0 20px; font-size: 28px; color: #1a1a1a; font-weight: 700; line-height: 1.3;">Bienvenue dans l'avenir de la facturation</h2>
+                            <p style="margin: 0 0 25px; font-size: 17px; line-height: 1.7; color: #4a4a4a;">Nous sommes ravis de vous accueillir dans notre communauté d'entrepreneurs africains. Vous faites partie des premiers à découvrir une nouvelle façon de gérer factures et paiements.</p>
+                            <p style="margin: 0 0 35px; font-size: 17px; line-height: 1.7; color: #4a4a4a;">Dites adieu au chaos des tableurs et bonjour à la facturation mobile ! 🚀</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 40px 40px;" class="mobile-padding">
+                            <div style="background: linear-gradient(135deg, #f8f4fd 0%, #f0e8fa 100%); border-radius: 20px; padding: 40px; text-align: center;">
+                                <h3 style="margin: 0 0 30px; font-size: 24px; color: #4c178d; font-weight: 700;">Que se passe-t-il ensuite ?</h3>
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Accès anticipé :</strong> Soyez parmi les premiers à tester Facturly au lancement</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Mises à jour exclusives :</strong> Infos en coulisses et actualités du lancement</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Avantages membres fondateurs :</strong> Remises et fonctionnalités premium</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Façonnez le produit :</strong> Vos retours nous aident à construire l'outil idéal</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 40px 40px;" class="mobile-padding">
+                            <h3 style="margin: 0 0 25px; font-size: 24px; color: #1a1a1a; font-weight: 700; text-align: center;">Aperçu : ce que vous allez adorer</h3>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td width="50%" style="padding: 0 8px 0 0;">
+                                        <div style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid #f0f0f0;">
+                                            <img src="https://www.facturly.online/_next/image?url=%2Fimages%2Fbento%2Fcreate-invoice.png&w=3840&q=75" alt="Créez des factures en 60 secondes" width="280" style="width: 100%; height: auto; display: block;">
+                                            <div style="padding: 20px; text-align: center;">
+                                                <h4 style="margin: 0 0 8px; font-size: 16px; color: #1a1a1a; font-weight: 600;">Ultra rapide</h4>
+                                                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">Créez des factures en 60 secondes</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td width="50%" style="padding: 0 0 0 8px;">
+                                        <div style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid #f0f0f0;">
+                                            <img src="https://www.facturly.online/_next/image?url=%2Fimages%2Fbento%2Fclients.png&w=3840&q=75" alt="Gérez vos clients facilement" width="280" style="width: 100%; height: auto; display: block;">
+                                            <div style="padding: 20px; text-align: center;">
+                                                <h4 style="margin: 0 0 8px; font-size: 16px; color: #1a1a1a; font-weight: 600;">Gestion clients</h4>
+                                                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">Tout en un seul endroit</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 40px 50px; text-align: center;" class="mobile-padding">
+                            <div style="background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%); border-radius: 20px; padding: 45px 35px; box-shadow: 0 8px 25px rgba(131, 66, 212, 0.25);">
+                                <h3 style="margin: 0 0 15px; font-size: 26px; color: #ffffff; font-weight: 700;">Faites passer le mot ! 💜</h3>
+                                <p style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: #ffffff; opacity: 0.95;">Connaissez-vous des entrepreneurs qui aimeraient Facturly ? Partagez la liste et aidez-nous à construire quelque chose d'extraordinaire.</p>
+                                <a href="#" class="button" style="background: #ffffff; color: #8342d4; text-decoration: none; padding: 18px 48px; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);">Partager avec des amis</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 40px; text-align: center; background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%); border-top: 1px solid #e9ecef;">
+                            <p style="margin: 0 0 15px; font-size: 15px; color: #666666; line-height: 1.6;">Conçu avec ❤️ pour les entrepreneurs africains</p>
+                            <p style="margin: 0 0 20px; font-size: 13px; color: #999999; line-height: 1.5;">Facturation mobile-first dans plus de 13 pays africains</p>
+                            <p style="margin: 20px 0 0; font-size: 12px; color: #999999;">© 2026 Facturly. Tous droits réservés.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- END WAITLIST_EMAIL_FR -->
+
+<!-- WAITLIST_EMAIL_SEPARATOR -->
+<div style="margin: 40px auto; width: 100%; max-width: 600px; padding: 0 20px;">
+    <hr style="border: none; border-top: 3px solid #e9ecef; margin: 40px 0;" />
+    <p style="text-align: center; color: #999999; font-size: 12px; margin: 20px 0;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+    <p style="text-align: center; color: #999999; font-size: 12px; margin: 10px 0;">English version below / Version anglaise ci-dessous</p>
+    <p style="text-align: center; color: #999999; font-size: 12px; margin: 10px 0;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+    <hr style="border: none; border-top: 3px solid #e9ecef; margin: 40px 0;" />
+</div>
+<!-- END WAITLIST_EMAIL_SEPARATOR -->
+
+<!-- WAITLIST_EMAIL_EN -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Welcome to Facturly - You're On The List!</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f8f9fa; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        table { border-spacing: 0; border-collapse: collapse; }
+        td { padding: 0; }
+        img { border: 0; display: block; line-height: 100%; }
+        .button { background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(131, 66, 212, 0.3); transition: all 0.3s ease; }
+        .checkmark { display: inline-block; width: 24px; height: 24px; background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%); border-radius: 50%; color: white; text-align: center; line-height: 24px; font-size: 14px; margin-right: 12px; }
+        @media only screen and (max-width: 600px) {
+            .container { width: 100% !important; }
+            .mobile-padding { padding: 20px !important; }
+            .mobile-text { font-size: 14px !important; }
+            .button { padding: 16px 36px !important; font-size: 15px !important; }
+            h1 { font-size: 28px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8f9fa;">
+    <span style="display: none; font-size: 1px; color: #f8f9fa; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden;">🎉 You're in! Welcome to the Facturly waitlist - exciting things are coming your way.</span>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8f9fa;">
+        <tr>
+            <td align="center" style="padding: 30px 15px;">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" class="container" style="max-width: 600px; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);">
+                    <tr>
+                        <td style="padding: 50px 40px 40px; text-align: center; background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%);">
+                            <img src="https://api.tryholo.ai/storage/v1/object/public/user-uploads/1f29c662-8001-4a5c-bd8d-5762fe6fea48/logos/60ce0842-7646-4511-9c39-a885b212b460.png" alt="Facturly" width="140" style="display: inline-block; max-width: 140px; height: auto; margin-bottom: 30px; filter: brightness(0) invert(1);">
+                            <h1 style="margin: 0; font-size: 36px; color: #ffffff; font-weight: 700; line-height: 1.3;">🎉 You're On The List!</h1>
+                            <p style="margin: 15px 0 0; font-size: 18px; line-height: 1.5; color: #ffffff; opacity: 0.95;">Thank you for joining the Facturly waitlist</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 50px 40px 40px; text-align: center;" class="mobile-padding">
+                            <h2 style="margin: 0 0 20px; font-size: 28px; color: #1a1a1a; font-weight: 700; line-height: 1.3;">Welcome to the Future of Invoicing</h2>
+                            <p style="margin: 0 0 25px; font-size: 17px; line-height: 1.7; color: #4a4a4a;">We're thrilled to have you join our community of forward-thinking African entrepreneurs. You're now among the first to experience a revolutionary way to manage invoices and payments.</p>
+                            <p style="margin: 0 0 35px; font-size: 17px; line-height: 1.7; color: #4a4a4a;">Get ready to say goodbye to spreadsheet chaos and hello to seamless mobile invoicing! 🚀</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 40px 40px;" class="mobile-padding">
+                            <div style="background: linear-gradient(135deg, #f8f4fd 0%, #f0e8fa 100%); border-radius: 20px; padding: 40px; text-align: center;">
+                                <h3 style="margin: 0 0 30px; font-size: 24px; color: #4c178d; font-weight: 700;">What Happens Next?</h3>
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Early Access:</strong> Be the first to try Facturly when we launch</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Exclusive Updates:</strong> Get behind-the-scenes insights and launch news</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Founding Member Perks:</strong> Special discounts and premium features</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px 0; text-align: left;">
+                                            <span class="checkmark">✓</span>
+                                            <span style="font-size: 16px; color: #333333; line-height: 1.6; vertical-align: middle;"><strong>Shape the Product:</strong> Your feedback will help us build the perfect tool</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 40px 40px;" class="mobile-padding">
+                            <h3 style="margin: 0 0 25px; font-size: 24px; color: #1a1a1a; font-weight: 700; text-align: center;">Sneak Peek: What You'll Love</h3>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td width="50%" style="padding: 0 8px 0 0;">
+                                        <div style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid #f0f0f0;">
+                                            <img src="https://www.facturly.online/_next/image?url=%2Fimages%2Fbento%2Fcreate-invoice.png&w=3840&q=75" alt="Create invoices in 60 seconds" width="280" style="width: 100%; height: auto; display: block;">
+                                            <div style="padding: 20px; text-align: center;">
+                                                <h4 style="margin: 0 0 8px; font-size: 16px; color: #1a1a1a; font-weight: 600;">Lightning Fast</h4>
+                                                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">Create invoices in 60 seconds</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td width="50%" style="padding: 0 0 0 8px;">
+                                        <div style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid #f0f0f0;">
+                                            <img src="https://www.facturly.online/_next/image?url=%2Fimages%2Fbento%2Fclients.png&w=3840&q=75" alt="Manage clients effortlessly" width="280" style="width: 100%; height: auto; display: block;">
+                                            <div style="padding: 20px; text-align: center;">
+                                                <h4 style="margin: 0 0 8px; font-size: 16px; color: #1a1a1a; font-weight: 600;">Client Management</h4>
+                                                <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.5;">Track everything in one place</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 40px 50px; text-align: center;" class="mobile-padding">
+                            <div style="background: linear-gradient(135deg, #8342d4 0%, #6b2fb5 100%); border-radius: 20px; padding: 45px 35px; box-shadow: 0 8px 25px rgba(131, 66, 212, 0.25);">
+                                <h3 style="margin: 0 0 15px; font-size: 26px; color: #ffffff; font-weight: 700;">Spread the Word! 💜</h3>
+                                <p style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: #ffffff; opacity: 0.95;">Know other entrepreneurs who'd love Facturly? Share the waitlist and help us build something amazing together.</p>
+                                <a href="#" class="button" style="background: #ffffff; color: #8342d4; text-decoration: none; padding: 18px 48px; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);">Share with Friends</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 40px; text-align: center; background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%); border-top: 1px solid #e9ecef;">
+                            <p style="margin: 0 0 15px; font-size: 15px; color: #666666; line-height: 1.6;">Built with ❤️ for African entrepreneurs</p>
+                            <p style="margin: 0 0 20px; font-size: 13px; color: #999999; line-height: 1.5;">Supporting 13+ African countries with mobile-first invoicing</p>
+                            <p style="margin: 20px 0 0; font-size: 12px; color: #999999;">© 2026 Facturly. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- END WAITLIST_EMAIL_EN -->

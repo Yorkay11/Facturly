@@ -47,7 +47,7 @@ export function FuryMascot({
   const imageSize = sizeMap[size];
   const padding = paddingMap[size];
   const bubbleSize = imageSize + padding * 2;
-  const imagePath = `/mascot/fury_${mood}.webp`;
+  const imagePath = `/mascot/gifs/${mood}.gif` || `/mascot/fury_welcome.webp`;
 
   return (
     <div
@@ -77,7 +77,7 @@ export function FuryMascot({
 
         {/* Bulle — dégradé discret, ring fin, ombres superposées */}
         <div
-          className="relative rounded-full overflow-hidden bg-white dark:bg-white/95 ring-[1px] ring-border/30 shadow-[0_2px_12px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.15)]"
+          className="relative rounded-full overflow-hidden bg-[#F9FBF8] dark:bg-white/95 shadow-[0_2px_12px_rgba(0,0,0,0.02),0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.2),0_8px_24px_rgba(0,0,0,0.15)]"
           style={{
             width: bubbleSize,
             height: bubbleSize,
@@ -90,7 +90,7 @@ export function FuryMascot({
               alt={`Fury ${mood}`}
               width={imageSize}
               height={imageSize}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain rounded-full"
               priority
             />
           </div>

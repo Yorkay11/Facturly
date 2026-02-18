@@ -69,6 +69,10 @@ export interface DashboardStats {
   currency?: string;
   monthlyRevenue: string | { currency: string; amount: string }[];
   invoicesSent: number;
+  /** Factures actives (non payées ni annulées) = sent + overdue */
+  activeInvoices?: number;
+  /** Total factures déjà émises par le workspace = sent + overdue + paid + cancelled + quote */
+  totalEmittedInvoices?: number;
   totalPaid: string;
   totalUnpaid: string;
   invoicesByStatus: InvoiceStatusCount[];

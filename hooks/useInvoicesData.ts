@@ -15,7 +15,7 @@ import {
 import type { InvoiceItem } from "@/services/api/types/invoice.types";
 import { store } from "@/lib/redux/store";
 
-export type FilterType = "all" | "overdue" | "pending" | "paid" | "draft" | "sent";
+export type FilterType = "all" | "overdue" | "pending" | "paid" | "draft" | "sent" | "cancelled" | "rejected";
 export type SortType =
   | "date-desc"
   | "date-asc"
@@ -32,6 +32,7 @@ type InvoiceForList = {
   totalAmount: string;
   currency: string;
   client: { name: string };
+  rejectedAt?: string | null;
 };
 
 export function useInvoicesData() {
@@ -68,14 +69,18 @@ export function useInvoicesData() {
     return new Date(dueDate) < new Date();
   };
 
-  const getRealStatus = (invoice: { status: string; dueDate: string }) => {
+  /** Statut affiché : "rejected" = refusée par le client (rejectedAt renseigné), "cancelled" = annulée par l'émetteur. */
+  const getRealStatus = (invoice: { status: string; dueDate: string; rejectedAt?: string | null }) => {
     if (
       invoice.status === "sent" &&
       isOverdue(invoice.dueDate, invoice.status)
     ) {
       return "overdue";
     }
-    return invoice.status;
+    if (invoice.status === "cancelled" && invoice.rejectedAt) {
+      return "rejected"; // Refusée par le client
+    }
+    return invoice.status; // "cancelled" sans rejectedAt = annulée par l'émetteur
   };
 
   const filteredAndSortedInvoices = useMemo(() => {
@@ -119,6 +124,7 @@ export function useInvoicesData() {
       paid: 2,
       draft: 3,
       cancelled: 4,
+      rejected: 5,
     };
 
     if (sortBy === "due-date-asc") {

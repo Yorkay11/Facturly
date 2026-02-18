@@ -45,6 +45,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Input } from "../ui/input"
+import { Textarea } from "../ui/textarea"
 import {
     Command,
     CommandEmpty,
@@ -90,6 +91,9 @@ function toDateOnlyString(date: Date): string {
   return format(date, "yyyy-MM-dd");
 }
 
+/** Limite de caractères pour la description d’une ligne de facture. */
+const DESCRIPTION_MAX_LENGTH = 200;
+
 interface InvoiceDetailsProps {
     invoiceId?: string;
     initialRecurring?: boolean;
@@ -99,6 +103,7 @@ interface InvoiceDetailsProps {
 
 const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUnsavedChanges }: InvoiceDetailsProps = {}) => {
     const t = useTranslations('invoices.form');
+    const commonT = useTranslations('common');
     const previewT = useTranslations('invoices.preview');
     const locale = useLocale();
     const searchParams = useSearchParams();
@@ -129,6 +134,14 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
     
     const { data: workspace } = useGetWorkspaceQuery();
     const isFreelance = workspace?.type === "FREELANCE";
+    const defaultVatRate = isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18);
+    const [showNewLineCard, setShowNewLineCard] = React.useState(false);
+    const [newLineDraft, setNewLineDraft] = React.useState<Omit<Item, "id">>({
+        description: "",
+        quantity: 1,
+        unitPrice: 1,
+        vatRate: defaultVatRate,
+    });
     const { data: settings } = useGetSettingsQuery();
     const workspaceCurrency = workspace?.defaultCurrency || "EUR";
     const paymentTermsDays = settings?.paymentTerms ?? 30;
@@ -266,10 +279,10 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
         },
     });
     
-    // Une ligne est valide si : description non vide, quantité > 0, prix unitaire > 0
+    // Une ligne est valide si : description non vide, quantité >= 1, prix unitaire > 0
     const isItemValid = (item: Item) =>
         (item.description?.trim() ?? "") !== "" &&
-        Number(item.quantity) > 0 &&
+        Number(item.quantity) >= 1 &&
         Number(item.unitPrice) > 0;
 
     const allItemsValid = items.length > 0 && items.every(isItemValid);
@@ -1507,6 +1520,316 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                     </div>
                 </section>
 
+                <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
+                            <p className="text-sm text-slate-500">{t('sections.invoiceLines.description')}</p>
+                        </div>
+                        <Button 
+                            type="button" 
+                            size="sm" 
+                            className="gap-2" 
+                            onClick={() => {
+                                setNewLineDraft({
+                                    description: '',
+                                    quantity: 1,
+                                    unitPrice: 0,
+                                    vatRate: defaultVatRate,
+                                });
+                                setShowNewLineCard(true);
+                            }}
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            {t('lines.add')}
+                        </Button>
+                    </div>
+
+                    <Separator />
+
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+                            <div className="flex flex-col gap-2">
+                                {/* En-têtes du tableau */}
+                                <div className="hidden md:grid md:grid-cols-12 gap-2 px-2 py-1.5 text-[10px] font-semibold text-slate-600 border-b border-slate-200 bg-slate-50/50 rounded-t-md">
+                                    <div className="col-span-4">{t('lines.description')}</div>
+                                    <div className="col-span-2 text-left">{t('lines.quantity')}</div>
+                                    <div className="col-span-2">{t('lines.unitPrice')}</div>
+                                    <div className="col-span-3 text-right">{t('lines.lineTotal')}</div>
+                                    <div className="col-span-1"></div>
+                                </div>
+                                
+                                {/* Lignes de produits */}
+                                {items.length > 0 ? (
+                                    items.map((item) => {
+                                        const lineTotal = (parseFloat(item.unitPrice.toString()) || 0) * (parseFloat(item.quantity.toString()) || 0);
+                                        return (
+                                            <SortableItem key={item.id} id={item.id}>
+                                                <Card className="rounded-md border border-slate-200 p-2 shadow-sm hover:shadow-md transition-all hover:border-primary/30 bg-white">
+                                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+                                                        {/* Description */}
+                                                        <div className="col-span-1 md:col-span-4">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.description')}
+                                                            </label>
+                                                            <Input
+                                                                value={item.description}
+                                                                onChange={(e) => updateItem(item.id, { description: e.target.value.slice(0, DESCRIPTION_MAX_LENGTH) })}
+                                                                placeholder={t('lines.description')}
+                                                                maxLength={DESCRIPTION_MAX_LENGTH}
+                                                                className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1"
+                                                            />
+                                                        </div>
+                                                        
+                                                        {/* Quantité */}
+                                                        <div className="col-span-1 md:col-span-1">
+                                                            <label className="text-[10px]  font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.quantity')}
+                                                            </label>
+                                                            <Input
+                                                                type="number"
+                                                                step="1"
+                                                                min={1}
+                                                                value={item.quantity}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    if (val === '') return;
+                                                                    const num = parseFloat(val);
+                                                                    if (!isNaN(num) && num >= 1) updateItem(item.id, { quantity: num });
+                                                                }}
+                                                                className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 "
+                                                            />
+                                                        </div>
+                                                        
+                                                        {/* Prix unitaire */}
+                                                        <div className="col-span-1 md:col-span-3">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.unitPrice')}
+                                                            </label>
+                                                            <div className="relative">
+                                                                <Input
+                                                                    type="number"
+                                                                    min={0.01}
+                                                                    step="0.01"
+                                                                    value={item.unitPrice}
+                                                                    onChange={(e) => {
+                                                                        const val = e.target.value;
+                                                                        if (val === '') return;
+                                                                        const num = parseFloat(val);
+                                                                        if (!isNaN(num) && num > 0) updateItem(item.id, { unitPrice: num });
+                                                                    }}
+                                                                    className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 pr-7"
+                                                                />
+                                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 font-medium">
+                                                                    {form.getValues("currency") || ""}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {/* Total ligne */}
+                                                        <div className="col-span-1 md:col-span-3 text-right">
+                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
+                                                                {t('lines.lineTotal')}
+                                                            </label>
+                                                            <p className="text-xs font-semibold text-slate-900">
+                                                                {lineTotal.toFixed(2)} {form.getValues("currency") || ""}
+                                                            </p>
+                                                        </div>
+                                                        
+                                                        {/* Actions */}
+                                                        <div className="col-span-1 md:col-span-1 flex justify-end">
+                                                            <Button 
+                                                                variant="destructive" 
+                                                                size="icon" 
+                                                                className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
+                                                                onClick={() => removeItem(item.id)} 
+                                                                aria-label={t('lines.delete', { description: item.description })}
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            </SortableItem>
+                                        );
+                                    })
+                                ) : null}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
+                    
+                    {/* Carte "nouvelle ligne" */}
+                    {showNewLineCard && (
+                        <Card className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 shadow-sm">
+                            <h3 className="text-sm font-semibold text-foreground mb-3">{t('lines.newLineCard.title')}</h3>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('lines.description')}</label>
+                                    <Textarea
+                                        placeholder={t('lines.description')}
+                                        value={newLineDraft.description}
+                                        onChange={(e) => setNewLineDraft((d) => ({ ...d, description: e.target.value.slice(0, DESCRIPTION_MAX_LENGTH) }))}
+                                        maxLength={DESCRIPTION_MAX_LENGTH}
+                                        className="min-h-[64px] w-full rounded-lg border border-border/50 bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/70 focus-visible:ring-1 focus-visible:ring-primary/30 resize-y"
+                                        rows={2}
+                                    />
+                                    <p className="mt-1 text-[11px] text-muted-foreground tabular-nums">
+                                        {t('lines.descriptionCharCount', { current: newLineDraft.description.length, max: DESCRIPTION_MAX_LENGTH })}
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-muted-foreground block">{t('lines.quantity')}</label>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            step={1}
+                                            value={newLineDraft.quantity}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 1)) {
+                                                    setNewLineDraft((d) => ({ ...d, quantity: val === '' ? 1 : Math.max(1, parseFloat(val)) }));
+                                                }
+                                            }}
+                                            className="h-9 rounded-lg border border-border/50 bg-background text-sm tabular-nums"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-muted-foreground block">{t('lines.unitPrice')} <span className="text-muted-foreground/80">({form.getValues("currency") || "EUR"})</span></label>
+                                        <Input
+                                            type="number"
+                                            min={0}
+                                            step="0.01"
+                                            value={newLineDraft.unitPrice || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0)) {
+                                                    setNewLineDraft((d) => ({ ...d, unitPrice: val === '' ? 0 : parseFloat(val) }));
+                                                }
+                                            }}
+                                            className="h-9 rounded-lg border border-border/50 bg-background text-sm tabular-nums"
+                                        />
+                                    </div>
+                                    {!isFreelance && (
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-muted-foreground block">{t('lines.vat')} (%)</label>
+                                            <Input
+                                                type="number"
+                                                min={0}
+                                                max={100}
+                                                step="0.01"
+                                                value={newLineDraft.vatRate ?? ''}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 100)) {
+                                                        setNewLineDraft((d) => ({ ...d, vatRate: val === '' ? 0 : parseFloat(val) }));
+                                                    }
+                                                }}
+                                                className="h-9 rounded-lg border border-border/50 bg-background text-sm tabular-nums"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-border/40 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="rounded-lg bg-background/60 px-3 py-1.5 inline-flex items-baseline gap-1.5">
+                                    <span className="text-xs text-muted-foreground">{t('lines.lineTotal')}</span>
+                                    <span className="text-sm font-semibold text-foreground tabular-nums">
+                                        {((newLineDraft.quantity || 0) * (newLineDraft.unitPrice || 0)).toFixed(2)} {form.getValues("currency") || "EUR"}
+                                    </span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button type="button" variant="outline" size="sm" className="h-8 rounded-lg px-3 text-xs" onClick={() => setShowNewLineCard(false)}>
+                                        {commonT('cancel')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        className="h-8 rounded-lg px-3 text-xs font-medium"
+                                        disabled={(newLineDraft.unitPrice ?? 0) <= 0 || (newLineDraft.quantity ?? 0) < 1}
+                                        onClick={() => {
+                                            const price = newLineDraft.unitPrice ?? 0;
+                                            const qty = newLineDraft.quantity ?? 0;
+                                            if (price <= 0 || qty < 1) return;
+                                            addItem({ ...newLineDraft, unitPrice: price, quantity: qty });
+                                            setShowNewLineCard(false);
+                                            setNewLineDraft({ description: '', quantity: 1, unitPrice: 1, vatRate: defaultVatRate });
+                                        }}
+                                    >
+                                        {t('lines.newLineCard.confirmAdd')}
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+                    
+                    <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-6 text-center">
+                        <p className="text-sm font-semibold text-slate-600">
+                            {items.length === 0
+                                ? t('sections.invoiceLines.empty.title')
+                                : t('sections.invoiceLines.empty.titleWhenHasLines')}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                            {items.length === 0
+                                ? t('sections.invoiceLines.empty.description')
+                                : t('sections.invoiceLines.empty.descriptionWhenHasLines')}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                            {products.length > 0 && (
+                                <Select
+                                    value={selectedProductToAdd || "__none__"}
+                                    onValueChange={(value) => {
+                                        if (!value || value === "__none__") return;
+                                        const product = products.find((p) => p.id === value);
+                                        if (product) {
+                                            const price = Math.max(0.01, parseFloat(product.unitPrice) || 0);
+                                            addItem({
+                                                description: (product.description?.trim() ? product.description : product.name) || "",
+                                                quantity: 1,
+                                                unitPrice: price,
+                                                vatRate: isFreelance ? 0 : (parseFloat(product.taxRate) || (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18)),
+                                            });
+                                            setSelectedProductToAdd("");
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[220px] h-9 text-xs">
+                                        <SelectValue placeholder={t('lines.addFromProduct')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="__none__" className="text-muted-foreground">
+                                            {t('lines.addFromProduct')}
+                                        </SelectItem>
+                                        {products.map((product) => (
+                                            <SelectItem key={product.id} value={product.id}>
+                                                {product.name} — {form.getValues("currency") || "EUR"} {(parseFloat(product.unitPrice) || 0).toFixed(2)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                            <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm" 
+                                className="gap-2" 
+                                onClick={() => {
+                                    setNewLineDraft({
+                                        description: '',
+                                        quantity: 1,
+                                        unitPrice: 1,
+                                        vatRate: defaultVatRate,
+                                    });
+                                    setShowNewLineCard(true);
+                                }}
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                {t('lines.add')}
+                            </Button>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Options avancées : facture récurrente (création uniquement) et style WhatsApp */}
                 <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
@@ -1624,199 +1947,7 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                     </Collapsible>
                 </section>
 
-                <section data-section="invoice-lines" className="space-y-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <p className="text-lg font-semibold text-slate-900">{t('sections.invoiceLines.title')}</p>
-                            <p className="text-sm text-slate-500">{t('sections.invoiceLines.description')}</p>
-                        </div>
-                        <Button 
-                            type="button" 
-                            size="sm" 
-                            className="gap-2" 
-                            onClick={() => {
-                                addItem({
-                                    description: '',
-                                    quantity: 1,
-                                    unitPrice: 0,
-                                    vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
-                                });
-                            }}
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                            {t('lines.add')}
-                        </Button>
-                    </div>
-
-                    <Separator />
-
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-                            <div className="flex flex-col gap-2">
-                                {/* En-têtes du tableau */}
-                                <div className="hidden md:grid md:grid-cols-12 gap-2 px-2 py-1.5 text-[10px] font-semibold text-slate-600 border-b border-slate-200 bg-slate-50/50 rounded-t-md">
-                                    <div className="col-span-4">{t('lines.description')}</div>
-                                    <div className="col-span-2 text-left">{t('lines.quantity')}</div>
-                                    <div className="col-span-2">{t('lines.unitPrice')}</div>
-                                    <div className="col-span-3 text-right">{t('lines.lineTotal')}</div>
-                                    <div className="col-span-1"></div>
-                                </div>
-                                
-                                {/* Lignes de produits */}
-                                {items.length > 0 ? (
-                                    items.map((item) => {
-                                        const lineTotal = (parseFloat(item.unitPrice.toString()) || 0) * (parseFloat(item.quantity.toString()) || 0);
-                                        return (
-                                            <SortableItem key={item.id} id={item.id}>
-                                                <Card className="rounded-md border border-slate-200 p-2 shadow-sm hover:shadow-md transition-all hover:border-primary/30 bg-white">
-                                                    <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
-                                                        {/* Description */}
-                                                        <div className="col-span-1 md:col-span-4">
-                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
-                                                                {t('lines.description')}
-                                                            </label>
-                                                            <Input
-                                                                value={item.description}
-                                                                onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                                                                placeholder={t('lines.description')}
-                                                                className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1"
-                                                            />
-                                                        </div>
-                                                        
-                                                        {/* Quantité */}
-                                                        <div className="col-span-1 md:col-span-1">
-                                                            <label className="text-[10px]  font-medium text-slate-600 mb-1 block md:hidden">
-                                                                {t('lines.quantity')}
-                                                            </label>
-                                                            <Input
-                                                                type="number"
-                                                                step="1"
-                                                                min="0"
-                                                                value={item.quantity}   
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0)) {
-                                                                        updateItem(item.id, { quantity: val === '' ? 0 : parseFloat(val) });
-                                                                    }
-                                                                }}
-                                                                className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 "
-                                                            />
-                                                        </div>
-                                                        
-                                                        {/* Prix unitaire */}
-                                                        <div className="col-span-1 md:col-span-3">
-                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
-                                                                {t('lines.unitPrice')}
-                                                            </label>
-                                                            <div className="relative">
-                                                                <Input
-                                                                    type="text"
-                                                                    value={item.unitPrice}
-                                                                    onChange={(e) => {
-                                                                        const val = e.target.value;
-                                                                        if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0)) {
-                                                                            updateItem(item.id, { unitPrice: val === '' ? 0 : parseFloat(val) });
-                                                                        }
-                                                                    }}
-                                                                    className="text-xs h-7 border-slate-200 focus:border-primary focus:ring-1 pr-7"
-                                                                />
-                                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-500 font-medium">
-                                                                    {form.getValues("currency") || ""}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {/* Total ligne */}
-                                                        <div className="col-span-1 md:col-span-3 text-right">
-                                                            <label className="text-[10px] font-medium text-slate-600 mb-1 block md:hidden">
-                                                                {t('lines.lineTotal')}
-                                                            </label>
-                                                            <p className="text-xs font-semibold text-slate-900">
-                                                                {lineTotal.toFixed(2)} {form.getValues("currency") || ""}
-                                                            </p>
-                                                        </div>
-                                                        
-                                                        {/* Actions */}
-                                                        <div className="col-span-1 md:col-span-1 flex justify-end">
-                                                            <Button 
-                                                                variant="destructive" 
-                                                                size="icon" 
-                                                                className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
-                                                                onClick={() => removeItem(item.id)} 
-                                                                aria-label={t('lines.delete', { description: item.description })}
-                                                            >
-                                                                <Trash2 className="h-3.5 w-3.5" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </Card>
-                                            </SortableItem>
-                                        );
-                                    })
-                                ) : null}
-                            </div>
-                        </SortableContext>
-                    </DndContext>
-                    
-                    {items.length === 0 && (
-                        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-slate-300 p-6 text-center">
-                            <p className="text-sm font-semibold text-slate-600">{t('sections.invoiceLines.empty.title')}</p>
-                            <p className="text-xs text-slate-500">{t('sections.invoiceLines.empty.description')}</p>
-                            <div className="flex flex-wrap items-center justify-center gap-2">
-                                {products.length > 0 && (
-                                    <Select
-                                        value={selectedProductToAdd || "__none__"}
-                                        onValueChange={(value) => {
-                                            if (!value || value === "__none__") return;
-                                            const product = products.find((p) => p.id === value);
-                                            if (product) {
-                                                addItem({
-                                                    description: (product.description?.trim() ? product.description : product.name) || "",
-                                                    quantity: 1,
-                                                    unitPrice: parseFloat(product.unitPrice) || 0,
-                                                    vatRate: isFreelance ? 0 : (parseFloat(product.taxRate) || (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18)),
-                                                });
-                                                setSelectedProductToAdd("");
-                                            }
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-[220px] h-9 text-xs">
-                                            <SelectValue placeholder={t('lines.addFromProduct')} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="__none__" className="text-muted-foreground">
-                                                {t('lines.addFromProduct')}
-                                            </SelectItem>
-                                            {products.map((product) => (
-                                                <SelectItem key={product.id} value={product.id}>
-                                                    {product.name} — {form.getValues("currency") || "EUR"} {(parseFloat(product.unitPrice) || 0).toFixed(2)}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                )}
-                                <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-2" 
-                                    onClick={() => {
-                                        addItem({
-                                            description: '',
-                                            quantity: 1,
-                                            unitPrice: 0,
-                                            vatRate: isFreelance ? 0 : (workspace?.defaultTaxRate ? parseFloat(workspace.defaultTaxRate) * 100 : 18),
-                                        });
-                                    }}
-                                >
-                                    <PlusIcon className="h-4 w-4" />
-                                    {t('lines.add')}
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </section>
-
+                {/* Section remise — à réactiver quand la fonctionnalité sera prête
                 <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-2">
@@ -1844,23 +1975,9 @@ const InvoiceDetails = ({ invoiceId, initialRecurring, onSaveDraftReady, onHasUn
                         <p>{t('sections.discount.description')}</p>
                     </div>
                 </section>
+                */}
 
                 <div className="flex flex-col gap-3">
-                    {isEditMode && invoiceId && (
-                        <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-                            <Button 
-                                type="button"
-                                variant="outline" 
-                                size="sm" 
-                                className="w-full sm:w-auto gap-2"
-                                onClick={handleGeneratePDF}
-                                disabled={!workspace || !client || isGeneratingPDF}
-                            >
-                                <FileDown className={`h-4 w-4 ${isGeneratingPDF ? "animate-spin" : ""}`} />
-                                {isGeneratingPDF ? previewT('pdf.generating') : previewT('pdf.generate')}
-                            </Button>
-                        </div>
-                    )}
                     {/* Indicateur de complétude */}
                     {!isEditMode && (
                         <div className={cn(

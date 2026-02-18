@@ -11,6 +11,7 @@ export const settingsEndpoints = (
   getSettings: builder.query<Settings, void>({
     query: () => "/settings",
     providesTags: ["Settings"],
+    keepUnusedDataFor: 3600, // Garder en cache 1h (aligné avec l'expiration des URLs pré-signées)
   }),
   updateSettings: builder.mutation<Settings, UpdateSettingsPayload>({
     query: (body) => ({
@@ -18,6 +19,18 @@ export const settingsEndpoints = (
       method: "PATCH",
       body,
     }),
+    invalidatesTags: ["Settings"],
+  }),
+  uploadSignatureImage: builder.mutation<{ url: string }, File>({
+    query: (file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      return {
+        url: "/upload/signature-image",
+        method: "POST",
+        body: formData,
+      };
+    },
     invalidatesTags: ["Settings"],
   }),
 });

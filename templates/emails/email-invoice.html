@@ -1,0 +1,258 @@
+<!--
+  Invoice payment email – FR + EN (like waitlist).
+  Backend: replace {{clientName}}, {{invoiceNumber}}, {{totalAmount}}, {{currency}}, {{dueDate}}, {{payUrl}}, {{logoUrl}} in both blocks.
+  Put client's language first: if locale is 'en' send EN block + separator + FR block; else FR + separator + EN.
+-->
+<!-- INVOICE_EMAIL_FR -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Paiement requis - Facture {{invoiceNumber}}</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f2f1f2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        table { border-spacing: 0; border-collapse: collapse; }
+        .wrapper { width: 100%; background-color: #f2f1f2; }
+        .content { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        @media only screen and (max-width:600px) {
+            .mobile-padding { padding: 20px !important; }
+            .mobile-text { font-size: 16px !important; }
+            .cta-button { width: 100% !important; padding: 18px 30px !important; }
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f2f1f2">
+    <div style="display:none;max-height:0;overflow:hidden">Action requise : votre facture est prête à être payée.</div>
+    <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+            <td align="center" style="padding:0">
+                <table class="content" width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;background-color:#ffffff">
+                    <tr>
+                        <td style="padding:30px 20px;text-align:center;background-color:transparent">
+                            <img src="{{logoUrl}}" alt="Logo" width="180" style="display:inline-block;max-width:180px;height:auto" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mobile-padding" style="padding:0 40px 40px">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                    <td style="padding:0 0 24px">
+                                        <p style="margin:0;font-size:18px;line-height:1.5;color:#333333">Bonjour {{clientName}},</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 20px">
+                                        <h1 style="margin:0;font-size:26px;font-weight:700;color:#4c178d;line-height:1.2">Paiement requis</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 24px">
+                                        <p class="mobile-text" style="margin:0;font-size:16px;line-height:1.6;color:#333333">Un paiement est demandé pour la facture ci-dessous. Cliquez sur le bouton pour payer en toute sécurité.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 24px">
+                                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f2f1f2;border-radius:12px">
+                                            <tr>
+                                                <td style="padding:24px;text-align:left">
+                                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td style="padding:0 0 8px"><span style="font-size:12px;color:#666666;text-transform:uppercase;letter-spacing:1px;font-weight:600">Facture {{invoiceNumber}}</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding:10px 0 0">
+                                                                <table width="100%" cellpadding="0" cellspacing="0">
+                                                                    <tr>
+                                                                        <td style="font-size:15px;color:#333333;padding:0">Montant</td>
+                                                                        <td align="right" style="font-size:18px;color:#8342d4;font-weight:700;padding:0">{{totalAmount}} {{currency}}</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding:8px 0 0">
+                                                                <table width="100%" cellpadding="0" cellspacing="0">
+                                                                    <tr>
+                                                                        <td style="font-size:15px;color:#333333;padding:0">Date d'échéance</td>
+                                                                        <td align="right" style="font-size:15px;color:#555555;padding:0">{{dueDate}}</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding:0 0 28px">
+                                        <a href="{{payUrl}}" class="cta-button" style="display:inline-block;padding:16px 44px;background-color:#8342d4;color:#ffffff;text-decoration:none;border-radius:50px;font-size:17px;font-weight:700;box-shadow:0 4px 15px rgba(131,66,212,0.3)">Payer la facture</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 20px">
+                                        <p style="margin:0;font-size:14px;line-height:1.6;color:#666666">Paiement sécurisé par mobile money, virement ou carte.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:28px 40px;background-color:#4c178d;text-align:center">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                    <td style="padding:0 0 12px">
+                                        <p style="margin:0;font-size:14px;color:#ffffff;opacity:0.9">Propulsé par Facturly – Facturation mobile pour l'Afrique</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p style="margin:0;font-size:12px;color:#ffffff;opacity:0.7;line-height:1.6">Des questions ? Contactez support@facturly.online<br>© 2026 Facturly. Tous droits réservés.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- END INVOICE_EMAIL_FR -->
+
+<!-- INVOICE_EMAIL_SEPARATOR -->
+<div style="margin: 40px auto; width: 100%; max-width: 600px; padding: 0 20px;">
+    <hr style="border: none; border-top: 3px solid #e9ecef; margin: 40px 0;" />
+    <p style="text-align: center; color: #999999; font-size: 12px; margin: 20px 0;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+    <p style="text-align: center; color: #999999; font-size: 12px; margin: 10px 0;">English version below / Version anglaise ci-dessous</p>
+    <p style="text-align: center; color: #999999; font-size: 12px; margin: 10px 0;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+    <hr style="border: none; border-top: 3px solid #e9ecef; margin: 40px 0;" />
+</div>
+<!-- END INVOICE_EMAIL_SEPARATOR -->
+
+<!-- INVOICE_EMAIL_EN -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Payment required - Invoice {{invoiceNumber}}</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f2f1f2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        table { border-spacing: 0; border-collapse: collapse; }
+        .wrapper { width: 100%; background-color: #f2f1f2; }
+        .content { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        @media only screen and (max-width:600px) {
+            .mobile-padding { padding: 20px !important; }
+            .mobile-text { font-size: 16px !important; }
+            .cta-button { width: 100% !important; padding: 18px 30px !important; }
+        }
+    </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f2f1f2">
+    <div style="display:none;max-height:0;overflow:hidden">Action required: your invoice is ready for payment.</div>
+    <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+            <td align="center" style="padding:0">
+                <table class="content" width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;background-color:#ffffff">
+                    <tr>
+                        <td style="padding:30px 20px;text-align:center;background-color:transparent">
+                            <img src="{{logoUrl}}" alt="Logo" width="180" style="display:inline-block;max-width:180px;height:auto" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mobile-padding" style="padding:0 40px 40px">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                    <td style="padding:0 0 24px">
+                                        <p style="margin:0;font-size:18px;line-height:1.5;color:#333333">Hello {{clientName}},</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 20px">
+                                        <h1 style="margin:0;font-size:26px;font-weight:700;color:#4c178d;line-height:1.2">Payment required</h1>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 24px">
+                                        <p class="mobile-text" style="margin:0;font-size:16px;line-height:1.6;color:#333333">A payment is requested for the following invoice. Click the button below to pay securely.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 24px">
+                                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f2f1f2;border-radius:12px">
+                                            <tr>
+                                                <td style="padding:24px;text-align:left">
+                                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td style="padding:0 0 8px"><span style="font-size:12px;color:#666666;text-transform:uppercase;letter-spacing:1px;font-weight:600">Invoice {{invoiceNumber}}</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding:10px 0 0">
+                                                                <table width="100%" cellpadding="0" cellspacing="0">
+                                                                    <tr>
+                                                                        <td style="font-size:15px;color:#333333;padding:0">Amount</td>
+                                                                        <td align="right" style="font-size:18px;color:#8342d4;font-weight:700;padding:0">{{totalAmount}} {{currency}}</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="padding:8px 0 0">
+                                                                <table width="100%" cellpadding="0" cellspacing="0">
+                                                                    <tr>
+                                                                        <td style="font-size:15px;color:#333333;padding:0">Due date</td>
+                                                                        <td align="right" style="font-size:15px;color:#555555;padding:0">{{dueDate}}</td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" style="padding:0 0 28px">
+                                        <a href="{{payUrl}}" class="cta-button" style="display:inline-block;padding:16px 44px;background-color:#8342d4;color:#ffffff;text-decoration:none;border-radius:50px;font-size:17px;font-weight:700;box-shadow:0 4px 15px rgba(131,66,212,0.3)">Pay invoice now</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0 0 20px">
+                                        <p style="margin:0;font-size:14px;line-height:1.6;color:#666666">Secure payment via mobile money, bank transfer, or card.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:28px 40px;background-color:#4c178d;text-align:center">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                    <td style="padding:0 0 12px">
+                                        <p style="margin:0;font-size:14px;color:#ffffff;opacity:0.9">Powered by Facturly – Mobile-first invoicing for Africa</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p style="margin:0;font-size:12px;color:#ffffff;opacity:0.7;line-height:1.6">Questions? Contact support@facturly.online<br>© 2026 Facturly. All rights reserved.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+<!-- END INVOICE_EMAIL_EN -->

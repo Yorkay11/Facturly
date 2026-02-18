@@ -28,6 +28,7 @@ export function useClientsData() {
   const commonT = useTranslations("common");
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
   const [isImportModalOpen, setImportModalOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<{
@@ -42,6 +43,7 @@ export function useClientsData() {
   } = useGetClientsQuery({
     page: currentPage,
     limit: ITEMS_PER_PAGE,
+    ...(searchQuery.trim() ? { search: searchQuery.trim() } : {}),
   });
   const { data: invoicesResponse } = useGetInvoicesQuery({
     page: 1,
@@ -142,6 +144,11 @@ export function useClientsData() {
     setCurrentPage((p) => Math.min(totalPages, p + 1));
   };
 
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  }, []);
+
   return {
     clients,
     totalClients,
@@ -152,6 +159,8 @@ export function useClientsData() {
     isError,
     currentPage,
     setCurrentPage,
+    searchQuery,
+    setSearchQuery: handleSearchChange,
     goToPreviousPage,
     goToNextPage,
     isModalOpen,

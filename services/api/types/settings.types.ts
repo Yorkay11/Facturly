@@ -9,6 +9,7 @@ export interface Settings {
   dateFormat: string;
   currency: string;
   paymentTerms: number;
+  signatureImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }

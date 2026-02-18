@@ -188,7 +188,7 @@
     "recurringInvoicesDescription": "Gérez vos factures automatiques et récurrentes",
     "addItem": "Ajouter un article",
     "monthlyRevenue": "Revenus du mois",
-    "invoicesSent": "Factures actives",
+    "invoicesSent": "Factures envoyées",
     "totalPaid": "Total payé",
     "unpaid": "Impayés",
     "revenueTrends": "Tendances des revenus",
@@ -402,7 +402,8 @@
     "sent": "Envoyée",
     "paid": "Payée",
     "overdue": "En retard",
-    "cancelled": "Annulée",
+    "cancelled": "Annulée (par l'émetteur)",
+    "rejected": "Refusée (par le client)",
     "number": "Numéro",
     "date": "Date d'émission",
     "dueDate": "Date d'échéance",
@@ -431,6 +432,7 @@
       "view": "Voir"
     },
     "stats": {
+      "active": "Actives",
       "thisMonth": "Ce mois"
     },
     "sort": {
@@ -497,6 +499,13 @@
       "validation": {
         "nameRequired": "Le nom est requis",
         "invalidHexColor": "Couleur hex invalide"
+      }
+    },
+    "editPage": {
+      "title": "Modifier la facture",
+      "description": "Modifiez les informations et visualisez le rendu en temps réel.",
+      "breadcrumb": {
+        "edit": "Modifier"
       }
     },
     "new": {
@@ -659,8 +668,10 @@
           "title": "Lignes de facture (prestations)",
           "description": "Prestations, quantités et tarifs. Devise et TVA appliquées selon les paramètres.",
           "empty": {
-            "title": "Aucune ligne pour le moment",
-            "description": "Ajoutez votre première prestation en cliquant sur le bouton ci-dessus."
+            "title": "Aucune ligne",
+            "description": "Ajoutez votre première prestation en cliquant sur le bouton ci-dessous.",
+            "titleWhenHasLines": "Ajouter une prestation",
+            "descriptionWhenHasLines": "Choisissez une prestation existante ou créez une nouvelle ligne."
           }
         },
         "discount": {
@@ -709,11 +720,16 @@
         "edit": "Modifier la ligne {description}",
         "delete": "Supprimer la ligne {description}",
         "description": "Description de la prestation",
+        "descriptionCharCount": "{current} / {max} caractères",
         "unitPrice": "Prix unitaire",
         "quantity": "Quantité",
         "vat": "TVA (%)",
         "vatDefaultHint": "Défaut : {rate}% (paramètres)",
-        "lineTotal": "Total ligne"
+        "lineTotal": "Total ligne",
+        "newLineCard": {
+          "title": "Nouvelle ligne",
+          "confirmAdd": "Ajouter la ligne"
+        }
       },
       "addItemModal": {
         "title": {
@@ -844,8 +860,8 @@
       "success": {
         "clientCreated": "Client créé et sélectionné",
         "clientCreatedDescription": "{name} a été créé et sélectionné comme destinataire.",
-        "draftRestored": "Brouillon restauré",
-        "draftRestoredDescription": "Vos données ont été récupérées automatiquement. Vous ne perdez rien en cas de coupure de connexion.",
+        "draftRestored": "Brouillon récupéré",
+        "draftRestoredDescription": "",
         "invoiceSent": "Facture envoyée",
         "invoiceSentDescription": "La facture #{number} a été envoyée à {email}.",
         "draftUpdated": "Brouillon mis à jour",
@@ -1123,7 +1139,6 @@
       "new": "Nouveau client",
       "importCsv": "Importer CSV"
     },
-    "new": "Nouveau client",
     "new": "Nouveau client",
     "add": "Ajouter un client",
     "edit": "Modifier le client",
@@ -2497,6 +2512,9 @@
         "namePlaceholderIndividual": "Votre nom ou nom d'activité (optionnel)",
         "nameOptional": "Optionnel pour les freelances",
         "legalName": "Raison sociale",
+        "logo": "Logo du workspace",
+        "changeLogo": "Changer le logo",
+        "addLogo": "Ajouter un logo",
         "defaultCurrency": "Devise par défaut",
         "taxId": "Numéro d'identification fiscale",
         "taxIdPlaceholder": "NINEA, RCCM, etc.",
@@ -2545,7 +2563,35 @@
           "description": "Le taux de TVA est appliqué automatiquement selon le pays sélectionné dans votre workspace. Vous pouvez modifier le pays dans les paramètres du workspace."
         },
         "paymentTerms": "Délai de paiement",
-        "paymentTermsHint": "En jours (ex: 30 = 30 jours)"
+        "paymentTermsHint": "En jours (ex: 30 = 30 jours)",
+        "signature": "Signature",
+        "noSignature": "Aucune signature",
+        "signatureHelp": "Aide pour créer une signature digitale"
+      },
+      "signatureHelp": {
+        "title": "Comment créer une signature digitale ?",
+        "description": "Vous pouvez créer une signature digitale de plusieurs façons. Une fois créée, téléchargez-la et ajoutez-la ici.",
+        "methods": {
+          "title": "Méthodes disponibles",
+          "online": {
+            "title": "Générateur en ligne",
+            "description": "Créez votre signature en ligne avec un outil gratuit, puis téléchargez-la au format PNG.",
+            "link": "Créer une signature en ligne"
+          },
+          "draw": {
+            "title": "Dessiner votre signature",
+            "description": "Dessinez votre signature avec la souris ou sur écran tactile, puis téléchargez l'image.",
+            "link": "Dessiner ma signature"
+          },
+          "photo": {
+            "title": "Photo de votre signature",
+            "description": "Signez sur une feuille blanche, prenez une photo, puis utilisez un outil en ligne pour extraire et nettoyer l'image."
+          }
+        },
+        "tip": {
+          "title": "💡 Astuce",
+          "description": "Pour un meilleur résultat, utilisez un fond blanc et assurez-vous que la signature est bien contrastée. Format recommandé : PNG avec fond transparent."
+        }
       },
       "sections": {
         "localization": "Localisation",
@@ -2569,7 +2615,8 @@
       },
       "success": {
         "updated": "Paramètres mis à jour",
-        "updatedDescription": "Les paramètres de facturation ont été mis à jour avec succès."
+        "updatedDescription": "Les paramètres de facturation ont été mis à jour avec succès.",
+        "signatureUpdated": "Signature mise à jour avec succès"
       },
       "errors": {
         "updateError": "Une erreur est survenue lors de la mise à jour des paramètres.",
@@ -3612,6 +3659,7 @@
     "messageStyles": {
       "label": "Style de message WhatsApp",
       "helperText": "Choisissez le ton de vos messages WhatsApp selon votre type de clientèle",
+      "previewLabel": "Aperçu du message que le client recevra",
       "selected": "Sélectionné",
       "styles": {
         "professionalWarm": {

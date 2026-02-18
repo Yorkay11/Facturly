@@ -231,7 +231,7 @@ export default function InvoiceDetailPage() {
       });
     }
 
-    if (invoice.status === "cancelled" && invoice.updatedAt) {
+    if (invoice.status === "cancelled" && invoice.updatedAt && !invoice.rejectedAt) {
       events.push({ title: t('timeline.cancelled'), date: formatDate(invoice.updatedAt), description: t('timeline.cancelledDescription'), timestamp: new Date(invoice.updatedAt).getTime(), variant: 'cancelled' });
     }
 
@@ -474,7 +474,7 @@ export default function InvoiceDetailPage() {
                 <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                   {invoiceData.invoiceNumber}
                 </h1>
-                <InvoiceStatusBadge status={invoiceData.status} />
+                <InvoiceStatusBadge status={invoiceData.rejectedAt ? "rejected" : (invoiceData.status as "draft" | "quote" | "sent" | "paid" | "overdue" | "cancelled" | "rejected")} />
               </div>
               <p className="text-[15px] text-muted-foreground">
                 {clientName}

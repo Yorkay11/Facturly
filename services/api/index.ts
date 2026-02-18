@@ -64,6 +64,7 @@ export const {
   useGetWorkspacesQuery,
   useCreateWorkspaceMutation,
   useUpdateWorkspaceMutation,
+  useUploadWorkspaceLogoMutation,
   // Clients
   useGetClientsQuery,
   useGetClientByIdQuery,
@@ -109,6 +110,7 @@ export const {
   // Settings
   useGetSettingsQuery,
   useUpdateSettingsMutation,
+  useUploadSignatureImageMutation,
   // Dashboard
   useGetDashboardActivitiesQuery,
   useGetDashboardAlertsQuery,

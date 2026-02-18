@@ -93,6 +93,7 @@ export interface InvoiceSummary {
     id: string;
     name: string;
   };
+  rejectedAt?: string | null;
   createdAt?: string;
 }
 

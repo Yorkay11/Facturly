@@ -187,7 +187,7 @@
     "recurringInvoicesDescription": "Manage your automatic and recurring invoices",
     "addItem": "Add item",
     "monthlyRevenue": "Monthly Revenue",
-    "invoicesSent": "Active Invoices",
+    "invoicesSent": "Sent Invoices",
     "totalPaid": "Total Paid",
     "unpaid": "Unpaid",
     "revenueTrends": "Revenue Trends",
@@ -401,7 +401,8 @@
     "sent": "Sent",
     "paid": "Paid",
     "overdue": "Overdue",
-    "cancelled": "Cancelled",
+    "cancelled": "Cancelled (by you)",
+    "rejected": "Refused (by client)",
     "number": "Number",
     "date": "Issue date",
     "dueDate": "Due date",
@@ -430,6 +431,7 @@
       "view": "View"
     },
     "stats": {
+      "active": "Active",
       "thisMonth": "This month"
     },
     "sort": {
@@ -496,6 +498,13 @@
       "validation": {
         "nameRequired": "Name is required",
         "invalidHexColor": "Invalid hex color"
+      }
+    },
+    "editPage": {
+      "title": "Edit invoice",
+      "description": "Update the information and view the rendering in real time.",
+      "breadcrumb": {
+        "edit": "Edit"
       }
     },
     "new": {
@@ -659,7 +668,9 @@
           "description": "Services, quantities and rates. Currency and VAT are applied from settings.",
           "empty": {
             "title": "No lines yet",
-            "description": "Add your first service by clicking the button above."
+            "description": "Add your first service using the button below.",
+            "titleWhenHasLines": "Add a line",
+            "descriptionWhenHasLines": "Choose an existing service or create a new line."
           }
         },
         "discount": {
@@ -708,11 +719,16 @@
         "edit": "Edit line {description}",
         "delete": "Delete line {description}",
         "description": "Service description",
+        "descriptionCharCount": "{current} / {max} characters",
         "unitPrice": "Unit price",
         "quantity": "Quantity",
         "vat": "VAT (%)",
         "vatDefaultHint": "Default: {rate}% (settings)",
-        "lineTotal": "Line total"
+        "lineTotal": "Line total",
+        "newLineCard": {
+          "title": "New line",
+          "confirmAdd": "Add line"
+        }
       },
       "addItemModal": {
         "title": {
@@ -843,8 +859,8 @@
       "success": {
         "clientCreated": "Client created and selected",
         "clientCreatedDescription": "{name} has been created and selected as recipient.",
-        "draftRestored": "Draft restored",
-        "draftRestoredDescription": "Your data was recovered automatically. You won't lose anything if the connection drops.",
+        "draftRestored": "Draft recovered",
+        "draftRestoredDescription": "",
         "invoiceSent": "Invoice sent",
         "invoiceSentDescription": "Invoice #{number} has been sent to {email}.",
         "draftUpdated": "Draft updated",
@@ -1122,7 +1138,6 @@
       "new": "New Client",
       "importCsv": "Import CSV"
     },
-    "new": "New Client",
     "new": "New Client",
     "add": "Add Client",
     "edit": "Edit Client",
@@ -2491,6 +2506,9 @@
         "namePlaceholderIndividual": "Your name or activity name (optional)",
         "nameOptional": "Optional for freelancers",
         "legalName": "Legal name",
+        "logo": "Workspace logo",
+        "changeLogo": "Change logo",
+        "addLogo": "Add logo",
         "defaultCurrency": "Default currency",
         "taxId": "Tax identification number",
         "taxIdPlaceholder": "NINEA, RCCM, Tax ID, etc.",
@@ -2539,7 +2557,35 @@
           "description": "The VAT rate is automatically applied based on the country selected in your workspace. You can change the country in workspace settings."
         },
         "paymentTerms": "Payment terms",
-        "paymentTermsHint": "In days (e.g., 30 = 30 days)"
+        "paymentTermsHint": "In days (e.g., 30 = 30 days)",
+        "signature": "Signature",
+        "noSignature": "No signature",
+        "signatureHelp": "Help creating a digital signature"
+      },
+      "signatureHelp": {
+        "title": "How to create a digital signature?",
+        "description": "You can create a digital signature in several ways. Once created, download it and add it here.",
+        "methods": {
+          "title": "Available methods",
+          "online": {
+            "title": "Online generator",
+            "description": "Create your signature online with a free tool, then download it as PNG.",
+            "link": "Create signature online"
+          },
+          "draw": {
+            "title": "Draw your signature",
+            "description": "Draw your signature with a mouse or touchscreen, then download the image.",
+            "link": "Draw my signature"
+          },
+          "photo": {
+            "title": "Photo of your signature",
+            "description": "Sign on a white sheet, take a photo, then use an online tool to extract and clean the image."
+          }
+        },
+        "tip": {
+          "title": "💡 Tip",
+          "description": "For best results, use a white background and make sure the signature is well contrasted. Recommended format: PNG with transparent background."
+        }
       },
       "sections": {
         "localization": "Localization",
@@ -2563,7 +2609,8 @@
       },
       "success": {
         "updated": "Settings updated",
-        "updatedDescription": "Billing settings have been updated successfully."
+        "updatedDescription": "Billing settings have been updated successfully.",
+        "signatureUpdated": "Signature updated successfully"
       },
       "errors": {
         "updateError": "An error occurred while updating settings.",
@@ -3606,6 +3653,7 @@
     "messageStyles": {
       "label": "WhatsApp Message Style",
       "helperText": "Choose the tone of your WhatsApp messages based on your client type",
+      "previewLabel": "Preview of the message the client will receive",
       "selected": "Selected",
         "styles": {
           "professionalWarm": {
